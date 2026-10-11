@@ -1,0 +1,37 @@
+# Rust & Cargo
+/src-tauri/target/
+**/*.rs.bk
+
+# Node & Tauri
+node_modules/
+package-lock.json
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.spec
+venv/
+.venv/
+env/
+
+# Build artifacts & distribution binaries
+dist/
+build/
+*.exe
+*.msi
+*.setup.exe
+
+# Logs & Temporary files
+*.log
+out.log
+err.log
+.DS_Store
+Thumbs.db
+*.tmp
+
+# IDE & Editor settings
+.vscode/
+.idea/
+.gemini/
+.agents/

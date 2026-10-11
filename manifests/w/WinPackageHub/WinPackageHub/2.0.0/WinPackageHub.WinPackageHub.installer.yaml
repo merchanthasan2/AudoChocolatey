@@ -1,0 +1,21 @@
+PackageIdentifier: WinPackageHub.WinPackageHub
+PackageVersion: 2.0.0
+MinimumOSVersion: 10.0.17763.0
+InstallerType: nullsoft
+Scope: machine
+InstallModes:
+  - interactive
+  - silent
+  - silentWithProgress
+InstallerSwitches:
+  Silent: /S
+  SilentWithProgress: /S
+UpgradeBehavior: install
+Commands:
+  - winpackagehub
+Installers:
+  - Architecture: x64
+    InstallerUrl: https://github.com/winpackagehub/winpackagehub/releases/download/v2.0.0/WinPackageHub_2.0.0_x64-setup.exe
+    InstallerSha256: 952B898EFA2A4D8196D5AC96D24EC109B5A4AC8E6562FE73D03207CD4311BF04
+ManifestType: installer
+ManifestVersion: 1.6.0

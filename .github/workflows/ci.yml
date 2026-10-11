@@ -1,0 +1,106 @@
+name: CI Pipeline
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  web-and-lint:
+    name: Web Frontend & Zero-Emoji Validation
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Validate JavaScript Syntax
+        run: |
+          node -c web/app.js
+
+      - name: Set up Python for Lint Checks
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Zero-Emoji Policy Enforcement Check
+        run: |
+          python -c "
+          import re, sys
+          emoji_pattern = re.compile(
+              r'[\U00010000-\U0010ffff]|[\u2600-\u27bf]|[\u2300-\u23ff]|[\u2b50-\u2b55]|[\u203c-\u2049]'
+          )
+          target_files = ['web/index.html', 'web/style.css', 'web/app.js']
+          violations = 0
+          for file_path in target_files:
+              with open(file_path, 'r', encoding='utf-8') as f:
+                  for i, line in enumerate(f, 1):
+                      matches = emoji_pattern.findall(line)
+                      if matches:
+                          print(f'Emoji violation in {file_path}:{i}: {matches}')
+                          violations += 1
+          if violations > 0:
+              print(f'Total emoji violations found: {violations}. Zero-Emoji policy failed.')
+              sys.exit(1)
+          print('Zero-Emoji policy passed: 0 emoji violations detected.')
+          "
+
+  python-backend:
+    name: Python Engine Compilation
+    runs-on: windows-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Syntax & Compilation Check
+        run: |
+          python -m py_compile main.py
+          python -m py_compile web_api.py
+          python -m py_compile build_exe.py
+          python -m py_compile core/__init__.py
+          python -m py_compile core/admin.py
+          python -m py_compile core/base_engine.py
+          python -m py_compile core/choco_engine.py
+          python -m py_compile core/manager.py
+          python -m py_compile core/models.py
+          python -m py_compile core/winget_engine.py
+
+  rust-tauri:
+    name: Rust & Tauri v2 Engine Check
+    runs-on: windows-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Install Rust Stable
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Rust Cache
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri -> target
+
+      - name: Cargo Check
+        working-directory: src-tauri
+        run: |
+          cargo check --verbose
+
+      - name: Cargo Test
+        working-directory: src-tauri
+        run: |
+          cargo test --verbose

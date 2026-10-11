@@ -1,0 +1,27 @@
+[package]
+name = "quantum_updater"
+version = "2.0.0"
+description = "Quantum Updater - Modern Windows Software & Package Manager by Quantum Step (quantumstep.in)"
+authors = ["Quantum Step <contact@quantumstep.in>"]
+edition = "2021"
+
+[lib]
+name = "quantum_updater_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "2", features = ["tray-icon"] }
+tauri-plugin-opener = "2"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+tokio = { version = "1", features = ["full"] }
+regex = "1"
+windows-sys = { version = "0.59", features = [
+    "Win32_Foundation",
+    "Win32_Security",
+    "Win32_System_Threading",
+    "Win32_UI_Shell"
+] }

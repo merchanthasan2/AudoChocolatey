@@ -1,0 +1,24 @@
+PackageIdentifier: WinPackageHub.WinPackageHub
+PackageVersion: 2.0.0
+PackageLocale: en-US
+Publisher: WinPackageHub Team
+PublisherUrl: https://github.com/winpackagehub/winpackagehub
+PublisherSupportUrl: https://github.com/winpackagehub/winpackagehub/issues
+Author: WinPackageHub Team
+PackageName: WinPackageHub
+PackageUrl: https://github.com/winpackagehub/winpackagehub
+License: MIT
+LicenseUrl: https://github.com/winpackagehub/winpackagehub/blob/main/LICENSE
+Copyright: Copyright (c) 2026 WinPackageHub Team
+ShortDescription: Modern Windows Package & Software Update Manager with Frosted Glass UI and Dual-Engine Winget + Chocolatey support.
+Description: WinPackageHub is a native, ultra-lightweight Windows desktop application designed to inspect, update, and manage installed software packages and discover new applications across both Winget and Chocolatey ecosystems. Features embedded UAC elevation, live streaming progress, and dark/light glassmorphic interface.
+Tags:
+  - package-manager
+  - winget
+  - chocolatey
+  - updater
+  - software-manager
+  - utility
+ReleaseNotesUrl: https://github.com/winpackagehub/winpackagehub/releases/tag/v2.0.0
+ManifestType: defaultLocale
+ManifestVersion: 1.6.0

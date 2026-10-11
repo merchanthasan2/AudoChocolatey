@@ -1,0 +1,21 @@
+PackageIdentifier: QuantumStep.QuantumUpdater
+PackageVersion: 2.0.0
+MinimumOSVersion: 10.0.17763.0
+InstallerType: nullsoft
+Scope: machine
+InstallModes:
+  - interactive
+  - silent
+  - silentWithProgress
+InstallerSwitches:
+  Silent: /S
+  SilentWithProgress: /S
+UpgradeBehavior: install
+Commands:
+  - quantumupdater
+Installers:
+  - Architecture: x64
+    InstallerUrl: https://quantumstep.in/downloads/QuantumUpdater_2.0.0_x64-setup.exe
+    InstallerSha256: 3B74E15C2961DA41E7DE5B55D82719D749A74E9C430E5CE4459BF1EAD9B2E768
+ManifestType: installer
+ManifestVersion: 1.6.0
