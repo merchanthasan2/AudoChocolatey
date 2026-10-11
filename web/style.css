@@ -1,41 +1,64 @@
 /* ==========================================================================
-   WinPackageHub - Master Glassmorphism & Acrylic Design System
+   Quantum Updater - Master Glassmorphism & Modern Prism Design System
    ========================================================================== */
 
 :root {
+  /* Official 6-Color Palette (Uxintace Reference) */
+  --c-midnight-teal: #073A4B;
+  --c-ocean-blue: #108AB1;
+  --c-emerald-mint: #06D7A0;
+  --c-golden-yellow: #FFD167;
+  --c-coral-peach: #F78C6A;
+  --c-coral-pink: #F04770;
+
   /* Dark Glass Palette (Default) */
-  --bg-canvas: #07090e;
-  --bg-surface: rgba(14, 20, 34, 0.75);
-  --bg-card: rgba(19, 27, 46, 0.65);
-  --bg-card-hover: rgba(28, 40, 68, 0.75);
-  --bg-input: rgba(10, 15, 26, 0.8);
-  --border-glass: rgba(255, 255, 255, 0.08);
-  --border-glass-hover: rgba(99, 102, 241, 0.4);
-  --border-card-specular: inset 0 1px 0 0 rgba(255, 255, 255, 0.12);
+  --bg-canvas: #073A4B;
+  --bg-canvas-deep: #00161f;
+  --bg-surface: rgba(7, 58, 75, 0.78);
+  --bg-card: rgba(11, 47, 60, 0.72);
+  --bg-card-hover: rgba(16, 68, 87, 0.85);
+  --bg-input: rgba(4, 25, 33, 0.85);
+  --border-glass: rgba(255, 255, 255, 0.10);
+  --border-glass-hover: rgba(16, 138, 177, 0.50);
+  --border-card-specular: inset 0 1px 0 0 rgba(255, 255, 255, 0.14);
 
   /* Typography */
-  --text-main: #f8fafc;
-  --text-secondary: #94a3b8;
-  --text-muted: #64748b;
-  --text-accent: #818cf8;
+  --text-main: #ffffff;
+  --text-secondary: #bee9ff;
+  --text-muted: #648a9c;
+  --text-accent: #108AB1;
 
   /* Accents & Brand */
-  --primary: #6366f1;
-  --primary-hover: #4f46e5;
-  --primary-glow: rgba(99, 102, 241, 0.25);
-  --cyan: #06b6d4;
-  --cyan-glow: rgba(6, 182, 212, 0.2);
-  --emerald: #10b981;
-  --emerald-glow: rgba(16, 185, 129, 0.2);
-  --amber: #f59e0b;
-  --amber-glow: rgba(245, 158, 11, 0.2);
-  --rose: #f43f5e;
-  --rose-glow: rgba(244, 63, 94, 0.2);
+  --primary: #108AB1;
+  --primary-hover: #0e789b;
+  --primary-glow: rgba(16, 138, 177, 0.35);
+
+  --coral-pink: #F04770;
+  --coral-pink-hover: #f25c80;
+  --coral-pink-glow: rgba(240, 71, 112, 0.40);
+
+  --coral-peach: #F78C6A;
+  --coral-peach-glow: rgba(247, 140, 106, 0.30);
+
+  --golden-yellow: #FFD167;
+  --golden-yellow-glow: rgba(255, 209, 103, 0.30);
+
+  --emerald-mint: #06D7A0;
+  --emerald-mint-glow: rgba(6, 215, 160, 0.30);
+
+  --cyan: #108AB1;
+  --cyan-glow: rgba(16, 138, 177, 0.25);
+  --emerald: #06D7A0;
+  --emerald-glow: rgba(6, 215, 160, 0.25);
+  --amber: #FFD167;
+  --amber-glow: rgba(255, 209, 103, 0.25);
+  --rose: #F04770;
+  --rose-glow: rgba(240, 71, 112, 0.30);
 
   /* Island & Terminal */
-  --island-bg: rgba(13, 19, 34, 0.85);
-  --terminal-bg: rgba(6, 10, 18, 0.9);
-  --terminal-text: #38bdf8;
+  --island-bg: rgba(4, 25, 33, 0.92);
+  --terminal-bg: rgba(0, 16, 24, 0.94);
+  --terminal-text: #06D7A0;
 
   /* Shadows */
   --shadow-glass: 0 10px 30px -10px rgba(0, 0, 0, 0.6);
@@ -49,34 +72,34 @@
 
 /* Light Glass Palette */
 body.light-mode {
-  --bg-canvas: #f1f5f9;
-  --bg-surface: rgba(255, 255, 255, 0.8);
-  --bg-card: rgba(255, 255, 255, 0.75);
+  --bg-canvas: #f1f7fa;
+  --bg-surface: rgba(255, 255, 255, 0.85);
+  --bg-card: rgba(255, 255, 255, 0.80);
   --bg-card-hover: rgba(255, 255, 255, 0.95);
-  --bg-input: rgba(248, 250, 252, 0.9);
-  --border-glass: rgba(0, 0, 0, 0.08);
-  --border-glass-hover: rgba(79, 70, 229, 0.35);
-  --border-card-specular: inset 0 1px 0 0 rgba(255, 255, 255, 0.9);
+  --bg-input: rgba(241, 247, 250, 0.95);
+  --border-glass: rgba(7, 58, 75, 0.12);
+  --border-glass-hover: rgba(16, 138, 177, 0.45);
+  --border-card-specular: inset 0 1px 0 0 rgba(255, 255, 255, 0.95);
 
-  --text-main: #0f172a;
-  --text-secondary: #475569;
-  --text-muted: #64748b;
-  --text-accent: #4f46e5;
+  --text-main: #073A4B;
+  --text-secondary: #134e62;
+  --text-muted: #527c8d;
+  --text-accent: #108AB1;
 
-  --primary: #4f46e5;
-  --primary-hover: #4338ca;
-  --primary-glow: rgba(79, 70, 229, 0.15);
-  --cyan: #0284c7;
+  --primary: #108AB1;
+  --primary-hover: #0c6c8c;
+  --primary-glow: rgba(16, 138, 177, 0.20);
+  --cyan: #108AB1;
   --emerald: #059669;
   --amber: #d97706;
-  --rose: #e11d48;
+  --rose: #F04770;
 
-  --island-bg: rgba(255, 255, 255, 0.92);
-  --terminal-bg: rgba(15, 23, 42, 0.95);
-  --terminal-text: #67e8f9;
+  --island-bg: rgba(255, 255, 255, 0.94);
+  --terminal-bg: rgba(7, 58, 75, 0.96);
+  --terminal-text: #5eead4;
 
-  --shadow-glass: 0 10px 25px -5px rgba(0, 0, 0, 0.08);
-  --shadow-float: 0 15px 35px -10px rgba(0, 0, 0, 0.12);
+  --shadow-glass: 0 10px 25px -5px rgba(7, 58, 75, 0.10);
+  --shadow-float: 0 15px 35px -10px rgba(7, 58, 75, 0.15);
 }
 
 /* Base Reset & Human Designed Typesetting */
@@ -131,7 +154,7 @@ body.light-mode .glow-orb {
   height: 500px;
   top: -150px;
   left: 15%;
-  background: radial-gradient(circle, #6366f1, transparent 70%);
+  background: radial-gradient(circle, #108AB1, transparent 70%);
 }
 
 .orb-cyan {
@@ -139,7 +162,7 @@ body.light-mode .glow-orb {
   height: 450px;
   bottom: -120px;
   right: 10%;
-  background: radial-gradient(circle, #06b6d4, transparent 70%);
+  background: radial-gradient(circle, #06D7A0, transparent 70%);
   animation-delay: -5s;
 }
 
@@ -148,7 +171,8 @@ body.light-mode .glow-orb {
   height: 380px;
   top: 40%;
   right: 35%;
-  background: radial-gradient(circle, #a855f7, transparent 70%);
+  background: radial-gradient(circle, #F04770, transparent 70%);
+  opacity: 0.16;
   animation-delay: -10s;
 }
 
@@ -178,7 +202,7 @@ body.light-mode .glow-orb {
   backdrop-filter: blur(var(--blur-amount));
   -webkit-backdrop-filter: blur(var(--blur-amount));
   border-bottom: 1px solid var(--border-glass);
-  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.25);
   z-index: 100;
 }
 
@@ -192,12 +216,12 @@ body.light-mode .glow-orb {
   width: 38px;
   height: 38px;
   border-radius: 10px;
-  background: linear-gradient(135deg, #6366f1, #38bdf8);
+  background: linear-gradient(135deg, var(--c-ocean-blue), var(--c-emerald-mint));
   display: flex;
   align-items: center;
   justify-content: center;
   color: #ffffff;
-  box-shadow: 0 4px 14px var(--primary-glow);
+  box-shadow: 0 4px 14px rgba(16, 138, 177, 0.4);
 }
 
 .brand-title {
@@ -214,9 +238,9 @@ body.light-mode .glow-orb {
   font-weight: 700;
   padding: 3px 9px;
   border-radius: 12px;
-  background: rgba(99, 102, 241, 0.15);
+  background: rgba(16, 138, 177, 0.15);
   color: var(--text-accent);
-  border: 1px solid rgba(99, 102, 241, 0.3);
+  border: 1px solid rgba(16, 138, 177, 0.3);
   margin-left: 6px;
   cursor: pointer;
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
@@ -225,10 +249,10 @@ body.light-mode .glow-orb {
 }
 
 .brand-badge:hover {
-  background: rgba(99, 102, 241, 0.3);
-  border-color: rgba(99, 102, 241, 0.6);
+  background: rgba(16, 138, 177, 0.3);
+  border-color: rgba(16, 138, 177, 0.6);
   transform: translateY(-1px);
-  box-shadow: 0 2px 10px rgba(99, 102, 241, 0.25);
+  box-shadow: 0 2px 10px rgba(16, 138, 177, 0.25);
 }
 
 /* Center Pill Nav */
@@ -380,7 +404,7 @@ body.light-mode .moon-icon { display: none; }
   padding: 12px 18px;
   margin-bottom: 18px;
   border-radius: 14px;
-  background: linear-gradient(135deg, rgba(16, 185, 129, 0.08), rgba(99, 102, 241, 0.06));
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.08), rgba(16, 138, 177, 0.06));
   border: 1px solid rgba(16, 185, 129, 0.22);
   backdrop-filter: blur(var(--blur-amount));
   -webkit-backdrop-filter: blur(var(--blur-amount));
@@ -388,7 +412,7 @@ body.light-mode .moon-icon { display: none; }
 }
 
 body.light-mode .security-trust-bar {
-  background: linear-gradient(135deg, rgba(16, 185, 129, 0.06), rgba(99, 102, 241, 0.04));
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.06), rgba(16, 138, 177, 0.04));
   border-color: rgba(16, 185, 129, 0.25);
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
 }
@@ -781,11 +805,33 @@ body.light-mode .island-progress-track {
 }
 
 .btn-success {
-  background: var(--emerald);
+  background: var(--coral-pink);
   color: #ffffff;
-  box-shadow: 0 4px 14px var(--emerald-glow);
+  box-shadow: 0 4px 18px var(--coral-pink-glow);
 }
 .btn-success:not(:disabled):hover {
+  background: var(--coral-pink-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 24px var(--coral-pink-glow);
+}
+
+.btn-coral {
+  background: var(--coral-pink);
+  color: #ffffff;
+  box-shadow: 0 4px 18px var(--coral-pink-glow);
+}
+.btn-coral:not(:disabled):hover {
+  background: var(--coral-pink-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 24px var(--coral-pink-glow);
+}
+
+.btn-mint {
+  background: var(--emerald-mint);
+  color: #073A4B;
+  box-shadow: 0 4px 14px var(--emerald-mint-glow);
+}
+.btn-mint:not(:disabled):hover {
   filter: brightness(1.1);
   transform: translateY(-1px);
 }
@@ -806,10 +852,10 @@ body.light-mode .island-progress-track {
 
 /* Live Button Updating State */
 .glass-btn.btn-updating {
-  background: rgba(99, 102, 241, 0.22) !important;
-  border: 1px solid rgba(99, 102, 241, 0.55) !important;
+  background: rgba(16, 138, 177, 0.22) !important;
+  border: 1px solid rgba(16, 138, 177, 0.55) !important;
   color: #ffffff !important;
-  box-shadow: 0 0 16px rgba(99, 102, 241, 0.3) !important;
+  box-shadow: 0 0 16px rgba(16, 138, 177, 0.3) !important;
   opacity: 1 !important;
   cursor: wait !important;
   pointer-events: none;
@@ -897,25 +943,25 @@ body.light-mode .island-progress-track {
 
 .package-card.selected {
   border-color: var(--primary);
-  background: rgba(99, 102, 241, 0.1);
+  background: rgba(16, 138, 177, 0.1);
 }
 
 /* Live In-Place Card Updating Pulse */
 .package-card.card-updating {
-  border-color: rgba(99, 102, 241, 0.7) !important;
-  background: rgba(99, 102, 241, 0.08) !important;
-  box-shadow: 0 0 24px rgba(99, 102, 241, 0.25), inset 0 0 16px rgba(99, 102, 241, 0.06) !important;
+  border-color: rgba(16, 138, 177, 0.7) !important;
+  background: rgba(16, 138, 177, 0.08) !important;
+  box-shadow: 0 0 24px rgba(16, 138, 177, 0.25), inset 0 0 16px rgba(16, 138, 177, 0.06) !important;
   animation: cardGlowPulse 2s ease-in-out infinite;
 }
 
 @keyframes cardGlowPulse {
   0%, 100% {
-    border-color: rgba(99, 102, 241, 0.45);
-    box-shadow: 0 0 16px rgba(99, 102, 241, 0.18);
+    border-color: rgba(16, 138, 177, 0.45);
+    box-shadow: 0 0 16px rgba(16, 138, 177, 0.18);
   }
   50% {
-    border-color: rgba(99, 102, 241, 0.85);
-    box-shadow: 0 0 28px rgba(99, 102, 241, 0.35);
+    border-color: rgba(16, 138, 177, 0.85);
+    box-shadow: 0 0 28px rgba(16, 138, 177, 0.35);
   }
 }
 
@@ -1024,8 +1070,8 @@ body.light-mode .island-progress-track {
 
 .package-card:hover .app-logo-container {
   transform: scale(1.06);
-  border-color: rgba(99, 102, 241, 0.4);
-  box-shadow: 0 6px 16px rgba(99, 102, 241, 0.22);
+  border-color: rgba(16, 138, 177, 0.4);
+  box-shadow: 0 6px 16px rgba(16, 138, 177, 0.22);
 }
 
 .app-logo-img {
@@ -1163,9 +1209,9 @@ body.light-mode .island-progress-track {
   font-weight: 700;
   padding: 4px 12px;
   border-radius: 20px;
-  background: rgba(99, 102, 241, 0.15);
-  border: 1px solid rgba(99, 102, 241, 0.3);
-  color: #818CF8;
+  background: rgba(16, 138, 177, 0.15);
+  border: 1px solid rgba(16, 138, 177, 0.3);
+  color: #108AB1;
   white-space: nowrap;
 }
 
@@ -1206,10 +1252,10 @@ body.light-mode .island-progress-track {
 }
 
 .cat-pill.active {
-  background: linear-gradient(135deg, rgba(99, 102, 241, 0.28), rgba(6, 182, 212, 0.2));
-  border-color: rgba(99, 102, 241, 0.5);
+  background: linear-gradient(135deg, rgba(16, 138, 177, 0.28), rgba(6, 182, 212, 0.2));
+  border-color: rgba(16, 138, 177, 0.5);
   color: #FFFFFF;
-  box-shadow: 0 2px 10px rgba(99, 102, 241, 0.25);
+  box-shadow: 0 2px 10px rgba(16, 138, 177, 0.25);
 }
 
 /* Explore Toolbar (Search + Sort) */
@@ -1293,9 +1339,9 @@ body.light-mode .island-progress-track {
   font-weight: 600;
   padding: 2px 8px;
   border-radius: 6px;
-  background: rgba(6, 182, 212, 0.12);
-  color: #38BDF8;
-  border: 1px solid rgba(6, 182, 212, 0.25);
+  background: rgba(247, 140, 106, 0.15);
+  color: var(--c-coral-peach);
+  border: 1px solid rgba(247, 140, 106, 0.35);
 }
 
 .package-card-desc {
@@ -1357,8 +1403,8 @@ body.light-mode .island-progress-track {
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: #38bdf8;
-  box-shadow: 0 0 8px #38bdf8;
+  background: #06D7A0;
+  box-shadow: 0 0 8px #06D7A0;
 }
 
 .console-header h3 {
@@ -1383,7 +1429,7 @@ body.light-mode .island-progress-track {
 }
 
 .terminal-line.system {
-  color: #818cf8;
+  color: #108AB1;
   font-weight: 600;
 }
 
@@ -1441,7 +1487,7 @@ body.light-mode .island-progress-track {
 
 .engine-option-row.selected {
   border-color: var(--primary);
-  background: rgba(99, 102, 241, 0.1);
+  background: rgba(16, 138, 177, 0.1);
 }
 
 .settings-toggle-row {
@@ -1558,7 +1604,7 @@ input:checked + .slider::before {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: linear-gradient(135deg, rgba(16, 185, 129, 0.09), rgba(99, 102, 241, 0.05));
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.09), rgba(16, 138, 177, 0.05));
   border: 1px solid rgba(16, 185, 129, 0.28);
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.08);
   border-radius: 14px;
@@ -1866,8 +1912,8 @@ body.light-mode .modal-desc-box {
 }
 
 .modal-security-box {
-  background: linear-gradient(135deg, rgba(99, 102, 241, 0.08), rgba(6, 182, 212, 0.05));
-  border: 1px solid rgba(99, 102, 241, 0.25);
+  background: linear-gradient(135deg, rgba(16, 138, 177, 0.08), rgba(6, 182, 212, 0.05));
+  border: 1px solid rgba(16, 138, 177, 0.25);
   padding: 16px;
   border-radius: 12px;
   display: flex;
@@ -1882,11 +1928,11 @@ body.light-mode .modal-security-box {
 .sec-box-title {
   font-size: 13px;
   font-weight: 750;
-  color: #818cf8;
+  color: #108AB1;
 }
 
 body.light-mode .sec-box-title {
-  color: #4f46e5;
+  color: #0e789b;
 }
 
 .sec-box-desc {
@@ -1915,7 +1961,7 @@ body.light-mode .sec-box-title {
   background: rgba(0, 0, 0, 0.4);
   padding: 4px 8px;
   border-radius: 6px;
-  color: #38bdf8;
+  color: #06D7A0;
   overflow-x: auto;
   white-space: nowrap;
   user-select: all;
@@ -1928,7 +1974,7 @@ body.light-mode .sec-hash-code {
 }
 
 .sec-url-link {
-  color: #38bdf8;
+  color: #06D7A0;
   text-decoration: underline;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -2220,8 +2266,8 @@ body.light-mode .dock-progress-track {
 }
 
 .queue-item-row.running {
-  border-color: rgba(99, 102, 241, 0.4);
-  background: rgba(99, 102, 241, 0.1);
+  border-color: rgba(16, 138, 177, 0.4);
+  background: rgba(16, 138, 177, 0.1);
 }
 
 .queue-item-left {
@@ -2251,8 +2297,8 @@ body.light-mode .dock-progress-track {
 }
 
 .queue-item-status-pill.running {
-  background: rgba(99, 102, 241, 0.25);
-  color: #818cf8;
+  background: rgba(16, 138, 177, 0.25);
+  color: #108AB1;
 }
 
 .queue-item-status-pill.pending {

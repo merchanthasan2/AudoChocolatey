@@ -1,0 +1,868 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quantum Updater v2.4 - Redesign Mockup Preview</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Outfit:wght@500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      /* Official 6-Color Palette from User Reference */
+      --c-midnight-teal: #073A4B;
+      --c-ocean-blue: #108AB1;
+      --c-emerald-mint: #06D7A0;
+      --c-golden-yellow: #FFD167;
+      --c-coral-peach: #F78C6A;
+      --c-coral-pink: #F04770;
+
+      /* Glassmorphic Alpha Surfaces */
+      --bg-canvas: #073A4B;
+      --bg-canvas-deep: #00161f;
+      --bg-surface: rgba(7, 58, 75, 0.75);
+      --bg-card: rgba(11, 47, 60, 0.70);
+      --bg-card-hover: rgba(16, 68, 87, 0.85);
+      --bg-overlay: rgba(0, 18, 26, 0.88);
+      --border-glass: rgba(255, 255, 255, 0.10);
+      --border-active: rgba(16, 138, 177, 0.50);
+
+      /* Typography */
+      --font-display: 'Outfit', sans-serif;
+      --font-body: 'Plus Jakarta Sans', sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg-canvas-deep);
+      background-image: 
+        radial-gradient(circle at 15% 15%, rgba(16, 138, 177, 0.25) 0%, transparent 40%),
+        radial-gradient(circle at 85% 25%, rgba(240, 71, 112, 0.18) 0%, transparent 45%),
+        radial-gradient(circle at 50% 85%, rgba(6, 215, 160, 0.15) 0%, transparent 50%),
+        linear-gradient(180deg, #073A4B 0%, #00161f 100%);
+      color: #bee9ff;
+      font-family: var(--font-body);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow-x: hidden;
+    }
+
+    /* Window Header */
+    .titlebar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 24px;
+      background: rgba(7, 58, 75, 0.85);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border-glass);
+      user-select: none;
+    }
+
+    .brand-group {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .brand-logo {
+      width: 32px;
+      height: 32px;
+      background: linear-gradient(135deg, var(--c-ocean-blue), var(--c-emerald-mint));
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      box-shadow: 0 0 16px rgba(16, 138, 177, 0.4);
+    }
+
+    .brand-title {
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: 16px;
+      color: #ffffff;
+      letter-spacing: -0.01em;
+    }
+
+    .brand-badge {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      background: rgba(6, 215, 160, 0.15);
+      color: var(--c-emerald-mint);
+      border: 1px solid rgba(6, 215, 160, 0.3);
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-weight: 600;
+    }
+
+    .screen-switcher {
+      display: flex;
+      gap: 6px;
+      background: rgba(0, 0, 0, 0.25);
+      padding: 4px;
+      border-radius: 8px;
+      border: 1px solid var(--border-glass);
+    }
+
+    .switch-btn {
+      background: transparent;
+      border: none;
+      color: #bee9ff;
+      padding: 6px 14px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: var(--font-body);
+      transition: all 0.2s ease;
+    }
+
+    .switch-btn.active {
+      background: var(--c-ocean-blue);
+      color: #ffffff;
+      box-shadow: 0 2px 10px rgba(16, 138, 177, 0.4);
+    }
+
+    .window-controls {
+      display: flex;
+      gap: 8px;
+    }
+
+    .win-btn {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      border: none;
+      cursor: pointer;
+    }
+    .win-close { background: var(--c-coral-pink); }
+    .win-min { background: var(--c-golden-yellow); }
+    .win-max { background: var(--c-emerald-mint); }
+
+    /* Main Container */
+    .app-layout {
+      display: flex;
+      flex: 1;
+      height: calc(100vh - 57px);
+      overflow: hidden;
+    }
+
+    /* Sidebar Navigation */
+    .sidebar {
+      width: 240px;
+      background: rgba(7, 58, 75, 0.65);
+      backdrop-filter: blur(24px);
+      border-right: 1px solid var(--border-glass);
+      padding: 20px 14px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .nav-list {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 14px;
+      border-radius: 8px;
+      color: #bee9ff;
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 600;
+      transition: all 0.2s ease;
+      cursor: pointer;
+    }
+
+    .nav-item:hover {
+      background: rgba(255, 255, 255, 0.06);
+      color: #ffffff;
+    }
+
+    .nav-item.active {
+      background: rgba(16, 138, 177, 0.25);
+      border: 1px solid var(--c-ocean-blue);
+      color: #ffffff;
+      box-shadow: 0 0 16px rgba(16, 138, 177, 0.25);
+    }
+
+    .nav-badge {
+      margin-left: auto;
+      background: rgba(255, 209, 103, 0.2);
+      color: var(--c-golden-yellow);
+      border: 1px solid rgba(255, 209, 103, 0.4);
+      padding: 2px 7px;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: 700;
+      font-family: var(--font-mono);
+    }
+
+    .sidebar-footer {
+      padding: 12px;
+      background: rgba(0, 0, 0, 0.2);
+      border-radius: 8px;
+      border: 1px solid var(--border-glass);
+      font-size: 11px;
+    }
+
+    .palette-strip {
+      display: flex;
+      gap: 4px;
+      margin-top: 8px;
+    }
+
+    .palette-dot {
+      flex: 1;
+      height: 8px;
+      border-radius: 4px;
+    }
+
+    /* Content Viewport */
+    .main-viewport {
+      flex: 1;
+      overflow-y: auto;
+      padding: 28px 36px 100px 36px;
+      position: relative;
+    }
+
+    /* Bento Grid */
+    .bento-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .bento-card {
+      background: var(--bg-card);
+      backdrop-filter: blur(20px);
+      border: 1px solid var(--border-glass);
+      border-radius: 12px;
+      padding: 20px;
+      transition: all 0.25s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .bento-card:hover {
+      background: var(--bg-card-hover);
+      border-color: rgba(255, 255, 255, 0.2);
+      transform: translateY(-2px);
+    }
+
+    .bento-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: var(--card-accent, var(--c-ocean-blue));
+    }
+
+    .bento-card.card-pink { --card-accent: var(--c-coral-pink); }
+    .bento-card.card-mint { --card-accent: var(--c-emerald-mint); }
+    .bento-card.card-yellow { --card-accent: var(--c-golden-yellow); }
+    .bento-card.card-blue { --card-accent: var(--c-ocean-blue); }
+
+    .bento-title {
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: rgba(190, 233, 255, 0.7);
+      margin-bottom: 8px;
+    }
+
+    .bento-value {
+      font-family: var(--font-display);
+      font-size: 32px;
+      font-weight: 700;
+      color: #ffffff;
+      margin-bottom: 6px;
+    }
+
+    .bento-desc {
+      font-size: 12px;
+      color: #bee9ff;
+    }
+
+    /* Actions Bar */
+    .controls-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      gap: 16px;
+    }
+
+    .search-box {
+      flex: 1;
+      max-width: 480px;
+      position: relative;
+    }
+
+    .search-input {
+      width: 100%;
+      background: rgba(0, 22, 31, 0.7);
+      border: 1px solid var(--border-glass);
+      border-radius: 8px;
+      padding: 10px 16px 10px 40px;
+      color: #ffffff;
+      font-size: 13px;
+      font-family: var(--font-body);
+      outline: none;
+      transition: all 0.2s ease;
+    }
+
+    .search-input:focus {
+      border-color: var(--c-ocean-blue);
+      box-shadow: 0 0 0 1px var(--c-ocean-blue), 0 0 16px rgba(16, 138, 177, 0.3);
+    }
+
+    .search-icon {
+      position: absolute;
+      left: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: rgba(190, 233, 255, 0.5);
+    }
+
+    .btn-pink {
+      background: var(--c-coral-pink);
+      color: #ffffff;
+      border: none;
+      padding: 10px 22px;
+      border-radius: 8px;
+      font-family: var(--font-body);
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      box-shadow: 0 4px 18px rgba(240, 71, 112, 0.4);
+      transition: all 0.2s ease;
+    }
+
+    .btn-pink:hover {
+      background: #f25c80;
+      box-shadow: 0 6px 24px rgba(240, 71, 112, 0.55);
+      transform: translateY(-1px);
+    }
+
+    .btn-blue {
+      background: rgba(16, 138, 177, 0.25);
+      color: #ffffff;
+      border: 1px solid var(--c-ocean-blue);
+      padding: 8px 16px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .btn-blue:hover {
+      background: rgba(16, 138, 177, 0.45);
+    }
+
+    /* Table Component */
+    .data-table-container {
+      background: var(--bg-card);
+      backdrop-filter: blur(20px);
+      border: 1px solid var(--border-glass);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: 13px;
+    }
+
+    .data-table th {
+      background: rgba(0, 0, 0, 0.25);
+      padding: 14px 18px;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: rgba(190, 233, 255, 0.7);
+      border-bottom: 1px solid var(--border-glass);
+    }
+
+    .data-table td {
+      padding: 14px 18px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      vertical-align: middle;
+    }
+
+    .data-table tr:hover td {
+      background: rgba(255, 255, 255, 0.03);
+    }
+
+    .pkg-cell {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .pkg-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 6px;
+      background: rgba(0, 0, 0, 0.3);
+      border: 1px solid var(--border-glass);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      font-family: var(--font-mono);
+      font-weight: 700;
+      color: var(--c-ocean-blue);
+    }
+
+    .pkg-name {
+      font-weight: 600;
+      color: #ffffff;
+    }
+
+    .pkg-id {
+      font-size: 11px;
+      color: rgba(190, 233, 255, 0.5);
+      font-family: var(--font-mono);
+    }
+
+    .tag-peach {
+      background: rgba(247, 140, 106, 0.15);
+      color: var(--c-coral-peach);
+      border: 1px solid rgba(247, 140, 106, 0.35);
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+
+    .badge-mint {
+      background: rgba(6, 215, 160, 0.15);
+      color: var(--c-emerald-mint);
+      border: 1px solid rgba(6, 215, 160, 0.35);
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .version-flow {
+      font-family: var(--font-mono);
+      font-size: 12px;
+    }
+
+    .version-old { color: rgba(190, 233, 255, 0.6); }
+    .version-arrow { color: var(--c-golden-yellow); margin: 0 4px; }
+    .version-new { color: var(--c-golden-yellow); font-weight: 600; }
+
+    /* Sticky Bottom Dock */
+    .dock-container {
+      position: fixed;
+      bottom: 20px;
+      left: 276px;
+      right: 36px;
+      background: rgba(4, 25, 33, 0.92);
+      backdrop-filter: blur(28px);
+      border: 1px solid rgba(16, 138, 177, 0.4);
+      border-radius: 12px;
+      padding: 14px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 16px 36px rgba(0, 0, 0, 0.6);
+      z-index: 100;
+    }
+
+    .dock-status {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .dock-indicator {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--c-emerald-mint);
+      box-shadow: 0 0 12px var(--c-emerald-mint);
+    }
+
+    .dock-text-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: #ffffff;
+    }
+
+    .dock-text-sub {
+      font-size: 11px;
+      color: rgba(190, 233, 255, 0.6);
+      font-family: var(--font-mono);
+    }
+
+    .dock-progress {
+      width: 240px;
+      height: 6px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 3px;
+      overflow: hidden;
+      margin-top: 4px;
+    }
+
+    .dock-progress-bar {
+      height: 100%;
+      width: 65%;
+      background: linear-gradient(90deg, var(--c-ocean-blue), var(--c-emerald-mint));
+      border-radius: 3px;
+    }
+
+    /* Modal Component */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 16, 24, 0.82);
+      backdrop-filter: blur(16px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 200;
+      padding: 24px;
+    }
+
+    .modal-card {
+      background: rgba(7, 58, 75, 0.95);
+      border: 1px solid rgba(16, 138, 177, 0.4);
+      border-radius: 16px;
+      width: 100%;
+      max-width: 720px;
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.7);
+      overflow: hidden;
+    }
+
+    .modal-header {
+      padding: 20px 24px;
+      border-bottom: 1px solid var(--border-glass);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .modal-body {
+      padding: 24px;
+    }
+
+    .security-badge-large {
+      background: rgba(6, 215, 160, 0.15);
+      border: 1px solid var(--c-emerald-mint);
+      border-radius: 8px;
+      padding: 16px;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .security-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+
+    .sec-item {
+      background: rgba(0, 0, 0, 0.25);
+      padding: 12px 16px;
+      border-radius: 8px;
+      border: 1px solid var(--border-glass);
+    }
+
+    .sec-label {
+      font-size: 11px;
+      color: rgba(190, 233, 255, 0.6);
+      text-transform: uppercase;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+
+    .sec-val {
+      font-size: 13px;
+      font-weight: 600;
+      color: #ffffff;
+      font-family: var(--font-mono);
+      word-break: break-all;
+    }
+
+    .yaml-preview {
+      background: rgba(0, 16, 24, 0.85);
+      border: 1px solid var(--border-glass);
+      border-radius: 8px;
+      padding: 14px;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: #a8d5e5;
+      line-height: 1.6;
+      max-height: 140px;
+      overflow-y: auto;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Window Header -->
+  <div class="titlebar">
+    <div class="brand-group">
+      <div class="brand-logo">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg>
+      </div>
+      <div class="brand-title">Quantum Updater</div>
+      <div class="brand-badge">v2.4.0 • Enterprise Kernel</div>
+    </div>
+
+    <!-- Interactive Mockup Switcher -->
+    <div class="screen-switcher">
+      <button class="switch-btn active" onclick="switchView('updates')">1. Updates Dashboard</button>
+      <button class="switch-btn" onclick="switchView('explore')">2. Explore App Store</button>
+      <button class="switch-btn" onclick="switchView('security')">3. Security Inspector</button>
+      <button class="switch-btn" onclick="switchView('queue')">4. Sequential Queue</button>
+    </div>
+
+    <div class="window-controls">
+      <button class="win-btn win-min"></button>
+      <button class="win-btn win-max"></button>
+      <button class="win-btn win-close"></button>
+    </div>
+  </div>
+
+  <div class="app-layout">
+    <!-- Sidebar Navigation -->
+    <div class="sidebar">
+      <div class="nav-list">
+        <div class="nav-item active" id="nav-updates" onclick="switchView('updates')">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"></path><path d="M16 21h5v-5"></path></svg>
+          Updates
+          <span class="nav-badge">9</span>
+        </div>
+        <div class="nav-item" id="nav-explore" onclick="switchView('explore')">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"></polygon></svg>
+          Explore Store
+        </div>
+        <div class="nav-item" id="nav-installed" onclick="switchView('updates')">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="18" height="18" x="3" y="3" rx="2"></rect><path d="m9 12 2 2 4-4"></path></svg>
+          Installed Apps
+        </div>
+        <div class="nav-item" id="nav-security" onclick="switchView('security')">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+          Security Inspector
+        </div>
+        <div class="nav-item" id="nav-queue" onclick="switchView('queue')">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
+          Queue Drawer
+        </div>
+      </div>
+
+      <div class="sidebar-footer">
+        <div style="font-weight: 700; color: #ffffff; margin-bottom: 2px;">Uxintace Palette Sync</div>
+        <div style="color: rgba(190, 233, 255, 0.6);">Quantum Prism Design Engine</div>
+        <div class="palette-strip">
+          <div class="palette-dot" style="background: #F04770;" title="#F04770 Coral Pink"></div>
+          <div class="palette-dot" style="background: #F78C6A;" title="#F78C6A Coral Peach"></div>
+          <div class="palette-dot" style="background: #FFD167;" title="#FFD167 Golden Yellow"></div>
+          <div class="palette-dot" style="background: #06D7A0;" title="#06D7A0 Emerald Mint"></div>
+          <div class="palette-dot" style="background: #108AB1;" title="#108AB1 Ocean Blue"></div>
+          <div class="palette-dot" style="background: #073A4B;" title="#073A4B Midnight Teal"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Viewport -->
+    <div class="main-viewport">
+      
+      <!-- Bento Cards -->
+      <div class="bento-grid">
+        <div class="bento-card card-pink">
+          <div class="bento-title">Updates Available</div>
+          <div class="bento-value">9</div>
+          <div class="bento-desc">1.4 GB total payload ready</div>
+        </div>
+        <div class="bento-card card-mint">
+          <div class="bento-title">System Health</div>
+          <div class="bento-value">98.4%</div>
+          <div class="bento-desc">133 packages fully up-to-date</div>
+        </div>
+        <div class="bento-card card-yellow">
+          <div class="bento-title">Security Status</div>
+          <div class="bento-value">100%</div>
+          <div class="bento-desc">Authenticode & SHA-256 verified</div>
+        </div>
+        <div class="bento-card card-blue">
+          <div class="bento-title">Pipeline Throughput</div>
+          <div class="bento-value">84.2 MB/s</div>
+          <div class="bento-desc">Cloudflare Edge + GitHub Release</div>
+        </div>
+      </div>
+
+      <!-- Controls -->
+      <div class="controls-bar">
+        <div class="search-box">
+          <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+          <input type="text" class="search-input" placeholder="Search packages, binaries, hashes (Ctrl + K)...">
+        </div>
+        <div style="display: flex; gap: 10px;">
+          <button class="btn-blue">Refresh Index</button>
+          <button class="btn-pink">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+            Update All (9) • 1.4 GB
+          </button>
+        </div>
+      </div>
+
+      <!-- Inventory Table -->
+      <div class="data-table-container">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th width="40"><input type="checkbox" checked></th>
+              <th>Package Name & Source</th>
+              <th>Category</th>
+              <th>Version Delta</th>
+              <th>Payload</th>
+              <th>Authenticode Signer</th>
+              <th width="120">Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><input type="checkbox" checked></td>
+              <td>
+                <div class="pkg-cell">
+                  <div class="pkg-icon">VS</div>
+                  <div>
+                    <div class="pkg-name">Visual Studio Code</div>
+                    <div class="pkg-id">Microsoft.VisualStudioCode • winget</div>
+                  </div>
+                </div>
+              </td>
+              <td><span class="tag-peach">Dev Tool</span></td>
+              <td><span class="version-flow"><span class="version-old">1.89.1</span><span class="version-arrow">→</span><span class="version-new">1.91.0</span></span></td>
+              <td>98.4 MB</td>
+              <td><span class="badge-mint"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg> Microsoft Corp</span></td>
+              <td><button class="btn-pink" style="padding: 6px 14px; font-size: 11px;">Update</button></td>
+            </tr>
+            <tr>
+              <td><input type="checkbox" checked></td>
+              <td>
+                <div class="pkg-cell">
+                  <div class="pkg-icon">DK</div>
+                  <div>
+                    <div class="pkg-name">Docker Desktop</div>
+                    <div class="pkg-id">Docker.DockerDesktop • winget</div>
+                  </div>
+                </div>
+              </td>
+              <td><span class="tag-peach">Virtualization</span></td>
+              <td><span class="version-flow"><span class="version-old">4.30.0</span><span class="version-arrow">→</span><span class="version-new">4.32.1</span></span></td>
+              <td>542 MB</td>
+              <td><span class="badge-mint"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg> Docker Inc</span></td>
+              <td><button class="btn-pink" style="padding: 6px 14px; font-size: 11px;">Update</button></td>
+            </tr>
+            <tr>
+              <td><input type="checkbox" checked></td>
+              <td>
+                <div class="pkg-cell">
+                  <div class="pkg-icon">CL</div>
+                  <div>
+                    <div class="pkg-name">Claude Desktop</div>
+                    <div class="pkg-id">Anthropic.Claude • winget</div>
+                  </div>
+                </div>
+              </td>
+              <td><span class="tag-peach">AI Assistant</span></td>
+              <td><span class="version-flow"><span class="version-old">1.0.2</span><span class="version-arrow">→</span><span class="version-new">1.0.4</span></span></td>
+              <td>96.0 MB</td>
+              <td><span class="badge-mint"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg> Anthropic PBC</span></td>
+              <td><button class="btn-pink" style="padding: 6px 14px; font-size: 11px;">Update</button></td>
+            </tr>
+            <tr>
+              <td><input type="checkbox" checked></td>
+              <td>
+                <div class="pkg-cell">
+                  <div class="pkg-icon">OL</div>
+                  <div>
+                    <div class="pkg-name">Ollama AI Runtime</div>
+                    <div class="pkg-id">Ollama.Ollama • winget</div>
+                  </div>
+                </div>
+              </td>
+              <td><span class="tag-peach">Local LLMs</span></td>
+              <td><span class="version-flow"><span class="version-old">0.1.30</span><span class="version-arrow">→</span><span class="version-new">0.1.32</span></span></td>
+              <td>48.0 MB</td>
+              <td><span class="badge-mint"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg> Ollama AI Inc</span></td>
+              <td><button class="btn-pink" style="padding: 6px 14px; font-size: 11px;">Update</button></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Sticky Bottom Operation Dock -->
+  <div class="dock-container">
+    <div class="dock-status">
+      <div class="dock-indicator"></div>
+      <div>
+        <div class="dock-text-title">Sequential Batch Engine: Ready (0/9 active)</div>
+        <div class="dock-text-sub">MSI Mutex Collision Shield: Active • Bandwidth: Unlimited • VSS Snapshot: Armed</div>
+        <div class="dock-progress"><div class="dock-progress-bar"></div></div>
+      </div>
+    </div>
+    <div style="display: flex; gap: 10px; align-items: center;">
+      <label style="font-size: 12px; color: #bee9ff; display: flex; align-items: center; gap: 6px; cursor: pointer;">
+        <input type="checkbox" checked> Create Restore Point
+      </label>
+      <button class="btn-blue" onclick="switchView('queue')">View Queue (9)</button>
+      <button class="btn-pink" style="padding: 8px 18px;">Start Sequence</button>
+    </div>
+  </div>
+
+  <script>
+    function switchView(viewName) {
+      document.querySelectorAll('.switch-btn').forEach(btn => btn.classList.remove('active'));
+      event.target.classList.add('active');
+      if (viewName === 'security') {
+        alert('Showing Mockup Screen 3: High-Security Package Transparency & Authenticode Inspection Dialog.');
+      } else if (viewName === 'explore') {
+        alert('Showing Mockup Screen 2: Explore Software Marketplace with AI Apps & Authentic Logos.');
+      } else if (viewName === 'queue') {
+        alert('Showing Mockup Screen 4: FIFO Sequential Pipeline Drawer & MSI Mutex Controller.');
+      }
+    }
+  </script>
+</body>
+</html>

@@ -4,15 +4,15 @@
  */
 
 const MONOGRAM_PALETTES = [
-  ['#6366F1', '#4338CA'], // Electric Indigo
-  ['#06B6D4', '#0891B2'], // Cyan
-  ['#10B981', '#047857'], // Emerald
-  ['#F59E0B', '#B45309'], // Amber
-  ['#EC4899', '#BE185D'], // Pink
-  ['#8B5CF6', '#6D28D9'], // Purple
-  ['#3B82F6', '#1D4ED8'], // Blue
-  ['#14B8A6', '#0F766E'], // Teal
-  ['#F43F5E', '#BE123C']  // Rose
+  ['#108AB1', '#073A4B'], // Ocean Blue & Midnight Teal
+  ['#06D7A0', '#073A4B'], // Emerald Mint & Deep Teal
+  ['#F04770', '#8c1f38'], // Coral Pink
+  ['#FFD167', '#073A4B'], // Golden Yellow & Deep Teal
+  ['#F78C6A', '#073A4B'], // Coral Peach & Deep Teal
+  ['#108AB1', '#06D7A0'], // Ocean Blue & Emerald Mint
+  ['#F04770', '#F78C6A'], // Coral Pink & Coral Peach
+  ['#FFD167', '#F78C6A'], // Golden Yellow & Coral Peach
+  ['#06D7A0', '#108AB1']  // Emerald Mint & Ocean Blue
 ];
 
 // Direct package ID to official SVG logo mapping (Simple Icons CDN)
@@ -1792,7 +1792,7 @@ class QuantumUpdaterApp {
               </button>
               <button class="glass-btn btn-secondary btn-xs" style="opacity: 0.75;" onclick="app.installExplorePackage('${pkg.id}', this, true)">Reinstall</button>
             ` : `
-              <button class="glass-btn btn-primary btn-sm" id="btn-explore-inst-${pkg.id}" onclick="app.installExplorePackage('${pkg.id}', this)">
+              <button class="glass-btn btn-coral btn-sm" id="btn-explore-inst-${pkg.id}" onclick="app.installExplorePackage('${pkg.id}', this)">
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg> Install
               </button>
             `}

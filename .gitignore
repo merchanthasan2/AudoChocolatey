@@ -34,4 +34,6 @@ Thumbs.db
 .vscode/
 .idea/
 .gemini/
-.agents/
+.agents/*
+!.agents/skills/
+
