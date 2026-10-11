@@ -33,7 +33,7 @@ class WebAPI:
         escaped_ticker = json.dumps(ticker)
         self._eval_js(f"app.setIslandProgress({p_val}, {escaped_ticker});")
 
-    def scan_updates(self) -> List[Dict[str, Any]]:
+    def scan_updates(self, *args, **kwargs) -> List[Dict[str, Any]]:
         """Scans system for available updates synchronously for JS call."""
         event = threading.Event()
         result_box = []
@@ -69,8 +69,11 @@ class WebAPI:
             for p in result_box
         ]
 
-    def upgrade_packages(self, package_ids: List[str]) -> bool:
+    def upgrade_packages(self, package_ids: Optional[List[str]] = None, *args, **kwargs) -> bool:
         """Upgrades multiple packages in background thread, sending live progress."""
+        if package_ids is None and args and isinstance(args[0], list):
+            package_ids = args[0]
+        package_ids = package_ids or []
         def worker():
             def on_item_finish(status: OperationStatus):
                 pass
@@ -92,7 +95,9 @@ class WebAPI:
         threading.Thread(target=worker, daemon=True).start()
         return True
 
-    def search_catalog(self, query: str) -> List[Dict[str, Any]]:
+    def search_catalog(self, query: str = "", *args, **kwargs) -> List[Dict[str, Any]]:
+        if not query and args and isinstance(args[0], str):
+            query = args[0]
         event = threading.Event()
         result_box = []
         error_box = []
@@ -124,7 +129,9 @@ class WebAPI:
             for r in result_box
         ]
 
-    def install_package(self, package_id: str) -> Dict[str, Any]:
+    def install_package(self, package_id: str = "", *args, **kwargs) -> Dict[str, Any]:
+        if not package_id and args and isinstance(args[0], str):
+            package_id = args[0]
         event = threading.Event()
         result_box = []
 
@@ -151,7 +158,7 @@ class WebAPI:
         status = result_box[0] if result_box else OperationStatus(package_id, False, "Timed out")
         return {"id": status.package_id, "success": status.success, "message": status.message}
 
-    def get_installed(self) -> List[Dict[str, Any]]:
+    def get_installed(self, *args, **kwargs) -> List[Dict[str, Any]]:
         event = threading.Event()
         result_box = []
 
@@ -179,7 +186,9 @@ class WebAPI:
             for p in result_box
         ]
 
-    def uninstall_package(self, package_id: str) -> bool:
+    def uninstall_package(self, package_id: str = "", *args, **kwargs) -> bool:
+        if not package_id and args and isinstance(args[0], str):
+            package_id = args[0]
         event = threading.Event()
         def on_success(st): event.set()
         def on_error(err): event.set()
@@ -193,16 +202,22 @@ class WebAPI:
         event.wait(timeout=180)
         return True
 
-    def set_engine(self, engine_id: str) -> bool:
+    def set_engine(self, engine_id: str = "", *args, **kwargs) -> bool:
+        if not engine_id and args and isinstance(args[0], str):
+            engine_id = args[0]
         self.manager.set_active_engine(engine_id)
         return True
 
-    def save_setting(self, key: str, value: Any) -> bool:
+    def save_setting(self, key: str = "", value: Any = None, *args, **kwargs) -> bool:
+        if not key and args and len(args) >= 1:
+            key = args[0]
+        if value is None and args and len(args) >= 2:
+            value = args[1]
         self.manager.settings[key] = value
         self.manager.save_settings()
         return True
 
-    def get_diagnostics(self) -> Dict[str, Any]:
+    def get_diagnostics(self, *args, **kwargs) -> Dict[str, Any]:
         engines = self.manager.get_available_engines()
         return {
             "is_admin": is_admin(),
@@ -215,3 +230,4 @@ class WebAPI:
             "choco_path": str(self.manager.engines["choco"]._executable or "Not Located"),
             "choco_version": str(self.manager.engines["choco"].get_version() or "Not Available")
         }
+
