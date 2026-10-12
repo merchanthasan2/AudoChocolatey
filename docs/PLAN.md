@@ -5,11 +5,11 @@
 > **Spec:** [superpowers/specs/2026-10-12-quantum-updater-v3-redesign-design.md](superpowers/specs/2026-10-12-quantum-updater-v3-redesign-design.md)
 > **Detailed phase plans:** `docs/superpowers/plans/`. Each phase's plan is written just before the phase starts, because it depends on code from earlier phases.
 
-**Status:** P0 done (branch `v3/p0-foundation`, awaiting merge) · P1 next · **Last updated:** 2026-10-12
+**Status:** P0 done · P1 next · **Last updated:** 2026-10-12
 
 | Phase | Name | Status | Detailed plan |
 |---|---|---|---|
-| P0 | Cleanup and foundation | Done (branch v3/p0-foundation; UAC check pending owner) | [p0-foundation](superpowers/plans/2026-10-12-p0-foundation.md) |
+| P0 | Cleanup and foundation | Done (merged to main; UAC + build SHA confirmed by owner) | [p0-foundation](superpowers/plans/2026-10-12-p0-foundation.md) |
 | P1 | Rust core and sources | Not started | (to be written) |
 | P2 | Combined catalog | Not started | (to be written) |
 | P3 | Queue and real progress | Not started | (to be written) |
@@ -110,3 +110,5 @@ Goal: one runtime, a fresh Svelte shell, admin manifest really embedded, locked-
 | 2026-10-12 | Production CSP re-verified at runtime: inline scripts and remote images blocked | Reviewer asked for runtime proof |
 | 2026-10-12 | Deferred to P7: `release.yml` must run the CI checks before publishing; `bump-version` should refresh lockfile versions | Review minors |
 | 2026-10-12 | Deferred to P6: `tray-icon` feature unused until then; trim unused window capabilities if the UI doesn't need them | Review minors |
+| 2026-10-12 | Owner ran the release exe: UAC prompt, "Running as admin: Yes", build `14557bcd` = HEAD | Closes the last P0 check |
+| 2026-10-12 | Owner chose to keep the phase order (engine P1–P3 before interface P4) | Offered to build the interface first on sample data; declined |
