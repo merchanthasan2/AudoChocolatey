@@ -28,7 +28,7 @@ Goal: one runtime, a fresh Svelte shell, admin manifest really embedded, locked-
 - [x] T3 Frontend policy checker (no emoji, no `{@html}`) with tests
 - [x] T4 Scaffold `app/` (Svelte 5 + Vite + TS, bundled fonts, Warm Store placeholder screen)
 - [x] T5 Rust shell: `build.rs` manifest embed (release admin / debug asInvoker), `BUILD_SHA`, command manifest, capabilities, CSP, `get_overview`
-- [ ] T6 CI and release workflow cleanup (no Python, builds frontend, fmt/clippy/test, policy checks)
+- [x] T6 CI and release workflow cleanup (no Python, builds frontend, fmt/clippy/test, policy checks)
 - [ ] T7 Docs: ADRs D1–D13, DEVELOPMENT.md, README; release build verification (UAC + SHA shown)
 
 ## P1: Rust core and sources
