@@ -25,7 +25,7 @@
 Goal: one runtime, a fresh Svelte shell, admin manifest really embedded, locked-down security config, and a visible build SHA so stale builds are obvious.
 - [x] T1 Archive old planning docs; delete Python runtime, `web/`, launchers, `manifests/`; fix `.gitignore`
 - [x] T2 Root `package.json` as single version source, plus version scripts (bump/check) with tests
-- [ ] T3 Frontend policy checker (no emoji, no `{@html}`) with tests
+- [x] T3 Frontend policy checker (no emoji, no `{@html}`) with tests
 - [ ] T4 Scaffold `app/` (Svelte 5 + Vite + TS, bundled fonts, Warm Store placeholder screen)
 - [ ] T5 Rust shell: `build.rs` manifest embed (release admin / debug asInvoker), `BUILD_SHA`, command manifest, capabilities, CSP, `get_overview`
 - [ ] T6 CI and release workflow cleanup (no Python, builds frontend, fmt/clippy/test, policy checks)
