@@ -16,13 +16,17 @@ tauri-build = { version = "2", features = [] }
 tauri = { version = "2", features = ["tray-icon"] }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
-windows-sys = { version = "0.59", features = ["Win32_Foundation", "Win32_UI_Shell", "Win32_Storage_FileSystem", "Win32_System_IO", "Win32_System_Ioctl", "Win32_System_Registry", "Win32_System_Com", "Win32_Security", "Win32_System_JobObjects", "Win32_System_Threading"] }
+windows-sys = { version = "0.59", features = ["Win32_Foundation", "Win32_UI_Shell", "Win32_Storage_FileSystem", "Win32_System_IO", "Win32_System_Ioctl", "Win32_System_Registry", "Win32_System_Com", "Win32_Security", "Win32_System_JobObjects", "Win32_System_Threading", "Win32_Graphics_Gdi", "Win32_UI_WindowsAndMessaging", "Win32_System_Environment"] }
 tokio = { version = "1", features = ["process", "time", "rt", "macros", "sync"] }
 async-trait = "0.1"
 regex = "1"
 unicode-width = "0.2"
 reqwest = { version = "0.13", default-features = false, features = ["native-tls", "http2", "system-proxy", "query"] }
 quick-xml = "0.42"
+winreg = "0.56"
+image = { version = "0.25", default-features = false, features = ["png", "jpeg", "ico", "webp", "bmp", "gif"] }
+resvg = { version = "0.48", default-features = false }
+sha2 = "0.10"
 ts-rs = { version = "12", features = ["no-serde-warnings"] }
 
 [dev-dependencies]
