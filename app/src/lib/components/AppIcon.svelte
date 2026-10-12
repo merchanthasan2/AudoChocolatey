@@ -7,7 +7,7 @@
   let failed = $state(false);
   let loaded = $state(false);
   $effect(() => { void iconKey; failed = false; loaded = false; });
-  const src = $derived(iconKey ? `http://icon.localhost/${encodeURIComponent(iconKey)}` : null);
+  const src = $derived(iconKey ? `http://icon.localhost/${encodeURIComponent(iconKey)}?name=${encodeURIComponent(name)}` : null);
 </script>
 
 <div class="tile" class:has-img={loaded} style="--h:{m.hue};--s:{size}px" aria-hidden="true">

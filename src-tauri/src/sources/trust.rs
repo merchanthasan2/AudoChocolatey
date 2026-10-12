@@ -135,12 +135,21 @@ pub fn machine_env(name: &str) -> Option<String> {
 
 /// `C:\ProgramData` from the shell, not from the overridable %ProgramData% variable.
 pub fn program_data_dir() -> Option<PathBuf> {
+    known_folder(&windows_sys::Win32::UI::Shell::FOLDERID_ProgramData)
+}
+
+/// `C:\Program Files` from the shell.
+pub fn program_files_dir() -> Option<PathBuf> {
+    known_folder(&windows_sys::Win32::UI::Shell::FOLDERID_ProgramFiles)
+}
+
+fn known_folder(id: &windows_sys::core::GUID) -> Option<PathBuf> {
     use windows_sys::Win32::System::Com::CoTaskMemFree;
-    use windows_sys::Win32::UI::Shell::{FOLDERID_ProgramData, SHGetKnownFolderPath};
+    use windows_sys::Win32::UI::Shell::SHGetKnownFolderPath;
     let mut out: windows_sys::core::PWSTR = std::ptr::null_mut();
     // SAFETY: SHGetKnownFolderPath allocates `out`, which we free with CoTaskMemFree.
     unsafe {
-        let hr = SHGetKnownFolderPath(&FOLDERID_ProgramData, 0, std::ptr::null_mut(), &mut out);
+        let hr = SHGetKnownFolderPath(id, 0, std::ptr::null_mut(), &mut out);
         if hr != 0 || out.is_null() {
             return None;
         }

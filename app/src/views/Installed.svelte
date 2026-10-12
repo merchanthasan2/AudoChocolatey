@@ -41,7 +41,7 @@
   <div class="card list">
     {#each shown as p, i (keys[i])}
       {@const job = p.source ? queue.jobFor(p.source, p.id, 'uninstall') : undefined}
-      <AppRow name={p.name} meta="{p.version} · {sourceText(p.source)}" {job} mode="uninstall">
+      <AppRow name={p.name} meta="{p.version} · {sourceText(p.source)}" {job} mode="uninstall" iconKey="{p.source ?? 'local'}:{p.id}">
         {#snippet action()}
           {#if p.source}
             <JobButton {job} mode="uninstall" name={p.name}

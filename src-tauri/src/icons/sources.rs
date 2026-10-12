@@ -46,7 +46,7 @@ pub fn choose_exe(names: &[String], app_name: &str) -> Option<String> {
         .filter(|n| !HELPER.is_match(n))
         .filter_map(|n| {
             let stem = alnum(n.trim_end_matches(|c| c != '.').trim_end_matches('.'));
-            let score = if tokens.iter().any(|t| *t == stem) {
+            let score = if tokens.contains(&stem) {
                 3
             } else if stem.len() >= 3 && joined.starts_with(&stem) {
                 2

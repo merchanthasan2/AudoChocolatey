@@ -14,8 +14,39 @@ pub fn run() {
     tauri::Builder::default()
         .setup(|app| {
             let config_dir = app.path().app_config_dir()?;
-            app.manage(state::AppState::new(config_dir, app.handle().clone()));
+            let data_dir = app.path().app_local_data_dir()?;
+            app.manage(state::AppState::new(
+                config_dir,
+                data_dir,
+                app.handle().clone(),
+            ));
             Ok(())
+        })
+        .register_asynchronous_uri_scheme_protocol("icon", |ctx, request, responder| {
+            let app = ctx.app_handle().clone();
+            tauri::async_runtime::spawn(async move {
+                let not_found = || {
+                    tauri::http::Response::builder()
+                        .status(404)
+                        .body(Vec::new())
+                        .unwrap()
+                };
+                let Some((key, name)) =
+                    icons::parse_request(request.uri().path(), request.uri().query())
+                else {
+                    return responder.respond(not_found());
+                };
+                let state = app.state::<state::AppState>();
+                let response = match state.icons.resolve(&key, name.as_deref()).await {
+                    Some(png) => tauri::http::Response::builder()
+                        .header("Content-Type", "image/png")
+                        .header("Cache-Control", "max-age=604800")
+                        .body(png.to_vec())
+                        .unwrap(),
+                    None => not_found(),
+                };
+                responder.respond(response);
+            });
         })
         .invoke_handler(tauri::generate_handler![
             commands::system::get_overview,

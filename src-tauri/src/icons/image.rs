@@ -20,10 +20,12 @@ fn looks_like_svg(bytes: &[u8]) -> bool {
 
 fn render_svg(bytes: &[u8], max: u32) -> AppResult<Vec<u8>> {
     use resvg::usvg;
-    let mut opt = usvg::Options::default();
-    opt.image_href_resolver = usvg::ImageHrefResolver {
-        resolve_data: Box::new(|_, _, _| None),
-        resolve_string: Box::new(|_, _| None),
+    let opt = usvg::Options {
+        image_href_resolver: usvg::ImageHrefResolver {
+            resolve_data: Box::new(|_, _, _| None),
+            resolve_string: Box::new(|_, _| None),
+        },
+        ..usvg::Options::default()
     };
     let tree = usvg::Tree::from_data(bytes, &opt).map_err(|e| bad(format!("svg: {e}")))?;
     let size = tree.size();

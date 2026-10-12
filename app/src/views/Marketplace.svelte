@@ -45,7 +45,7 @@
         {@const needsChoco = p.source === 'choco' && !overview.chocoReady}
         <div in:rise={{ delay: Math.min(i, 8) * 50 }}>
           <AppRow name={p.name} meta={[p.version, sourceText(p.source), needsChoco ? 'Requires Chocolatey' : '', p.description ?? ''].filter(Boolean).join(' · ')}
-            job={queue.jobFor(p.source, p.id, 'install')} mode="install">
+            job={queue.jobFor(p.source, p.id, 'install')} mode="install" iconKey="{p.source}:{p.id}">
             {#snippet action()}
               {#if done}
                 <span class="badge">Installed</span>
@@ -70,7 +70,7 @@
         {@const job = queue.jobFor('winget', app.id, 'install')}
         <article class="tile card" in:rise={{ delay: Math.min(i, 12) * 30, y: 8 }}>
           <div class="tile-top">
-            <AppIcon name={app.name} size={48} />
+            <AppIcon name={app.name} size={48} iconKey="winget:{app.id}" />
             {#if isInstalled('winget', app.id)}
               <span class="badge">Installed</span>
             {:else}

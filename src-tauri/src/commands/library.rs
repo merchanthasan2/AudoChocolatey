@@ -105,6 +105,13 @@ pub async fn search(
             disabled()
         }
     });
+    if let Ok(items) = &c {
+        for p in items {
+            if let Some(url) = &p.icon_url {
+                state.icons.remember_choco(&p.id, url);
+            }
+        }
+    }
     Ok(collect(vec![
         (SourceKind::Winget, w),
         (SourceKind::Choco, c),

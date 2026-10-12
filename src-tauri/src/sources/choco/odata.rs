@@ -21,6 +21,14 @@ pub fn search_url(q: &SearchQuery) -> String {
     )
 }
 
+/// One package's latest version (for its IconUrl when it isn't in recent search results).
+pub fn by_id_url(id: &ChocoId) -> String {
+    format!(
+        "https://community.chocolatey.org/api/v2/FindPackagesById()?id={}&$filter=IsLatestVersion",
+        encode(&format!("'{}'", id.as_str()))
+    )
+}
+
 /// RFC 3986 percent-encoding of everything outside the unreserved set.
 fn encode(s: &str) -> String {
     s.bytes()
