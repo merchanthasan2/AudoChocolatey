@@ -32,15 +32,15 @@ Goal: one runtime, a fresh Svelte shell, admin manifest really embedded, locked-
 - [x] T7 Docs: ADRs D1–D13, DEVELOPMENT.md, README; release build verification (UAC + SHA shown)
 
 ## P1: Rust core and sources
-- [ ] `error.rs` (`AppError{code,message}`), `ids.rs` validated newtypes (WingetId, ChocoId, PkgVersion, SourceRef), `versions.rs`
+- [x] `error.rs` (`AppError{code,message}`), `ids.rs` validated newtypes (WingetId, ChocoId, PkgVersion, SourceRef), `versions.rs`
 - [ ] `sources/process.rs`: absolute exe resolution, argv only, `CREATE_NO_WINDOW`, Job Object streaming, `\r`/`\n` split, ANSI strip
-- [ ] Capture fixtures: winget list/upgrade/search/show (en, de, ja, truncated `…`), choco v1/v2 list/outdated
-- [ ] winget table parser (separator-based columns, display-width slicing, locale-agnostic) + `winget export` truncation resolution
-- [ ] winget argv builder (no `--force`, no `--all`, `--exact --source winget`), self-exclusion
-- [ ] choco source: `list -r` / `outdated -r` with v1/v2 detection, OData search over HTTPS, argv builder
-- [ ] `settings/` store: schema v1, atomic writes, migrations, unknown-version read-only
-- [ ] ts-rs bindings into `app/src/lib/ipc/bindings` + CI diff check
-- [ ] Commands: `get_overview` (full), `get_diagnostics`, `list_installed`, `list_updates`, `search` (unmerged)
+- [x] Capture fixtures: winget list/upgrade/search/show (en, de, ja, truncated `…`), choco v1/v2 list/outdated
+- [x] winget table parser (separator-based columns, display-width slicing, locale-agnostic) + `winget export` truncation resolution
+- [x] winget argv builder (no `--force`, no `--all`, `--exact --source winget`), self-exclusion
+- [x] choco source: `list -r` / `outdated -r` with v1/v2 detection, OData search over HTTPS, argv builder
+- [x] `settings/` store: schema v1, atomic writes, migrations, unknown-version read-only
+- [x] ts-rs bindings into `app/src/lib/ipc/bindings` + CI diff check
+- [x] Commands: `get_overview` (full), `get_diagnostics`, `list_installed`, `list_updates`, `search` (unmerged)
 
 ## P2: Combined catalog
 - [ ] `catalog/normalize.rs` + tests (incl. must-not-merge near misses)

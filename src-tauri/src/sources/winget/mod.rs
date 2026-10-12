@@ -63,9 +63,12 @@ impl<R: Runner> WingetSource<R> {
     }
 
     /// Rows from a query, treating "no table" as empty when winget says nothing matched.
-    async fn query(&self, args: Vec<String>, secs: u64) -> AppResult<Vec<Row>> {
+    async fn query(&self, args: Vec<String>, secs: u64, has_source: bool) -> AppResult<Vec<Row>> {
         let out = self.run(args, secs).await?;
-        let rows: Vec<Row> = parse_tables(&out.stdout).into_iter().flatten().collect();
+        let rows: Vec<Row> = parse_tables(&out.stdout, has_source)
+            .into_iter()
+            .flatten()
+            .collect();
         if rows.is_empty() && !matches!(out.code, Some(0) | Some(NO_APPLICATIONS_FOUND)) {
             return Err(AppError::new(
                 "process_failed",
@@ -77,7 +80,7 @@ impl<R: Runner> WingetSource<R> {
 
     pub async fn list_installed(&self) -> AppResult<Vec<InstalledPackage>> {
         let rows = self
-            .resolve_truncated(self.query(args::list(), 90).await?)
+            .resolve_truncated(self.query(args::list(), 90, true).await?)
             .await;
         Ok(rows
             .into_iter()
@@ -96,7 +99,10 @@ impl<R: Runner> WingetSource<R> {
 
     pub async fn list_upgrades(&self, include_unknown: bool) -> AppResult<Vec<UpgradeCandidate>> {
         let rows = self
-            .resolve_truncated(self.query(args::upgrade(include_unknown), 120).await?)
+            .resolve_truncated(
+                self.query(args::upgrade(include_unknown), 120, true)
+                    .await?,
+            )
             .await;
         Ok(rows
             .into_iter()
@@ -114,10 +120,11 @@ impl<R: Runner> WingetSource<R> {
     }
 
     pub async fn search(&self, q: &SearchQuery) -> AppResult<Vec<SourcePackage>> {
-        let rows = self.query(args::search(q.as_str()), 60).await?;
+        // `--source winget` is fixed, so there is no Source column; every row is winget.
+        let rows = self.query(args::search(q.as_str()), 60, false).await?;
         Ok(rows
             .into_iter()
-            .filter(|r| r.source.as_deref() == Some("winget") && valid(&r.id))
+            .filter(|r| valid(&r.id))
             .map(|r| SourcePackage {
                 version: (!r.version.is_empty() && r.version != "Unknown").then_some(r.version),
                 name: r.name,
@@ -208,8 +215,9 @@ mod tests {
     const UPGRADE_SELF: &str = include_str!("../../../tests/fixtures/winget/upgrade-self.en.txt");
     const TRUNC: &str = include_str!("../../../tests/fixtures/winget/upgrade-truncated.en.txt");
     const TRUNC_EXPORT: &str = include_str!("../../../tests/fixtures/winget/export-truncated.json");
-    const SEARCH_CODE: &str = include_str!("../../../tests/fixtures/winget/search-code.en.txt");
     const NO_RESULTS: &str = include_str!("../../../tests/fixtures/winget/no-results.en.txt");
+    const SEARCH_SOURCED: &str =
+        include_str!("../../../tests/fixtures/winget/search-firefox-sourced.en.txt");
 
     fn src(r: FakeRunner) -> WingetSource<FakeRunner> {
         WingetSource::new(r, Some(r"C:\fake\winget.exe".into()))
@@ -293,21 +301,31 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn search_keeps_only_winget_rows_and_passes_source() {
-        let s = src(FakeRunner::new().on("search", 0, SEARCH_CODE));
+    async fn search_pins_winget_source_so_msstore_never_appears() {
+        let s = src(FakeRunner::new().on("search", 0, SEARCH_SOURCED));
         let r = s
-            .search(&SearchQuery::try_from("code".to_string()).unwrap())
+            .search(&SearchQuery::try_from("firefox".to_string()).unwrap())
             .await
             .unwrap();
         assert!(!r.is_empty());
         assert!(r.iter().all(|p| p.source == SourceKind::Winget));
-        assert!(
-            r.iter().all(|p| p.id != "XPDM24HMT29WSS"),
-            "msstore rows must be excluded"
-        );
         let call = &s.runner.calls()[0];
-        assert_eq!(&call[..3], ["search", "--query", "code"]);
+        assert_eq!(&call[..3], ["search", "--query", "firefox"]);
         assert!(call.windows(2).any(|w| w == ["--source", "winget"]));
+    }
+
+    /// Real output of `search --source winget`: winget omits the Source column (found live).
+    #[tokio::test]
+    async fn search_with_source_flag_has_no_source_column() {
+        let s = src(FakeRunner::new().on("search", 0, SEARCH_SOURCED));
+        let r = s
+            .search(&SearchQuery::try_from("firefox".to_string()).unwrap())
+            .await
+            .unwrap();
+        assert!(r.len() >= 40, "got {}", r.len());
+        assert_eq!(r[0].id, "Mozilla.Firefox");
+        assert_eq!(r[0].version.as_deref(), Some("157.0.1"));
+        assert_eq!(r[0].matched_on.as_deref(), Some("Moniker: firefox"));
     }
 
     #[tokio::test]

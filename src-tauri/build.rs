@@ -1,7 +1,15 @@
 use std::process::Command;
 
 /// Every #[tauri::command] must be listed here AND granted as `allow-<kebab-name>` in capabilities/main.json.
-const COMMANDS: &[&str] = &["get_overview"];
+const COMMANDS: &[&str] = &[
+    "get_overview",
+    "get_diagnostics",
+    "list_installed",
+    "list_updates",
+    "search",
+    "get_settings",
+    "update_settings",
+];
 
 fn git(args: &[&str]) -> Option<String> {
     let out = Command::new("git").args(args).output().ok()?;

@@ -67,7 +67,7 @@ fn aligned(cells: &[(usize, char, usize)], starts: &[usize]) -> bool {
     starts.iter().skip(1).filter(|&&s| s < width).all(|&s| {
         cells
             .iter()
-            .find(|(o, _, w)| *o <= s - 1 && s - 1 < o + (*w).max(1))
+            .find(|(o, _, w)| *o < s && s - 1 < o + (*w).max(1))
             .is_some_and(|(_, c, _)| *c == ' ')
     })
 }
@@ -82,16 +82,17 @@ fn slice(cells: &[(usize, char, usize)], from: usize, to: Option<usize>) -> Stri
         .to_string()
 }
 
-fn to_row(cols: Vec<String>) -> Option<Row> {
+fn to_row(cols: Vec<String>, has_source: bool) -> Option<Row> {
     let get = |i: usize| cols.get(i).cloned().unwrap_or_default();
     let opt = |s: String| (!s.is_empty()).then_some(s);
     let (name, id, version) = (get(0), get(1), get(2));
     if name.is_empty() || id.is_empty() {
         return None;
     }
-    let (extra, source) = match cols.len() {
-        n if n >= 5 => (opt(get(3)), opt(get(n - 1))),
-        4 => (None, opt(get(3))),
+    let (extra, source) = match (cols.len(), has_source) {
+        (n, true) if n >= 5 => (opt(get(3)), opt(get(n - 1))),
+        (4, true) => (None, opt(get(3))),
+        (n, false) if n >= 4 => (opt(get(3)), None),
         _ => (None, None),
     };
     Some(Row {
@@ -104,7 +105,9 @@ fn to_row(cols: Vec<String>) -> Option<Row> {
 }
 
 /// Every table in the output (winget can print a second "explicit targeting" table).
-pub fn parse_tables(stdout: &str) -> Vec<Vec<Row>> {
+/// `has_source` is false when the command fixed the source (`--source winget`): winget then
+/// omits the Source column, so a 4th column is Match/Available, not Source.
+pub fn parse_tables(stdout: &str, has_source: bool) -> Vec<Vec<Row>> {
     let lines: Vec<String> = stdout.split('\n').map(normalize).collect();
     let mut tables = Vec::new();
     let mut i = 0;
@@ -130,7 +133,7 @@ pub fn parse_tables(stdout: &str) -> Vec<Vec<Row>> {
             let cols = (0..starts.len())
                 .map(|k| slice(&cells, starts[k], starts.get(k + 1).copied()))
                 .collect();
-            match to_row(cols) {
+            match to_row(cols, has_source) {
                 Some(r) => rows.push(r),
                 None => break,
             }
@@ -157,7 +160,7 @@ mod tests {
     const NO_RESULTS: &str = include_str!("../../../tests/fixtures/winget/no-results.en.txt");
 
     fn rows(s: &str) -> Vec<Row> {
-        parse_tables(s).into_iter().flatten().collect()
+        parse_tables(s, true).into_iter().flatten().collect()
     }
 
     #[test]
@@ -238,7 +241,7 @@ mod tests {
 
     #[test]
     fn no_table_means_no_rows() {
-        assert!(parse_tables(NO_RESULTS).is_empty());
-        assert!(parse_tables("").is_empty());
+        assert!(parse_tables(NO_RESULTS, true).is_empty());
+        assert!(parse_tables("", false).is_empty());
     }
 }

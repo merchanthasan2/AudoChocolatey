@@ -47,3 +47,5 @@ jobs:
         run: cargo clippy --all-targets -- -D warnings
       - working-directory: src-tauri
         run: cargo test
+      - name: Generated TypeScript bindings are committed
+        run: git diff --exit-code -- app/src/lib/ipc/bindings

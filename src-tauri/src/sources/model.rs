@@ -59,6 +59,7 @@ pub struct SourceStatus {
     pub state: SourceState,
 }
 
+#[allow(dead_code)] // wired into the job queue in P3
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, TS)]
 #[serde(rename_all = "lowercase")]
 #[ts(export)]
@@ -68,6 +69,7 @@ pub enum OpKind {
     Uninstall,
 }
 
+#[allow(dead_code)] // wired into the job queue in P3
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export)]

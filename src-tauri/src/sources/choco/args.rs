@@ -5,6 +5,7 @@ use crate::error::{AppError, AppResult};
 use crate::ids::SourceKind;
 use crate::sources::model::{OpKind, OpRequest};
 
+#[allow(dead_code)] // wired into the job queue in P3
 pub fn build_op(op: &OpRequest) -> AppResult<Vec<String>> {
     if op.target.source != SourceKind::Choco {
         return Err(AppError::new("invalid_input", "not a Chocolatey package"));

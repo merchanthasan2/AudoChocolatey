@@ -33,10 +33,6 @@ impl SettingsStore {
         self.read_only
     }
 
-    pub fn path(&self) -> &PathBuf {
-        &self.path
-    }
-
     pub fn apply(&mut self, patch: SettingsPatch) -> AppResult<Settings> {
         if self.read_only {
             return Err(AppError::new(

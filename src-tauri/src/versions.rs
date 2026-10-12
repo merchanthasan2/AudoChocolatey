@@ -1,3 +1,5 @@
+#![allow(dead_code)] // used by update rules (skip-version expiry) in P3
+
 use std::cmp::Ordering;
 
 /// Loose version ordering for package versions: numeric segments compare numerically,

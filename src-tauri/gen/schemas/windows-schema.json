@@ -177,16 +177,88 @@
       "description": "Permission identifier",
       "oneOf": [
         {
+          "description": "Enables the get_diagnostics command without any pre-configured scope.",
+          "type": "string",
+          "const": "allow-get-diagnostics",
+          "markdownDescription": "Enables the get_diagnostics command without any pre-configured scope."
+        },
+        {
           "description": "Enables the get_overview command without any pre-configured scope.",
           "type": "string",
           "const": "allow-get-overview",
           "markdownDescription": "Enables the get_overview command without any pre-configured scope."
         },
         {
+          "description": "Enables the get_settings command without any pre-configured scope.",
+          "type": "string",
+          "const": "allow-get-settings",
+          "markdownDescription": "Enables the get_settings command without any pre-configured scope."
+        },
+        {
+          "description": "Enables the list_installed command without any pre-configured scope.",
+          "type": "string",
+          "const": "allow-list-installed",
+          "markdownDescription": "Enables the list_installed command without any pre-configured scope."
+        },
+        {
+          "description": "Enables the list_updates command without any pre-configured scope.",
+          "type": "string",
+          "const": "allow-list-updates",
+          "markdownDescription": "Enables the list_updates command without any pre-configured scope."
+        },
+        {
+          "description": "Enables the search command without any pre-configured scope.",
+          "type": "string",
+          "const": "allow-search",
+          "markdownDescription": "Enables the search command without any pre-configured scope."
+        },
+        {
+          "description": "Enables the update_settings command without any pre-configured scope.",
+          "type": "string",
+          "const": "allow-update-settings",
+          "markdownDescription": "Enables the update_settings command without any pre-configured scope."
+        },
+        {
+          "description": "Denies the get_diagnostics command without any pre-configured scope.",
+          "type": "string",
+          "const": "deny-get-diagnostics",
+          "markdownDescription": "Denies the get_diagnostics command without any pre-configured scope."
+        },
+        {
           "description": "Denies the get_overview command without any pre-configured scope.",
           "type": "string",
           "const": "deny-get-overview",
           "markdownDescription": "Denies the get_overview command without any pre-configured scope."
+        },
+        {
+          "description": "Denies the get_settings command without any pre-configured scope.",
+          "type": "string",
+          "const": "deny-get-settings",
+          "markdownDescription": "Denies the get_settings command without any pre-configured scope."
+        },
+        {
+          "description": "Denies the list_installed command without any pre-configured scope.",
+          "type": "string",
+          "const": "deny-list-installed",
+          "markdownDescription": "Denies the list_installed command without any pre-configured scope."
+        },
+        {
+          "description": "Denies the list_updates command without any pre-configured scope.",
+          "type": "string",
+          "const": "deny-list-updates",
+          "markdownDescription": "Denies the list_updates command without any pre-configured scope."
+        },
+        {
+          "description": "Denies the search command without any pre-configured scope.",
+          "type": "string",
+          "const": "deny-search",
+          "markdownDescription": "Denies the search command without any pre-configured scope."
+        },
+        {
+          "description": "Denies the update_settings command without any pre-configured scope.",
+          "type": "string",
+          "const": "deny-update-settings",
+          "markdownDescription": "Denies the update_settings command without any pre-configured scope."
         },
         {
           "description": "Default core plugins set.\n#### This default permission set includes:\n\n- `core:path:default`\n- `core:event:default`\n- `core:window:default`\n- `core:webview:default`\n- `core:app:default`\n- `core:image:default`\n- `core:resources:default`\n- `core:menu:default`\n- `core:tray:default`",

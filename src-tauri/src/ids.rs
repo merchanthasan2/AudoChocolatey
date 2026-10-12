@@ -69,6 +69,7 @@ validated_string!(ChocoId, CHOCO_ID, "Chocolatey package id");
 validated_string!(PkgVersion, VERSION, "package version");
 
 /// A package in a specific source; the id is validated against that source's rules.
+#[allow(dead_code)] // wired into the job queue in P3
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize, TS)]
 #[serde(try_from = "RawSourceRef")]
 #[ts(export)]
@@ -77,12 +78,14 @@ pub struct SourceRef {
     pub id: String,
 }
 
+#[allow(dead_code)] // wired into the job queue in P3
 #[derive(Deserialize)]
 struct RawSourceRef {
     source: SourceKind,
     id: String,
 }
 
+#[allow(dead_code)] // wired into the job queue in P3
 impl SourceRef {
     pub fn new(source: SourceKind, id: impl Into<String>) -> AppResult<Self> {
         let id = id.into();
