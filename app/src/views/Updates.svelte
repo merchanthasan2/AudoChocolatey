@@ -1,7 +1,10 @@
 <script lang="ts">
+  import { SvelteSet } from 'svelte/reactivity';
   import { updates, queue } from '../lib/stores/app.svelte';
+  import type { UpgradeCandidate } from '../lib/ipc/commands';
   import AppRow from '../lib/components/AppRow.svelte';
   import JobButton from '../lib/components/JobButton.svelte';
+  import Checkbox from '../lib/components/Checkbox.svelte';
   import Skeleton from '../lib/components/Skeleton.svelte';
   import EmptyState from '../lib/components/EmptyState.svelte';
   import Banner from '../lib/components/Banner.svelte';
@@ -11,16 +14,35 @@
   import { collapse, rise } from '../lib/motion';
   import { uniqueKeys } from '../lib/logic/uniqueKeys';
 
-  // Rows finish and leave; the list keeps pending updates plus anything still running.
-  const rows = $derived(
-    updates.items.filter((u) => {
-      const j = queue.jobFor(u.source, u.id, 'upgrade');
-      return !j || j.phase !== 'succeeded';
-    }),
-  );
-  const pending = $derived(rows.filter((u) => !queue.jobFor(u.source, u.id, 'upgrade') || ['failed', 'cancelled'].includes(queue.jobFor(u.source, u.id, 'upgrade')!.phase)));
+  const jobOf = (u: UpgradeCandidate) => queue.jobFor(u.source, u.id, 'upgrade');
+  const isBusy = (u: UpgradeCandidate) => {
+    const j = jobOf(u);
+    return !!j && !['succeeded', 'failed', 'cancelled', 'skipped'].includes(j.phase);
+  };
+
+  // Finished rows leave the list (with a collapse); everything else stays, including running ones.
+  const rows = $derived(updates.items.filter((u) => jobOf(u)?.phase !== 'succeeded'));
   const keys = $derived(uniqueKeys(rows, (u) => `${u.source}:${u.id}`));
-  const busy = $derived(queue.active.some((j) => j.op.kind === 'upgrade'));
+  const idle = $derived(rows.filter((u) => !isBusy(u)));
+
+  const selected = new SvelteSet<string>();
+  // Drop selections for rows that disappeared or started running.
+  $effect(() => {
+    const live = new Set(rows.map((u, i) => (isBusy(u) ? '' : keys[i])));
+    for (const k of [...selected]) if (!live.has(k)) selected.delete(k);
+  });
+  const selectedRows = $derived(rows.filter((_, i) => selected.has(keys[i])));
+  const allSelected = $derived(idle.length > 0 && selectedRows.length === idle.length);
+
+  function toggleAll(on: boolean) {
+    selected.clear();
+    if (on) rows.forEach((u, i) => { if (!isBusy(u)) selected.add(keys[i]); });
+  }
+  function updateSelected() {
+    const list = selectedRows;
+    selected.clear();
+    queue.updateMany(list);
+  }
 
   let now = $state(Date.now());
   $effect(() => {
@@ -28,28 +50,37 @@
     return () => clearInterval(t);
   });
   const sourceText = (s: string) => (s === 'winget' ? 'winget' : 'Chocolatey');
+  const batchPct = $derived(queue.batchJobs.length ? (queue.batchDone / queue.batchJobs.length) * 100 : 0);
 </script>
 
 <header class="head">
-  <div>
+  <div class="title">
     <h1>
       {#if !updates.loaded}Checking for updates…{:else if rows.length === 0}Everything is up to date{:else}<CountRoll value={rows.length} /> {rows.length === 1 ? 'update' : 'updates'} ready{/if}
     </h1>
     <p class="muted">
-      {#if updates.loading}Checking now…{:else if updates.loadedAt}Checked {relativeTime(updates.loadedAt, now)}{/if}
+      {#if queue.batchRunning}
+        Updating {Math.min(queue.batchDone + 1, queue.batchJobs.length)} of {queue.batchJobs.length}…
+      {:else if updates.loading}Checking now…{:else if updates.loadedAt}Checked {relativeTime(updates.loadedAt, now)}{/if}
     </p>
   </div>
   <div class="actions">
-    <button class="btn btn-quiet" onclick={() => updates.refresh()} disabled={updates.loading} aria-label="Check again">
+    <button class="btn btn-quiet" onclick={() => updates.refresh()} disabled={updates.loading}>
       <span class:spinning={updates.loading}><Icon name="refresh" size={16} /></span> Check again
     </button>
-    {#if pending.length > 0}
-      <button class="btn btn-primary" onclick={() => queue.updateAll()} disabled={busy && pending.length === 0}>
-        Update all
-      </button>
+    {#if selectedRows.length > 0}
+      <button class="btn btn-primary" onclick={updateSelected}>Update {selectedRows.length} selected</button>
+    {:else if idle.length > 0}
+      <button class="btn btn-primary" onclick={() => queue.updateMany(idle)}>Update all</button>
     {/if}
   </div>
 </header>
+
+{#if queue.batchRunning}
+  <div class="batch" in:rise={{ y: 6 }}>
+    <div class="batch-bar"><i style="width:{Math.max(4, batchPct)}%"></i></div>
+  </div>
+{/if}
 
 {#each updates.sourceErrors as e (e.source)}
   <div class="gap"><Banner text={`Couldn't check ${sourceText(e.source)}: ${e.message}`} action={{ label: 'Try again', run: () => updates.refresh() }} /></div>
@@ -62,10 +93,20 @@
   <EmptyState icon="check" tone="good" title="You're all set" body="Every app we can update is on its latest version. We'll keep checking in the background." />
 {:else}
   <div class="card list">
+    <div class="list-head">
+      <Checkbox label="Select all updates" checked={allSelected} indeterminate={selectedRows.length > 0 && !allSelected}
+        disabled={idle.length === 0} onchange={(v) => toggleAll(v)} />
+      <span class="muted">{selectedRows.length > 0 ? `${selectedRows.length} selected` : 'Select apps to update, or update everything'}</span>
+    </div>
     {#each rows as u, i (keys[i])}
-      {@const job = queue.jobFor(u.source, u.id, 'upgrade')}
-      <div in:rise={{ delay: Math.min(i, 8) * 40 }} out:collapse>
-        <AppRow name={u.name} meta="{u.installedVersion} → {u.availableVersion} · {sourceText(u.source)}" {job} mode="update">
+      {@const job = jobOf(u)}
+      <div class="row-wrap" in:rise={{ delay: Math.min(i, 8) * 40 }} out:collapse>
+        <AppRow name={u.name} meta="{u.installedVersion} → {u.availableVersion} · {sourceText(u.source)}" {job} mode="update" bar
+          iconKey="{u.source}:{u.id}">
+          {#snippet lead()}
+            <Checkbox label="Select {u.name}" checked={selected.has(keys[i])} disabled={isBusy(u)}
+              onchange={(v) => (v ? selected.add(keys[i]) : selected.delete(keys[i]))} />
+          {/snippet}
           {#snippet action()}
             <JobButton {job} mode="update" name={u.name}
               onstart={() => queue.update(u)} oncancel={(id) => queue.cancel(id)} onretry={(id) => queue.retry(id)} />
@@ -77,10 +118,14 @@
 {/if}
 
 <style>
-  .head { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; margin-bottom: 22px; }
-  .head p { margin-top: 4px; }
+  .head { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; margin-bottom: 18px; }
+  .title p { margin-top: 4px; }
   .actions { display: flex; gap: 8px; }
   .gap { margin-bottom: 12px; }
+  .batch { margin: -6px 0 16px; }
+  .batch-bar { height: 6px; border-radius: 6px; background: var(--hairline-strong); overflow: hidden; }
+  .batch-bar i { display: block; height: 100%; border-radius: 6px; background: var(--accent); transition: width 500ms var(--spring); }
+  .list-head { display: flex; align-items: center; gap: 14px; padding: 10px 16px; border-bottom: 1px solid var(--hairline); font-size: 12.5px; }
   .spinning { display: inline-grid; animation: spin 0.9s linear infinite; }
   @keyframes spin { to { transform: rotate(360deg); } }
 </style>

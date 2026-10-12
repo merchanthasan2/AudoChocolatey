@@ -6,8 +6,8 @@
   let { onqueue }: { onqueue: () => void } = $props();
 
   const items: { view: View; label: string; icon: string }[] = [
-    { view: 'marketplace', label: 'Marketplace', icon: 'bag' },
     { view: 'updates', label: 'Updates', icon: 'updates' },
+    { view: 'marketplace', label: 'Marketplace', icon: 'bag' },
     { view: 'installed', label: 'Installed', icon: 'grid' },
     { view: 'settings', label: 'Settings', icon: 'sliders' },
   ];

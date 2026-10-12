@@ -16,7 +16,7 @@ const message = (e: unknown) => (e as { message?: string })?.message ?? String(e
 /* ---------------------------------------------------------------- router */
 export type View = 'marketplace' | 'updates' | 'installed' | 'settings';
 class Router {
-  view = $state<View>('marketplace');
+  view = $state<View>('updates');
   go(v: View) { this.view = v; }
 }
 export const router = new Router();
@@ -148,8 +148,24 @@ class QueueStore {
   install(p: { source: SourceKind; id: string; name: string }) { return this.#enqueue('install', p.source, p.id, p.name); }
   update(c: UpgradeCandidate) { return this.#enqueue('upgrade', c.source, c.id, c.name); }
   uninstall(p: { source: SourceKind; id: string; name: string }) { return this.#enqueue('uninstall', p.source, p.id, p.name); }
+  /** Job ids of the last "Update all/selected" run, for the "Updating 2 of 5" header. */
+  batch = $state<string[]>([]);
+  batchJobs = $derived(this.batch.map((id) => this.jobs.find((j) => j.id === id)).filter((j): j is Job => !!j));
+  batchDone = $derived(this.batchJobs.filter((j) => FINISHED.has(j.phase)).length);
+  batchRunning = $derived(this.batchJobs.length > 0 && this.batchDone < this.batchJobs.length);
+
   async updateAll() {
-    try { await api.updateAll(); } catch (e) { toasts.push({ text: message(e), tone: 'error' }); }
+    try { this.batch = await api.updateAll(); } catch (e) { toasts.push({ text: message(e), tone: 'error' }); }
+  }
+  async updateMany(list: UpgradeCandidate[]) {
+    if (list.length === 0) return;
+    try {
+      this.batch = await api.enqueue(
+        list.map((c) => ({ op: { kind: 'upgrade', target: { source: c.source, id: c.id }, version: null }, displayName: c.name })),
+      );
+    } catch (e) {
+      toasts.push({ text: message(e), tone: 'error' });
+    }
   }
   async cancel(id: string) {
     try { await api.cancelJob(id); } catch (e) { toasts.push({ text: message(e), tone: 'error' }); }

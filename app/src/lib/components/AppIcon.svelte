@@ -1,12 +1,21 @@
 <script lang="ts">
   import { monogram } from '../logic/monogram';
-  let { name, size = 40 }: { name: string; size?: number } = $props();
+  let { name, size = 40, iconKey }: { name: string; size?: number; iconKey?: string } = $props();
   const m = $derived(monogram(name));
+  // Real icon from the app itself (served by the Rust icon cache); the tile shows until it loads
+  // and stays if no original icon exists.
+  let failed = $state(false);
+  let loaded = $state(false);
+  $effect(() => { void iconKey; failed = false; loaded = false; });
+  const src = $derived(iconKey ? `http://icon.localhost/${encodeURIComponent(iconKey)}` : null);
 </script>
 
-<!-- Colour tile until real icons arrive (P5). Hue is stable per app name. -->
-<div class="tile" style="--h:{m.hue};--s:{size}px" aria-hidden="true">
-  <span>{m.letters}</span>
+<div class="tile" class:has-img={loaded} style="--h:{m.hue};--s:{size}px" aria-hidden="true">
+  {#if src && !failed}
+    <img {src} alt="" draggable="false" loading="lazy" decoding="async"
+      onload={() => (loaded = true)} onerror={() => (failed = true)} class:show={loaded} />
+  {/if}
+  {#if !loaded}<span>{m.letters}</span>{/if}
 </div>
 
 <style>
@@ -18,6 +27,10 @@
     box-shadow: inset 0 0 0 1px hsl(var(--h) 40% 50% / 0.12);
     color: hsl(var(--h) 48% 28%);
   }
+  .tile { position: relative; overflow: hidden; }
+  .tile.has-img { background: transparent !important; box-shadow: none !important; border-radius: 0; }
+  img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; opacity: 0; transition: opacity 180ms ease; }
+  img.show { opacity: 1; }
   span { font-family: var(--font-display); font-weight: 700; font-size: calc(var(--s) * 0.36); letter-spacing: -0.02em; }
   :global(:root[data-theme='dark']) .tile {
     background: linear-gradient(160deg, hsl(var(--h) 30% 30%), hsl(var(--h) 34% 22%));
