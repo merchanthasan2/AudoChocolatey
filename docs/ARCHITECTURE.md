@@ -1,6 +1,6 @@
 > **Transitional (v3 rebuild in progress).** The sections below describe v2 and are being replaced phase by phase.
 > Current target architecture: docs/superpowers/specs/2026-10-12-quantum-updater-v3-redesign-design.md §5.
-> As of P0: Tauri shell + Svelte `app/`, single command `get_overview`; Python runtime and `web/` removed. Full rewrite lands in P8.
+> As of P1: Tauri shell + Svelte `app/`; Rust `sources/` (process runner, winget and Chocolatey sources), `settings/` store, and the commands get_overview, get_diagnostics, list_installed, list_updates, search, get_settings, update_settings (ts-rs typed). Python and `web/` removed. Full rewrite lands in P8.
 
 # Architecture Documentation: Quantum Updater
 **Publisher:** Quantum Step ([quantumstep.in](https://quantumstep.in))  

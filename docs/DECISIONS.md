@@ -114,3 +114,20 @@
 ### ADR 018: Living Plan
 - **Status:** Accepted
 - **Decision:** `docs/PLAN.md` is the live tracker. Every task ticks its box in the same commit, and deviations go in its "Course corrections" log.
+
+### ADR 019: Package-Manager Output Parsing (P1)
+- **Status:** Accepted
+- **Context:** Real winget 1.29 output on the owner's PC showed several things the spec didn't expect:
+  - piped output is not truncated;
+  - header words can be separated by a single space;
+  - `search --source winget` drops the Source column;
+  - `winget list` includes local-only `ARP\...`/`MSIX\...` rows.
+  
+  Non-elevated Chocolatey also mixes retry noise into `-r` output.
+- **Decision:**
+  - **winget columns:** each column starts at the display-width offset of a header token. Columns are assigned by position (Name, Id, Version, [Available|Match], [Source]), so header text, and therefore the display language, doesn't matter. The caller says whether a Source column exists.
+  - **Row validation:** a row must have spaces at the column boundaries, which rejects footers.
+  - **Local-only rows** are display-only (`source: null`).
+  - **Truncated `…` ids** are resolved via `winget export`, otherwise dropped.
+  - **Chocolatey:** only `<valid-id>|...` lines are accepted. Search uses the community OData feed over HTTPS (native TLS, system proxy), with `$filter=IsLatestVersion`.
+- **Consequences:** The parser works in any Windows language and on CJK app names. The fixtures in `src-tauri/tests/fixtures/` are the contract; recapture them when winget changes (see DEVELOPMENT.md).

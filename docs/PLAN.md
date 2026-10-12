@@ -5,12 +5,12 @@
 > **Spec:** [superpowers/specs/2026-10-12-quantum-updater-v3-redesign-design.md](superpowers/specs/2026-10-12-quantum-updater-v3-redesign-design.md)
 > **Detailed phase plans:** `docs/superpowers/plans/`. Each phase's plan is written just before the phase starts, because it depends on code from earlier phases.
 
-**Status:** P0 done · P1 next · **Last updated:** 2026-10-12
+**Status:** P0, P1 done · P2 next · **Last updated:** 2026-10-12
 
 | Phase | Name | Status | Detailed plan |
 |---|---|---|---|
 | P0 | Cleanup and foundation | Done (merged to main; UAC + build SHA confirmed by owner) | [p0-foundation](superpowers/plans/2026-10-12-p0-foundation.md) |
-| P1 | Rust core and sources | Not started | (to be written) |
+| P1 | Rust core and sources | Done (branch v3/p1-core) | [p1-rust-core](superpowers/plans/2026-10-12-p1-rust-core.md) |
 | P2 | Combined catalog | Not started | (to be written) |
 | P3 | Queue and real progress | Not started | (to be written) |
 | P4 | New interface (Warm Store + springy motion) | Not started | (to be written) |
@@ -33,7 +33,7 @@ Goal: one runtime, a fresh Svelte shell, admin manifest really embedded, locked-
 
 ## P1: Rust core and sources
 - [x] `error.rs` (`AppError{code,message}`), `ids.rs` validated newtypes (WingetId, ChocoId, PkgVersion, SourceRef), `versions.rs`
-- [ ] `sources/process.rs`: absolute exe resolution, argv only, `CREATE_NO_WINDOW`, Job Object streaming, `\r`/`\n` split, ANSI strip
+- [x] `sources/process.rs`: absolute exe resolution, argv only, `CREATE_NO_WINDOW`, timeouts, ANSI strip (Job Object streaming moved to P3)
 - [x] Capture fixtures: winget list/upgrade/search/show (en, de, ja, truncated `…`), choco v1/v2 list/outdated
 - [x] winget table parser (separator-based columns, display-width slicing, locale-agnostic) + `winget export` truncation resolution
 - [x] winget argv builder (no `--force`, no `--all`, `--exact --source winget`), self-exclusion
@@ -50,6 +50,7 @@ Goal: one runtime, a fresh Svelte shell, admin manifest really embedded, locked-
 - [ ] Commands: `marketplace_home`, `marketplace_category`, merged `search` + `search://partial`, `get_app`
 
 ## P3: Queue and real progress
+- [ ] Streaming runner: Job Object (kill the whole process tree), split output on CR and LF (moved from P1)
 - [ ] `jobs/model.rs` state machine + tests; `jobs/worker.rs` single FIFO worker
 - [ ] `Global\_MSIExecute` wait; Job Object cancel; installing not cancellable
 - [ ] `jobs/persist.rs` atomic `jobs.json`, history 200, startup recovery
@@ -112,3 +113,8 @@ Goal: one runtime, a fresh Svelte shell, admin manifest really embedded, locked-
 | 2026-10-12 | Deferred to P6: `tray-icon` feature unused until then; trim unused window capabilities if the UI doesn't need them | Review minors |
 | 2026-10-12 | Owner ran the release exe: UAC prompt, "Running as admin: Yes", build `14557bcd` = HEAD | Closes the last P0 check |
 | 2026-10-12 | Owner chose to keep the phase order (engine P1–P3 before interface P4) | Offered to build the interface first on sample data; declined |
+| 2026-10-12 | P1: no truncation when winget output is piped; header gaps can be one space, so columns come from header-token offsets | Observed on owner PC (winget 1.29.380) |
+| 2026-10-12 | P1: `winget search --source winget` omits the Source column; parser takes `has_source` | Found by live check, regression test added |
+| 2026-10-12 | P1: reqwest uses native-tls (SChannel) + system proxy, not rustls | rustls pulls aws-lc-sys (CMake/NASM); SChannel uses the Windows cert store |
+| 2026-10-12 | P1: concrete WingetSource/ChocoSource generic over Runner, no PackageSource trait | Signatures differ; the fake Runner is the test seam |
+| 2026-10-12 | P1: Job Object streaming moved to P3 | P1 only runs short read-only queries |

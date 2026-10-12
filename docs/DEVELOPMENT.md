@@ -36,3 +36,17 @@ Set `WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS=--remote-debugging-port=9222` before 
 4. Add a typed wrapper in `app/src/lib/ipc/commands.ts` (the only file that calls `invoke`).
 
 If you skip step 2 or 3, the call is rejected at runtime. That is intentional.
+
+## Package-manager fixtures
+Parser tests run against captured output in `src-tauri/tests/fixtures/` (stored byte-exact via `.gitattributes`, CRLF included). To recapture on your machine:
+
+    winget list --accept-source-agreements --disable-interactivity > src-tauri/tests/fixtures/winget/list.en.txt
+    winget upgrade --accept-source-agreements --disable-interactivity > src-tauri/tests/fixtures/winget/upgrade.en.txt
+    winget search --query firefox --source winget --count 50 --accept-source-agreements --disable-interactivity > src-tauri/tests/fixtures/winget/search-firefox-sourced.en.txt
+    choco list -r > src-tauri/tests/fixtures/choco/list-r.v2.txt
+    choco outdated -r > src-tauri/tests/fixtures/choco/outdated-r.v2.txt
+
+Exact row counts in the tests (for example `list.en.txt` = 245 rows) must be updated with the recapture. The German and Japanese fixtures are synthetic: they are padded by East-Asian display width independently of the Rust code.
+
+## TypeScript bindings
+Rust IPC types derive `ts_rs::TS`. `cargo test` regenerates `app/src/lib/ipc/bindings/*.ts` (the output folder is set in `src-tauri/.cargo/config.toml`). Commit the regenerated files: CI fails if they differ from what `cargo test` produces.
