@@ -1,6 +1,6 @@
 [package]
 name = "quantum_updater"
-version = "2.0.0"
+version = "3.0.0-alpha.1"
 description = "Quantum Updater - Modern Windows Software & Package Manager by Quantum Step (quantumstep.in)"
 authors = ["Quantum Step <contact@quantumstep.in>"]
 edition = "2021"
