@@ -5,14 +5,14 @@
 > **Spec:** [superpowers/specs/2026-10-12-quantum-updater-v3-redesign-design.md](superpowers/specs/2026-10-12-quantum-updater-v3-redesign-design.md)
 > **Detailed phase plans:** `docs/superpowers/plans/`. Each phase's plan is written just before the phase starts, because it depends on code from earlier phases.
 
-**Status:** P0, P1 done · next: P3 core → P4 → P2 (order changed by owner) · **Last updated:** 2026-10-12
+**Status:** P0, P1, P3 core done · next: P4 interface → P2 → P3 extras (order changed by owner) · **Last updated:** 2026-10-12
 
 | Phase | Name | Status | Detailed plan |
 |---|---|---|---|
 | P0 | Cleanup and foundation | Done (merged to main; UAC + build SHA confirmed by owner) | [p0-foundation](superpowers/plans/2026-10-12-p0-foundation.md) |
 | P1 | Rust core and sources | Done (branch v3/p1-core) | [p1-rust-core](superpowers/plans/2026-10-12-p1-rust-core.md) |
 | P2 | Combined catalog | Not started | (to be written) |
-| P3 | Queue and real progress | Not started | (to be written) |
+| P3 | Queue and real progress | Core done (branch v3/p3-core); extras after P4 | [p3-core-queue](superpowers/plans/2026-10-12-p3-core-queue.md) |
 | P4 | New interface (Warm Store + springy motion) | Not started | (to be written) |
 | P5 | Real icons | Not started | (to be written) |
 | P6 | Background and extras | Not started | (to be written) |
@@ -52,12 +52,15 @@ Goal: one runtime, a fresh Svelte shell, admin manifest really embedded, locked-
 ## P3: Queue and real progress
 - [x] Streaming runner: Job Object (kill the whole process tree), split output on CR and LF (moved from P1)
 - [x] `jobs/model.rs` state machine + tests; `jobs/worker.rs` single FIFO worker
-- [ ] `Global\_MSIExecute` wait; Job Object cancel; installing not cancellable
-- [ ] `jobs/persist.rs` atomic `jobs.json`, history 200, startup recovery
-- [ ] Progress parsers (winget size/percent, choco percent) with fixtures; 10 Hz throttle
-- [ ] Exit-code table verified against winget docs; reboot-required flag; post-success verification
-- [ ] `rules.rs` skip-version / never (auto-expiry); Hidden list
-- [ ] Commands + events: `enqueue`, `update_all`, `install_bundle`, `get_queue`, `cancel_job`, `retry_job`, `pause/resume_queue`, `clear_finished`, `get_job_log`, `list_rules/set_rule/remove_rule`
+- [x] `Global\_MSIExecute` wait; Job Object cancel; installing not cancellable
+- [ ] *(P3 extras)* `jobs/persist.rs` atomic `jobs.json`, history 200, startup recovery
+- [x] Progress parsers (winget phases + download watcher, choco percent) with fixtures; 10 Hz throttle
+- [ ] *(P3 extras)* Real winget download progress via the Delivery Optimization COM API (DO writes the file in one shot)
+- [x] Exit-code table verified against winget docs; reboot-required flag
+- [ ] *(P3 extras)* Post-success version verification
+- [ ] *(P3 extras)* `rules.rs` skip-version / never (auto-expiry); Hidden list
+- [x] Commands + events: `enqueue`, `update_all`, `get_queue`, `cancel_job`, `retry_job`, `clear_finished`, `get_job_log`; `job://changed`, `job://progress`, `queue://changed`
+- [ ] *(P3 extras)* `install_bundle`, `pause/resume_queue`, `list_rules/set_rule/remove_rule`
 
 ## P4: New interface
 - [ ] Tokens: light + dark Warm Store, WCAG AA tuned; bundled Inter / Inter Tight; Lucide glyphs
@@ -119,3 +122,6 @@ Goal: one runtime, a fresh Svelte shell, admin manifest really embedded, locked-
 | 2026-10-12 | P1: concrete WingetSource/ChocoSource generic over Runner, no PackageSource trait | Signatures differ; the fake Runner is the test seam |
 | 2026-10-12 | P1: Job Object streaming moved to P3 | P1 only runs short read-only queries |
 | 2026-10-12 | **Order changed by owner: P3 core, then P4 interface, then P2 / P5–P8** | Owner wants a usable app sooner; P1 already provides real installed/updates/search data. Early builds may list winget and Chocolatey copies of the same app separately until P2 lands |
+| 2026-10-12 | P3: live install of 7-Zip through the queue succeeded; the uninstall command was verified elevated | Owner-approved live test; the PC was left as it was |
+| 2026-10-12 | P3: winget downloads go through Delivery Optimization, which writes the file in one shot, so the winget ring is indeterminate until the file lands | Measured: 0 bytes, then 93 MB in a single step; ADR 021 |
+| 2026-10-12 | P3: persistence/recovery, rules, bundles, pause and post-success verification moved to "P3 extras" after P4 | Owner wants a usable app first |
