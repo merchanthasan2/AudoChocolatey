@@ -44,6 +44,7 @@ impl AppState {
                 winget_temp: std::env::temp_dir().join("WinGet"),
                 sample_every: Duration::from_millis(250),
                 gate_poll: Duration::from_millis(500),
+                download_timeout: Duration::from_secs(60 * 60),
             },
             Arc::new(TauriSink(app)),
         );

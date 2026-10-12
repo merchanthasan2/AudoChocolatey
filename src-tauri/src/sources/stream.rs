@@ -115,6 +115,21 @@ impl KillOnClose {
         }
     }
 
+    /// Keep whatever is still running (e.g. the app a Squirrel installer just launched).
+    fn release(&self) {
+        use windows_sys::Win32::System::JobObjects::*;
+        // SAFETY: valid job handle; zeroed limits clear KILL_ON_JOB_CLOSE.
+        unsafe {
+            let info: JOBOBJECT_EXTENDED_LIMIT_INFORMATION = std::mem::zeroed();
+            SetInformationJobObject(
+                self.0,
+                JobObjectExtendedLimitInformation,
+                (&info as *const JOBOBJECT_EXTENDED_LIMIT_INFORMATION).cast(),
+                std::mem::size_of::<JOBOBJECT_EXTENDED_LIMIT_INFORMATION>() as u32,
+            );
+        }
+    }
+
     fn terminate(&self) {
         // SAFETY: valid job handle.
         unsafe {
@@ -209,20 +224,17 @@ impl StreamRunner for SystemStreamRunner {
                 }
             }
         };
-        // Drain remaining output; anything still holding the pipes after 2 s is killed.
+        // Normal exit: anything the installer left running is the user's now, not ours to kill.
+        if let Some(j) = &job {
+            j.release();
+        }
+        // Drain remaining output briefly; processes still holding the pipes are left alone.
         let drain = async {
             while let Some(line) = rx.recv().await {
                 on_line(line);
             }
         };
-        if tokio::time::timeout(std::time::Duration::from_secs(2), drain)
-            .await
-            .is_err()
-        {
-            if let Some(j) = &job {
-                j.terminate();
-            }
-        }
+        let _ = tokio::time::timeout(std::time::Duration::from_secs(2), drain).await;
         Ok(status.code())
     }
 }
@@ -250,6 +262,9 @@ mod tests {
             timeout,
         }
     }
+
+    /// Tests that count PING.EXE processes must not run concurrently.
+    static PING_TESTS: tokio::sync::Mutex<()> = tokio::sync::Mutex::const_new(());
 
     fn ping_pids() -> Vec<u32> {
         let out = std::process::Command::new(r"C:\Windows\System32\tasklist.exe")
@@ -280,6 +295,7 @@ mod tests {
 
     #[tokio::test]
     async fn cancel_kills_the_whole_process_tree() {
+        let _serial = PING_TESTS.lock().await;
         let before = ping_pids();
         let token = CancellationToken::new();
         let t2 = token.clone();
@@ -310,8 +326,39 @@ mod tests {
         assert!(orphans.is_empty(), "orphaned ping processes: {orphans:?}");
     }
 
+    /// Installers (e.g. Squirrel) launch the app after a successful install; it must keep running.
+    #[tokio::test]
+    async fn processes_left_running_after_normal_exit_survive() {
+        let _serial = PING_TESTS.lock().await;
+        let before = ping_pids();
+        let code = SystemStreamRunner
+            .run(
+                &cmd(
+                    &["/c", "start /b ping -n 8 127.0.0.1 >nul & exit 0"],
+                    Duration::from_secs(30),
+                ),
+                &|_| {},
+                CancellationToken::new(),
+            )
+            .await
+            .unwrap();
+        assert_eq!(code, Some(0));
+        tokio::time::sleep(Duration::from_millis(300)).await;
+        let survivors: Vec<_> = ping_pids()
+            .into_iter()
+            .filter(|p| !before.contains(p))
+            .collect();
+        assert!(!survivors.is_empty(), "the launched process was killed");
+        for p in survivors {
+            let _ = std::process::Command::new(r"C:\Windows\System32\taskkill.exe")
+                .args(["/F", "/PID", &p.to_string()])
+                .output();
+        }
+    }
+
     #[tokio::test]
     async fn timeout_kills_the_tree_too() {
+        let _serial = PING_TESTS.lock().await;
         let before = ping_pids();
         let err = SystemStreamRunner
             .run(
