@@ -122,3 +122,35 @@ describe('jobFor', () => {
     expect(jobFor([done], 'winget', 'Mozilla.Firefox', 'upgrade')).toBeUndefined();
   });
 });
+
+import { uniqueKeys } from './uniqueKeys';
+describe('uniqueKeys', () => {
+  it('keeps duplicates distinct (winget lists x86 and x64 copies under one id)', () => {
+    const keys = uniqueKeys([{ id: 'Microsoft.VCLibs.14' }, { id: 'Git.Git' }, { id: 'Microsoft.VCLibs.14' }], (x) => x.id);
+    expect(keys).toEqual(['Microsoft.VCLibs.14', 'Git.Git', 'Microsoft.VCLibs.14#2']);
+    expect(new Set(keys).size).toBe(3);
+  });
+});
+
+import { tidyResults } from './tidyResults';
+describe('tidyResults', () => {
+  const r = (id: string, name: string, source: 'winget' | 'choco' = 'winget') => ({ id, name, source });
+  it('hides language editions when the main app is present', () => {
+    const out = tidyResults(
+      [r('Mozilla.Firefox', 'Mozilla Firefox (en-US)'), r('Mozilla.Firefox.ach', 'Mozilla Firefox (ach)'),
+       r('Mozilla.Firefox.pt-BR', 'Mozilla Firefox (pt-BR)'), r('Mozilla.Firefox.MSIX', 'Mozilla Firefox (MSIX)')],
+      'firefox',
+    );
+    expect(out.map((x) => x.id)).toEqual(['Mozilla.Firefox', 'Mozilla.Firefox.MSIX']);
+  });
+  it('keeps editions when the main app is missing', () => {
+    expect(tidyResults([r('Foo.Bar.de', 'Foo (de)')], 'foo')).toHaveLength(1);
+  });
+  it('ranks exact and prefix name matches first, across sources', () => {
+    const out = tidyResults(
+      [r('Ghostery.Dawn', 'Ghostery Private Browser'), r('Mozilla.Firefox', 'Mozilla Firefox'), r('firefox', 'Firefox', 'choco')],
+      'firefox',
+    );
+    expect(out.map((x) => x.id)).toEqual(['firefox', 'Mozilla.Firefox', 'Ghostery.Dawn']);
+  });
+});

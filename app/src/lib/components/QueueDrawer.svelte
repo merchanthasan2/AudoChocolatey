@@ -1,0 +1,67 @@
+<script lang="ts">
+  import { queue } from '../stores/app.svelte';
+  import AppRow from './AppRow.svelte';
+  import JobButton from './JobButton.svelte';
+  import Icon from './Icon.svelte';
+  import { fade } from 'svelte/transition';
+  import type { ButtonMode } from '../logic/jobButton';
+  let { open = $bindable(false) }: { open?: boolean } = $props();
+
+  const verb: Record<string, ButtonMode> = { install: 'install', upgrade: 'update', uninstall: 'uninstall' };
+  const kindText: Record<string, string> = { install: 'Install', upgrade: 'Update', uninstall: 'Uninstall' };
+  const jobs = $derived([...queue.jobs].reverse());
+  const hasFinished = $derived(queue.jobs.length > queue.active.length);
+
+  function slide(_node: Element) {
+    const reduced = document.documentElement.dataset.motion === 'reduced';
+    return reduced
+      ? { duration: 140, css: (t: number) => `opacity:${t}` }
+      : { duration: 300, easing: (t: number) => 1 - Math.pow(1 - t, 3), css: (t: number) => `transform:translateX(${(1 - t) * 100}%)` };
+  }
+</script>
+
+<svelte:window onkeydown={(e) => { if (open && e.key === 'Escape') open = false; }} />
+
+{#if open}
+  <button class="scrim" aria-label="Close activity" transition:fade={{ duration: 200 }} onclick={() => (open = false)}></button>
+  <aside class="drawer" transition:slide aria-label="Activity">
+    <header>
+      <h2>Activity</h2>
+      <div class="actions">
+        {#if hasFinished}<button class="btn btn-quiet" onclick={() => queue.clearFinished()}>Clear finished</button>{/if}
+        <button class="icon-btn" aria-label="Close" onclick={() => (open = false)}><Icon name="x" size={16} /></button>
+      </div>
+    </header>
+    <div class="body">
+      {#if jobs.length === 0}
+        <p class="muted empty">Nothing running. Installs and updates will show up here.</p>
+      {:else}
+        <div class="card list">
+          {#each jobs as j (j.id)}
+            <AppRow name={j.displayName} meta="{kindText[j.op.kind]} · {j.op.target.source === 'winget' ? 'winget' : 'Chocolatey'}" job={j} mode={verb[j.op.kind]}>
+              {#snippet action()}
+                <JobButton job={j} mode={verb[j.op.kind]} name={j.displayName}
+                  onstart={() => {}} oncancel={(id) => queue.cancel(id)} onretry={(id) => queue.retry(id)} />
+              {/snippet}
+            </AppRow>
+          {/each}
+        </div>
+      {/if}
+    </div>
+  </aside>
+{/if}
+
+<style>
+  .scrim { position: fixed; inset: 0; background: var(--scrim); z-index: 40; cursor: default; }
+  .drawer {
+    position: fixed; top: 0; right: 0; bottom: 0; width: min(440px, 92vw); z-index: 41;
+    background: var(--canvas); box-shadow: var(--shadow-raised);
+    display: flex; flex-direction: column;
+  }
+  header { display: flex; align-items: center; justify-content: space-between; padding: 22px 20px 14px 24px; }
+  .actions { display: flex; align-items: center; gap: 6px; }
+  .icon-btn { display: grid; place-items: center; width: 32px; height: 32px; border-radius: 50%; color: var(--muted); }
+  .icon-btn:hover { background: var(--pill); color: var(--ink); }
+  .body { overflow: auto; padding: 0 20px 24px; }
+  .empty { padding: 24px 4px; }
+</style>
