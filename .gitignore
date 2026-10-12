@@ -1,42 +1,26 @@
-# Rust & Cargo
+# Rust
 /src-tauri/target/
 **/*.rs.bk
 
-# Node & Tauri
+# Node (package-lock.json IS tracked for reproducible builds)
 node_modules/
-package-lock.json
 
-# Python
-__pycache__/
-*.py[cod]
-*$py.class
-*.spec
-venv/
-.venv/
-env/
-
-# Build artifacts & distribution binaries
+# Build output
 dist/
-build/
 *.exe
 *.msi
-*.setup.exe
 
-# Logs & Temporary files
+# Logs & temp
 *.log
-out.log
-err.log
+*.tmp
 .DS_Store
 Thumbs.db
-*.tmp
 
-# IDE & Editor settings
+# Editors & tools
 .vscode/
 .idea/
 .gemini/
 .agents/*
 !.agents/skills/
-
-
-# Brainstorm mockups
+.playwright-mcp/
 .superpowers/

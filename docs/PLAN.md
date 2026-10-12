@@ -5,11 +5,11 @@
 > **Spec:** [superpowers/specs/2026-10-12-quantum-updater-v3-redesign-design.md](superpowers/specs/2026-10-12-quantum-updater-v3-redesign-design.md)
 > **Detailed phase plans:** `docs/superpowers/plans/`. Each phase's plan is written just before the phase starts, because it depends on code from earlier phases.
 
-**Status:** P0 not started · **Last updated:** 2026-10-12
+**Status:** P0 in progress · **Last updated:** 2026-10-12
 
 | Phase | Name | Status | Detailed plan |
 |---|---|---|---|
-| P0 | Cleanup and foundation | Planned | [p0-foundation](superpowers/plans/2026-10-12-p0-foundation.md) |
+| P0 | Cleanup and foundation | In progress | [p0-foundation](superpowers/plans/2026-10-12-p0-foundation.md) |
 | P1 | Rust core and sources | Not started | (to be written) |
 | P2 | Combined catalog | Not started | (to be written) |
 | P3 | Queue and real progress | Not started | (to be written) |
@@ -23,7 +23,7 @@
 
 ## P0: Cleanup and foundation
 Goal: one runtime, a fresh Svelte shell, admin manifest really embedded, locked-down security config, and a visible build SHA so stale builds are obvious.
-- [ ] T1 Archive old planning docs; delete Python runtime, `web/`, launchers, `manifests/`; fix `.gitignore`
+- [x] T1 Archive old planning docs; delete Python runtime, `web/`, launchers, `manifests/`; fix `.gitignore`
 - [ ] T2 Root `package.json` as single version source, plus version scripts (bump/check) with tests
 - [ ] T3 Frontend policy checker (no emoji, no `{@html}`) with tests
 - [ ] T4 Scaffold `app/` (Svelte 5 + Vite + TS, bundled fonts, Warm Store placeholder screen)
