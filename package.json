@@ -3,6 +3,9 @@
   "private": true,
   "version": "3.0.0-alpha.1",
   "type": "module",
+  "workspaces": [
+    "app"
+  ],
   "scripts": {
     "tauri": "tauri",
     "dev": "tauri dev",
