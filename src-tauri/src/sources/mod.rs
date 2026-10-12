@@ -1,6 +1,7 @@
 pub mod choco;
 pub mod model;
 pub mod process;
+pub mod stream;
 pub mod trust;
 pub mod winget;
 
