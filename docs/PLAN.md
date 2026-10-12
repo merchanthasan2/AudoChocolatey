@@ -50,8 +50,8 @@ Goal: one runtime, a fresh Svelte shell, admin manifest really embedded, locked-
 - [ ] Commands: `marketplace_home`, `marketplace_category`, merged `search` + `search://partial`, `get_app`
 
 ## P3: Queue and real progress
-- [ ] Streaming runner: Job Object (kill the whole process tree), split output on CR and LF (moved from P1)
-- [ ] `jobs/model.rs` state machine + tests; `jobs/worker.rs` single FIFO worker
+- [x] Streaming runner: Job Object (kill the whole process tree), split output on CR and LF (moved from P1)
+- [x] `jobs/model.rs` state machine + tests; `jobs/worker.rs` single FIFO worker
 - [ ] `Global\_MSIExecute` wait; Job Object cancel; installing not cancellable
 - [ ] `jobs/persist.rs` atomic `jobs.json`, history 200, startup recovery
 - [ ] Progress parsers (winget size/percent, choco percent) with fixtures; 10 Hz throttle

@@ -50,3 +50,10 @@ Exact row counts in the tests (for example `list.en.txt` = 245 rows) must be upd
 
 ## TypeScript bindings
 Rust IPC types derive `ts_rs::TS`. `cargo test` regenerates `app/src/lib/ipc/bindings/*.ts` (the output folder is set in `src-tauri/.cargo/config.toml`). Commit the regenerated files: CI fails if they differ from what `cargo test` produces.
+
+## Testing installs in development
+Debug builds run without admin rights (`asInvoker`):
+- **Installs:** winget asks for elevation per installer, so expect a UAC prompt.
+- **Uninstalling machine-wide apps** fails with Windows Installer error 1603, because winget does not self-elevate uninstalls.
+
+The release build always runs elevated, so neither applies there. To inspect the elevated release build, use `get_job_log` output or the in-app diagnostics: remote debugging via `WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS` does not cross the elevation boundary.
