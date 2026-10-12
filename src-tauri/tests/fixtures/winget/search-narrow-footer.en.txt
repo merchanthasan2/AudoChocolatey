@@ -1,0 +1,5 @@
+Name       Id                    Version Match
+----------------------------------------------
+PowerShell Microsoft.PowerShell  7.5.1   Tag: shell
+1 upgrades available.
+2 package(s) have version numbers that cannot be determined. Use --include-unknown to see all results.

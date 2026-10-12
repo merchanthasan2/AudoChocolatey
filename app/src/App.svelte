@@ -15,7 +15,7 @@
   const name = (s: SourceStatus) => (s.kind === 'winget' ? 'winget' : 'Chocolatey');
 
   onMount(() => {
-    getOverview().then((o) => (overview = o)).catch((e) => (error = String(e)));
+    getOverview().then((o) => (overview = o)).catch((e) => (error = e?.message ?? String(e)));
     listInstalled().then((l) => (installed = l.items.length)).catch(() => (installed = -1));
     listUpdates().then((l) => (updates = l.items.length)).catch(() => (updates = -1));
   });

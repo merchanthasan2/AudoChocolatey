@@ -11,10 +11,10 @@ const NO_PROMPT: &str = "--disable-interactivity";
 
 #[allow(dead_code)] // wired into the job queue in P3
 pub fn build_op(op: &OpRequest) -> AppResult<Vec<String>> {
-    if op.target.source != SourceKind::Winget {
+    if op.target.source() != SourceKind::Winget {
         return Err(AppError::new("invalid_input", "not a winget package"));
     }
-    let id = op.target.id.as_str();
+    let id = op.target.id();
     let mut argv: Vec<&str> = match op.kind {
         OpKind::Install | OpKind::Upgrade => vec![
             if op.kind == OpKind::Install {

@@ -1,0 +1,6 @@
+Found 7-Zip [7zip.7zip] Version 26.04
+This application is licensed to you by its owner.
+Microsoft is not responsible for, nor does it grant any licenses to, third-party packages.
+Downloading https://www.7-zip.org/a/7z2604-x64.msi
+Successfully verified installer hash
+Installer downloaded: C:\Users\merch\AppData\Local\Temp/wdl\7-Zip_26.04_Machine_X64_wix_en-US.msi

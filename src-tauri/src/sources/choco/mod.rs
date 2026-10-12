@@ -17,6 +17,7 @@ pub struct ChocoSource<R: Runner> {
     pub(crate) runner: R,
     exe: Option<PathBuf>,
     http: reqwest::Client,
+    major: tokio::sync::OnceCell<u32>,
 }
 
 impl<R: Runner> ChocoSource<R> {
@@ -27,7 +28,12 @@ impl<R: Runner> ChocoSource<R> {
             .user_agent(concat!("QuantumUpdater/", env!("CARGO_PKG_VERSION")))
             .build()
             .expect("static reqwest config");
-        Self { runner, exe, http }
+        Self {
+            runner,
+            exe,
+            http,
+            major: tokio::sync::OnceCell::new(),
+        }
     }
 
     pub fn exe(&self) -> Option<&PathBuf> {
@@ -65,11 +71,17 @@ impl<R: Runner> ChocoSource<R> {
         }
     }
 
+    /// Cached: the CLI shape only changes if Chocolatey itself is upgraded mid-session.
     async fn major_version(&self) -> u32 {
-        match self.run(args::version(), 15).await {
-            Ok(out) => parse::major(&out.stdout).unwrap_or(2),
-            Err(_) => 2,
-        }
+        *self
+            .major
+            .get_or_init(|| async {
+                match self.run(args::version(), 15).await {
+                    Ok(out) => parse::major(&out.stdout).unwrap_or(2),
+                    Err(_) => 2,
+                }
+            })
+            .await
     }
 
     pub async fn list_installed(&self) -> AppResult<Vec<InstalledPackage>> {
@@ -107,6 +119,8 @@ impl<R: Runner> ChocoSource<R> {
         }
         Ok(rows
             .into_iter()
+            // 4th field is "pinned": the user asked Chocolatey never to upgrade it.
+            .filter(|r| r.get(3).map(String::as_str) != Some("true"))
             .filter(|r| ChocoId::try_from(r[0].clone()).is_ok())
             .map(|r| UpgradeCandidate {
                 name: r[0].clone(),
@@ -211,6 +225,17 @@ mod tests {
             .find(|c| c[0] == "list")
             .unwrap();
         assert_eq!(list_call, ["list", "--local-only", "-r"]);
+    }
+
+    #[tokio::test]
+    async fn pinned_packages_are_not_updates() {
+        let pinned = include_str!("../../../tests/fixtures/choco/outdated-pinned.txt");
+        let u = src(FakeRunner::new().on("outdated", 2, pinned))
+            .list_upgrades()
+            .await
+            .unwrap();
+        let ids: Vec<_> = u.iter().map(|c| c.id.as_str()).collect();
+        assert_eq!(ids, ["vcredist140"]);
     }
 
     #[tokio::test]

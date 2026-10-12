@@ -74,8 +74,8 @@ validated_string!(PkgVersion, VERSION, "package version");
 #[serde(try_from = "RawSourceRef")]
 #[ts(export)]
 pub struct SourceRef {
-    pub source: SourceKind,
-    pub id: String,
+    source: SourceKind,
+    id: String,
 }
 
 #[allow(dead_code)] // wired into the job queue in P3
@@ -94,6 +94,14 @@ impl SourceRef {
             SourceKind::Choco => ChocoId::try_from(id.clone()).map(|_| ()),
         }?;
         Ok(Self { source, id })
+    }
+
+    pub fn source(&self) -> SourceKind {
+        self.source
+    }
+
+    pub fn id(&self) -> &str {
+        &self.id
     }
 }
 
@@ -200,8 +208,8 @@ mod tests {
     fn source_ref_validates_per_source() {
         let ok: SourceRef =
             serde_json::from_str(r#"{"source":"winget","id":"Notepad++.Notepad++"}"#).unwrap();
-        assert_eq!(ok.id, "Notepad++.Notepad++");
-        assert_eq!(ok.source, SourceKind::Winget);
+        assert_eq!(ok.id(), "Notepad++.Notepad++");
+        assert_eq!(ok.source(), SourceKind::Winget);
         assert!(serde_json::from_str::<SourceRef>(
             r#"{"source":"choco","id":"Notepad++.Notepad++"}"#
         )

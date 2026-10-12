@@ -75,14 +75,18 @@ impl SettingsStore {
     }
 }
 
+/// Returns (settings, read_only). Only a missing file means "start fresh"; any other read
+/// problem (locked by antivirus, permissions, bad encoding) loads defaults read-only so the
+/// user's real file is never overwritten.
 fn load(path: &PathBuf) -> (Settings, bool) {
     let text = match std::fs::read_to_string(path) {
         Ok(t) => t,
-        Err(_) => return (Settings::default(), false),
+        Err(e) if e.kind() == std::io::ErrorKind::NotFound => return (Settings::default(), false),
+        Err(_) => return (Settings::default(), true),
     };
     let value: serde_json::Value = match serde_json::from_str(&text) {
         Ok(v) => v,
-        Err(_) => return (backup_and_default(path), false),
+        Err(_) => return backup_and_default(path),
     };
     let version = value
         .get("schemaVersion")
@@ -93,19 +97,29 @@ fn load(path: &PathBuf) -> (Settings, bool) {
     }
     match serde_json::from_value::<Settings>(value) {
         Ok(s) => (
-            Settings {
+            sanitize(Settings {
                 schema_version: SCHEMA_VERSION,
                 ..s
-            },
+            }),
             false,
         ),
-        Err(_) => (backup_and_default(path), false),
+        Err(_) => backup_and_default(path),
     }
 }
 
-fn backup_and_default(path: &PathBuf) -> Settings {
-    let _ = std::fs::rename(path, path.with_extension("json.bak"));
-    Settings::default()
+/// Values hand-edited out of range fall back to their defaults.
+fn sanitize(mut s: Settings) -> Settings {
+    if !(1..=168).contains(&s.check_interval_hours) {
+        s.check_interval_hours = Settings::default().check_interval_hours;
+    }
+    s
+}
+
+/// Keep the unreadable file as `.bak`; if it can't be moved aside, stay read-only rather than
+/// overwrite it later without a backup.
+fn backup_and_default(path: &PathBuf) -> (Settings, bool) {
+    let moved = std::fs::rename(path, path.with_extension("json.bak")).is_ok();
+    (Settings::default(), !moved)
 }
 
 fn write_atomic(path: &PathBuf, settings: &Settings) -> AppResult<()> {
@@ -205,6 +219,32 @@ mod tests {
             .unwrap_err();
         assert_eq!(err.code, "settings");
         assert_eq!(std::fs::read_to_string(&path).unwrap(), newer);
+    }
+
+    /// Any read error other than NotFound must not lead to overwriting the file (review finding).
+    #[test]
+    fn unreadable_file_is_read_only() {
+        let dir = tempfile::tempdir().unwrap();
+        let path = dir.path().join("settings.json");
+        std::fs::create_dir(&path).unwrap(); // reading a directory fails with a non-NotFound error
+        let mut s = SettingsStore::open(path.clone());
+        assert!(s.read_only());
+        assert!(s.apply(SettingsPatch::default()).is_err());
+        assert!(path.is_dir());
+    }
+
+    #[test]
+    fn out_of_range_values_in_file_fall_back_to_defaults() {
+        let dir = tempfile::tempdir().unwrap();
+        let path = dir.path().join("settings.json");
+        std::fs::write(
+            &path,
+            r#"{"schemaVersion":1,"checkIntervalHours":0,"theme":"dark"}"#,
+        )
+        .unwrap();
+        let s = SettingsStore::open(path);
+        assert_eq!(s.get().check_interval_hours, 6);
+        assert_eq!(s.get().theme, Theme::Dark);
     }
 
     #[test]

@@ -5,7 +5,7 @@
 > **Spec:** [superpowers/specs/2026-10-12-quantum-updater-v3-redesign-design.md](superpowers/specs/2026-10-12-quantum-updater-v3-redesign-design.md)
 > **Detailed phase plans:** `docs/superpowers/plans/`. Each phase's plan is written just before the phase starts, because it depends on code from earlier phases.
 
-**Status:** P0, P1 done · P2 next · **Last updated:** 2026-10-12
+**Status:** P0, P1 done · next: P3 core → P4 → P2 (order changed by owner) · **Last updated:** 2026-10-12
 
 | Phase | Name | Status | Detailed plan |
 |---|---|---|---|
@@ -118,3 +118,4 @@ Goal: one runtime, a fresh Svelte shell, admin manifest really embedded, locked-
 | 2026-10-12 | P1: reqwest uses native-tls (SChannel) + system proxy, not rustls | rustls pulls aws-lc-sys (CMake/NASM); SChannel uses the Windows cert store |
 | 2026-10-12 | P1: concrete WingetSource/ChocoSource generic over Runner, no PackageSource trait | Signatures differ; the fake Runner is the test seam |
 | 2026-10-12 | P1: Job Object streaming moved to P3 | P1 only runs short read-only queries |
+| 2026-10-12 | **Order changed by owner: P3 core, then P4 interface, then P2 / P5–P8** | Owner wants a usable app sooner; P1 already provides real installed/updates/search data. Early builds may list winget and Chocolatey copies of the same app separately until P2 lands |

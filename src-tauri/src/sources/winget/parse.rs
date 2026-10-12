@@ -86,7 +86,8 @@ fn to_row(cols: Vec<String>, has_source: bool) -> Option<Row> {
     let get = |i: usize| cols.get(i).cloned().unwrap_or_default();
     let opt = |s: String| (!s.is_empty()).then_some(s);
     let (name, id, version) = (get(0), get(1), get(2));
-    if name.is_empty() || id.is_empty() {
+    // Every real row has a version ("Unknown" included); footers spilling across columns do not.
+    if name.is_empty() || id.is_empty() || version.is_empty() {
         return None;
     }
     let (extra, source) = match (cols.len(), has_source) {
@@ -237,6 +238,18 @@ mod tests {
         assert_eq!(r[0].id, "Mozilla.Firefox");
         assert_eq!(r[0].version, "157.0.1");
         assert_eq!(r[0].extra.as_deref(), Some("Moniker: firefox"));
+    }
+
+    /// Footers crossing a narrow Name column must not become rows (review finding).
+    #[test]
+    fn footers_never_become_rows() {
+        let up = include_str!("../../../tests/fixtures/winget/upgrade-narrow-footer.en.txt");
+        let r: Vec<Row> = parse_tables(up, true).into_iter().flatten().collect();
+        assert_eq!(r.len(), 1, "{r:?}");
+        let se = include_str!("../../../tests/fixtures/winget/search-narrow-footer.en.txt");
+        let r: Vec<Row> = parse_tables(se, false).into_iter().flatten().collect();
+        assert_eq!(r.len(), 1, "{r:?}");
+        assert_eq!(r[0].id, "Microsoft.PowerShell");
     }
 
     #[test]

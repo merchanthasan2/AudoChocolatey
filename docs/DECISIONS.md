@@ -131,3 +131,11 @@
   - **Truncated `…` ids** are resolved via `winget export`, otherwise dropped.
   - **Chocolatey:** only `<valid-id>|...` lines are accepted. Search uses the community OData feed over HTTPS (native TLS, system proxy), with `$filter=IsLatestVersion`.
 - **Consequences:** The parser works in any Windows language and on CJK app names. The fixtures in `src-tauri/tests/fixtures/` are the contract; recapture them when winget changes (see DEVELOPMENT.md).
+
+### ADR 020: Trusted Executable Resolution for an Elevated App (P1 review)
+- **Status:** Accepted
+- **Context:** The app runs elevated (ADR 008), and autostart runs it elevated at logon (ADR 014). `%LOCALAPPDATA%\Microsoft\WindowsApps` is writable by the standard user, and `ChocolateyInstall` can be overridden in the user's environment. Unprivileged malware could plant a `winget.exe` or redirect choco, and get it executed as admin.
+- **Decision:**
+  - **winget:** the alias is accepted only if it is an App Execution Link (reparse tag `0x8000001B`) whose target matches `<drive>:\Program Files\WindowsApps\Microsoft.DesktopAppInstaller_*_8wekyb3d8bbwe\winget.exe`. The app executes that **target** directly, which is TrustedInstaller-owned and verified working, so nothing can be swapped between the check and the launch.
+  - **Chocolatey:** the location comes from HKLM `Session Manager\Environment\ChocolateyInstall`, literal absolute paths only (no `%VAR%`). Otherwise it is `<ProgramData known folder>\chocolatey`. The process environment is never used.
+- **Residual risk:** a Chocolatey install directory with weakened ACLs (Chocolatey hardens its own folder by default) remains trusted. Accepted and documented in SECURITY.md (P8).

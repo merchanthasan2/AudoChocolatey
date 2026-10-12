@@ -1,0 +1,4 @@
+Name       Id                    Version Available Source
+---------------------------------------------------------
+PowerShell Microsoft.PowerShell  7.5.0   7.5.1     winget
+1 upgrades available.

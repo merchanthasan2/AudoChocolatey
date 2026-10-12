@@ -7,7 +7,7 @@ use crate::sources::model::{OpKind, OpRequest};
 
 #[allow(dead_code)] // wired into the job queue in P3
 pub fn build_op(op: &OpRequest) -> AppResult<Vec<String>> {
-    if op.target.source != SourceKind::Choco {
+    if op.target.source() != SourceKind::Choco {
         return Err(AppError::new("invalid_input", "not a Chocolatey package"));
     }
     let verb = match op.kind {
@@ -17,7 +17,7 @@ pub fn build_op(op: &OpRequest) -> AppResult<Vec<String>> {
     };
     let mut argv = vec![
         verb.to_string(),
-        op.target.id.clone(),
+        op.target.id().to_string(),
         "-y".into(),
         "--no-color".into(),
     ];
