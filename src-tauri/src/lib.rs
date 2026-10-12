@@ -1,6 +1,7 @@
 mod commands;
 mod error;
 mod ids;
+mod sources;
 mod versions;
 
 pub fn run() {
