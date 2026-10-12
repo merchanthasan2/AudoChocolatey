@@ -16,8 +16,8 @@
     {#if current && state}
       <ProgressRing percent={state.percent} size={22} label={state.label} />
       <span class="text">
-        <span class="title truncate">{state.label} {current.displayName}</span>
-        <span class="sub">{waiting > 0 ? `${waiting} more waiting` : 'Click to see details'}</span>
+        <span class="title truncate">{current.displayName}</span>
+        <span class="sub truncate">{state.label}{waiting > 0 ? ` · ${waiting} more waiting` : ''}</span>
       </span>
     {:else if waiting > 0}
       <Icon name="queue" size={18} />
