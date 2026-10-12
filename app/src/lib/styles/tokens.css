@@ -1,46 +1,108 @@
+/* Warm Store design tokens. Colours are defined once per theme; components only use variables. */
 :root {
   --canvas: #f6f3ee;
+  --canvas-2: #efebe4;
   --card: #ffffff;
+  --card-hover: #fbf9f6;
   --ink: #1d1b18;
+  --ink-2: #4a453e;
   --muted: #7a7368;
+  --faint: #a8a196;
   --accent: #1f5c45;
+  --accent-hover: #184a37;
   --accent-ink: #ffffff;
+  --accent-soft: #e3eee8;
   --pill: #efe9df;
-  --hairline: rgba(60, 40, 10, 0.07);
+  --pill-hover: #e7e0d4;
+  --hairline: rgba(60, 40, 10, 0.08);
+  --hairline-strong: rgba(60, 40, 10, 0.14);
+  --danger: #b3261e;
+  --danger-soft: #f9e5e3;
+  --warn-soft: #f7efdc;
+  --warn-ink: #7a5a12;
+  --focus: #1f5c45;
+  --shadow-card: 0 0 0 1px var(--hairline), 0 1px 2px rgba(60, 40, 10, 0.04);
+  --shadow-raised: 0 0 0 1px var(--hairline), 0 12px 32px -12px rgba(60, 40, 10, 0.22);
+  --scrim: rgba(29, 27, 24, 0.28);
+
   --radius-card: 12px;
-  --radius-icon: 9px;
+  --radius-icon: 22%;
+  --radius-pill: 999px;
+  --radius-field: 10px;
+
   --font-display: 'Inter Tight Variable', 'Segoe UI Variable Display', system-ui, sans-serif;
   --font-body: 'Inter Variable', 'Segoe UI Variable Text', system-ui, sans-serif;
-  --spring-duration: 420ms;
-  --spring-ease: cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  /* Motion: springy for moments, crisp for frequent feedback. */
+  --spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
+  --dur-moment: 420ms;
+  --dur-quick: 140ms;
+  --dur-press: 120ms;
+
   color-scheme: light;
 }
 
+:root[data-theme='dark'] {
+  --canvas: #1a1816;
+  --canvas-2: #201e1b;
+  --card: #24211e;
+  --card-hover: #2a2723;
+  --ink: #f1ece4;
+  --ink-2: #cfc8bd;
+  --muted: #a39b8f;
+  --faint: #756e64;
+  --accent: #5fb38e;
+  --accent-hover: #72c29e;
+  --accent-ink: #10201a;
+  --accent-soft: #1f3329;
+  --pill: #2e2a26;
+  --pill-hover: #38332e;
+  --hairline: rgba(255, 240, 220, 0.08);
+  --hairline-strong: rgba(255, 240, 220, 0.14);
+  --danger: #f2a39c;
+  --danger-soft: #3a2220;
+  --warn-soft: #34291a;
+  --warn-ink: #e8c98a;
+  --focus: #72c29e;
+  --shadow-card: 0 0 0 1px var(--hairline);
+  --shadow-raised: 0 0 0 1px var(--hairline-strong), 0 16px 40px -12px rgba(0, 0, 0, 0.6);
+  --scrim: rgba(0, 0, 0, 0.45);
+  color-scheme: dark;
+}
+
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not([data-theme='light']) {
     --canvas: #1a1816;
+    --canvas-2: #201e1b;
     --card: #24211e;
+    --card-hover: #2a2723;
     --ink: #f1ece4;
+    --ink-2: #cfc8bd;
     --muted: #a39b8f;
+    --faint: #756e64;
     --accent: #5fb38e;
+    --accent-hover: #72c29e;
     --accent-ink: #10201a;
+    --accent-soft: #1f3329;
     --pill: #2e2a26;
+    --pill-hover: #38332e;
     --hairline: rgba(255, 240, 220, 0.08);
+    --hairline-strong: rgba(255, 240, 220, 0.14);
+    --danger: #f2a39c;
+    --danger-soft: #3a2220;
+    --warn-soft: #34291a;
+    --warn-ink: #e8c98a;
+    --focus: #72c29e;
+    --shadow-card: 0 0 0 1px var(--hairline);
+    --shadow-raised: 0 0 0 1px var(--hairline-strong), 0 16px 40px -12px rgba(0, 0, 0, 0.6);
+    --scrim: rgba(0, 0, 0, 0.45);
     color-scheme: dark;
   }
 }
 
-@media (prefers-reduced-motion: reduce) {
-  :root { --spring-duration: 160ms; --spring-ease: ease-out; }
-}
-
-*, *::before, *::after { box-sizing: border-box; }
-html, body, #app { margin: 0; height: 100%; }
-body {
-  background: var(--canvas);
-  color: var(--ink);
-  font-family: var(--font-body);
-  font-size: 14px;
-  -webkit-font-smoothing: antialiased;
-  font-feature-settings: 'tnum' 1;
+:root[data-motion='reduced'] {
+  --spring: ease-out;
+  --dur-moment: 160ms;
 }

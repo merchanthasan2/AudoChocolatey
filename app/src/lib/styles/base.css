@@ -1,0 +1,57 @@
+*, *::before, *::after { box-sizing: border-box; }
+html, body, #app { margin: 0; height: 100%; }
+body {
+  background: var(--canvas);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 13.5px;
+  line-height: 1.45;
+  -webkit-font-smoothing: antialiased;
+  font-feature-settings: 'tnum' 1, 'cv11' 1;
+  overflow: hidden;
+  user-select: none;
+}
+
+h1, h2, h3 { font-family: var(--font-display); margin: 0; letter-spacing: -0.03em; }
+h1 { font-size: 28px; font-weight: 700; line-height: 1.15; }
+h2 { font-size: 17px; font-weight: 650; letter-spacing: -0.02em; }
+p { margin: 0; }
+
+button { font: inherit; color: inherit; background: none; border: 0; padding: 0; cursor: pointer; }
+input { font: inherit; color: inherit; }
+::selection { background: var(--accent-soft); }
+
+:focus { outline: none; }
+:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; border-radius: 8px; }
+
+/* Thin, warm scrollbars. */
+* { scrollbar-width: thin; scrollbar-color: var(--hairline-strong) transparent; }
+
+.muted { color: var(--muted); }
+.truncate { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+/* Buttons: instant press feedback (scale on :active), never animated on keyboard repeat. */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  height: 32px; padding: 0 14px; border-radius: var(--radius-pill);
+  font-weight: 600; white-space: nowrap;
+  background: var(--pill); color: var(--ink);
+  transition: transform var(--dur-press) var(--ease-out), background-color var(--dur-quick) ease;
+}
+.btn:active:not(:disabled) { transform: scale(0.97); }
+.btn:disabled { opacity: 0.5; cursor: default; }
+.btn-primary { background: var(--accent); color: var(--accent-ink); }
+.btn-quiet { background: transparent; color: var(--ink-2); }
+@media (hover: hover) and (pointer: fine) {
+  .btn:hover:not(:disabled) { background: var(--pill-hover); }
+  .btn-primary:hover:not(:disabled) { background: var(--accent-hover); }
+  .btn-quiet:hover:not(:disabled) { background: var(--pill); }
+}
+
+.card { background: var(--card); border-radius: var(--radius-card); box-shadow: var(--shadow-card); }
+
+.badge {
+  display: inline-flex; align-items: center; height: 18px; padding: 0 7px; border-radius: var(--radius-pill);
+  font-size: 11px; font-weight: 600; background: var(--pill); color: var(--muted);
+}
