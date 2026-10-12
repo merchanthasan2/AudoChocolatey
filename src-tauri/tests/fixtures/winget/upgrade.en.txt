@@ -1,0 +1,4 @@
+Name                  Id                              Version Available Source
+------------------------------------------------------------------------------
+CrystalDiskInfo 9.9.2 CrystalDewWorld.CrystalDiskInfo 9.9.2   9.9.3     winget
+1 upgrades available.

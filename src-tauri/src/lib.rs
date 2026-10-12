@@ -1,4 +1,7 @@
 mod commands;
+mod error;
+mod ids;
+mod versions;
 
 pub fn run() {
     tauri::Builder::default()

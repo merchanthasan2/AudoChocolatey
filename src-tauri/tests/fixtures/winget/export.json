@@ -1,0 +1,316 @@
+{
+	"$schema" : "https://aka.ms/winget-packages.schema.2.0.json",
+	"CreationDate" : "2026-10-12T14:34:18.341-00:00",
+	"Sources" : 
+	[
+		{
+			"Packages" : 
+			[
+				{
+					"PackageIdentifier" : "CPUID.CPU-Z",
+					"Version" : "3.01"
+				},
+				{
+					"PackageIdentifier" : "CrystalDewWorld.CrystalDiskInfo",
+					"Version" : "9.9.2"
+				},
+				{
+					"PackageIdentifier" : "Docker.DockerDesktop",
+					"Version" : "4.94.0"
+				},
+				{
+					"PackageIdentifier" : "dev47apps.DroidCamOBSClient",
+					"Version" : "7.2.1"
+				},
+				{
+					"PackageIdentifier" : "Git.Git",
+					"Version" : "2.56.0.2"
+				},
+				{
+					"PackageIdentifier" : "Notepad++.Notepad++",
+					"Version" : "8.9.8.1"
+				},
+				{
+					"PackageIdentifier" : "Microsoft.OneDrive",
+					"Version" : "26.183.0920.0005"
+				},
+				{
+					"PackageIdentifier" : "ShiningLight.OpenSSL.Light",
+					"Version" : "4.0.3"
+				},
+				{
+					"PackageIdentifier" : "RARLab.WinRAR",
+					"Version" : "7.23.0"
+				},
+				{
+					"PackageIdentifier" : "AntibodySoftware.WizTree",
+					"Version" : "4.33"
+				},
+				{
+					"PackageIdentifier" : "PuTTY.PuTTY",
+					"Version" : "0.85.0.0"
+				},
+				{
+					"PackageIdentifier" : "GitHub.cli",
+					"Version" : "2.102.0"
+				},
+				{
+					"PackageIdentifier" : "Zoom.Zoom",
+					"Version" : "7.2.48556"
+				},
+				{
+					"PackageIdentifier" : "VideoLAN.VLC",
+					"Version" : "3.0.24.0"
+				},
+				{
+					"PackageIdentifier" : "Google.GoogleDrive",
+					"Version" : "132.0.0.0"
+				},
+				{
+					"PackageIdentifier" : "Adobe.Acrobat.Pro",
+					"Version" : "26.002.21931"
+				},
+				{
+					"PackageIdentifier" : "Nvidia.PhysX",
+					"Version" : "9.26.0703"
+				},
+				{
+					"PackageIdentifier" : "Cloudflare.Warp",
+					"Version" : "26.8.2100.0"
+				},
+				{
+					"PackageIdentifier" : "Oracle.JDK.25",
+					"Version" : "25.0.4.1"
+				},
+				{
+					"PackageIdentifier" : "Microsoft.GameInput",
+					"Version" : "3.5.283.0"
+				},
+				{
+					"PackageIdentifier" : "Adobe.CreativeCloud",
+					"Version" : "6.10.0.252.41"
+				},
+				{
+					"PackageIdentifier" : "angryziber.AngryIPScanner",
+					"Version" : "3.10.0"
+				},
+				{
+					"PackageIdentifier" : "CreativeTechnology.CreativeApp",
+					"Version" : "1.24.05.00"
+				},
+				{
+					"PackageIdentifier" : "Google.Chrome.EXE",
+					"Version" : "155.0.8059.40"
+				},
+				{
+					"PackageIdentifier" : "HandBrake.HandBrake",
+					"Version" : "1.11.2"
+				},
+				{
+					"PackageIdentifier" : "Microsoft.Edge",
+					"Version" : "156.0.4314.15"
+				},
+				{
+					"PackageIdentifier" : "OBSProject.OBSStudio",
+					"Version" : "32.2.2"
+				},
+				{
+					"PackageIdentifier" : "dev47apps.DroidCamOBSPlugin",
+					"Version" : "2.5.1"
+				},
+				{
+					"PackageIdentifier" : "Plex.Plex",
+					"Version" : "1.115.0"
+				},
+				{
+					"PackageIdentifier" : "Valve.Steam",
+					"Version" : "2.10.91.91"
+				},
+				{
+					"PackageIdentifier" : "Microsoft.VisualStudio.2022.BuildTools",
+					"Version" : "> 17.14.41"
+				},
+				{
+					"PackageIdentifier" : "Microsoft.VisualStudio.Community",
+					"Version" : "18.10.3"
+				},
+				{
+					"PackageIdentifier" : "Microsoft.VCRedist.2013.x64",
+					"Version" : "12.0.40664.0"
+				},
+				{
+					"PackageIdentifier" : "Microsoft.VCRedist.2015+.x64",
+					"Version" : "14.51.36247.0"
+				},
+				{
+					"PackageIdentifier" : "Dell.DisplayAndPeripheralManager",
+					"Version" : "2.3.0.9"
+				},
+				{
+					"PackageIdentifier" : "Microsoft.DotNet.DesktopRuntime.9",
+					"Version" : "9.0.20"
+				},
+				{
+					"PackageIdentifier" : "Microsoft.DotNet.DesktopRuntime.8.x64",
+					"Version" : "8.0.25"
+				},
+				{
+					"PackageIdentifier" : "Microsoft.DotNet.Framework.DeveloperPack_4",
+					"Version" : "4.8.1"
+				},
+				{
+					"PackageIdentifier" : "Microsoft.DotNet.Framework.DeveloperPack.4.6",
+					"Version" : "> 4.6.2"
+				},
+				{
+					"PackageIdentifier" : "Mobatek.MobaXterm",
+					"Version" : "26.5.0.5542"
+				},
+				{
+					"PackageIdentifier" : "Microsoft.VCRedist.2015+.x86",
+					"Version" : "14.51.36247.0"
+				},
+				{
+					"PackageIdentifier" : "Microsoft.VCRedist.2013.x86",
+					"Version" : "12.0.40664.0"
+				},
+				{
+					"PackageIdentifier" : "Python.Launcher",
+					"Version" : "3.14.7"
+				},
+				{
+					"PackageIdentifier" : "Microsoft.VCRedist.2010.x86",
+					"Version" : "10.0.40219"
+				},
+				{
+					"PackageIdentifier" : "Microsoft.DotNet.DesktopRuntime.10",
+					"Version" : "10.0.12"
+				},
+				{
+					"PackageIdentifier" : "Microsoft.WindowsSDK.10.0.26100",
+					"Version" : "10.0.26100.7705"
+				},
+				{
+					"PackageIdentifier" : "Discord.Discord",
+					"Version" : "1.0.9261"
+				},
+				{
+					"PackageIdentifier" : "GitHub.GitHubDesktop",
+					"Version" : "3.6.7"
+				},
+				{
+					"PackageIdentifier" : "Google.OSVScanner",
+					"Version" : "2.6.0"
+				},
+				{
+					"PackageIdentifier" : "Rustlang.Rustup",
+					"Version" : "1.29.1"
+				},
+				{
+					"PackageIdentifier" : "Microsoft.VisualStudioCode",
+					"Version" : "1.141.0"
+				},
+				{
+					"PackageIdentifier" : "Google.AntigravityIDE",
+					"Version" : "2.5.5"
+				},
+				{
+					"PackageIdentifier" : "Anysphere.Cursor",
+					"Version" : "3.23.23"
+				},
+				{
+					"PackageIdentifier" : "Python.Python.3.13",
+					"Version" : "3.13.15"
+				},
+				{
+					"PackageIdentifier" : "Microsoft.Teams",
+					"Version" : "26198.304.4946.9672"
+				},
+				{
+					"PackageIdentifier" : "Microsoft.BingWallpaper",
+					"Version" : "1.1.467.0"
+				},
+				{
+					"PackageIdentifier" : "Microsoft.AppInstaller",
+					"Version" : "1.29.380.0"
+				},
+				{
+					"PackageIdentifier" : "Microsoft.DirectX",
+					"Version" : "9.29.1974.0"
+				},
+				{
+					"PackageIdentifier" : "Microsoft.DotNet.Native.Runtime",
+					"Version" : "2.2.28604.0"
+				},
+				{
+					"PackageIdentifier" : "Microsoft.Outlook",
+					"Version" : "1.2026.812.100"
+				},
+				{
+					"PackageIdentifier" : "Microsoft.UI.Xaml.2.7",
+					"Version" : "7.2409.9001.0"
+				},
+				{
+					"PackageIdentifier" : "Microsoft.UI.Xaml.2.8",
+					"Version" : "8.2501.31001.0"
+				},
+				{
+					"PackageIdentifier" : "Microsoft.VCLibs.Desktop.14",
+					"Version" : "14.0.33728.0"
+				},
+				{
+					"PackageIdentifier" : "Microsoft.VCLibs.14",
+					"Version" : "14.0.33519.0"
+				},
+				{
+					"PackageIdentifier" : "Microsoft.WindowsAppRuntime.1.2",
+					"Version" : "1.2.5"
+				},
+				{
+					"PackageIdentifier" : "Microsoft.WindowsAppRuntime.1.4",
+					"Version" : "1.4.7"
+				},
+				{
+					"PackageIdentifier" : "Microsoft.WindowsAppRuntime.1.5",
+					"Version" : "1.5.9"
+				},
+				{
+					"PackageIdentifier" : "Microsoft.WindowsAppRuntime.1.6",
+					"Version" : "1.6.9"
+				},
+				{
+					"PackageIdentifier" : "Microsoft.WindowsAppRuntime.1.7",
+					"Version" : "1.7.9"
+				},
+				{
+					"PackageIdentifier" : "Microsoft.WindowsAppRuntime.1.8",
+					"Version" : "> 1.8.10"
+				},
+				{
+					"PackageIdentifier" : "Microsoft.WindowsAppRuntime.2",
+					"Version" : "2.5.1.0"
+				},
+				{
+					"PackageIdentifier" : "Microsoft.WingetCreate",
+					"Version" : "1.12.13.0"
+				},
+				{
+					"PackageIdentifier" : "Microsoft.WindowsTerminal",
+					"Version" : "1.25.2733.0"
+				},
+				{
+					"PackageIdentifier" : "Microsoft.WSL",
+					"Version" : "2.7.13.0"
+				}
+			],
+			"SourceDetails" : 
+			{
+				"Argument" : "https://cdn.winget.microsoft.com/cache",
+				"Identifier" : "Microsoft.Winget.Source_8wekyb3d8bbwe",
+				"Name" : "winget",
+				"Type" : "Microsoft.PreIndexed.Package"
+			}
+		}
+	],
+	"WinGetVersion" : "1.29.380"
+}
