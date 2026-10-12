@@ -19,7 +19,8 @@ use std::sync::{Arc, Mutex};
 use std::time::{Duration, Instant, SystemTime};
 use tokio::sync::Notify;
 
-const INSTALL_TIMEOUT: Duration = Duration::from_secs(60 * 60);
+/// Last-resort limit for a hung process. Installing is never interrupted by the download timeout.
+const SAFETY_TIMEOUT: Duration = Duration::from_secs(24 * 60 * 60);
 const LOG_LINES: usize = 500;
 const PROGRESS_EVERY: Duration = Duration::from_millis(100);
 
@@ -133,6 +134,8 @@ pub struct WorkerDeps {
     pub winget_temp: PathBuf,
     pub sample_every: Duration,
     pub gate_poll: Duration,
+    /// Preparing/downloading taking longer than this is stopped (installing never is).
+    pub download_timeout: Duration,
 }
 
 #[derive(Default)]
@@ -182,7 +185,19 @@ impl Queue {
                     .find(|j| j.phase == JobPhase::Queued)
                     .map(|j| j.id.clone());
                 match next {
-                    Some(id) => worker.run_job(&deps, &id).await,
+                    Some(id) => {
+                        let (w, d, jid) = (worker.clone(), deps.clone(), id.clone());
+                        let handle =
+                            tauri::async_runtime::spawn(async move { w.run_job(&d, &jid).await });
+                        if handle.await.is_err() {
+                            worker.lock().tokens.remove(&id);
+                            worker.update(&id, |j| {
+                                j.error =
+                                    Some("Something went wrong while running this job.".into());
+                                j.set_phase(JobPhase::Failed);
+                            });
+                        }
+                    }
                     None => notified.await,
                 }
             }
@@ -191,7 +206,8 @@ impl Queue {
     }
 
     fn lock(&self) -> std::sync::MutexGuard<'_, Inner> {
-        self.inner.lock().expect("queue lock")
+        // A panicking job must not take the whole queue down with a poisoned lock.
+        self.inner.lock().unwrap_or_else(|p| p.into_inner())
     }
 
     pub fn snapshot(&self) -> Vec<Job> {
@@ -334,10 +350,11 @@ impl Queue {
             let Some(job) = inner.jobs.iter_mut().find(|j| j.id == id) else {
                 return;
             };
-            let before = job.percent;
+            let before = (job.percent, job.bytes_done);
             f(job);
-            let complete = job.percent == Some(100.0) && before != Some(100.0);
-            if !(due || complete) || job.percent == before {
+            let complete = job.percent == Some(100.0) && before.0 != Some(100.0);
+            let changed = (job.percent, job.bytes_done) != before;
+            if !(due || complete) || !changed {
                 return;
             }
             let snap = job.clone();
@@ -357,13 +374,26 @@ impl Queue {
 
     async fn run_job(&self, deps: &WorkerDeps, id: &str) {
         let token = CancellationToken::new();
-        let op = {
+        let started = {
             let mut inner = self.lock();
-            inner.tokens.insert(id.to_string(), token.clone());
-            inner.jobs.iter().find(|j| j.id == id).map(|j| j.op.clone())
+            let job = inner
+                .jobs
+                .iter_mut()
+                .find(|j| j.id == id && j.phase == JobPhase::Queued);
+            let started = job.map(|j| {
+                j.set_phase(JobPhase::Preparing);
+                (j.op.clone(), j.clone())
+            });
+            if started.is_some() {
+                inner.tokens.insert(id.to_string(), token.clone());
+            }
+            started
         };
-        let Some(op) = op else { return };
-        self.update(id, |j| j.set_phase(JobPhase::Preparing));
+        let Some((op, snapshot)) = started else {
+            return;
+        };
+        self.sink.changed(&snapshot);
+        self.emit_queue();
         let outcome = self.execute(deps, id, &op, &token).await;
         self.update(id, |j| match outcome {
             Ok(Outcome::Succeeded { reboot }) => {
@@ -414,7 +444,10 @@ impl Queue {
             return Ok(Outcome::Failed(format!("{tool} is not installed")));
         };
         let total = match &deps.sizer {
-            Some(s) => s.total(op).await,
+            Some(s) => tokio::select! {
+                t = s.total(op) => t,
+                _ = token.cancelled() => return Err(AppError::new("cancelled", "Stopped")),
+            },
             None => None,
         };
         while deps.gate.busy() {
@@ -463,7 +496,7 @@ impl Queue {
         let spec = CommandSpec {
             exe,
             args: argv,
-            timeout: INSTALL_TIMEOUT,
+            timeout: SAFETY_TIMEOUT,
         };
         let watcher = DownloadWatcher {
             dir: deps.winget_temp.clone(),
@@ -472,12 +505,19 @@ impl Queue {
         let run = deps.stream.run(&spec, &on_line, token.clone());
         tokio::pin!(run);
         let mut tick = tokio::time::interval(deps.sample_every);
-        let code = loop {
+        let began = Instant::now();
+        let mut timed_out = false;
+        let result = loop {
             tokio::select! {
-                r = &mut run => break r?,
-                _ = tick.tick(), if source == SourceKind::Winget => {
-                    let downloading = self.lock().jobs.iter().any(|j| j.id == id && j.phase == JobPhase::Downloading);
-                    if downloading {
+                r = &mut run => break r,
+                _ = tick.tick() => {
+                    let phase = self.lock().jobs.iter().find(|j| j.id == id).map(|j| j.phase);
+                    if !timed_out && phase.is_some_and(Job::cancellable_in) && began.elapsed() > deps.download_timeout {
+                        timed_out = true;
+                        token.cancel();
+                    }
+                    let downloading = phase == Some(JobPhase::Downloading);
+                    if downloading && source == SourceKind::Winget {
                         if let Some(done) = watcher.sample() {
                             self.progress(id, |j| {
                                 j.bytes_done = Some(done);
@@ -489,7 +529,13 @@ impl Queue {
                 }
             }
         };
-        Ok(classify(source, op.kind, code))
+        match result {
+            Err(e) if e.code == "cancelled" && timed_out => {
+                Ok(Outcome::Failed("The download timed out".into()))
+            }
+            Err(e) => Err(e),
+            Ok(code) => Ok(classify(source, op.kind, code)),
+        }
     }
 }
 
@@ -567,6 +613,7 @@ mod tests {
     struct Rec {
         phases: StdMutex<Vec<(String, JobPhase)>>,
         percents: StdMutex<Vec<(String, f32)>>,
+        bytes: StdMutex<Vec<u64>>,
     }
 
     impl JobSink for Rec {
@@ -584,6 +631,9 @@ mod tests {
         fn progress(&self, job: &Job) {
             if let Some(pc) = job.percent {
                 self.percents.lock().unwrap().push((job.id.clone(), pc));
+            }
+            if let Some(b) = job.bytes_done {
+                self.bytes.lock().unwrap().push(b);
             }
         }
         fn queue(&self, _jobs: &[Job]) {}
@@ -630,6 +680,7 @@ mod tests {
             winget_temp: std::env::temp_dir().join("qu-test-none"),
             sample_every: Duration::from_millis(20),
             gate_poll: Duration::from_millis(20),
+            download_timeout: Duration::from_secs(60),
         };
         (Queue::start(deps, rec.clone()), rec)
     }
@@ -847,6 +898,153 @@ mod tests {
         assert!(rec.phases_of(&id).contains(&JobPhase::Waiting));
     }
 
+    fn deps_with(
+        stream: Arc<dyn StreamRunner>,
+        timeout: Duration,
+        temp: PathBuf,
+        sizer: Option<Arc<dyn DownloadSizer>>,
+    ) -> WorkerDeps {
+        WorkerDeps {
+            stream,
+            winget: Some(r"C:\fake\winget.exe".into()),
+            choco: Some(r"C:\fake\choco.exe".into()),
+            gate: Arc::new(NoGate),
+            sizer,
+            winget_temp: temp,
+            sample_every: Duration::from_millis(20),
+            gate_poll: Duration::from_millis(20),
+            download_timeout: timeout,
+        }
+    }
+
+    #[tokio::test]
+    async fn stuck_download_times_out_but_installing_never_does() {
+        let stuck = vec![
+            (5, "Downloading https://example.com/x.msi"),
+            (5000, "never"),
+        ];
+        let installing = vec![
+            (5, "Successfully verified installer hash"),
+            (400, "Successfully installed"),
+        ];
+        let rec = Arc::new(Rec::default());
+        let q = Queue::start(
+            deps_with(
+                FakeStream::new(vec![(stuck, Some(0)), (installing, Some(0))]),
+                Duration::from_millis(200),
+                std::env::temp_dir().join("qu-none"),
+                None,
+            ),
+            rec,
+        );
+        let ids = q.enqueue(vec![
+            op(SourceKind::Winget, "Stuck.App", OpKind::Install),
+            op(SourceKind::Winget, "Slow.Installer", OpKind::Install),
+        ]);
+        let a = until_finished(&q, &ids[0]).await;
+        assert_eq!(a.phase, JobPhase::Failed);
+        assert_eq!(a.error.as_deref(), Some("The download timed out"));
+        assert_eq!(until_finished(&q, &ids[1]).await.phase, JobPhase::Succeeded);
+    }
+
+    struct SlowSizer;
+    #[async_trait::async_trait]
+    impl DownloadSizer for SlowSizer {
+        async fn total(&self, _op: &OpRequest) -> Option<u64> {
+            tokio::time::sleep(Duration::from_secs(10)).await;
+            None
+        }
+    }
+
+    #[tokio::test]
+    async fn cancel_while_preparing_is_immediate() {
+        let rec = Arc::new(Rec::default());
+        let q = Queue::start(
+            deps_with(
+                FakeStream::new(vec![]),
+                Duration::from_secs(60),
+                std::env::temp_dir(),
+                Some(Arc::new(SlowSizer)),
+            ),
+            rec,
+        );
+        let id = q
+            .enqueue(vec![op(SourceKind::Winget, "Prep.App", OpKind::Install)])
+            .remove(0);
+        until_phase(&q, &id, JobPhase::Preparing).await;
+        let t = std::time::Instant::now();
+        q.cancel(&id).unwrap();
+        assert_eq!(until_finished(&q, &id).await.phase, JobPhase::Cancelled);
+        assert!(t.elapsed() < Duration::from_secs(1), "{:?}", t.elapsed());
+    }
+
+    #[tokio::test]
+    async fn bytes_are_reported_even_without_a_known_total() {
+        let dir = tempfile::tempdir().unwrap();
+        let path = dir.path().join("setup.exe");
+        let script = vec![
+            (5, "Downloading https://example.com/x.exe"),
+            (400, "Successfully verified installer hash"),
+        ];
+        let rec = Arc::new(Rec::default());
+        let q = Queue::start(
+            deps_with(
+                FakeStream::new(vec![(script, Some(0))]),
+                Duration::from_secs(60),
+                dir.path().to_path_buf(),
+                None,
+            ),
+            rec.clone(),
+        );
+        let id = q
+            .enqueue(vec![op(SourceKind::Winget, "Bytes.App", OpKind::Install)])
+            .remove(0);
+        until_phase(&q, &id, JobPhase::Downloading).await;
+        std::fs::write(&path, vec![1u8; 4096]).unwrap();
+        until_finished(&q, &id).await;
+        assert!(
+            rec.bytes.lock().unwrap().contains(&4096),
+            "{:?}",
+            rec.bytes.lock().unwrap()
+        );
+    }
+
+    struct PanicStream;
+    #[async_trait::async_trait]
+    impl StreamRunner for PanicStream {
+        async fn run(
+            &self,
+            spec: &CommandSpec,
+            _l: &(dyn Fn(String) + Send + Sync),
+            _c: CancellationToken,
+        ) -> AppResult<Option<i32>> {
+            if spec.args.iter().any(|a| a == "Boom.App") {
+                panic!("simulated crash");
+            }
+            Ok(Some(0))
+        }
+    }
+
+    #[tokio::test]
+    async fn a_crashing_job_fails_without_stopping_the_queue() {
+        let rec = Arc::new(Rec::default());
+        let q = Queue::start(
+            deps_with(
+                Arc::new(PanicStream),
+                Duration::from_secs(60),
+                std::env::temp_dir(),
+                None,
+            ),
+            rec,
+        );
+        let ids = q.enqueue(vec![
+            op(SourceKind::Winget, "Boom.App", OpKind::Install),
+            op(SourceKind::Winget, "Next.App", OpKind::Install),
+        ]);
+        assert_eq!(until_finished(&q, &ids[0]).await.phase, JobPhase::Failed);
+        assert_eq!(until_finished(&q, &ids[1]).await.phase, JobPhase::Succeeded);
+    }
+
     #[tokio::test]
     async fn missing_tool_fails_with_a_clear_message() {
         let rec = Arc::new(Rec::default());
@@ -859,6 +1057,7 @@ mod tests {
             winget_temp: std::env::temp_dir(),
             sample_every: Duration::from_millis(20),
             gate_poll: Duration::from_millis(20),
+            download_timeout: Duration::from_secs(60),
         };
         let q = Queue::start(deps, rec);
         let id = q

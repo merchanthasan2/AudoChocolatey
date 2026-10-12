@@ -90,6 +90,9 @@ impl Job {
     }
 
     pub fn set_phase(&mut self, phase: JobPhase) {
+        if self.phase.is_finished() {
+            return;
+        }
         self.phase = phase;
         self.cancellable = Self::cancellable_in(phase);
         if phase == JobPhase::Preparing && self.started_at.is_none() {
@@ -161,6 +164,14 @@ mod tests {
         j.set_phase(JobPhase::Succeeded);
         assert!(j.phase.is_finished());
         assert!(j.ended_at.is_some());
+    }
+
+    #[test]
+    fn finished_jobs_never_restart() {
+        let mut j = job();
+        j.set_phase(JobPhase::Cancelled);
+        j.set_phase(JobPhase::Preparing);
+        assert_eq!(j.phase, JobPhase::Cancelled);
     }
 
     #[test]
