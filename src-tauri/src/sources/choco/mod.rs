@@ -1,0 +1,228 @@
+//! Chocolatey package source: CLI for local state, community OData feed for search.
+
+pub mod args;
+pub mod odata;
+pub mod parse;
+
+use crate::error::{AppError, AppResult};
+use crate::ids::{ChocoId, SearchQuery, SourceKind};
+use crate::sources::model::{
+    InstalledPackage, SourcePackage, SourceState, SourceStatus, UpgradeCandidate,
+};
+use crate::sources::process::{CommandSpec, ProcessOutput, Runner};
+use std::path::PathBuf;
+use std::time::Duration;
+
+pub struct ChocoSource<R: Runner> {
+    pub(crate) runner: R,
+    exe: Option<PathBuf>,
+    http: reqwest::Client,
+}
+
+impl<R: Runner> ChocoSource<R> {
+    pub fn new(runner: R, exe: Option<PathBuf>) -> Self {
+        let http = reqwest::Client::builder()
+            .https_only(true)
+            .timeout(Duration::from_secs(10))
+            .user_agent(concat!("QuantumUpdater/", env!("CARGO_PKG_VERSION")))
+            .build()
+            .expect("static reqwest config");
+        Self { runner, exe, http }
+    }
+
+    pub fn exe(&self) -> Option<&PathBuf> {
+        self.exe.as_ref()
+    }
+
+    async fn run(&self, args: Vec<String>, secs: u64) -> AppResult<ProcessOutput> {
+        let exe = self
+            .exe
+            .clone()
+            .ok_or_else(|| AppError::new("source_missing", "Chocolatey is not installed"))?;
+        self.runner
+            .run(&CommandSpec {
+                exe,
+                args,
+                timeout: Duration::from_secs(secs),
+            })
+            .await
+    }
+
+    pub async fn status(&self) -> SourceStatus {
+        let state = match self.run(args::version(), 15).await {
+            Ok(out) if out.code == Some(0) => SourceState::Ready {
+                version: out.stdout.trim().to_string(),
+            },
+            Ok(out) => SourceState::Broken {
+                reason: format!("choco exited {:?}: {}", out.code, out.stdout.trim()),
+            },
+            Err(e) if e.code == "source_missing" => SourceState::Missing,
+            Err(e) => SourceState::Broken { reason: e.message },
+        };
+        SourceStatus {
+            kind: SourceKind::Choco,
+            state,
+        }
+    }
+
+    async fn major_version(&self) -> u32 {
+        match self.run(args::version(), 15).await {
+            Ok(out) => parse::major(&out.stdout).unwrap_or(2),
+            Err(_) => 2,
+        }
+    }
+
+    pub async fn list_installed(&self) -> AppResult<Vec<InstalledPackage>> {
+        let major = self.major_version().await;
+        let out = self.run(args::list(major), 90).await?;
+        let rows = parse::pipe_rows(&out.stdout, 2);
+        if rows.is_empty() && out.code != Some(0) {
+            return Err(AppError::new(
+                "process_failed",
+                format!("choco list exited {:?}", out.code),
+            ));
+        }
+        Ok(rows
+            .into_iter()
+            .filter(|r| ChocoId::try_from(r[0].clone()).is_ok())
+            .map(|r| InstalledPackage {
+                name: r[0].clone(),
+                id: r[0].clone(),
+                version: r[1].clone(),
+                available: None,
+                source: Some(SourceKind::Choco),
+            })
+            .collect())
+    }
+
+    /// `choco outdated` exits 2 when something is outdated (enhanced exit codes).
+    pub async fn list_upgrades(&self) -> AppResult<Vec<UpgradeCandidate>> {
+        let out = self.run(args::outdated(), 180).await?;
+        let rows = parse::pipe_rows(&out.stdout, 3);
+        if rows.is_empty() && !matches!(out.code, Some(0) | Some(2)) {
+            return Err(AppError::new(
+                "process_failed",
+                format!("choco outdated exited {:?}", out.code),
+            ));
+        }
+        Ok(rows
+            .into_iter()
+            .filter(|r| ChocoId::try_from(r[0].clone()).is_ok())
+            .map(|r| UpgradeCandidate {
+                name: r[0].clone(),
+                id: r[0].clone(),
+                installed_version: r[1].clone(),
+                available_version: r[2].clone(),
+                source: SourceKind::Choco,
+            })
+            .collect())
+    }
+
+    pub async fn search(&self, q: &SearchQuery) -> AppResult<Vec<SourcePackage>> {
+        let resp = self
+            .http
+            .get(odata::search_url(q))
+            .send()
+            .await
+            .map_err(|e| AppError::new("network", format!("Chocolatey search: {e}")))?;
+        if !resp.status().is_success() {
+            return Err(AppError::new(
+                "network",
+                format!("Chocolatey search: HTTP {}", resp.status()),
+            ));
+        }
+        let body = resp
+            .text()
+            .await
+            .map_err(|e| AppError::new("network", format!("Chocolatey search: {e}")))?;
+        odata::parse_feed(&body)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::error::AppError;
+    use crate::ids::SourceKind;
+    use crate::sources::fake::FakeRunner;
+    use crate::sources::model::SourceState;
+
+    const LIST: &str = include_str!("../../../tests/fixtures/choco/list-r.v2.txt");
+    const OUTDATED: &str = include_str!("../../../tests/fixtures/choco/outdated-r.v2.txt");
+
+    fn src(r: FakeRunner) -> ChocoSource<FakeRunner> {
+        ChocoSource::new(r, Some(r"C:\ProgramData\chocolatey\bin\choco.exe".into()))
+    }
+
+    #[tokio::test]
+    async fn status_ready_and_missing() {
+        let s = src(FakeRunner::new().on("--version", 0, "2.7.4\r\n"))
+            .status()
+            .await;
+        assert_eq!(s.kind, SourceKind::Choco);
+        assert_eq!(
+            s.state,
+            SourceState::Ready {
+                version: "2.7.4".into()
+            }
+        );
+        let m = ChocoSource::new(FakeRunner::new(), None).status().await;
+        assert_eq!(m.state, SourceState::Missing);
+        let gone = src(FakeRunner::new().fail("--version", AppError::new("source_missing", "x")));
+        assert_eq!(gone.status().await.state, SourceState::Missing);
+        let broken = src(FakeRunner::new().on("--version", 1, "boom"))
+            .status()
+            .await;
+        assert!(matches!(broken.state, SourceState::Broken { .. }));
+    }
+
+    #[tokio::test]
+    async fn v2_list_filters_noise() {
+        let s = src(FakeRunner::new()
+            .on("--version", 0, "2.7.4")
+            .on("list", 0, LIST));
+        let items = s.list_installed().await.unwrap();
+        assert_eq!(items.len(), 16);
+        assert_eq!(items[0].id, "chocolatey");
+        assert_eq!(items[0].version, "2.7.4");
+        assert!(items.iter().all(|p| p.source == Some(SourceKind::Choco)));
+        assert!(items
+            .iter()
+            .all(|p| !p.id.contains("try") && !p.id.contains("Access")));
+        let list_call = s
+            .runner
+            .calls()
+            .into_iter()
+            .find(|c| c[0] == "list")
+            .unwrap();
+        assert_eq!(list_call, ["list", "-r"]);
+    }
+
+    #[tokio::test]
+    async fn v1_uses_local_only() {
+        let s = src(FakeRunner::new()
+            .on("--version", 0, "1.4.0")
+            .on("list", 0, LIST));
+        s.list_installed().await.unwrap();
+        let list_call = s
+            .runner
+            .calls()
+            .into_iter()
+            .find(|c| c[0] == "list")
+            .unwrap();
+        assert_eq!(list_call, ["list", "--local-only", "-r"]);
+    }
+
+    #[tokio::test]
+    async fn outdated_parses_candidates() {
+        let u = src(FakeRunner::new().on("outdated", 0, OUTDATED))
+            .list_upgrades()
+            .await
+            .unwrap();
+        assert_eq!(u.len(), 3);
+        let vc = u.iter().find(|c| c.id == "vcredist140").unwrap();
+        assert_eq!(vc.installed_version, "14.44.35211");
+        assert_eq!(vc.available_version, "14.51.36247");
+        assert_eq!(vc.source, SourceKind::Choco);
+    }
+}

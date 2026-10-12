@@ -1,3 +1,4 @@
+pub mod choco;
 pub mod model;
 pub mod process;
 pub mod winget;
