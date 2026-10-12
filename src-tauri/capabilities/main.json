@@ -1,0 +1,16 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "main",
+  "description": "Main window: core event/window basics plus Quantum Updater's own commands. No shell, fs, opener, dialog or updater access from JS.",
+  "windows": ["main"],
+  "permissions": [
+    "core:event:default",
+    "core:window:allow-show",
+    "core:window:allow-hide",
+    "core:window:allow-set-focus",
+    "core:window:allow-minimize",
+    "core:window:allow-close",
+    "core:app:allow-version",
+    "allow-get-overview"
+  ]
+}
