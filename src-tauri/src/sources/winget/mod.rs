@@ -1,6 +1,7 @@
 //! winget package source: status, installed list, upgrades and search over the CLI.
 
 pub mod args;
+pub mod details;
 pub mod parse;
 
 use crate::error::{AppError, AppResult};
