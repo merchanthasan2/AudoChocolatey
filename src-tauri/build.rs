@@ -25,6 +25,17 @@ fn main() {
     println!("cargo:rerun-if-changed=../.git/logs/HEAD");
     println!("cargo:rerun-if-changed=../.git/index");
     println!("cargo:rerun-if-changed=windows");
+    // Any rerun-if-changed disables Cargo's default "rerun on any package file", so list the sources whose
+    // unstaged edits must flip the -dirty flag.
+    for path in [
+        "src",
+        "Cargo.toml",
+        "../app/src",
+        "../app/index.html",
+        "../package.json",
+    ] {
+        println!("cargo:rerun-if-changed={path}");
+    }
 
     // Release requires admin; debug runs as the invoking user so `tauri dev` works from a normal terminal.
     let manifest = if std::env::var("PROFILE").as_deref() == Ok("release") {
