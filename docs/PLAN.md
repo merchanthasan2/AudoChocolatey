@@ -5,11 +5,11 @@
 > **Spec:** [superpowers/specs/2026-10-12-quantum-updater-v3-redesign-design.md](superpowers/specs/2026-10-12-quantum-updater-v3-redesign-design.md)
 > **Detailed phase plans:** `docs/superpowers/plans/`. Each phase's plan is written just before the phase starts, because it depends on code from earlier phases.
 
-**Status:** P0 in progress · **Last updated:** 2026-10-12
+**Status:** P0 done (branch `v3/p0-foundation`, awaiting merge) · P1 next · **Last updated:** 2026-10-12
 
 | Phase | Name | Status | Detailed plan |
 |---|---|---|---|
-| P0 | Cleanup and foundation | In progress | [p0-foundation](superpowers/plans/2026-10-12-p0-foundation.md) |
+| P0 | Cleanup and foundation | Done (branch v3/p0-foundation; UAC check pending owner) | [p0-foundation](superpowers/plans/2026-10-12-p0-foundation.md) |
 | P1 | Rust core and sources | Not started | (to be written) |
 | P2 | Combined catalog | Not started | (to be written) |
 | P3 | Queue and real progress | Not started | (to be written) |
@@ -29,7 +29,7 @@ Goal: one runtime, a fresh Svelte shell, admin manifest really embedded, locked-
 - [x] T4 Scaffold `app/` (Svelte 5 + Vite + TS, bundled fonts, Warm Store placeholder screen)
 - [x] T5 Rust shell: `build.rs` manifest embed (release admin / debug asInvoker), `BUILD_SHA`, command manifest, capabilities, CSP, `get_overview`
 - [x] T6 CI and release workflow cleanup (no Python, builds frontend, fmt/clippy/test, policy checks)
-- [ ] T7 Docs: ADRs D1–D13, DEVELOPMENT.md, README; release build verification (UAC + SHA shown)
+- [x] T7 Docs: ADRs D1–D13, DEVELOPMENT.md, README; release build verification (UAC + SHA shown)
 
 ## P1: Rust core and sources
 - [ ] `error.rs` (`AppError{code,message}`), `ids.rs` validated newtypes (WingetId, ChocoId, PkgVersion, SourceRef), `versions.rs`
@@ -100,3 +100,9 @@ Goal: one runtime, a fresh Svelte shell, admin manifest really embedded, locked-
 | Date | Change | Why |
 |---|---|---|
 | 2026-10-12 | Plan created | Approved spec |
+| 2026-10-12 | P0 built on branch `v3/p0-foundation`, not pushed to `main` | Push/merge awaits owner approval |
+| 2026-10-12 | `test:scripts` uses the glob `"scripts/*.test.mjs"` | Node 24 `--test` doesn't accept a bare directory |
+| 2026-10-12 | create-vite 9 ships Vite 8 / TS 6 and `public/favicon.svg` + `icons.svg` (deleted) | Template changed since plan |
+| 2026-10-12 | `#app` added to the full-height CSS rule | Placeholder card rendered top-aligned |
+| 2026-10-12 | Live UI verified via WebView2 remote debugging (CDP): 0 console errors under the production CSP, fonts load, IPC OK | Faster and more thorough than right-click Inspect |
+| 2026-10-12 | Release exe: `requireAdministrator` embedded (verified in binary); the UAC prompt on double-click is for the owner to confirm | Needs interactive consent |
