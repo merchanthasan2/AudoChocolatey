@@ -75,6 +75,11 @@ pub async fn list_installed(
 pub async fn list_updates(
     state: State<'_, AppState>,
 ) -> Result<Listing<UpgradeCandidate>, AppError> {
+    Ok(collect_updates(&state).await)
+}
+
+/// The update list shown on the Updates screen; "Update all" uses exactly this list.
+pub async fn collect_updates(state: &AppState) -> Listing<UpgradeCandidate> {
     let s = state.settings();
     let (w, c) = tokio::join!(state.winget.list_upgrades(s.show_unknown_versions), async {
         if s.choco.enabled {
@@ -83,10 +88,7 @@ pub async fn list_updates(
             disabled()
         }
     });
-    Ok(collect(vec![
-        (SourceKind::Winget, w),
-        (SourceKind::Choco, c),
-    ]))
+    collect(vec![(SourceKind::Winget, w), (SourceKind::Choco, c)])
 }
 
 #[tauri::command]

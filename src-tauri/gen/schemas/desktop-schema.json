@@ -177,16 +177,46 @@
       "description": "Permission identifier",
       "oneOf": [
         {
+          "description": "Enables the cancel_job command without any pre-configured scope.",
+          "type": "string",
+          "const": "allow-cancel-job",
+          "markdownDescription": "Enables the cancel_job command without any pre-configured scope."
+        },
+        {
+          "description": "Enables the clear_finished command without any pre-configured scope.",
+          "type": "string",
+          "const": "allow-clear-finished",
+          "markdownDescription": "Enables the clear_finished command without any pre-configured scope."
+        },
+        {
+          "description": "Enables the enqueue command without any pre-configured scope.",
+          "type": "string",
+          "const": "allow-enqueue",
+          "markdownDescription": "Enables the enqueue command without any pre-configured scope."
+        },
+        {
           "description": "Enables the get_diagnostics command without any pre-configured scope.",
           "type": "string",
           "const": "allow-get-diagnostics",
           "markdownDescription": "Enables the get_diagnostics command without any pre-configured scope."
         },
         {
+          "description": "Enables the get_job_log command without any pre-configured scope.",
+          "type": "string",
+          "const": "allow-get-job-log",
+          "markdownDescription": "Enables the get_job_log command without any pre-configured scope."
+        },
+        {
           "description": "Enables the get_overview command without any pre-configured scope.",
           "type": "string",
           "const": "allow-get-overview",
           "markdownDescription": "Enables the get_overview command without any pre-configured scope."
+        },
+        {
+          "description": "Enables the get_queue command without any pre-configured scope.",
+          "type": "string",
+          "const": "allow-get-queue",
+          "markdownDescription": "Enables the get_queue command without any pre-configured scope."
         },
         {
           "description": "Enables the get_settings command without any pre-configured scope.",
@@ -207,10 +237,22 @@
           "markdownDescription": "Enables the list_updates command without any pre-configured scope."
         },
         {
+          "description": "Enables the retry_job command without any pre-configured scope.",
+          "type": "string",
+          "const": "allow-retry-job",
+          "markdownDescription": "Enables the retry_job command without any pre-configured scope."
+        },
+        {
           "description": "Enables the search command without any pre-configured scope.",
           "type": "string",
           "const": "allow-search",
           "markdownDescription": "Enables the search command without any pre-configured scope."
+        },
+        {
+          "description": "Enables the update_all command without any pre-configured scope.",
+          "type": "string",
+          "const": "allow-update-all",
+          "markdownDescription": "Enables the update_all command without any pre-configured scope."
         },
         {
           "description": "Enables the update_settings command without any pre-configured scope.",
@@ -219,16 +261,46 @@
           "markdownDescription": "Enables the update_settings command without any pre-configured scope."
         },
         {
+          "description": "Denies the cancel_job command without any pre-configured scope.",
+          "type": "string",
+          "const": "deny-cancel-job",
+          "markdownDescription": "Denies the cancel_job command without any pre-configured scope."
+        },
+        {
+          "description": "Denies the clear_finished command without any pre-configured scope.",
+          "type": "string",
+          "const": "deny-clear-finished",
+          "markdownDescription": "Denies the clear_finished command without any pre-configured scope."
+        },
+        {
+          "description": "Denies the enqueue command without any pre-configured scope.",
+          "type": "string",
+          "const": "deny-enqueue",
+          "markdownDescription": "Denies the enqueue command without any pre-configured scope."
+        },
+        {
           "description": "Denies the get_diagnostics command without any pre-configured scope.",
           "type": "string",
           "const": "deny-get-diagnostics",
           "markdownDescription": "Denies the get_diagnostics command without any pre-configured scope."
         },
         {
+          "description": "Denies the get_job_log command without any pre-configured scope.",
+          "type": "string",
+          "const": "deny-get-job-log",
+          "markdownDescription": "Denies the get_job_log command without any pre-configured scope."
+        },
+        {
           "description": "Denies the get_overview command without any pre-configured scope.",
           "type": "string",
           "const": "deny-get-overview",
           "markdownDescription": "Denies the get_overview command without any pre-configured scope."
+        },
+        {
+          "description": "Denies the get_queue command without any pre-configured scope.",
+          "type": "string",
+          "const": "deny-get-queue",
+          "markdownDescription": "Denies the get_queue command without any pre-configured scope."
         },
         {
           "description": "Denies the get_settings command without any pre-configured scope.",
@@ -249,10 +321,22 @@
           "markdownDescription": "Denies the list_updates command without any pre-configured scope."
         },
         {
+          "description": "Denies the retry_job command without any pre-configured scope.",
+          "type": "string",
+          "const": "deny-retry-job",
+          "markdownDescription": "Denies the retry_job command without any pre-configured scope."
+        },
+        {
           "description": "Denies the search command without any pre-configured scope.",
           "type": "string",
           "const": "deny-search",
           "markdownDescription": "Denies the search command without any pre-configured scope."
+        },
+        {
+          "description": "Denies the update_all command without any pre-configured scope.",
+          "type": "string",
+          "const": "deny-update-all",
+          "markdownDescription": "Denies the update_all command without any pre-configured scope."
         },
         {
           "description": "Denies the update_settings command without any pre-configured scope.",

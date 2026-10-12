@@ -32,6 +32,9 @@ fn winget_message(code: i32) -> Option<&'static str> {
         0x8A150113 => "This package isn't supported on your system.",
         0x8A150114 => "This installer can't upgrade the existing version.",
         0x8A150056 => "This installer can't run with administrator rights.",
+        0x8A150030 => "The app's uninstaller reported an error.",
+        0x8A150019 => "This needs administrator rights.",
+        0x8A15003A => "This is blocked by Group Policy on this PC.",
         0x8A150045 => "Couldn't open the winget source. Check your connection.",
         _ => return None,
     })
@@ -111,6 +114,13 @@ mod tests {
         assert!(msg(-1978334971).contains("no more space"));
         assert!(msg(-1978334966).contains("Restart your PC"));
         assert!(msg(-123).contains("0xFFFFFF85"), "{}", msg(-123));
+        assert!(
+            msg(-1978335184).contains("uninstaller"),
+            "{}",
+            msg(-1978335184)
+        );
+        assert!(msg(-1978335207).contains("administrator"));
+        assert!(msg(-1978335174).contains("Group Policy"));
     }
 
     #[test]

@@ -34,7 +34,9 @@ pub trait MsiGate: Send + Sync {
     fn busy(&self) -> bool;
 }
 
+#[cfg(test)]
 pub struct NoGate;
+#[cfg(test)]
 impl MsiGate for NoGate {
     fn busy(&self) -> bool {
         false
@@ -502,16 +504,19 @@ mod tests {
 
     const DOWNLOAD: &str = include_str!("../../tests/fixtures/winget/download-7zip.en.txt");
 
+    type Script = (Vec<(u64, String)>, Option<i32>);
+    type ScriptIn<'a> = (Vec<(u64, &'a str)>, Option<i32>);
+
     /// Each run consumes the next script: lines with a delay before each, then an exit code.
     struct FakeStream {
-        scripts: StdMutex<std::collections::VecDeque<(Vec<(u64, String)>, Option<i32>)>>,
+        scripts: StdMutex<std::collections::VecDeque<Script>>,
         running: AtomicBool,
         overlapped: AtomicBool,
         runs: AtomicUsize,
     }
 
     impl FakeStream {
-        fn new(scripts: Vec<(Vec<(u64, &str)>, Option<i32>)>) -> Arc<Self> {
+        fn new(scripts: Vec<ScriptIn<'_>>) -> Arc<Self> {
             Arc::new(Self {
                 scripts: StdMutex::new(
                     scripts

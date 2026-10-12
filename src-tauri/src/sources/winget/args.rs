@@ -9,7 +9,6 @@ use crate::sources::model::{OpKind, OpRequest};
 const AGREE_SOURCE: &str = "--accept-source-agreements";
 const NO_PROMPT: &str = "--disable-interactivity";
 
-#[allow(dead_code)] // wired into the job queue in P3
 pub fn build_op(op: &OpRequest) -> AppResult<Vec<String>> {
     if op.target.source() != SourceKind::Winget {
         return Err(AppError::new("invalid_input", "not a winget package"));

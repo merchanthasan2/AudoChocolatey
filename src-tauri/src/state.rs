@@ -1,26 +1,57 @@
 //! Long-lived services shared by all commands.
 
+use crate::commands::jobs::TauriSink;
+use crate::jobs::worker::{Queue, SystemMsiGate, WingetSizer, WorkerDeps};
 use crate::settings::SettingsStore;
 use crate::sources::choco::ChocoSource;
 use crate::sources::process::{ExePaths, SystemRunner};
+use crate::sources::stream::SystemStreamRunner;
 use crate::sources::winget::WingetSource;
 use std::path::PathBuf;
-use std::sync::Mutex;
+use std::sync::{Arc, Mutex};
+use std::time::Duration;
 
 pub struct AppState {
     pub winget: WingetSource<SystemRunner>,
     pub choco: ChocoSource<SystemRunner>,
     pub settings: Mutex<SettingsStore>,
+    pub queue: Queue,
     pub config_dir: PathBuf,
 }
 
 impl AppState {
-    pub fn new(config_dir: PathBuf) -> Self {
+    pub fn new(config_dir: PathBuf, app: tauri::AppHandle) -> Self {
         let paths = ExePaths::detect();
+        let sizer = paths.winget.clone().and_then(|winget| {
+            let http = reqwest::Client::builder()
+                .https_only(true)
+                .timeout(Duration::from_secs(10))
+                .build()
+                .ok()?;
+            Some(Arc::new(WingetSizer {
+                runner: Arc::new(SystemRunner),
+                winget,
+                http,
+            }) as _)
+        });
+        let queue = Queue::start(
+            WorkerDeps {
+                stream: Arc::new(SystemStreamRunner),
+                winget: paths.winget.clone(),
+                choco: paths.choco.clone(),
+                gate: Arc::new(SystemMsiGate),
+                sizer,
+                winget_temp: std::env::temp_dir().join("WinGet"),
+                sample_every: Duration::from_millis(250),
+                gate_poll: Duration::from_millis(500),
+            },
+            Arc::new(TauriSink(app)),
+        );
         Self {
             winget: WingetSource::new(SystemRunner, paths.winget),
             choco: ChocoSource::new(SystemRunner, paths.choco),
             settings: Mutex::new(SettingsStore::open(config_dir.join("settings.json"))),
+            queue,
             config_dir,
         }
     }

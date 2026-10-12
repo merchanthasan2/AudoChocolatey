@@ -126,7 +126,7 @@ impl DownloadWatcher {
                 let Ok(meta) = e.metadata() else { continue };
                 if meta.is_dir() {
                     stack.push(e.path());
-                } else if meta.modified().is_ok_and(|m| m > self.since) {
+                } else if meta.len() > 0 && meta.modified().is_ok_and(|m| m > self.since) {
                     best = Some(best.unwrap_or(0).max(meta.len()));
                 }
             }
@@ -225,6 +225,20 @@ mod tests {
             .sample(),
             None
         );
+    }
+
+    /// Delivery Optimization creates an empty placeholder and writes the whole file at the end
+    /// (observed live); an empty file must not show as a stuck "0%".
+    #[test]
+    fn empty_placeholder_files_are_ignored() {
+        let dir = tempfile::tempdir().unwrap();
+        let since = SystemTime::now() - Duration::from_secs(1);
+        std::fs::write(dir.path().join("DOAA2A.tmp"), b"").unwrap();
+        let w = DownloadWatcher {
+            dir: dir.path().to_path_buf(),
+            since,
+        };
+        assert_eq!(w.sample(), None);
     }
 
     #[test]

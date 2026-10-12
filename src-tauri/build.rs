@@ -9,6 +9,13 @@ const COMMANDS: &[&str] = &[
     "search",
     "get_settings",
     "update_settings",
+    "enqueue",
+    "update_all",
+    "get_queue",
+    "cancel_job",
+    "retry_job",
+    "clear_finished",
+    "get_job_log",
 ];
 
 fn git(args: &[&str]) -> Option<String> {
