@@ -1,6 +1,7 @@
 mod commands;
 mod error;
 mod ids;
+mod settings;
 mod sources;
 mod versions;
 
