@@ -106,3 +106,7 @@ Goal: one runtime, a fresh Svelte shell, admin manifest really embedded, locked-
 | 2026-10-12 | `#app` added to the full-height CSS rule | Placeholder card rendered top-aligned |
 | 2026-10-12 | Live UI verified via WebView2 remote debugging (CDP): 0 console errors under the production CSP, fonts load, IPC OK | Faster and more thorough than right-click Inspect |
 | 2026-10-12 | Release exe: `requireAdministrator` embedded (verified in binary); the UAC prompt on double-click is for the owner to confirm | Needs interactive consent |
+| 2026-10-12 | Final review fix: `build.rs` reruns on `src/`, `app/src`, `Cargo.toml`, `package.json` edits (`910bb84`) | `-dirty` flag went stale on unstaged edits |
+| 2026-10-12 | Production CSP re-verified at runtime: inline scripts and remote images blocked | Reviewer asked for runtime proof |
+| 2026-10-12 | Deferred to P7: `release.yml` must run the CI checks before publishing; `bump-version` should refresh lockfile versions | Review minors |
+| 2026-10-12 | Deferred to P6: `tray-icon` feature unused until then; trim unused window capabilities if the UI doesn't need them | Review minors |
