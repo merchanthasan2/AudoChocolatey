@@ -1,0 +1,5 @@
+Name                  Id                              Version Available Source
+------------------------------------------------------------------------------
+CrystalDiskInfo 9.9.2 CrystalDewWorld.CrystalDiskInfo 9.9.2   9.9.3     winget
+Quantum Updater       QuantumStep.QuantumUpdater      3.0.0   3.1.0     winget
+2 upgrades available.

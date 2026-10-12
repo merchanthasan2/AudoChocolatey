@@ -1,0 +1,10 @@
+Name               Id                         Version Available Source
+----------------------------------------------------------------------
+Visual Studio Code Microsoft.VisualStudioCode 1.85.0  1.86.0    winget
+
+The following packages have an upgrade available, but require explicit targeting for upgrade:
+Name                        Id              Version  Available Source
+---------------------------------------------------------------------
+Discord                     Discord.Discord 1.0.9015 1.0.9018  winget
+Windows Subsystem for Linux Microsoft.WSL   2.0.9    2.1.5     winget
+3 upgrades available.

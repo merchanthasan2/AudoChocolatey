@@ -1,0 +1,19 @@
+{
+  "Sources": [
+    {
+      "Packages": [
+        {
+          "PackageIdentifier": "CrystalDewWorld.CrystalDiskInfo",
+          "Version": "9.9.2"
+        },
+        {
+          "PackageIdentifier": "Contoso.VeryLongPackageName",
+          "Version": "1.0"
+        }
+      ],
+      "SourceDetails": {
+        "Name": "winget"
+      }
+    }
+  ]
+}

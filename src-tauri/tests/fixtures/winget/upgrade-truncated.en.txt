@@ -1,0 +1,6 @@
+Name                  Id                              Version Available Source
+------------------------------------------------------------------------------
+CrystalDiskInfo 9.9.2 CrystalDewWorld.CrystalDiskInfo 9.9.2   9.9.3     winget
+Contoso Long App      Contoso.VeryLong…               1.0     2.0       winget
+Other Long App        Nomatch.Prefix…                 1.0     2.0       winget
+3 upgrades available.

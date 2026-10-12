@@ -23,7 +23,7 @@ regex = "1"
 unicode-width = "0.2"
 reqwest = { version = "0.13", default-features = false, features = ["native-tls", "http2", "system-proxy", "query"] }
 quick-xml = "0.42"
-ts-rs = "12"
+ts-rs = { version = "12", features = ["no-serde-warnings"] }
 
 [dev-dependencies]
 tempfile = "3"

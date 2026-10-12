@@ -1,0 +1,5 @@
+Name                  ID                              Version Verfügbar Quelle
+------------------------------------------------------------------------------
+CrystalDiskInfo 9.9.2 CrystalDewWorld.CrystalDiskInfo 9.9.2   9.9.3     winget
+Bildschirmfoto Größe  Contoso.Screenshot              1.0     1.1       winget
+2 Aktualisierungen verfügbar.

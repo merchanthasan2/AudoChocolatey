@@ -1,0 +1,337 @@
+//! winget package source: status, installed list, upgrades and search over the CLI.
+
+pub mod args;
+pub mod parse;
+
+use crate::error::{AppError, AppResult};
+use crate::ids::{SearchQuery, SourceKind, WingetId};
+use crate::sources::model::{
+    InstalledPackage, SourcePackage, SourceState, SourceStatus, UpgradeCandidate,
+};
+use crate::sources::process::{CommandSpec, ProcessOutput, Runner};
+use parse::{parse_tables, Row};
+use std::path::PathBuf;
+use std::sync::atomic::{AtomicU32, Ordering};
+use std::time::Duration;
+
+/// `APPINSTALLER_CLI_ERROR_NO_APPLICATIONS_FOUND` (0x8A150014): "nothing matched", not a failure.
+const NO_APPLICATIONS_FOUND: i32 = -1978335212;
+const SELF_ID: &str = "QuantumStep.QuantumUpdater";
+const TRUNCATION: char = '\u{2026}';
+
+pub struct WingetSource<R: Runner> {
+    pub(crate) runner: R,
+    exe: Option<PathBuf>,
+}
+
+impl<R: Runner> WingetSource<R> {
+    pub fn new(runner: R, exe: Option<PathBuf>) -> Self {
+        Self { runner, exe }
+    }
+
+    pub fn exe(&self) -> Option<&PathBuf> {
+        self.exe.as_ref()
+    }
+
+    async fn run(&self, args: Vec<String>, secs: u64) -> AppResult<ProcessOutput> {
+        let exe = self
+            .exe
+            .clone()
+            .ok_or_else(|| AppError::new("source_missing", "winget is not installed"))?;
+        self.runner
+            .run(&CommandSpec {
+                exe,
+                args,
+                timeout: Duration::from_secs(secs),
+            })
+            .await
+    }
+
+    pub async fn status(&self) -> SourceStatus {
+        let state = match self.run(args::version(), 15).await {
+            Ok(out) if out.code == Some(0) => SourceState::Ready {
+                version: out.stdout.trim().trim_start_matches('v').to_string(),
+            },
+            Ok(out) => SourceState::Broken { reason: tail(&out) },
+            Err(e) if e.code == "source_missing" => SourceState::Missing,
+            Err(e) => SourceState::Broken { reason: e.message },
+        };
+        SourceStatus {
+            kind: SourceKind::Winget,
+            state,
+        }
+    }
+
+    /// Rows from a query, treating "no table" as empty when winget says nothing matched.
+    async fn query(&self, args: Vec<String>, secs: u64) -> AppResult<Vec<Row>> {
+        let out = self.run(args, secs).await?;
+        let rows: Vec<Row> = parse_tables(&out.stdout).into_iter().flatten().collect();
+        if rows.is_empty() && !matches!(out.code, Some(0) | Some(NO_APPLICATIONS_FOUND)) {
+            return Err(AppError::new(
+                "process_failed",
+                format!("winget failed: {}", tail(&out)),
+            ));
+        }
+        Ok(rows)
+    }
+
+    pub async fn list_installed(&self) -> AppResult<Vec<InstalledPackage>> {
+        let rows = self
+            .resolve_truncated(self.query(args::list(), 90).await?)
+            .await;
+        Ok(rows
+            .into_iter()
+            .map(|r| {
+                let managed = r.source.as_deref() == Some("winget") && valid(&r.id);
+                InstalledPackage {
+                    name: r.name,
+                    id: r.id,
+                    version: r.version,
+                    available: r.extra,
+                    source: managed.then_some(SourceKind::Winget),
+                }
+            })
+            .collect())
+    }
+
+    pub async fn list_upgrades(&self, include_unknown: bool) -> AppResult<Vec<UpgradeCandidate>> {
+        let rows = self
+            .resolve_truncated(self.query(args::upgrade(include_unknown), 120).await?)
+            .await;
+        Ok(rows
+            .into_iter()
+            .filter(|r| r.source.as_deref() == Some("winget") && valid(&r.id) && r.id != SELF_ID)
+            .filter_map(|r| {
+                Some(UpgradeCandidate {
+                    available_version: r.extra?,
+                    name: r.name,
+                    id: r.id,
+                    installed_version: r.version,
+                    source: SourceKind::Winget,
+                })
+            })
+            .collect())
+    }
+
+    pub async fn search(&self, q: &SearchQuery) -> AppResult<Vec<SourcePackage>> {
+        let rows = self.query(args::search(q.as_str()), 60).await?;
+        Ok(rows
+            .into_iter()
+            .filter(|r| r.source.as_deref() == Some("winget") && valid(&r.id))
+            .map(|r| SourcePackage {
+                version: (!r.version.is_empty() && r.version != "Unknown").then_some(r.version),
+                name: r.name,
+                id: r.id,
+                source: SourceKind::Winget,
+                matched_on: r.extra,
+                description: None,
+                homepage: None,
+                icon_url: None,
+            })
+            .collect())
+    }
+
+    /// winget truncates ids with an ellipsis on narrow consoles. Resolve each by unique prefix
+    /// against `winget export`; drop rows that stay ambiguous rather than guess.
+    async fn resolve_truncated(&self, rows: Vec<Row>) -> Vec<Row> {
+        if !rows.iter().any(|r| r.id.ends_with(TRUNCATION)) {
+            return rows;
+        }
+        let known = self.export_ids().await.unwrap_or_default();
+        rows.into_iter()
+            .filter_map(|mut r| {
+                let Some(prefix) = r.id.strip_suffix(TRUNCATION) else {
+                    return Some(r);
+                };
+                let mut matches = known.iter().filter(|k| k.starts_with(prefix));
+                match (matches.next(), matches.next()) {
+                    (Some(full), None) => {
+                        r.id = full.clone();
+                        Some(r)
+                    }
+                    _ => None,
+                }
+            })
+            .collect()
+    }
+
+    async fn export_ids(&self) -> AppResult<Vec<String>> {
+        static N: AtomicU32 = AtomicU32::new(0);
+        let path = std::env::temp_dir().join(format!(
+            "quantum-updater-export-{}-{}.json",
+            std::process::id(),
+            N.fetch_add(1, Ordering::Relaxed)
+        ));
+        let path_str = path.to_string_lossy().into_owned();
+        let result = self.run(args::export(&path_str), 90).await;
+        let text = std::fs::read_to_string(&path);
+        let _ = std::fs::remove_file(&path);
+        result?;
+        let json: serde_json::Value = serde_json::from_str(&text?)
+            .map_err(|e| AppError::new("parse", format!("winget export: {e}")))?;
+        Ok(json["Sources"]
+            .as_array()
+            .into_iter()
+            .flatten()
+            .flat_map(|s| s["Packages"].as_array().into_iter().flatten())
+            .filter_map(|p| p["PackageIdentifier"].as_str().map(String::from))
+            .collect())
+    }
+}
+
+fn valid(id: &str) -> bool {
+    WingetId::try_from(id.to_string()).is_ok()
+}
+
+fn tail(out: &ProcessOutput) -> String {
+    let text = format!("{} {}", out.stdout.trim(), out.stderr.trim());
+    let text = text.trim();
+    let start = text
+        .char_indices()
+        .rev()
+        .nth(299)
+        .map(|(i, _)| i)
+        .unwrap_or(0);
+    format!("exit {:?}: {}", out.code, &text[start..])
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::error::AppError;
+    use crate::ids::{SearchQuery, SourceKind};
+    use crate::sources::fake::FakeRunner;
+    use crate::sources::model::SourceState;
+
+    const LIST: &str = include_str!("../../../tests/fixtures/winget/list.en.txt");
+    const UPGRADE: &str = include_str!("../../../tests/fixtures/winget/upgrade.en.txt");
+    const UPGRADE_SELF: &str = include_str!("../../../tests/fixtures/winget/upgrade-self.en.txt");
+    const TRUNC: &str = include_str!("../../../tests/fixtures/winget/upgrade-truncated.en.txt");
+    const TRUNC_EXPORT: &str = include_str!("../../../tests/fixtures/winget/export-truncated.json");
+    const SEARCH_CODE: &str = include_str!("../../../tests/fixtures/winget/search-code.en.txt");
+    const NO_RESULTS: &str = include_str!("../../../tests/fixtures/winget/no-results.en.txt");
+
+    fn src(r: FakeRunner) -> WingetSource<FakeRunner> {
+        WingetSource::new(r, Some(r"C:\fake\winget.exe".into()))
+    }
+
+    #[tokio::test]
+    async fn status_ready_strips_v() {
+        let s = src(FakeRunner::new().on("--version", 0, "v1.29.380\r\n"))
+            .status()
+            .await;
+        assert_eq!(s.kind, SourceKind::Winget);
+        assert_eq!(
+            s.state,
+            SourceState::Ready {
+                version: "1.29.380".into()
+            }
+        );
+    }
+
+    #[tokio::test]
+    async fn status_missing_without_exe() {
+        let s = WingetSource::new(FakeRunner::new(), None).status().await;
+        assert_eq!(s.state, SourceState::Missing);
+    }
+
+    #[tokio::test]
+    async fn installed_marks_local_rows_display_only() {
+        let items = src(FakeRunner::new().on("list", 0, LIST))
+            .list_installed()
+            .await
+            .unwrap();
+        assert_eq!(items.len(), 245);
+        let pro = items.iter().find(|p| p.id == "Adobe.Acrobat.Pro").unwrap();
+        assert_eq!(pro.source, Some(SourceKind::Winget));
+        let studio = items.iter().find(|p| p.name == "Android Studio").unwrap();
+        assert_eq!(studio.source, None);
+    }
+
+    #[tokio::test]
+    async fn upgrades_parse_and_pass_include_unknown() {
+        let s = src(FakeRunner::new().on("upgrade", 0, UPGRADE));
+        let u = s.list_upgrades(true).await.unwrap();
+        assert_eq!(u.len(), 1);
+        assert_eq!(u[0].installed_version, "9.9.2");
+        assert_eq!(u[0].available_version, "9.9.3");
+        assert!(s.runner.calls()[0].contains(&"--include-unknown".to_string()));
+        let s2 = src(FakeRunner::new().on("upgrade", 0, UPGRADE));
+        s2.list_upgrades(false).await.unwrap();
+        assert!(!s2.runner.calls()[0].contains(&"--include-unknown".to_string()));
+    }
+
+    #[tokio::test]
+    async fn self_is_excluded_from_upgrades() {
+        let u = src(FakeRunner::new().on("upgrade", 0, UPGRADE_SELF))
+            .list_upgrades(false)
+            .await
+            .unwrap();
+        assert_eq!(u.len(), 1);
+        assert!(u.iter().all(|c| c.id != "QuantumStep.QuantumUpdater"));
+    }
+
+    #[tokio::test]
+    async fn truncated_ids_resolve_via_export_or_drop() {
+        let s = src(FakeRunner::new()
+            .on("upgrade", 0, TRUNC)
+            .export(TRUNC_EXPORT));
+        let ids: Vec<_> = s
+            .list_upgrades(false)
+            .await
+            .unwrap()
+            .into_iter()
+            .map(|c| c.id)
+            .collect();
+        assert_eq!(
+            ids,
+            [
+                "CrystalDewWorld.CrystalDiskInfo",
+                "Contoso.VeryLongPackageName"
+            ]
+        );
+    }
+
+    #[tokio::test]
+    async fn search_keeps_only_winget_rows_and_passes_source() {
+        let s = src(FakeRunner::new().on("search", 0, SEARCH_CODE));
+        let r = s
+            .search(&SearchQuery::try_from("code".to_string()).unwrap())
+            .await
+            .unwrap();
+        assert!(!r.is_empty());
+        assert!(r.iter().all(|p| p.source == SourceKind::Winget));
+        assert!(
+            r.iter().all(|p| p.id != "XPDM24HMT29WSS"),
+            "msstore rows must be excluded"
+        );
+        let call = &s.runner.calls()[0];
+        assert_eq!(&call[..3], ["search", "--query", "code"]);
+        assert!(call.windows(2).any(|w| w == ["--source", "winget"]));
+    }
+
+    #[tokio::test]
+    async fn no_results_code_is_empty_not_error() {
+        let q = SearchQuery::try_from("zzzz".to_string()).unwrap();
+        let ok = src(FakeRunner::new().on("search", -1978335212, NO_RESULTS))
+            .search(&q)
+            .await;
+        assert_eq!(ok.unwrap(), vec![]);
+        let err = src(FakeRunner::new().on("search", 1, NO_RESULTS))
+            .search(&q)
+            .await;
+        assert_eq!(err.unwrap_err().code, "process_failed");
+        let none = src(FakeRunner::new().on(
+            "upgrade",
+            0,
+            "No installed package found matching input criteria.\r\n",
+        ));
+        assert_eq!(none.list_upgrades(false).await.unwrap(), vec![]);
+    }
+
+    #[tokio::test]
+    async fn runner_missing_exe_propagates_source_missing() {
+        let s = src(FakeRunner::new().fail("list", AppError::new("source_missing", "gone")));
+        assert_eq!(s.list_installed().await.unwrap_err().code, "source_missing");
+    }
+}

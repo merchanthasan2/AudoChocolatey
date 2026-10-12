@@ -1,0 +1,5 @@
+名前                  ID                              バージョン 利用可能 ソース
+--------------------------------------------------------------------------------
+CrystalDiskInfo 9.9.2 CrystalDewWorld.CrystalDiskInfo 9.9.2      9.9.3    winget
+メモ帳++              Notepad++.Notepad++             8.6        8.7      winget
+2 個のアップグレードを利用できます。
