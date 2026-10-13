@@ -134,6 +134,8 @@ Goal: one runtime, a fresh Svelte shell, admin manifest really embedded, locked-
 | 2026-10-13 | P2: catalog is 96 hand-checked apps instead of about 300 auto-mapped ones | Every id is validated against live winget and Chocolatey; a wrong mapping installs the wrong program as admin |
 | 2026-10-13 | P2: Chocolatey by-id lookups use `Packages()?$filter=tolower(Id) eq '…' and IsLatestVersion` | `FindPackagesById` with a filter returns nothing; this also fixed Chocolatey icons |
 | 2026-10-13 | P2: the name merge keeps bracketed words and requires the Chocolatey id to name the app | Live search paired Firefox MSIX (winget) with FirefoxESR, whose Chocolatey title is plain "Mozilla Firefox" |
+| 2026-10-13 | P2 review (0 Critical, 3 Important fixed): Chocolatey title lookups capped at 3 s with a 10-minute miss cache; bundles wait for the installed list and skip queued apps; "Use Chocolatey" off is enforced by the queue too | Fresh whole-branch review |
+| 2026-10-13 | Deferred from P2 review to P8: detail panel dialog focus handling, category stale guard, cancel `winget show` on close, same-name merge tests, retry of Chocolatey jobs while it's off | Review minors |
 | 2026-10-13 | Icon cache remembers only definite misses | Temporary winget/network failures had hidden icons for 7 days |
 | 2026-10-13 | Debug builds use their own WebView2 profile | WebView2 refuses to share a profile between an elevated and a normal instance |
 | 2026-10-13 | P4/P5 review: misdirected clicks fixed (likely cause of the unexplained vcredist140 job); icon SSRF, path and DoS hardening | Review findings; tests added for each |
