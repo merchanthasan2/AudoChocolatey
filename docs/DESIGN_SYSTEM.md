@@ -72,6 +72,11 @@ The look and feel of Quantum Updater, documented from what ships in `app/src`. W
   - QueuePill and QueueDrawer (activity);
   - Segmented, Toggle (spring knob), SearchField (Ctrl K hint, Esc clears);
   - Sidebar (Updates first, live count badge).
+- **Marketplace pieces (P2):**
+  - AppCard: 48 px icon, Get button top right, name, publisher, one-line blurb. The whole card opens details; the button only installs. Lifts 1 px on hover (pointer devices only).
+  - BundleCard: up to six icons in a row, name, blurb, the app list, and one primary button that says how many apps it will install ("Install 4 missing"), or "All installed".
+  - AppDetail: a 460 px panel that slides in from the right (300 ms ease-out; a fade under reduced motion) over a scrim. Esc, the scrim or the close button dismiss it. Shows install button, version, description, sources, website, license and package id.
+- **Dark mode icons.** Original icons get a faint light edge in dark mode (`--icon-halo`) so dark logos (Spotify, GitHub, OBS) stay visible. The artwork itself is never recoloured.
 
 ## Layout
 - The window is 1200×780 by default, with a minimum of 960×640.
