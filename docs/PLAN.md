@@ -130,3 +130,5 @@ Goal: one runtime, a fresh Svelte shell, admin manifest really embedded, locked-
 | 2026-10-12 | P5 pulled forward; bundled icons dropped in favour of live originals only | Owner: "icons need to be actual original"; ADR 022 |
 | 2026-10-13 | Icon cache remembers only definite misses | Temporary winget/network failures had hidden icons for 7 days |
 | 2026-10-13 | Debug builds use their own WebView2 profile | WebView2 refuses to share a profile between an elevated and a normal instance |
+| 2026-10-13 | P4/P5 review: misdirected clicks fixed (likely cause of the unexplained vcredist140 job); icon SSRF, path and DoS hardening | Review findings; tests added for each |
+| 2026-10-13 | Residual risk logged: the elevated app parses user-writable icon files (HKCU) in-process | A fix needs an unelevated helper process; planned for P8 hardening |
