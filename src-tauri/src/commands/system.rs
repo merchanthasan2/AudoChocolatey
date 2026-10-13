@@ -37,71 +37,65 @@ pub fn build_overview(is_elevated: bool, sources: Vec<SourceStatus>) -> Overview
     }
 }
 
-/// Is this app running as the same Windows user as the desktop (explorer)? `None` when there is
-/// no desktop yet. False means "over-the-shoulder" admin: per-user installs (Store apps) would
-/// land in the admin's account, not the person's at the keyboard.
+/// Is this app running as the Windows user signed in to its session? `None` when nobody is
+/// signed in yet. False means "over-the-shoulder" admin: per-user installs (Store apps) would
+/// land in the admin's account, not the person's at the keyboard. Uses the session's sign-in
+/// name only; no other process is opened.
 pub fn shell_user_matches() -> Option<bool> {
-    use windows_sys::Win32::Foundation::{CloseHandle, HANDLE};
-    use windows_sys::Win32::Security::{
-        EqualSid, GetTokenInformation, TokenUser, TOKEN_QUERY, TOKEN_USER,
+    use windows_sys::Win32::Security::Authentication::Identity::{
+        GetUserNameExW, NameSamCompatible,
     };
-    use windows_sys::Win32::System::Threading::{
-        GetCurrentProcess, OpenProcess, OpenProcessToken, PROCESS_QUERY_LIMITED_INFORMATION,
+    use windows_sys::Win32::System::RemoteDesktop::{
+        ProcessIdToSessionId, WTSDomainName, WTSFreeMemory, WTSQuerySessionInformationW,
+        WTSUserName, WTS_CURRENT_SERVER_HANDLE, WTS_INFO_CLASS,
     };
-    use windows_sys::Win32::UI::WindowsAndMessaging::{GetShellWindow, GetWindowThreadProcessId};
 
-    // Reads a process token's user SID into an owned buffer.
-    fn user_sid(process: HANDLE) -> Option<Vec<u8>> {
-        let mut token: HANDLE = std::ptr::null_mut();
-        // SAFETY: valid process handle and out-pointer; the token is closed below.
-        if unsafe { OpenProcessToken(process, TOKEN_QUERY, &mut token) } == 0 {
-            return None;
-        }
-        let mut buf = vec![0u8; 256];
-        let mut len = 0u32;
-        // SAFETY: buffer and length describe writable memory; token is open.
+    fn session_text(session: u32, class: WTS_INFO_CLASS) -> Option<String> {
+        let mut buf: *mut u16 = std::ptr::null_mut();
+        let mut bytes = 0u32;
+        // SAFETY: out-pointers are valid; the buffer is freed with WTSFreeMemory below.
         let ok = unsafe {
-            GetTokenInformation(
-                token,
-                TokenUser,
-                buf.as_mut_ptr().cast(),
-                buf.len() as u32,
-                &mut len,
+            WTSQuerySessionInformationW(
+                WTS_CURRENT_SERVER_HANDLE,
+                session,
+                class,
+                &mut buf,
+                &mut bytes,
             )
         };
-        // SAFETY: token was opened above.
-        unsafe { CloseHandle(token) };
-        (ok != 0).then_some(buf)
+        if ok == 0 || buf.is_null() {
+            return None;
+        }
+        // SAFETY: the system returned `bytes` bytes of UTF-16 (including the terminator).
+        let text = unsafe { std::slice::from_raw_parts(buf, (bytes as usize) / 2) };
+        let s = String::from_utf16_lossy(text)
+            .trim_end_matches(char::from(0))
+            .to_string();
+        // SAFETY: buf came from WTSQuerySessionInformationW.
+        unsafe { WTSFreeMemory(buf.cast()) };
+        Some(s)
     }
 
-    // SAFETY: no preconditions; returns null without a desktop shell.
-    let shell = unsafe { GetShellWindow() };
-    if shell.is_null() {
+    let mut session = 0u32;
+    // SAFETY: valid out-pointer.
+    if unsafe { ProcessIdToSessionId(std::process::id(), &mut session) } == 0 {
         return None;
     }
-    let mut pid = 0u32;
-    // SAFETY: shell is a window handle; pid is a valid out-pointer.
-    unsafe { GetWindowThreadProcessId(shell, &mut pid) };
-    if pid == 0 {
+    let user = session_text(session, WTSUserName)?;
+    if user.is_empty() {
         return None;
     }
-    // SAFETY: plain OpenProcess with query-only rights; closed below.
-    let proc = unsafe { OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, 0, pid) };
-    if proc.is_null() {
+    let domain = session_text(session, WTSDomainName).unwrap_or_default();
+    let signed_in = format!("{domain}\\{user}");
+
+    let mut buf = [0u16; 512];
+    let mut len = buf.len() as u32;
+    // SAFETY: buffer and length describe writable memory.
+    if unsafe { GetUserNameExW(NameSamCompatible, buf.as_mut_ptr(), &mut len) } == 0 {
         return None;
     }
-    let theirs = user_sid(proc);
-    // SAFETY: proc was opened above.
-    unsafe { CloseHandle(proc) };
-    // SAFETY: pseudo-handle for this process, always valid.
-    let ours = user_sid(unsafe { GetCurrentProcess() });
-    let (theirs, ours) = (theirs?, ours?);
-    let sid = |b: &Vec<u8>| {
-        // SAFETY: GetTokenInformation(TokenUser) filled the buffer with a TOKEN_USER.
-        unsafe { (*(b.as_ptr() as *const TOKEN_USER)).User.Sid }
-    };
-    // SAFETY: both SIDs point into live buffers filled by the system.
-    Some(unsafe { EqualSid(sid(&theirs), sid(&ours)) } != 0)
+    let ours = String::from_utf16_lossy(&buf[..len as usize]);
+    Some(ours.eq_ignore_ascii_case(&signed_in))
 }
 
 pub fn is_elevated() -> bool {
@@ -143,9 +137,12 @@ mod tests {
     use super::*;
 
     #[test]
-    fn this_test_runs_as_the_desktop_user() {
-        // Tests run unelevated as the signed-in user (or with no desktop at all in CI).
+    fn this_test_runs_as_the_signed_in_user() {
+        // Tests run as the signed-in user (or with nobody signed in, in CI).
         assert_ne!(shell_user_matches(), Some(false));
+        if std::env::var("USERNAME").is_ok() && std::env::var("CI").is_err() {
+            assert_eq!(shell_user_matches(), Some(true));
+        }
     }
     use crate::ids::SourceKind;
     use crate::sources::model::SourceState;
