@@ -1,8 +1,10 @@
 //! Long-lived services shared by all commands.
 
 use crate::commands::jobs::TauriSink;
+use crate::error::AppResult;
 use crate::icons::IconService;
-use crate::jobs::worker::{Queue, SystemMsiGate, WingetSizer, WorkerDeps};
+use crate::ids::{ChocoId, SourceKind, SourceRef, WingetId};
+use crate::jobs::worker::{Queue, SystemMsiGate, Verifier, WingetSizer, WorkerDeps};
 use crate::settings::SettingsStore;
 use crate::sources::choco::ChocoSource;
 use crate::sources::process::{ExePaths, SystemRunner};
@@ -11,6 +13,30 @@ use crate::sources::winget::WingetSource;
 use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
+
+/// Reads one app's installed version from the source that manages it.
+struct SystemVerifier {
+    winget: WingetSource<SystemRunner>,
+    choco: ChocoSource<SystemRunner>,
+}
+
+#[async_trait::async_trait]
+impl Verifier for SystemVerifier {
+    async fn installed_version(&self, target: &SourceRef) -> AppResult<Option<String>> {
+        match target.source() {
+            SourceKind::Winget => {
+                self.winget
+                    .installed_version(&WingetId::try_from(target.id().to_string())?)
+                    .await
+            }
+            SourceKind::Choco => {
+                self.choco
+                    .installed_version(&ChocoId::try_from(target.id().to_string())?)
+                    .await
+            }
+        }
+    }
+}
 
 pub struct AppState {
     pub winget: WingetSource<SystemRunner>,
@@ -49,6 +75,10 @@ impl AppState {
                 download_timeout: Duration::from_secs(60 * 60),
                 elevated: crate::commands::system::is_elevated(),
                 jobs_file: Some(data_dir.join("jobs.json")),
+                verifier: Some(Arc::new(SystemVerifier {
+                    winget: WingetSource::new(SystemRunner, paths.winget.clone()),
+                    choco: ChocoSource::new(SystemRunner, paths.choco.clone()),
+                })),
             },
             Arc::new(TauriSink(app)),
         );

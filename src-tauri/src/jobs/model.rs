@@ -1,6 +1,7 @@
 //! A queued package operation and the phases the UI animates (Get -> ring -> spin -> tick).
 
 use crate::jobs::failure::FailureReason;
+use crate::jobs::verify::Verify;
 use crate::sources::model::OpRequest;
 use serde::{Deserialize, Serialize};
 use ts_rs::TS;
@@ -51,6 +52,10 @@ pub struct Job {
     pub error: Option<String>,
     /// Why it failed (drives the message and backup-source decisions).
     pub reason: Option<FailureReason>,
+    /// Whether the installed version really changed (set after success).
+    pub verify: Option<Verify>,
+    pub from_version: Option<String>,
+    pub to_version: Option<String>,
     /// Unix epoch milliseconds.
     #[ts(type = "number | null")]
     pub started_at: Option<u64>,
@@ -80,6 +85,9 @@ impl Job {
             reboot_required: false,
             error: None,
             reason: None,
+            verify: None,
+            from_version: None,
+            to_version: None,
             started_at: None,
             ended_at: None,
         }

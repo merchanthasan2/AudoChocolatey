@@ -3,7 +3,7 @@
 //! and reports every change through a `JobSink` (Tauri events in the app, a recorder in tests).
 
 use crate::error::{AppError, AppResult};
-use crate::ids::SourceKind;
+use crate::ids::{SourceKind, SourceRef};
 use crate::jobs::exit_codes::{classify, Outcome};
 use crate::jobs::failure::FailureReason;
 use crate::jobs::model::{Job, JobPhase};
@@ -11,6 +11,7 @@ use crate::jobs::persist;
 use crate::jobs::progress::{
     percent, ChocoLines, DownloadWatcher, LineParser, Signal, WingetLines,
 };
+use crate::jobs::verify;
 use crate::sources::model::{OpKind, OpRequest};
 use crate::sources::stream::{CancellationToken, CommandSpec, StreamRunner};
 use crate::sources::{choco, winget};
@@ -32,6 +33,20 @@ pub trait JobSink: Send + Sync {
     fn changed(&self, job: &Job);
     fn progress(&self, job: &Job);
     fn queue(&self, snapshot: &QueueSnapshot);
+}
+
+/// Reads an app's installed version, to check a finished job really changed it.
+#[async_trait::async_trait]
+pub trait Verifier: Send + Sync {
+    async fn installed_version(&self, target: &SourceRef) -> AppResult<Option<String>>;
+}
+
+const VERIFY_TIMEOUT: Duration = Duration::from_secs(30);
+
+async fn read_version(v: &dyn Verifier, target: &SourceRef) -> Option<AppResult<Option<String>>> {
+    tokio::time::timeout(VERIFY_TIMEOUT, v.installed_version(target))
+        .await
+        .ok()
 }
 
 /// The whole queue as the UI sees it.
@@ -153,6 +168,8 @@ pub struct WorkerDeps {
     pub elevated: bool,
     /// Where the queue and its history are kept between runs (`None` in tests).
     pub jobs_file: Option<PathBuf>,
+    /// Checks the installed version before and after a job.
+    pub verifier: Option<Arc<dyn Verifier>>,
 }
 
 #[derive(Default)]
@@ -489,10 +506,36 @@ impl Queue {
         };
         self.sink.changed(&snapshot);
         self.emit_queue();
+        let before = match (&deps.verifier, op.kind) {
+            (Some(v), OpKind::Upgrade | OpKind::Uninstall) => read_version(v.as_ref(), &op.target)
+                .await
+                .and_then(Result::ok)
+                .flatten(),
+            _ => None,
+        };
         let outcome = self.execute(deps, id, &op, &token).await;
+        let check = match (&outcome, &deps.verifier) {
+            (Ok(Outcome::Succeeded { .. }), Some(v)) => {
+                self.advance(id, JobPhase::Verifying);
+                let after = read_version(v.as_ref(), &op.target).await;
+                Some(match after {
+                    Some(Ok(after)) => (
+                        verify::verdict(op.kind, before.as_deref(), after.as_deref()),
+                        after,
+                    ),
+                    _ => (verify::Verify::Unknown, None),
+                })
+            }
+            _ => None,
+        };
         self.update(id, |j| match outcome {
             Ok(Outcome::Succeeded { reboot }) => {
                 j.reboot_required = reboot;
+                if let Some((verdict, after)) = check {
+                    j.verify = Some(verdict);
+                    j.from_version = before;
+                    j.to_version = after;
+                }
                 j.set_phase(JobPhase::Succeeded);
             }
             Ok(Outcome::Skipped(why)) => {
@@ -779,6 +822,7 @@ mod tests {
             download_timeout: Duration::from_secs(60),
             elevated: true,
             jobs_file: None,
+            verifier: None,
         };
         (Queue::start(deps, rec.clone()), rec)
     }
@@ -1014,6 +1058,7 @@ mod tests {
             download_timeout: timeout,
             elevated: true,
             jobs_file: None,
+            verifier: None,
         }
     }
 
@@ -1158,7 +1203,54 @@ mod tests {
             download_timeout: Duration::from_secs(60),
             elevated: true,
             jobs_file: file,
+            verifier: None,
         }
+    }
+
+    struct SeqVerifier(StdMutex<std::collections::VecDeque<AppResult<Option<String>>>>);
+    #[async_trait::async_trait]
+    impl Verifier for SeqVerifier {
+        async fn installed_version(&self, _t: &SourceRef) -> AppResult<Option<String>> {
+            self.0.lock().unwrap().pop_front().unwrap_or(Ok(None))
+        }
+    }
+
+    #[tokio::test]
+    async fn successful_update_is_verified_before_it_reports_done() {
+        let rec = Arc::new(Rec::default());
+        let mut deps = deps_with_file(FakeStream::new(vec![]), None);
+        deps.verifier = Some(Arc::new(SeqVerifier(StdMutex::new(
+            [Ok(Some("1.0".into())), Ok(Some("1.1".into()))].into(),
+        ))));
+        let q = Queue::start(deps, rec.clone());
+        let id = q
+            .enqueue(vec![op(SourceKind::Winget, "A.A", OpKind::Upgrade)])
+            .remove(0);
+        let j = until_finished(&q, &id).await;
+        assert_eq!(j.phase, JobPhase::Succeeded);
+        assert_eq!(j.verify, Some(crate::jobs::verify::Verify::Confirmed));
+        assert_eq!(j.from_version.as_deref(), Some("1.0"));
+        assert_eq!(j.to_version.as_deref(), Some("1.1"));
+        let phases = rec.phases_of(&id);
+        assert_eq!(
+            &phases[phases.len() - 2..],
+            [JobPhase::Verifying, JobPhase::Succeeded]
+        );
+    }
+
+    #[tokio::test]
+    async fn a_failed_check_still_counts_as_done() {
+        let mut deps = deps_with_file(FakeStream::new(vec![]), None);
+        deps.verifier = Some(Arc::new(SeqVerifier(StdMutex::new(
+            [Ok(Some("1.0".into())), Err(AppError::new("timeout", "x"))].into(),
+        ))));
+        let q = Queue::start(deps, Arc::new(Rec::default()));
+        let id = q
+            .enqueue(vec![op(SourceKind::Winget, "A.A", OpKind::Upgrade)])
+            .remove(0);
+        let j = until_finished(&q, &id).await;
+        assert_eq!(j.phase, JobPhase::Succeeded);
+        assert_eq!(j.verify, Some(crate::jobs::verify::Verify::Unknown));
     }
 
     #[tokio::test]
@@ -1247,6 +1339,7 @@ mod tests {
             download_timeout: Duration::from_secs(60),
             elevated: false,
             jobs_file: None,
+            verifier: None,
         };
         let q = Queue::start(deps, rec);
         let id = q
@@ -1276,6 +1369,7 @@ mod tests {
             download_timeout: Duration::from_secs(60),
             elevated: true,
             jobs_file: None,
+            verifier: None,
         };
         let q = Queue::start(deps, rec);
         let id = q

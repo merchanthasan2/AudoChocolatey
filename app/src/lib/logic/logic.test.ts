@@ -21,6 +21,9 @@ function job(phase: JobPhase, extra: Partial<Job> = {}): Job {
     cancellable: ['queued', 'preparing', 'waiting', 'downloading'].includes(phase),
     rebootRequired: false,
     reason: null,
+    verify: null,
+    fromVersion: null,
+    toVersion: null,
     error: null,
     startedAt: null,
     endedAt: null,
@@ -245,5 +248,18 @@ describe('queue after a restart', () => {
       job('queued', { id: 'j3' }),
     ];
     expect(notStarted(list).map((j) => j.id)).toEqual(['j2']);
+  });
+});
+
+import { doneToast } from './doneToast';
+describe('finished-job toast', () => {
+  it('confirms normally, and is honest when the version did not move', () => {
+    expect(doneToast(job('succeeded', { op: { kind: 'upgrade', target: { source: 'winget', id: 'A' }, version: null }, verify: 'confirmed' })))
+      .toEqual({ text: 'Firefox updated', tone: 'ok' });
+    expect(doneToast(job('succeeded', { op: { kind: 'upgrade', target: { source: 'winget', id: 'A' }, version: null }, verify: 'unchanged', toVersion: '1.0' })))
+      .toEqual({ text: 'Firefox finished, but still reports version 1.0. It may finish updating after you restart it.', tone: 'warn' });
+    expect(doneToast(job('succeeded', { op: { kind: 'uninstall', target: { source: 'winget', id: 'A' }, version: null }, verify: 'unchanged' })))
+      .toEqual({ text: 'Firefox finished, but still appears to be installed.', tone: 'warn' });
+    expect(doneToast(job('succeeded', { rebootRequired: true }))).toEqual({ text: 'Firefox installed — restart to finish', tone: 'ok' });
   });
 });

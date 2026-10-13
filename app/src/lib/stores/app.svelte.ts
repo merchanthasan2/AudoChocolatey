@@ -9,6 +9,7 @@ import { jobFor } from '../logic/jobFor';
 import { tidyResults } from '../logic/tidyResults';
 import { missingFrom, installedSet, withJobs, needsChoco } from '../logic/entries';
 import { notStarted } from '../logic/queue';
+import { doneToast } from '../logic/doneToast';
 import { resolveMotion, resolveTheme } from '../logic/theme';
 import type { SourceKind } from '../ipc/bindings/SourceKind';
 import type { OpKind } from '../ipc/bindings/OpKind';
@@ -24,7 +25,7 @@ class Router {
 export const router = new Router();
 
 /* ---------------------------------------------------------------- toasts */
-export interface Toast { id: number; text: string; tone: 'ok' | 'error'; action?: { label: string; run: () => void } }
+export interface Toast { id: number; text: string; tone: 'ok' | 'warn' | 'error'; action?: { label: string; run: () => void } }
 class Toasts {
   list = $state<Toast[]>([]);
   #next = 1;
@@ -147,12 +148,11 @@ class QueueStore {
     this.jobs = prev ? this.jobs.map((j) => (j.id === job.id ? job : j)) : [...this.jobs, job];
     if (!announce || prev?.phase === job.phase) return;
     if (job.phase === 'succeeded') {
-      const verb = job.op.kind === 'uninstall' ? 'removed' : job.op.kind === 'upgrade' ? 'updated' : 'installed';
-      toasts.push({ text: `${job.displayName} ${verb}${job.rebootRequired ? ' — restart to finish' : ''}`, tone: 'ok' });
+      toasts.push(doneToast(job), job.verify === 'unchanged' ? 8000 : undefined);
       this.#scheduleRefresh();
     } else if (job.phase === 'failed') {
       toasts.push(
-        { text: `Couldn't finish ${job.displayName}: ${job.error ?? 'unknown error'}`, tone: 'error', action: { label: 'Retry', run: () => this.retry(job.id) } },
+        { text: job.error ?? `Couldn't finish ${job.displayName}.`, tone: 'error', action: { label: 'Retry', run: () => this.retry(job.id) } },
         8000,
       );
     }

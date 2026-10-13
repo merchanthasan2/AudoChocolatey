@@ -2,6 +2,7 @@
 import type { FailureReason } from "./FailureReason";
 import type { JobPhase } from "./JobPhase";
 import type { OpRequest } from "./OpRequest";
+import type { Verify } from "./Verify";
 
 export type Job = { id: string, op: OpRequest, displayName: string, phase: JobPhase, detail: string | null, 
 /**
@@ -12,6 +13,10 @@ percent: number | null, bytesDone: number | null, bytesTotal: number | null, can
  * Why it failed (drives the message and backup-source decisions).
  */
 reason: FailureReason | null, 
+/**
+ * Whether the installed version really changed (set after success).
+ */
+verify: Verify | null, fromVersion: string | null, toVersion: string | null, 
 /**
  * Unix epoch milliseconds.
  */

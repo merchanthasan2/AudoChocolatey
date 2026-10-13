@@ -3,7 +3,7 @@
 //! are never emitted.
 
 use crate::error::{AppError, AppResult};
-use crate::ids::SourceKind;
+use crate::ids::{SourceKind, WingetId};
 use crate::sources::model::{OpKind, OpRequest};
 
 const AGREE_SOURCE: &str = "--accept-source-agreements";
@@ -54,6 +54,20 @@ pub fn version() -> Vec<String> {
 
 pub fn list() -> Vec<String> {
     ["list", AGREE_SOURCE, NO_PROMPT].map(String::from).to_vec()
+}
+
+/// One app's installed row (for checking a job's result).
+pub fn list_id(id: &WingetId) -> Vec<String> {
+    [
+        "list",
+        "--id",
+        id.as_str(),
+        "--exact",
+        AGREE_SOURCE,
+        NO_PROMPT,
+    ]
+    .map(String::from)
+    .to_vec()
 }
 
 pub fn upgrade(include_unknown: bool) -> Vec<String> {

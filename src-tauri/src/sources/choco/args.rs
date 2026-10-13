@@ -2,7 +2,7 @@
 //! can show download percentages; `--force` is never emitted.
 
 use crate::error::{AppError, AppResult};
-use crate::ids::SourceKind;
+use crate::ids::{ChocoId, SourceKind};
 use crate::sources::model::{OpKind, OpRequest};
 
 pub fn build_op(op: &OpRequest) -> AppResult<Vec<String>> {
@@ -37,6 +37,14 @@ pub fn list(major: u32) -> Vec<String> {
     } else {
         vec!["list".into(), "--local-only".into(), "-r".into()]
     }
+}
+
+/// One package's installed row.
+pub fn list_id(major: u32, id: &ChocoId) -> Vec<String> {
+    let mut a = list(major);
+    a.insert(1, id.as_str().to_string());
+    a.insert(2, "--exact".into());
+    a
 }
 
 pub fn outdated() -> Vec<String> {

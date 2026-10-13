@@ -98,6 +98,15 @@ impl<R: Runner> WingetSource<R> {
             .collect())
     }
 
+    /// Installed version of one app, or None when it isn't installed.
+    pub async fn installed_version(&self, id: &WingetId) -> AppResult<Option<String>> {
+        let rows = self.query(args::list_id(id), 30, true).await?;
+        Ok(rows
+            .into_iter()
+            .find(|r| r.id.eq_ignore_ascii_case(id.as_str()))
+            .map(|r| r.version))
+    }
+
     pub async fn list_upgrades(&self, include_unknown: bool) -> AppResult<Vec<UpgradeCandidate>> {
         let rows = self
             .resolve_truncated(
@@ -243,6 +252,27 @@ mod tests {
     const NO_RESULTS: &str = include_str!("../../../tests/fixtures/winget/no-results.en.txt");
     const SEARCH_SOURCED: &str =
         include_str!("../../../tests/fixtures/winget/search-firefox-sourced.en.txt");
+
+    #[tokio::test]
+    async fn installed_version_of_one_app() {
+        let found = include_str!("../../../tests/fixtures/winget/list-id.en.txt");
+        let missing = include_str!("../../../tests/fixtures/winget/list-id-missing.en.txt");
+        let id = crate::ids::WingetId::try_from("Docker.DockerDesktop".to_string()).unwrap();
+        let s = src(FakeRunner::new().on("list", 0, found));
+        assert_eq!(
+            s.installed_version(&id).await.unwrap().as_deref(),
+            Some("4.94.0")
+        );
+        let call = &s.runner.calls()[0];
+        assert!(
+            call.windows(2)
+                .any(|w| w == ["--id", "Docker.DockerDesktop"]),
+            "{call:?}"
+        );
+        assert!(call.contains(&"--exact".to_string()));
+        let s = src(FakeRunner::new().on("list", NO_APPLICATIONS_FOUND, missing));
+        assert_eq!(s.installed_version(&id).await.unwrap(), None);
+    }
 
     fn src(r: FakeRunner) -> WingetSource<FakeRunner> {
         WingetSource::new(r, Some(r"C:\fake\winget.exe".into()))
