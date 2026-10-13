@@ -1,115 +1,87 @@
-# Design System & UI/UX Specification: Quantum Updater
-**Company:** Quantum Step ([quantumstep.in](https://quantumstep.in))  
-**Design Philosophy:** Modern Glassmorphism & Enterprise Clarity
+# Design System: Warm Store (v3)
 
----
+The look and feel of Quantum Updater, documented from what ships in `app/src`. When the code and this file disagree, fix one of them in the same commit.
 
-## 1. Design Philosophy & Aesthetic Core
-Quantum Updater rejects generic templates in favor of a handcrafted, hardware-accelerated **Frosted Glass (Acrylic Glassmorphism)** aesthetic inspired by Windows 11 Fluent 2 and macOS Sonoma.
+**Direction:** "Warm Store": calm, approachable and premium, closer to a curated app store than a system utility. The owner chose it from three mockups on 2026-10-12. Motion is springy for moments and crisp for everyday actions.
 
-### Guiding Principles:
-1. **Zero-Emoji Policy**: No emojis are permitted anywhere in the user interface. All visual signifiers utilize precision inline vector SVGs (24x24 viewBox, stroke-based, 2px stroke-width).
-2. **Authentic Brand Representation**: Logos use authentic vector assets served pre-colored via `cdn.simpleicons.org`. Dark brand marks receive high-contrast treatment to avoid blending with dark backgrounds.
-3. **Information Density with Breathing Room**: The Bento Grid architecture segments complex status metrics into digestible, high-contrast glass cards with distinct ambient glows.
-4. **Immediate Spatial Orientation**: The persistent Global Operation Dock ensures users never lose sight of active operations, regardless of tab navigation or search filtering.
+## Tokens (`app/src/lib/styles/tokens.css`)
 
----
+### Colour
+| Token | Light | Dark | Use |
+|---|---|---|---|
+| `--canvas` | `#F6F3EE` | `#1A1816` | Window and sidebar background |
+| `--canvas-2` | `#EFEBE4` | `#201E1B` | Main content area |
+| `--card` | `#FFFFFF` | `#24211E` | Cards, lists, fields |
+| `--ink` / `--ink-2` | `#1D1B18` / `#4A453E` | `#F1ECE4` / `#CFC8BD` | Text, strong and secondary |
+| `--muted` / `--faint` | `#7A7368` / `#A8A196` | `#A39B8F` / `#756E64` | Meta text, placeholders |
+| `--accent` | `#1F5C45` | `#5FB38E` | Primary actions, progress, selection |
+| `--accent-soft` | `#E3EEE8` | `#1F3329` | Active rows, success badges |
+| `--pill` | `#EFE9DF` | `#2E2A26` | Secondary buttons, segmented controls |
+| `--danger` / `--danger-soft` | `#B3261E` / `#F9E5E3` | `#F2A39C` / `#3A2220` | Failures |
+| `--warn-soft` / `--warn-ink` | `#F7EFDC` / `#7A5A12` | `#34291A` / `#E8C98A` | Banners |
 
-## 2. Typography Specification
+**Theme selection:** `<html data-theme="light|dark">` from Settings. When the theme is "System", there is no attribute and `prefers-color-scheme` decides.
 
-### Font Families:
-- **Display Headings (`--font-display`)**: `Outfit`, `Plus Jakarta Sans`, sans-serif.
-  - Used for: Brand title, Bento metrics, section titles, modal headers.
-  - Characteristics: Geometric elegance, tight tracking (`letter-spacing: -0.025em`), bold weights (600, 700, 800).
-- **Body & Controls (`--font-sans`)**: `Plus Jakarta Sans`, `Inter`, -apple-system, BlinkMacSystemFont, sans-serif.
-  - Used for: Paragraph descriptions, table rows, button labels, badges.
-  - Characteristics: Optical sizing, high legibility, `-webkit-font-smoothing: antialiased`, `line-height: 1.55`.
-- **Code & Versioning (`--font-mono`)**: `JetBrains Mono`, Consolas, monospace.
-  - Used for: Package versions, package IDs, hashes, terminal logs.
-  - Characteristics: Distinctive ligatures, crisp tabular numerals.
+### Type
+- **Display:** Inter Tight Variable, weight 700, tracking −0.03em. Used for `h1` (28 px) and `h2` (17 px).
+- **Body:** Inter Variable, 13.5 px / 1.45. Tabular figures throughout (versions and sizes line up).
+- Both are bundled through `@fontsource-variable`; there are no web font requests.
 
----
+### Shape and depth
+- **Radius:** cards 12 px; fields 10 to 12 px; pills fully round; app icons 22% (squircle-like).
+- **Shadows:** `--shadow-card` is a hairline plus a soft shadow; `--shadow-raised` is for hover and drawers. No glassmorphism and no neon gradients.
 
-## 3. Official 6-Color Palette Tokens & Glassmorphic Surfaces
+## Motion (`tokens.css`, `app/src/lib/motion/index.ts`)
+| Kind | Curve | Duration | Where |
+|---|---|---|---|
+| Moment | `--spring` `cubic-bezier(0.34,1.56,0.64,1)` | 420 ms | Results arriving (50 ms stagger), check pop, counter roll, empty state, toasts |
+| Drawer | `--ease-drawer` `cubic-bezier(0.32,0.72,0,1)` | 300 ms | Activity drawer |
+| View switch | linear opacity | 140 ms | Changing screens (frequent, so no movement) |
+| Press | `--ease-out` | 120 ms | `scale(0.97)` on `:active` for every pressable |
+| Exit | cubic out | 260 ms | Finished update rows collapse and slide out |
 
-Quantum Updater uses the **Uxintace 6-Color Design System** harmonized with frosted glassmorphism:
+**Rules:**
+- Animate only `transform` and `opacity`. The JobButton width morph is the one deliberate exception.
+- Never animate from `scale(0)` (0.9 at minimum, always with opacity).
+- Hover effects are gated behind `(hover: hover)`.
+- Keyboard actions such as Ctrl+K are never animated.
+- **Reduced motion:** the OS setting or Settings → Motion → Reduced sets `data-motion="reduced"`. Springs become ease-out at 160 ms, movement becomes fades, and spinners slow down.
+- **Honesty:** a determinate progress ring or bar appears only when a real percentage exists. Otherwise there is an indeterminate arc or sliding bar.
 
-### 3.1 Master 6-Color Palette
-| Token | Hex Value | Semantic Role |
-|---|---|---|
-| `--c-midnight-teal` | `#073A4B` | **Canvas & Deep Glass Surface**: Application backdrop, frosted panels, navigation chrome |
-| `--c-ocean-blue` | `#108AB1` | **Primary Brand & Interactive Accent**: Navigation active pills, focus rings, tech links |
-| `--c-emerald-mint` | `#06D7A0` | **System Health & Installed Status**: Up-to-date indicators, Authenticode badges, success states |
-| `--c-golden-yellow` | `#FFD167` | **Pending Operations & Diff Callouts**: Update count badges, pending queue items, version diffs |
-| `--c-coral-peach` | `#F78C6A` | **Categorization & Architecture Tags**: Category pills (`.badge-cat`), `x64`/`ARM64` tags, repo tags |
-| `--c-coral-pink` | `#F04770` | **Executive CTAs & High-Priority Actions**: "Update All" (`.btn-coral`), Explore install triggers |
+## Components (`app/src/lib/components`)
+- **JobButton.** One element that morphs through states:
 
-### 3.2 Dark Mode Surface Mapping (Default)
-| Token | Value | Purpose |
-|---|---|---|
-| `--bg-canvas` | `#073A4B` | Deep midnight teal backdrop |
-| `--bg-canvas-deep` | `#00161f` | Ultra-deep abyss layer |
-| `--bg-surface` | `rgba(7, 58, 75, 0.78)` | Floating glass header and docks |
-| `--bg-card` | `rgba(11, 47, 60, 0.72)` | Bento cards and package tiles |
-| `--bg-card-hover` | `rgba(16, 68, 87, 0.85)` | Interactive card hover surface |
-| `--border-glass` | `rgba(255, 255, 255, 0.10)` | Ambient 1px perimeter border |
-| `--border-glass-hover` | `rgba(16, 138, 177, 0.50)` | Ocean blue focus ring on hover |
-| `--border-card-specular` | `inset 0 1px 0 0 rgba(255, 255, 255, 0.14)` | Top specular rim highlight |
-| `--primary` | `#108AB1` | Ocean Cerulean Blue |
-| `--coral-pink` | `#F04770` | Vibrant Coral Pink CTA accent |
-| `--coral-peach` | `#F78C6A` | Warm Coral Peach category accent |
-| `--golden-yellow` | `#FFD167` | Sunny Golden Yellow diff accent |
-| `--emerald-mint` | `#06D7A0` | Electric Emerald Mint status accent |
+  | State | Shows |
+  |---|---|
+  | idle | Get / Update / Uninstall |
+  | queued | Pulsing dot |
+  | working | 30 px ring, with a stop square while cancellable |
+  | done | Accent circle with a check that draws in, then a quiet "Done" (or "Restart needed") |
+  | skipped | "Up to date" |
+  | failed | A red "Retry" with a short shake |
 
-### 3.3 Light Mode (1-Click Switchable)
-| Token | Value | Purpose |
-|---|---|---|
-| `--bg-canvas` | `#f1f7fa` | Crisp glacial pearl backdrop |
-| `--bg-surface` | `rgba(255, 255, 255, 0.85)` | Semi-opaque frosted navigation |
-| `--bg-card` | `rgba(255, 255, 255, 0.80)` | Glass card containers |
-| `--border-glass` | `rgba(7, 58, 75, 0.12)` | Subtle deep teal perimeter divider |
-| `--text-main` | `#073A4B` | Midnight teal high-contrast text |
+  The state mapping is `logic/jobButton.ts` (unit-tested).
+- **AppRow.** Icon, name and meta line. While a job runs, the meta line becomes live status ("Downloading · 1.9 MB · 42%") and a 4 px progress bar appears. Running rows get an `--accent-soft` wash.
+- **AppIcon.** Shows the app's original icon from `icon://` (see ADR 022). A colour monogram tile (hue hashed from the name) shows until the icon loads, or permanently if no original exists.
+- **Checkbox.** 20 px, with a drawn tick, an indeterminate state for "select all", and scale on press.
+- **Other components:**
+  - ProgressRing, CountRoll (rolling number);
+  - Skeleton (shimmer rows with staggered delays);
+  - EmptyState (pop in), Banner (calm warning with one action);
+  - Toasts (bottom right, at most 4, auto-dismiss, optional Retry);
+  - QueuePill and QueueDrawer (activity);
+  - Segmented, Toggle (spring knob), SearchField (Ctrl K hint, Esc clears);
+  - Sidebar (Updates first, live count badge).
 
----
+## Layout
+- The window is 1200×780 by default, with a minimum of 960×640.
+- Sidebar: 232 px.
+- Content: at most 1040 px wide, with 34/40 px padding, on `--canvas-2` with a 16 px top-left radius against the sidebar.
+- Lists are single cards with hairline row dividers. The Marketplace grid uses `auto-fill minmax(220px, 1fr)`.
 
-## 4. Google Stitch MCP Integration & Design Assets
+## Copy
+Plain and human:
+- Headlines: "4 updates ready", "Everything is up to date", "Find apps".
+- Status: "Getting ready", "Waiting for another installer".
 
-Quantum Updater layout and component styling is generated and maintained via Google Stitch MCP:
-- **Project**: `projects/4437627295113959804` (`Quantum Updater - Desktop Client`)
-- **Design System Asset**: `assets/5754614782694399956` (`Quantum Modern Prism`)
-- **Screen Mockups**:
-  - Screen 1: `stitch_screen_updates.png` — Updates Bento Dashboard & Quick Triage
-  - Screen 2: `stitch_screen_explore.png` — Curated Explore Marketplace with AI & ML Software
-  - Screen 3: `stitch_screen_security_queue.png` — Security Inspector & Sequential Operation Queue Drawer
-
----
-
-## 5. Component Library Standards
-
-### 5.1 Bento Metric Grid
-Interactive 4-tile glass matrix:
-- **Card 1 (Golden Yellow Glow - `#FFD167`)**: Updates Available (`#bento-updates-val`) with rotating refresh icon.
-- **Card 2 (Ocean Blue Glow - `#108AB1`)**: Selected to Upgrade (`#bento-selected-val`) with zap glyph.
-- **Card 3 (Emerald Mint Glow - `#06D7A0`)**: Software Health (`#bento-health-val`) with shield glyph.
-- **Card 4 (Coral Peach Glow - `#F78C6A`)**: Package Engine (`#bento-engine-val`) with settings glyph.
-
-### 5.2 Cross-Tab Global Operation Dock
-- Sticky bar anchored to the bottom of the viewport (`z-index: 90`).
-- Left: Animated pulse dot (Ocean Blue for active, Emerald Mint for done, Coral Pink for error) + Title + Ticker.
-- Center: Track fill (`linear-gradient(90deg, #108AB1, #06D7A0)`) + Percent indicator.
-- Right: "Queue" toggle button with counter badge.
-
-### 5.3 Expandable Queue Drawer
-- Sliding glass flyout anchored above the dock (`z-index: 100`).
-- Displays running tasks with active Ocean Blue glow, pending tasks with Golden Yellow status badges, and completed tasks with Emerald Mint checkmarks.
-- Includes "Clear Done" action and close control. Mutex collision safeguards guarantee strictly sequential execution.
-
-### 5.4 Software Badges & Installed Representation
-- **Not Installed**: Clean Coral Pink action button (`Install` `.btn-coral` with plus glyph).
-- **Installed**:
-  - `badge-installed-tag`: High-contrast Emerald Mint badge (`Installed` with checkmark glyph) displayed next to the app title.
-  - Disabled Button: Grayed out `Installed` button (`btn-installed-disabled`) preventing redundant installation triggers.
-  - Secondary Action: Compact `Reinstall` button for power user repair workflows.
-- **Category Badges**:
-  - `.badge-cat`: Styled with Warm Coral Peach (`#F78C6A`) pill background and border.
-
+Never say "engine" and never use emoji (CI-enforced). Errors say what happened and offer one action ("Couldn't check Chocolatey … Try again").
