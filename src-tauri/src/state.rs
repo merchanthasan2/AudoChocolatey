@@ -47,6 +47,7 @@ impl AppState {
                 sample_every: Duration::from_millis(250),
                 gate_poll: Duration::from_millis(500),
                 download_timeout: Duration::from_secs(60 * 60),
+                elevated: crate::commands::system::is_elevated(),
             },
             Arc::new(TauriSink(app)),
         );

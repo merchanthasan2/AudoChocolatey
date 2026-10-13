@@ -20,6 +20,7 @@ function job(phase: JobPhase, extra: Partial<Job> = {}): Job {
     bytesTotal: null,
     cancellable: ['queued', 'preparing', 'waiting', 'downloading'].includes(phase),
     rebootRequired: false,
+    reason: null,
     error: null,
     startedAt: null,
     endedAt: null,

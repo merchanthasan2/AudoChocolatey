@@ -5,6 +5,7 @@
 use crate::error::{AppError, AppResult};
 use crate::ids::SourceKind;
 use crate::jobs::exit_codes::{classify, Outcome};
+use crate::jobs::failure::FailureReason;
 use crate::jobs::model::{Job, JobPhase};
 use crate::jobs::progress::{
     percent, ChocoLines, DownloadWatcher, LineParser, Signal, WingetLines,
@@ -136,6 +137,8 @@ pub struct WorkerDeps {
     pub gate_poll: Duration,
     /// Preparing/downloading taking longer than this is stopped (installing never is).
     pub download_timeout: Duration,
+    /// Without admin rights nothing is run: every job fails with NotElevated.
+    pub elevated: bool,
 }
 
 #[derive(Default)]
@@ -192,8 +195,7 @@ impl Queue {
                         if handle.await.is_err() {
                             worker.lock().tokens.remove(&id);
                             worker.update(&id, |j| {
-                                j.error =
-                                    Some("Something went wrong while running this job.".into());
+                                j.fail(FailureReason::Crashed);
                                 j.set_phase(JobPhase::Failed);
                             });
                         }
@@ -322,6 +324,16 @@ impl Queue {
     }
 
     /// Apply a mutation to a job and emit `changed` (or `progress` when only numbers moved).
+    /// Appends a line to the job's log (kept for the details view and failure classification).
+    fn append_log(&self, id: &str, line: String) {
+        let mut inner = self.lock();
+        let log = inner.logs.entry(id.to_string()).or_default();
+        if log.len() == LOG_LINES {
+            log.pop_front();
+        }
+        log.push_back(line);
+    }
+
     fn update(&self, id: &str, f: impl FnOnce(&mut Job)) {
         let snapshot = {
             let mut inner = self.lock();
@@ -404,19 +416,13 @@ impl Queue {
                 j.detail = Some(why);
                 j.set_phase(JobPhase::Skipped);
             }
-            Ok(Outcome::Failed(why)) => {
-                j.error = Some(why);
-                j.set_phase(JobPhase::Failed);
-            }
+            Ok(Outcome::Failed(why)) => j.fail(why),
             Err(e) if e.code == "cancelled" => j.set_phase(JobPhase::Cancelled),
-            Err(e) => {
-                j.error = Some(if e.code == "timeout" {
-                    "Timed out".into()
-                } else {
-                    e.message
-                });
-                j.set_phase(JobPhase::Failed);
-            }
+            Err(e) => j.fail(if e.code == "timeout" {
+                FailureReason::TimedOut
+            } else {
+                FailureReason::Unknown
+            }),
         });
         let mut inner = self.lock();
         inner.tokens.remove(id);
@@ -430,18 +436,18 @@ impl Queue {
         op: &OpRequest,
         token: &CancellationToken,
     ) -> AppResult<Outcome> {
+        if !deps.elevated {
+            self.append_log(id, "Not running as administrator; nothing was run".into());
+            return Ok(Outcome::Failed(FailureReason::NotElevated));
+        }
         let source = op.target.source();
         let (exe, argv) = match source {
             SourceKind::Winget => (deps.winget.clone(), winget::args::build_op(op)?),
             SourceKind::Choco => (deps.choco.clone(), choco::args::build_op(op)?),
         };
         let Some(exe) = exe else {
-            let tool = if source == SourceKind::Winget {
-                "winget"
-            } else {
-                "Chocolatey"
-            };
-            return Ok(Outcome::Failed(format!("{tool} is not installed")));
+            self.append_log(id, format!("{source:?} is not installed"));
+            return Ok(Outcome::Failed(FailureReason::ToolMissing));
         };
         let total = match &deps.sizer {
             Some(s) => tokio::select! {
@@ -472,14 +478,7 @@ impl Queue {
             SourceKind::Choco => Box::new(ChocoLines::default()),
         });
         let on_line = |line: String| {
-            {
-                let mut inner = self.lock();
-                let log = inner.logs.entry(id.to_string()).or_default();
-                if log.len() == LOG_LINES {
-                    log.pop_front();
-                }
-                log.push_back(line.clone());
-            }
+            self.append_log(id, line.clone());
             let signals = parser.lock().expect("parser").feed(&line);
             for s in signals {
                 match s {
@@ -531,10 +530,24 @@ impl Queue {
         };
         match result {
             Err(e) if e.code == "cancelled" && timed_out => {
-                Ok(Outcome::Failed("The download timed out".into()))
+                Ok(Outcome::Failed(FailureReason::TimedOut))
             }
-            Err(e) => Err(e),
-            Ok(code) => Ok(classify(source, op.kind, code)),
+            Err(e) => {
+                self.append_log(id, format!("Error: {}", e.message));
+                Err(e)
+            }
+            Ok(code) => {
+                if let Some(c) = code {
+                    self.append_log(id, format!("Exit code {c} (0x{:08X})", c as u32));
+                }
+                let tail: Vec<String> = self
+                    .lock()
+                    .logs
+                    .get(id)
+                    .map(|l| l.iter().rev().take(60).cloned().collect())
+                    .unwrap_or_default();
+                Ok(classify(source, op.kind, code, &tail))
+            }
         }
     }
 }
@@ -681,6 +694,7 @@ mod tests {
             sample_every: Duration::from_millis(20),
             gate_poll: Duration::from_millis(20),
             download_timeout: Duration::from_secs(60),
+            elevated: true,
         };
         (Queue::start(deps, rec.clone()), rec)
     }
@@ -838,7 +852,7 @@ mod tests {
             .remove(0);
         let j = until_finished(&q, &id).await;
         assert_eq!(j.phase, JobPhase::Skipped);
-        assert_eq!(j.detail.as_deref(), Some("No applicable update"));
+        assert_eq!(j.detail.as_deref(), Some("Already up to date"));
     }
 
     #[tokio::test]
@@ -914,6 +928,7 @@ mod tests {
             sample_every: Duration::from_millis(20),
             gate_poll: Duration::from_millis(20),
             download_timeout: timeout,
+            elevated: true,
         }
     }
 
@@ -943,7 +958,7 @@ mod tests {
         ]);
         let a = until_finished(&q, &ids[0]).await;
         assert_eq!(a.phase, JobPhase::Failed);
-        assert_eq!(a.error.as_deref(), Some("The download timed out"));
+        assert_eq!(a.reason, Some(FailureReason::TimedOut));
         assert_eq!(until_finished(&q, &ids[1]).await.phase, JobPhase::Succeeded);
     }
 
@@ -1046,6 +1061,35 @@ mod tests {
     }
 
     #[tokio::test]
+    async fn a_non_elevated_queue_never_runs_anything() {
+        let rec = Arc::new(Rec::default());
+        let stream = FakeStream::new(vec![]);
+        let deps = WorkerDeps {
+            stream: stream.clone(),
+            winget: Some(r"C:ake\winget.exe".into()),
+            choco: Some(r"C:ake\choco.exe".into()),
+            gate: Arc::new(NoGate),
+            sizer: None,
+            winget_temp: std::env::temp_dir(),
+            sample_every: Duration::from_millis(20),
+            gate_poll: Duration::from_millis(20),
+            download_timeout: Duration::from_secs(60),
+            elevated: false,
+        };
+        let q = Queue::start(deps, rec);
+        let id = q
+            .enqueue(vec![op(
+                SourceKind::Winget,
+                "Mozilla.Firefox",
+                OpKind::Install,
+            )])
+            .remove(0);
+        let j = until_finished(&q, &id).await;
+        assert_eq!(j.reason, Some(FailureReason::NotElevated));
+        assert_eq!(stream.runs.load(std::sync::atomic::Ordering::SeqCst), 0);
+    }
+
+    #[tokio::test]
     async fn missing_tool_fails_with_a_clear_message() {
         let rec = Arc::new(Rec::default());
         let deps = WorkerDeps {
@@ -1058,6 +1102,7 @@ mod tests {
             sample_every: Duration::from_millis(20),
             gate_poll: Duration::from_millis(20),
             download_timeout: Duration::from_secs(60),
+            elevated: true,
         };
         let q = Queue::start(deps, rec);
         let id = q
@@ -1065,6 +1110,7 @@ mod tests {
             .remove(0);
         let j = until_finished(&q, &id).await;
         assert_eq!(j.phase, JobPhase::Failed);
-        assert_eq!(j.error.as_deref(), Some("Chocolatey is not installed"));
+        assert_eq!(j.reason, Some(FailureReason::ToolMissing));
+        assert!(!j.error.unwrap().contains("Chocolatey"));
     }
 }

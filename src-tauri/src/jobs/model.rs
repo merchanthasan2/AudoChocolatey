@@ -1,5 +1,6 @@
 //! A queued package operation and the phases the UI animates (Get -> ring -> spin -> tick).
 
+use crate::jobs::failure::FailureReason;
 use crate::sources::model::OpRequest;
 use serde::Serialize;
 use ts_rs::TS;
@@ -48,6 +49,8 @@ pub struct Job {
     pub cancellable: bool,
     pub reboot_required: bool,
     pub error: Option<String>,
+    /// Why it failed (drives the message and backup-source decisions).
+    pub reason: Option<FailureReason>,
     /// Unix epoch milliseconds.
     #[ts(type = "number | null")]
     pub started_at: Option<u64>,
@@ -76,6 +79,7 @@ impl Job {
             cancellable: true,
             reboot_required: false,
             error: None,
+            reason: None,
             started_at: None,
             ended_at: None,
         }
@@ -87,6 +91,13 @@ impl Job {
             phase,
             JobPhase::Queued | JobPhase::Preparing | JobPhase::Waiting | JobPhase::Downloading
         )
+    }
+
+    /// Ends the job as Failed with a reason and its plain message.
+    pub fn fail(&mut self, reason: FailureReason) {
+        self.reason = Some(reason);
+        self.error = Some(reason.message(&self.display_name));
+        self.set_phase(JobPhase::Failed);
     }
 
     pub fn set_phase(&mut self, phase: JobPhase) {
