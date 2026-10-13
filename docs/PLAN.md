@@ -5,14 +5,14 @@
 > **Spec:** [superpowers/specs/2026-10-12-quantum-updater-v3-redesign-design.md](superpowers/specs/2026-10-12-quantum-updater-v3-redesign-design.md)
 > **Detailed phase plans:** `docs/superpowers/plans/`. Each phase's plan is written just before the phase starts, because it depends on code from earlier phases.
 
-**Status:** P0, P1, P2, P3 core, P4, P5 done · next: P3 extras → P6 → P7 → P8 · **Last updated:** 2026-10-13
+**Status:** P0–P5 done, including P3 extras + sources · next: P6 → P7 → P8 · **Last updated:** 2026-10-13
 
 | Phase | Name | Status | Detailed plan |
 |---|---|---|---|
 | P0 | Cleanup and foundation | Done (merged to main; UAC + build SHA confirmed by owner) | [p0-foundation](superpowers/plans/2026-10-12-p0-foundation.md) |
 | P1 | Rust core and sources | Done (branch v3/p1-core) | [p1-rust-core](superpowers/plans/2026-10-12-p1-rust-core.md) |
 | P2 | Combined catalog | Done (branch v3/p2-catalog) | [p2-catalog](superpowers/plans/2026-10-13-p2-catalog.md) |
-| P3 | Queue and real progress | Core done (branch v3/p3-core); extras after P4 | [p3-core-queue](superpowers/plans/2026-10-12-p3-core-queue.md) |
+| P3 | Queue and real progress | Done (core: v3/p3-core; extras + sources: v3/p3x-sources) | [p3-core-queue](superpowers/plans/2026-10-12-p3-core-queue.md), [p3x-sources](superpowers/plans/2026-10-13-p3x-sources.md) |
 | P4 | New interface (Warm Store + springy motion) | Done (branch v3/p4-ui) | [p4-interface](superpowers/plans/2026-10-12-p4-interface.md) |
 | P5 | Real icons | Done, pulled forward (branch v3/p4-ui) | [p5-icons](superpowers/plans/2026-10-12-p5-icons.md) |
 | P6 | Background and extras | Not started | (to be written) |
@@ -55,14 +55,16 @@ Goal: one runtime, a fresh Svelte shell, admin manifest really embedded, locked-
 - [x] Streaming runner: Job Object (kill the whole process tree), split output on CR and LF (moved from P1)
 - [x] `jobs/model.rs` state machine + tests; `jobs/worker.rs` single FIFO worker
 - [x] `Global\_MSIExecute` wait; Job Object cancel; installing not cancellable
-- [ ] *(P3 extras)* `jobs/persist.rs` atomic `jobs.json`, history 200, startup recovery
+- [x] *(P3 extras)* `jobs/persist.rs` atomic `jobs.json`, history 200, startup recovery (nothing re-runs by itself); pause/resume; close guard
 - [x] Progress parsers (winget phases + download watcher, choco percent) with fixtures; 10 Hz throttle
-- [ ] *(P3 extras)* Real winget download progress via the Delivery Optimization COM API (DO writes the file in one shot)
+- [-] *(P3 extras)* Real winget download progress via the Delivery Optimization COM API: dropped for v3 (undocumented cross-process visibility, unsafe COM in an admin process); the ring stays honest-indeterminate
 - [x] Exit-code table verified against winget docs; reboot-required flag
-- [ ] *(P3 extras)* Post-success version verification
-- [ ] *(P3 extras)* `rules.rs` skip-version / never (auto-expiry); Hidden list
+- [x] *(P3 extras)* Post-success version verification (a mismatch is a note, never a failure)
+- [x] *(P3 extras)* `rules.rs` skip-version / never (auto-expiry); Hidden list
+- [x] *(P3 extras)* Plain failure reasons; needs-admin guard and "Allow admin access" (UAC) banner
+- [x] *(Sources)* Microsoft Store apps (ADR 024); backup sources (ADR 025); fuller category pages; no tool names on screens (ADR 027); Scoop dropped (ADR 026)
 - [x] Commands + events: `enqueue`, `update_all`, `get_queue`, `cancel_job`, `retry_job`, `clear_finished`, `get_job_log`; `job://changed`, `job://progress`, `queue://changed`
-- [ ] *(P3 extras)* `install_bundle`, `pause/resume_queue`, `list_rules/set_rule/remove_rule`
+- [x] *(P3 extras)* `pause/resume_queue`, `set_rule/remove_rule` (rules come back with `list_updates`); `install_bundle` not needed (bundles use validated `enqueue`)
 
 ## P4: New interface
 - [x] Tokens: light + dark Warm Store; bundled Inter / Inter Tight; Lucide-geometry glyphs (formal WCAG audit in P8)
@@ -136,6 +138,10 @@ Goal: one runtime, a fresh Svelte shell, admin manifest really embedded, locked-
 | 2026-10-13 | P2: the name merge keeps bracketed words and requires the Chocolatey id to name the app | Live search paired Firefox MSIX (winget) with FirefoxESR, whose Chocolatey title is plain "Mozilla Firefox" |
 | 2026-10-13 | P2 review (0 Critical, 3 Important fixed): Chocolatey title lookups capped at 3 s with a 10-minute miss cache; bundles wait for the installed list and skip queued apps; "Use Chocolatey" off is enforced by the queue too | Fresh whole-branch review |
 | 2026-10-13 | Deferred from P2 review to P8: detail panel dialog focus handling, category stale guard, cancel `winget show` on close, same-name merge tests, retry of Chocolatey jobs while it's off | Review minors |
+| 2026-10-13 | Owner: hide tool names, add Microsoft Store + fuller categories + Scoop, backup sources incl. updates | Spec listed Store and Scoop as non-goals; changed by owner. Plan: p3x-sources |
+| 2026-10-13 | A live Store test uninstalled the owner's existing Microsoft To Do; reinstalled at once (same version) | Live tests now check the app isn't already installed first |
+| 2026-10-13 | Kaspersky flagged and removed an unsigned debug build | Store user check switched to session APIs (no other process opened); signing in P7 is the real fix |
+| 2026-10-13 | Scoop dropped by owner | Running it unelevated needs explorer's token (malware-like, antivirus alerts); owner chose to ask for admin via UAC instead (ADR 026) |
 | 2026-10-13 | Icon cache remembers only definite misses | Temporary winget/network failures had hidden icons for 7 days |
 | 2026-10-13 | Debug builds use their own WebView2 profile | WebView2 refuses to share a profile between an elevated and a normal instance |
 | 2026-10-13 | P4/P5 review: misdirected clicks fixed (likely cause of the unexplained vcredist140 job); icon SSRF, path and DoS hardening | Review findings; tests added for each |

@@ -163,3 +163,35 @@
   - When both sources offer an update for the same catalog app, Chocolatey owns it (it only lists packages it installed) and the winget row is dropped.
   - Installs use winget when the app has a winget id, otherwise Chocolatey.
 - **Consequences:** apps outside the catalog may appear twice in search. The catalog needs occasional upkeep as ids change; the validator makes that a one-command check.
+
+### ADR 021: Download Progress Under Delivery Optimization (P3)
+- **Status:** Accepted
+- **Context:** winget downloads through Delivery Optimization, which writes the installer in one step (measured: 0 bytes, then 93 MB), so file-size polling can't show progress. DO's COM API might expose it, but cross-process visibility isn't documented and it means hand-written unsafe COM in an admin process.
+- **Decision:** the winget ring is indeterminate while downloading, with the known size shown. Chocolatey's own percentages are shown as-is. The DO COM idea is dropped for v3.
+
+### ADR 024: Microsoft Store Apps (P3 extras)
+- **Status:** Accepted (owner decision 2026-10-13; the spec had listed the Store as a non-goal)
+- **Decision:**
+  - Store apps come through winget's `msstore` source with the same trusted winget exe. Ids are validated by `StoreId` (`9` + 11 or `XP` + 12 uppercase characters).
+  - Store results join an app only through the catalog's `msstore` field, never by name, because Store and desktop builds install side by side.
+  - Icons come from the Store listing's own logo (the endpoint winget's Store source uses; images only from Microsoft's Store image host).
+  - "Microsoft Store apps" can be switched off in Settings. Store jobs are refused when the app runs as a different administrator than the person signed in, because Store apps install per user. That check reads the session's sign-in name; no other process is opened.
+  - Installing accepts the Store terms on the person's behalf, so the details panel says so.
+- **Verified live (2026-10-13):** an elevated install of a Store app landed in the signed-in user's account; "already installed" returns 0x8A15002B (shown as "Already up to date").
+
+### ADR 025: Backup Sources (P3 extras)
+- **Status:** Accepted
+- **Decision:** a job that fails before any installer started tries once more from another source. Alternates come only from the hand-checked catalog.
+  - Installs: download, checksum, not-found, no-suitable-installer and won't-run-as-admin failures move to the next enabled source (winget, Chocolatey, Store).
+  - Updates (owner asked for this; it was advised against): only winget to Chocolatey, and only when Chocolatey's latest version is newer than the installed one. Never for `.portable`/`.commandline` packages or catalog pairs marked `noUpgradeFallback`. Never to or from the Store.
+  - Never after an installer started, and never for cancel, busy, restart-needed, offline or app-in-use.
+- **Consequences:** an app updated through Chocolatey is then owned by Chocolatey (ADR 023). Watch the first real fallbacks for vendors that create a second Programs entry and mark them `noUpgradeFallback`.
+
+### ADR 026: No Scoop; Ask for Admin Through Windows (P3 extras)
+- **Status:** Accepted (owner decision 2026-10-13)
+- **Context:** Scoop runs per user and refuses admin. Running it from this always-elevated app means borrowing the signed-in user's token from explorer, which is the same technique malware uses; antivirus software flags it (the owner's Kaspersky had already flagged a debug build).
+- **Decision:** Scoop is not supported. The app gets admin rights only from the person, through the normal Windows UAC prompt: the installed app asks at start, and if it is ever running without admin rights a banner offers "Allow admin access", which restarts it through UAC.
+
+### ADR 027: Screens Describe Apps, Not Package Tools (P3 extras)
+- **Status:** Accepted (owner decision 2026-10-13)
+- **Decision:** normal screens and messages never name winget, Chocolatey or the Store source. Failure messages say what happened and what to do. Tool names appear only in Settings → "Advanced: app sources" and in the details panel's collapsed "Advanced" block. `scripts/policy.mjs` fails the build on tool names in screen text.
