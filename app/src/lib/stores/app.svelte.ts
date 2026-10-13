@@ -26,12 +26,33 @@ export interface Toast { id: number; text: string; tone: 'ok' | 'error'; action?
 class Toasts {
   list = $state<Toast[]>([]);
   #next = 1;
+  #timers = new Map<number, { left: number; started: number; handle?: ReturnType<typeof setTimeout> }>();
   push(t: Omit<Toast, 'id'>, ms = 5000) {
     const id = this.#next++;
     this.list = [...this.list, { ...t, id }].slice(-4);
-    setTimeout(() => this.dismiss(id), ms);
+    this.#timers.set(id, { left: ms, started: 0 });
+    this.resume(id);
   }
-  dismiss(id: number) { this.list = this.list.filter((t) => t.id !== id); }
+  /** Hovering or focusing a toast stops its countdown (people need time to read and click). */
+  pause(id: number) {
+    const t = this.#timers.get(id);
+    if (!t?.handle) return;
+    clearTimeout(t.handle);
+    t.handle = undefined;
+    t.left -= Date.now() - t.started;
+  }
+  resume(id: number) {
+    const t = this.#timers.get(id);
+    if (!t || t.handle) return;
+    t.started = Date.now();
+    t.handle = setTimeout(() => this.dismiss(id), Math.max(1500, t.left));
+  }
+  dismiss(id: number) {
+    const t = this.#timers.get(id);
+    if (t?.handle) clearTimeout(t.handle);
+    this.#timers.delete(id);
+    this.list = this.list.filter((x) => x.id !== id);
+  }
 }
 export const toasts = new Toasts();
 
@@ -193,6 +214,7 @@ class SearchStore {
     clearTimeout(this.#timer);
     const trimmed = q.trim();
     if (trimmed.length < 2) {
+      this.#guard.invalidate();
       this.results = []; this.sourceErrors = []; this.loading = false; this.error = null; this.searched = '';
       return;
     }

@@ -7,7 +7,10 @@
 
 <div class="stack" aria-live="polite">
   {#each toasts.list as t (t.id)}
-    <div class="toast" class:error={t.tone === 'error'} in:rise={{ y: 14 }} out:fade={{ duration: 160 }}>
+    <div class="toast" class:error={t.tone === 'error'} in:rise={{ y: 14 }} out:fade={{ duration: 160 }}
+      role="status" onmouseenter={() => toasts.pause(t.id)} onmouseleave={() => toasts.resume(t.id)}
+      onfocusin={() => toasts.pause(t.id)} onfocusout={() => toasts.resume(t.id)}
+      onoutrostart={(e) => (e.currentTarget.style.pointerEvents = 'none')}>
       <span class="ic"><Icon name={t.tone === 'error' ? 'alert' : 'check'} size={15} stroke={2.2} /></span>
       <span class="text">{t.text}</span>
       {#if t.action}

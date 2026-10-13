@@ -2,6 +2,7 @@
   import type { Job } from '../ipc/commands';
   import { jobButtonState, type ButtonMode } from '../logic/jobButton';
   import ProgressRing from './ProgressRing.svelte';
+  import { clickGuard } from '../logic/clickGuard';
 
   let {
     job,
@@ -22,23 +23,32 @@
   const ui = $derived(jobButtonState(job, mode));
 
   // The check mark is a brief moment, then the button settles into a quiet "Done" pill.
+  // `kind` is a primitive, so this effect re-runs only when the state really changes
+  // (job objects are replaced on every queue event).
+  const kind = $derived(ui.kind);
   let celebrating = $state(false);
   let lastKind = '';
+  const guard = clickGuard(500);
   $effect(() => {
-    const k = ui.kind;
-    if (k === 'done' && lastKind && lastKind !== 'done' && lastKind !== 'idle') {
+    const k = kind;
+    const from = lastKind;
+    lastKind = k;
+    guard(); // a state change also opens a short no-click window
+    if (k === 'done' && from && from !== 'done' && from !== 'idle') {
       celebrating = true;
       const t = setTimeout(() => (celebrating = false), 1100);
-      lastKind = k;
-      return () => clearTimeout(t);
+      return () => {
+        clearTimeout(t);
+        celebrating = false;
+      };
     }
-    lastKind = k;
   });
 
   const round = $derived(ui.kind === 'progress' || ui.kind === 'working' || celebrating);
   const width = $derived(round ? 30 : Math.max(84, Math.round(ui.label.length * 7.4 + 30)));
 
   function click() {
+    if (!guard()) return;
     if (!job || ui.kind === 'idle') return onstart();
     if (ui.kind === 'failed') return onretry(job.id);
     if (ui.cancellable) return oncancel(job.id);

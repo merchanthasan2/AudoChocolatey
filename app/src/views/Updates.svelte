@@ -13,6 +13,8 @@
   import { relativeTime } from '../lib/logic/format';
   import { collapse, rise } from '../lib/motion';
   import { uniqueKeys } from '../lib/logic/uniqueKeys';
+  import { visibleUpdates } from '../lib/logic/visibleUpdates';
+  import { clickGuard } from '../lib/logic/clickGuard';
 
   const jobOf = (u: UpgradeCandidate) => queue.jobFor(u.source, u.id, 'upgrade');
   const isBusy = (u: UpgradeCandidate) => {
@@ -21,7 +23,7 @@
   };
 
   // Finished rows leave the list (with a collapse); everything else stays, including running ones.
-  const rows = $derived(updates.items.filter((u) => jobOf(u)?.phase !== 'succeeded'));
+  const rows = $derived(visibleUpdates(updates.items, jobOf, updates.loadedAt));
   const keys = $derived(uniqueKeys(rows, (u) => `${u.source}:${u.id}`));
   const idle = $derived(rows.filter((u) => !isBusy(u)));
 
@@ -38,8 +40,13 @@
     selected.clear();
     if (on) rows.forEach((u, i) => { if (!isBusy(u)) selected.add(keys[i]); });
   }
-  function updateSelected() {
-    const list = selectedRows;
+  // One button whose label changes; a short guard stops a double-click from landing on
+  // "Update all" right after "Update N selected" was pressed.
+  const guard = clickGuard(800);
+  const primaryLabel = $derived(selectedRows.length > 0 ? `Update ${selectedRows.length} selected` : 'Update all');
+  function primary() {
+    if (!guard()) return;
+    const list = selectedRows.length > 0 ? selectedRows : idle;
     selected.clear();
     queue.updateMany(list);
   }
@@ -68,19 +75,15 @@
     <button class="btn btn-quiet" onclick={() => updates.refresh()} disabled={updates.loading}>
       <span class:spinning={updates.loading}><Icon name="refresh" size={16} /></span> Check again
     </button>
-    {#if selectedRows.length > 0}
-      <button class="btn btn-primary" onclick={updateSelected}>Update {selectedRows.length} selected</button>
-    {:else if idle.length > 0}
-      <button class="btn btn-primary" onclick={() => queue.updateMany(idle)}>Update all</button>
+    {#if idle.length > 0 || selectedRows.length > 0}
+      <button class="btn btn-primary" onclick={primary}>{primaryLabel}</button>
     {/if}
   </div>
 </header>
 
-{#if queue.batchRunning}
-  <div class="batch" in:rise={{ y: 6 }}>
-    <div class="batch-bar"><i style="width:{Math.max(4, batchPct)}%"></i></div>
-  </div>
-{/if}
+<div class="batch" class:on={queue.batchRunning} aria-hidden={!queue.batchRunning}>
+  <div class="batch-bar"><i style="width:{queue.batchRunning ? Math.max(4, batchPct) : 0}%"></i></div>
+</div>
 
 {#each updates.sourceErrors as e (e.source)}
   <div class="gap"><Banner text={`Couldn't check ${sourceText(e.source)}: ${e.message}`} action={{ label: 'Try again', run: () => updates.refresh() }} /></div>
@@ -122,7 +125,8 @@
   .title p { margin-top: 4px; }
   .actions { display: flex; gap: 8px; }
   .gap { margin-bottom: 12px; }
-  .batch { margin: -6px 0 16px; }
+  .batch { margin: -6px 0 16px; opacity: 0; transition: opacity 200ms ease; }
+  .batch.on { opacity: 1; }
   .batch-bar { height: 6px; border-radius: 6px; background: var(--hairline-strong); overflow: hidden; }
   .batch-bar i { display: block; height: 100%; border-radius: 6px; background: var(--accent); transition: width 500ms var(--spring); }
   .list-head { display: flex; align-items: center; gap: 14px; padding: 10px 16px; border-bottom: 1px solid var(--hairline); font-size: 12.5px; }

@@ -41,7 +41,7 @@
             <AppRow name={j.displayName} meta="{kindText[j.op.kind]} · {j.op.target.source === 'winget' ? 'winget' : 'Chocolatey'}" job={j} mode={verb[j.op.kind]} iconKey="{j.op.target.source}:{j.op.target.id}">
               {#snippet action()}
                 <JobButton job={j} mode={verb[j.op.kind]} name={j.displayName}
-                  onstart={() => {}} oncancel={(id) => queue.cancel(id)} onretry={(id) => queue.retry(id)} />
+                  onstart={() => queue.retry(j.id)} oncancel={(id) => queue.cancel(id)} onretry={(id) => queue.retry(id)} />
               {/snippet}
             </AppRow>
           {/each}

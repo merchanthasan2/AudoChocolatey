@@ -154,3 +154,34 @@ describe('tidyResults', () => {
     expect(out.map((x) => x.id)).toEqual(['firefox', 'Mozilla.Firefox', 'Ghostery.Dawn']);
   });
 });
+
+import { clickGuard } from './clickGuard';
+import { visibleUpdates } from './visibleUpdates';
+describe('clickGuard', () => {
+  it('ignores repeat clicks inside the window', () => {
+    const g = clickGuard(500);
+    expect(g(1000)).toBe(true);
+    expect(g(1200)).toBe(false);
+    expect(g(1499)).toBe(false);
+    expect(g(1600)).toBe(true);
+  });
+});
+describe('visibleUpdates', () => {
+  const u = (id: string) => ({ source: 'winget' as const, id });
+  it('hides a just-finished update only until the list is refreshed', () => {
+    const jobs: Record<string, { phase: string; endedAt: number | null }> = { A: { phase: 'succeeded', endedAt: 200 } };
+    const lookup = (x: { id: string }) => jobs[x.id];
+    expect(visibleUpdates([u('A'), u('B')], lookup, 100).map((x) => x.id)).toEqual(['B']);
+    expect(visibleUpdates([u('A'), u('B')], lookup, 300).map((x) => x.id)).toEqual(['A', 'B']);
+  });
+});
+describe('latestOnly.invalidate', () => {
+  it('turns an in-flight request stale', async () => {
+    const guard = latestOnly<string>();
+    let resolve!: (v: string) => void;
+    const p = guard.run(new Promise<string>((r) => (resolve = r)));
+    guard.invalidate();
+    resolve('late');
+    expect(await p).toBe(STALE);
+  });
+});
