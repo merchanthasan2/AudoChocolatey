@@ -15,10 +15,10 @@
 | P3 | Queue and real progress | Done (core: v3/p3-core; extras + sources: v3/p3x-sources) | [p3-core-queue](superpowers/plans/2026-10-12-p3-core-queue.md), [p3x-sources](superpowers/plans/2026-10-13-p3x-sources.md) |
 | P4 | New interface (Warm Store + springy motion) | Done (branch v3/p4-ui) | [p4-interface](superpowers/plans/2026-10-12-p4-interface.md) |
 | P5 | Real icons | Done, pulled forward (branch v3/p4-ui) | [p5-icons](superpowers/plans/2026-10-12-p5-icons.md) |
-| P6 | Background and extras | Not started | (to be written) |
+| P6 | Background (a), Control (b), Safety (c) | In progress (branch v3/p6) | [p6](superpowers/plans/2026-10-13-p6.md) |
 | P7 | Distribution (signing, auto-update, winget) | Not started | (to be written) |
 | P7b | Payment and licensing | Not started; questions for the owner first | (to be written) |
-| PD | Drivers (signed Windows Update drivers, maker tools, driver list) | Planned, **awaiting owner approval** | [drivers](superpowers/plans/2026-10-13-drivers.md) |
+| PD | Drivers (signed Windows Update drivers, maker tools, driver list) | **Approved by owner 2026-10-13**; build after payment and licensing | [drivers](superpowers/plans/2026-10-13-drivers.md) |
 | P8 | Docs and hardening | Not started | (to be written) |
 
 ---
