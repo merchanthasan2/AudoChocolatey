@@ -5,7 +5,7 @@
 > **Spec:** [superpowers/specs/2026-10-12-quantum-updater-v3-redesign-design.md](superpowers/specs/2026-10-12-quantum-updater-v3-redesign-design.md)
 > **Detailed phase plans:** `docs/superpowers/plans/`. Each phase's plan is written just before the phase starts, because it depends on code from earlier phases.
 
-**Status:** P0, P1, P3 core done · next: P4 interface → P2 → P3 extras (order changed by owner) · **Last updated:** 2026-10-12
+**Status:** P0, P1, P3 core, P4, P5 done · next: P2 catalog → P3 extras → P6 → P7 → P8 · **Last updated:** 2026-10-13
 
 | Phase | Name | Status | Detailed plan |
 |---|---|---|---|
@@ -13,8 +13,8 @@
 | P1 | Rust core and sources | Done (branch v3/p1-core) | [p1-rust-core](superpowers/plans/2026-10-12-p1-rust-core.md) |
 | P2 | Combined catalog | Not started | (to be written) |
 | P3 | Queue and real progress | Core done (branch v3/p3-core); extras after P4 | [p3-core-queue](superpowers/plans/2026-10-12-p3-core-queue.md) |
-| P4 | New interface (Warm Store + springy motion) | Not started | (to be written) |
-| P5 | Real icons | Not started | (to be written) |
+| P4 | New interface (Warm Store + springy motion) | Done (branch v3/p4-ui) | [p4-interface](superpowers/plans/2026-10-12-p4-interface.md) |
+| P5 | Real icons | Done, pulled forward (branch v3/p4-ui) | [p5-icons](superpowers/plans/2026-10-12-p5-icons.md) |
 | P6 | Background and extras | Not started | (to be written) |
 | P7 | Distribution (signing, auto-update, winget) | Not started | (to be written) |
 | P8 | Docs and hardening | Not started | (to be written) |
@@ -63,18 +63,19 @@ Goal: one runtime, a fresh Svelte shell, admin manifest really embedded, locked-
 - [ ] *(P3 extras)* `install_bundle`, `pause/resume_queue`, `list_rules/set_rule/remove_rule`
 
 ## P4: New interface
-- [ ] Tokens: light + dark Warm Store, WCAG AA tuned; bundled Inter / Inter Tight; Lucide glyphs
-- [ ] Motion presets (spring ~400 ms soft overshoot, instant hover/press, reduced-motion fades)
-- [ ] Shell: sidebar, Ctrl+K, Queue pill + drawer, toasts, dialogs, router
-- [ ] Components: AppIcon/Monogram, AppCard, AppRow, JobButton (Get → ring → spin → tick → Open), ProgressRing, Skeleton, UpdateAllBar (counter roll), EmptyState
-- [ ] Views: Marketplace (featured, categories, bundles, search), AppDetail, Updates (+ Hidden), Installed, Settings, Onboarding
-- [ ] vitest for stores and the job→button mapping; visual check against the approved mockups
+- [x] Tokens: light + dark Warm Store; bundled Inter / Inter Tight; Lucide-geometry glyphs (formal WCAG audit in P8)
+- [x] Motion presets (spring ~420 ms for moments, 140 ms view fade, instant press feedback, reduced-motion fades)
+- [x] Shell: sidebar (Updates first, owner request), Ctrl+K, activity pill + drawer, toasts, state router
+- [x] Components: AppIcon (real icon, monogram fallback), AppRow (live status + progress bar), JobButton (Get → ring → check → Done), ProgressRing, Checkbox, Skeleton, CountRoll, EmptyState, Banner, Segmented, Toggle
+- [x] Views: Updates (select + Update selected/all, per-row and batch progress), Marketplace (popular apps + search), Installed (uninstall), Settings
+- [ ] *(P2)* Marketplace categories and bundles, AppDetail, Updates "Hidden", Chocolatey onboarding
+- [x] vitest for UI logic (17 tests); screenshot review of every view in light/dark at 1200x780 and 960x640
 
 ## P5: Real icons
-- [ ] `icon` URI scheme + memory LRU + disk cache with negative cache
-- [ ] Windows extraction (registry Uninstall → DisplayIcon → SHDefExtractIconW → PNG)
-- [ ] Remote fetch (choco IconUrl, apple-touch-icon, favicon) with the safety rules from spec §5.6
-- [ ] Bundled curated `.webp` icons with a recorded source per icon
+- [x] `icon` URI scheme + disk cache; 7-day memory of definite misses only (temporary failures retry)
+- [x] Windows extraction: registry DisplayIcon, main exe in InstallLocation, MSIX package logo
+- [x] Remote fetch: Chocolatey IconUrl, publisher homepage apple-touch-icon/icon/favicon; https, public IPs, size caps, sandboxed SVG
+- [ ] *(dropped)* Bundled icons: replaced by live originals (owner: "icons must be actual original")
 
 ## P6: Background and extras
 - [ ] Scheduler (2 min after launch, then interval), tray menu, toasts only on change
@@ -125,3 +126,7 @@ Goal: one runtime, a fresh Svelte shell, admin manifest really embedded, locked-
 | 2026-10-12 | P3: live install of 7-Zip through the queue succeeded; the uninstall command was verified elevated | Owner-approved live test; the PC was left as it was |
 | 2026-10-12 | P3: winget downloads go through Delivery Optimization, which writes the file in one shot, so the winget ring is indeterminate until the file lands | Measured: 0 bytes, then 93 MB in a single step; ADR 021 |
 | 2026-10-12 | P3: persistence/recovery, rules, bundles, pause and post-success verification moved to "P3 extras" after P4 | Owner wants a usable app first |
+| 2026-10-12 | P4: owner asked for Updates as the start screen, selectable updates, and visible update animations | Done: Updates first, checkboxes + "Update N selected", per-row progress bars, batch "Updating 2 of 5" bar |
+| 2026-10-12 | P5 pulled forward; bundled icons dropped in favour of live originals only | Owner: "icons need to be actual original"; ADR 022 |
+| 2026-10-13 | Icon cache remembers only definite misses | Temporary winget/network failures had hidden icons for 7 days |
+| 2026-10-13 | Debug builds use their own WebView2 profile | WebView2 refuses to share a profile between an elevated and a normal instance |

@@ -139,3 +139,16 @@
   - **winget:** the alias is accepted only if it is an App Execution Link (reparse tag `0x8000001B`) whose target matches `<drive>:\Program Files\WindowsApps\Microsoft.DesktopAppInstaller_*_8wekyb3d8bbwe\winget.exe`. The app executes that **target** directly, which is TrustedInstaller-owned and verified working, so nothing can be swapped between the check and the launch.
   - **Chocolatey:** the location comes from HKLM `Session Manager\Environment\ChocolateyInstall`, literal absolute paths only (no `%VAR%`). Otherwise it is `<ProgramData known folder>\chocolatey`. The process environment is never used.
 - **Residual risk:** a Chocolatey install directory with weakened ACLs (Chocolatey hardens its own folder by default) remains trusted. Accepted and documented in SECURITY.md (P8).
+
+### ADR 022: Original Icons Only (P5)
+- **Status:** Accepted (supersedes the "bundled curated icons" part of ADR 015)
+- **Context:** The owner requires real, original app icons: no look-alikes and no generic tiles where an original exists. Using redrawn or third-party icon packs also carries trademark and licensing risk.
+- **Decision:** Icons come only from the app itself or its official publisher, tried in this order:
+  1. The installed program: its registry DisplayIcon, the main exe in its InstallLocation, or the MSIX package logo.
+  2. The Chocolatey package's own icon.
+  3. The publisher homepage's declared icon (apple-touch-icon, then the largest `rel=icon`, then `/favicon.ico`).
+  
+  Images are decoded and re-encoded to PNG (SVG is rendered with all external references disabled), cached on disk and served via `icon://`. If no original exists, a neutral monogram tile is shown. Only definite misses are remembered (7 days); temporary failures are retried.
+- **Consequences:**
+  - First-time Marketplace icons need one `winget show` plus a homepage request per app (1–3 s each, 2 at a time). After that they come from the cache instantly and work offline.
+  - Packages without an original icon (e.g. the Chocolatey `vcredist140` package) keep the monogram.
