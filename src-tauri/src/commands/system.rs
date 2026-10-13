@@ -114,13 +114,17 @@ pub fn relaunch_as_admin(app: tauri::AppHandle) -> Result<(), AppError> {
             .collect::<Vec<u16>>()
     };
     let (verb, file) = (wide(std::ffi::OsStr::new("runas")), wide(exe.as_os_str()));
+    let params = wide(std::ffi::OsStr::new(&format!(
+        "--after {}",
+        std::process::id()
+    )));
     // SAFETY: both strings are NUL-terminated UTF-16 that outlive the call.
     let r = unsafe {
         ShellExecuteW(
             std::ptr::null_mut(),
             verb.as_ptr(),
             file.as_ptr(),
-            std::ptr::null(),
+            params.as_ptr(),
             std::ptr::null(),
             SW_SHOWNORMAL,
         )

@@ -5,6 +5,7 @@ mod fsutil;
 mod icons;
 mod ids;
 mod jobs;
+pub mod launch;
 mod rules;
 mod settings;
 mod sources;
@@ -13,9 +14,53 @@ mod versions;
 
 use tauri::{Emitter, Manager};
 
-pub fn run() {
+/// Removes this user's start-at-login task (called by the uninstaller). Filled in by P6a T6.
+pub fn unregister_autostart() {}
+
+/// The id Windows uses for this app's notifications and taskbar grouping; matches the bundle
+/// identifier the installer puts on the Start menu shortcut.
+pub const APP_ID: &str = "in.quantumstep.quantumupdater";
+
+pub fn set_app_id() {
+    let id: Vec<u16> = APP_ID.encode_utf16().chain(std::iter::once(0)).collect();
+    // SAFETY: NUL-terminated UTF-16 that outlives the call.
+    unsafe { windows_sys::Win32::UI::Shell::SetCurrentProcessExplicitAppUserModelID(id.as_ptr()) };
+}
+
+/// Waits (bounded) for another process to exit.
+pub fn wait_for_exit(pid: u32, limit: std::time::Duration) {
+    use windows_sys::Win32::Foundation::CloseHandle;
+    use windows_sys::Win32::System::Threading::{
+        OpenProcess, WaitForSingleObject, PROCESS_SYNCHRONIZE,
+    };
+    // SAFETY: plain OpenProcess with SYNCHRONIZE; the handle is closed below.
+    let h = unsafe { OpenProcess(PROCESS_SYNCHRONIZE, 0, pid) };
+    if h.is_null() {
+        return; // already gone, or not ours to wait on
+    }
+    // SAFETY: valid handle; bounded wait.
+    unsafe {
+        WaitForSingleObject(h, limit.as_millis().min(u32::MAX as u128) as u32);
+        CloseHandle(h);
+    }
+}
+
+pub fn run(launch: launch::Launch) {
     tauri::Builder::default()
-        .setup(|app| {
+        // First plugin: a second launch focuses this window. Its arguments are never acted on
+        // beyond recognising a sign-in (background) start.
+        .plugin(tauri_plugin_single_instance::init(|app, argv, _cwd| {
+            let second = launch::parse_args(argv.get(1..).unwrap_or_default());
+            if second.mode == launch::LaunchMode::Normal {
+                if let Some(w) = app.get_webview_window("main") {
+                    let _ = w.show();
+                    let _ = w.unminimize();
+                    let _ = w.set_focus();
+                }
+            }
+        }))
+        .setup(move |app| {
+            app.manage(launch);
             let config_dir = app.path().app_config_dir()?;
             let data_dir = app.path().app_local_data_dir()?;
             app.manage(state::AppState::new(
