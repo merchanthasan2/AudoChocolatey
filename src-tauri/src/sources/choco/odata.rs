@@ -44,11 +44,20 @@ fn encode(s: &str) -> String {
 static TAGS: LazyLock<Regex> = LazyLock::new(|| Regex::new(r"<[^>]*>").unwrap());
 static SPACE: LazyLock<Regex> = LazyLock::new(|| Regex::new(r"\s+").unwrap());
 
+static MD_IMAGE: LazyLock<Regex> = LazyLock::new(|| Regex::new(r"!\[[^\]]*\]\([^)]*\)").unwrap());
+static MD_LINK: LazyLock<Regex> = LazyLock::new(|| Regex::new(r"\[([^\]]*)\]\([^)]*\)").unwrap());
+static MD_BLOCK: LazyLock<Regex> =
+    LazyLock::new(|| Regex::new(r"(?m)^\s*(#{1,6}|[-*+]|>|\d+\.)\s+").unwrap());
+static MD_INLINE: LazyLock<Regex> = LazyLock::new(|| Regex::new(r"\*\*|__|[*`~]").unwrap());
+
+/// Package descriptions are Markdown/HTML; the app shows them as one line of plain text.
 fn plain(text: &str) -> String {
-    let t = SPACE
-        .replace_all(&TAGS.replace_all(text, " "), " ")
-        .trim()
-        .to_string();
+    let no_html = TAGS.replace_all(text, " ");
+    let no_images = MD_IMAGE.replace_all(&no_html, " ");
+    let links_as_text = MD_LINK.replace_all(&no_images, "$1");
+    let unblocked = MD_BLOCK.replace_all(&links_as_text, " ");
+    let unmarked = MD_INLINE.replace_all(&unblocked, "");
+    let t = SPACE.replace_all(&unmarked, " ").trim().to_string();
     if t.chars().count() <= MAX_DESCRIPTION {
         return t;
     }
@@ -194,6 +203,17 @@ mod tests {
             .starts_with("https://cdn.jsdelivr.net/"));
         let d = f.description.as_deref().unwrap();
         assert!(!d.is_empty() && !d.contains('<') && d.chars().count() <= 400);
+    }
+
+    #[test]
+    fn descriptions_are_plain_text_without_markdown() {
+        let md = "## Bitdefender TrafficLight ![Screenshot](https://x/y.png) **Safer** browsing. See [the site](https://bitdefender.com) for `details`.
+
+- Blocks *bad* links";
+        assert_eq!(
+            plain(md),
+            "Bitdefender TrafficLight Safer browsing. See the site for details. Blocks bad links"
+        );
     }
 
     #[test]
