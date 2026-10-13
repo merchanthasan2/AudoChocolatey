@@ -120,6 +120,30 @@ impl<R: Runner> WingetSource<R> {
             .collect())
     }
 
+    /// Package details (`winget show --exact`), used by the app details panel.
+    pub async fn show(&self, id: &WingetId) -> AppResult<details::ShowInfo> {
+        let args = [
+            "show",
+            "--id",
+            id.as_str(),
+            "--exact",
+            "--source",
+            "winget",
+            "--accept-source-agreements",
+            "--disable-interactivity",
+        ]
+        .map(String::from)
+        .to_vec();
+        let out = self.run(args, 45).await?;
+        if out.code != Some(0) {
+            return Err(AppError::new(
+                "process_failed",
+                format!("winget show failed: {}", tail(&out)),
+            ));
+        }
+        Ok(details::parse_show(&out.stdout))
+    }
+
     pub async fn search(&self, q: &SearchQuery) -> AppResult<Vec<SourcePackage>> {
         // `--source winget` is fixed, so there is no Source column; every row is winget.
         let rows = self.query(args::search(q.as_str()), 60, false).await?;
@@ -207,7 +231,7 @@ fn tail(out: &ProcessOutput) -> String {
 mod tests {
     use super::*;
     use crate::error::AppError;
-    use crate::ids::{SearchQuery, SourceKind};
+    use crate::ids::{SearchQuery, SourceKind, WingetId};
     use crate::sources::fake::FakeRunner;
     use crate::sources::model::SourceState;
 
@@ -222,6 +246,26 @@ mod tests {
 
     fn src(r: FakeRunner) -> WingetSource<FakeRunner> {
         WingetSource::new(r, Some(r"C:\fake\winget.exe".into()))
+    }
+
+    #[tokio::test]
+    async fn show_returns_package_details() {
+        let show = include_str!("../../../tests/fixtures/winget/show-firefox.en.txt");
+        let s = src(FakeRunner::new().on("show", 0, show));
+        let info = s
+            .show(&WingetId::try_from("Mozilla.Firefox".to_string()).unwrap())
+            .await
+            .unwrap();
+        assert_eq!(info.publisher.as_deref(), Some("Mozilla"));
+        assert_eq!(
+            info.homepage.as_deref(),
+            Some("https://www.mozilla.org/firefox/")
+        );
+        let call = &s.runner.calls()[0];
+        assert!(
+            call.windows(2).any(|w| w == ["--id", "Mozilla.Firefox"])
+                && call.contains(&"--exact".to_string())
+        );
     }
 
     #[tokio::test]

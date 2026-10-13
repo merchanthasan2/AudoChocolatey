@@ -1,3 +1,4 @@
+mod catalog;
 mod commands;
 mod error;
 mod icons;
@@ -64,6 +65,9 @@ pub fn run() {
             commands::jobs::retry_job,
             commands::jobs::clear_finished,
             commands::jobs::get_job_log,
+            commands::catalog::marketplace_home,
+            commands::catalog::marketplace_category,
+            commands::catalog::get_app,
         ])
         .run(tauri::generate_context!())
         .expect("error while running Quantum Updater");

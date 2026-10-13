@@ -195,6 +195,12 @@
           "markdownDescription": "Enables the enqueue command without any pre-configured scope."
         },
         {
+          "description": "Enables the get_app command without any pre-configured scope.",
+          "type": "string",
+          "const": "allow-get-app",
+          "markdownDescription": "Enables the get_app command without any pre-configured scope."
+        },
+        {
           "description": "Enables the get_diagnostics command without any pre-configured scope.",
           "type": "string",
           "const": "allow-get-diagnostics",
@@ -235,6 +241,18 @@
           "type": "string",
           "const": "allow-list-updates",
           "markdownDescription": "Enables the list_updates command without any pre-configured scope."
+        },
+        {
+          "description": "Enables the marketplace_category command without any pre-configured scope.",
+          "type": "string",
+          "const": "allow-marketplace-category",
+          "markdownDescription": "Enables the marketplace_category command without any pre-configured scope."
+        },
+        {
+          "description": "Enables the marketplace_home command without any pre-configured scope.",
+          "type": "string",
+          "const": "allow-marketplace-home",
+          "markdownDescription": "Enables the marketplace_home command without any pre-configured scope."
         },
         {
           "description": "Enables the retry_job command without any pre-configured scope.",
@@ -279,6 +297,12 @@
           "markdownDescription": "Denies the enqueue command without any pre-configured scope."
         },
         {
+          "description": "Denies the get_app command without any pre-configured scope.",
+          "type": "string",
+          "const": "deny-get-app",
+          "markdownDescription": "Denies the get_app command without any pre-configured scope."
+        },
+        {
           "description": "Denies the get_diagnostics command without any pre-configured scope.",
           "type": "string",
           "const": "deny-get-diagnostics",
@@ -319,6 +343,18 @@
           "type": "string",
           "const": "deny-list-updates",
           "markdownDescription": "Denies the list_updates command without any pre-configured scope."
+        },
+        {
+          "description": "Denies the marketplace_category command without any pre-configured scope.",
+          "type": "string",
+          "const": "deny-marketplace-category",
+          "markdownDescription": "Denies the marketplace_category command without any pre-configured scope."
+        },
+        {
+          "description": "Denies the marketplace_home command without any pre-configured scope.",
+          "type": "string",
+          "const": "deny-marketplace-home",
+          "markdownDescription": "Denies the marketplace_home command without any pre-configured scope."
         },
         {
           "description": "Denies the retry_job command without any pre-configured scope.",

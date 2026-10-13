@@ -10,7 +10,9 @@ use crate::sources::model::{
     InstalledPackage, SourcePackage, SourceState, SourceStatus, UpgradeCandidate,
 };
 use crate::sources::process::{CommandSpec, ProcessOutput, Runner};
+use std::collections::HashMap;
 use std::path::PathBuf;
+use std::sync::{Arc, Mutex};
 use std::time::Duration;
 
 pub struct ChocoSource<R: Runner> {
@@ -18,6 +20,7 @@ pub struct ChocoSource<R: Runner> {
     exe: Option<PathBuf>,
     http: reqwest::Client,
     major: tokio::sync::OnceCell<u32>,
+    titles: Mutex<HashMap<String, String>>,
 }
 
 impl<R: Runner> ChocoSource<R> {
@@ -33,6 +36,7 @@ impl<R: Runner> ChocoSource<R> {
             exe,
             http,
             major: tokio::sync::OnceCell::new(),
+            titles: Mutex::new(HashMap::new()),
         }
     }
 
@@ -130,6 +134,68 @@ impl<R: Runner> ChocoSource<R> {
                 source: SourceKind::Choco,
             })
             .collect())
+    }
+
+    /// Human titles for package ids ("vcredist140" -> "Microsoft Visual C++ Redistributable ...").
+    /// Looked up on the community feed 4 at a time and cached; a failed lookup returns nothing
+    /// for that id (the caller keeps the id) and is retried next time.
+    pub async fn titles(&self, ids: &[String]) -> HashMap<String, String> {
+        let missing: Vec<ChocoId> = {
+            let cache = self.titles.lock().unwrap_or_else(|p| p.into_inner());
+            ids.iter()
+                .filter(|id| !cache.contains_key(&id.to_ascii_lowercase()))
+                .filter_map(|id| ChocoId::try_from(id.clone()).ok())
+                .collect()
+        };
+        let gate = Arc::new(tokio::sync::Semaphore::new(4));
+        let mut set = tokio::task::JoinSet::new();
+        for id in missing {
+            let (http, gate) = (self.http.clone(), gate.clone());
+            set.spawn(async move {
+                let _permit = gate.acquire_owned().await.ok()?;
+                let resp = http.get(odata::by_id_url(&id)).send().await.ok()?;
+                if !resp.status().is_success() {
+                    return None;
+                }
+                let xml = resp.text().await.ok()?;
+                let title = odata::parse_feed(&xml)
+                    .ok()?
+                    .into_iter()
+                    .next()
+                    .map(|p| p.name)?;
+                Some((id.as_str().to_ascii_lowercase(), title))
+            });
+        }
+        let mut found = Vec::new();
+        while let Some(joined) = set.join_next().await {
+            if let Ok(Some(pair)) = joined {
+                found.push(pair);
+            }
+        }
+        let mut cache = self.titles.lock().unwrap_or_else(|p| p.into_inner());
+        cache.extend(found);
+        ids.iter()
+            .filter_map(|id| {
+                cache
+                    .get(&id.to_ascii_lowercase())
+                    .map(|t| (id.clone(), t.clone()))
+            })
+            .collect()
+    }
+
+    /// Latest package metadata from the community feed (details panel).
+    pub async fn package(&self, id: &ChocoId) -> AppResult<Option<SourcePackage>> {
+        let resp = self
+            .http
+            .get(odata::by_id_url(id))
+            .send()
+            .await
+            .map_err(|e| AppError::new("network", format!("Chocolatey feed: {e}")))?;
+        let xml = resp
+            .text()
+            .await
+            .map_err(|e| AppError::new("network", format!("Chocolatey feed: {e}")))?;
+        Ok(odata::parse_feed(&xml)?.into_iter().next())
     }
 
     pub async fn search(&self, q: &SearchQuery) -> AppResult<Vec<SourcePackage>> {

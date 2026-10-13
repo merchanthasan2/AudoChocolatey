@@ -1,9 +1,10 @@
 //! Library commands: installed apps, available updates and search across both sources.
 //! Sources are queried concurrently; one failing source never hides the other's results.
 
+use crate::catalog::{merge::merge, names, AppEntry, Catalog};
 use crate::error::{AppError, AppResult};
 use crate::ids::{SearchQuery, SourceKind};
-use crate::sources::model::{InstalledPackage, SourcePackage, UpgradeCandidate};
+use crate::sources::model::{InstalledPackage, UpgradeCandidate};
 use crate::state::AppState;
 use serde::Serialize;
 use tauri::State;
@@ -65,10 +66,45 @@ pub async fn list_installed(
             disabled()
         }
     });
-    Ok(collect(vec![
-        (SourceKind::Winget, w),
-        (SourceKind::Choco, c),
-    ]))
+    let mut listing = collect(vec![(SourceKind::Winget, w), (SourceKind::Choco, c)]);
+    let titles = choco_titles(
+        &state,
+        listing
+            .items
+            .iter()
+            .filter(|p| p.source == Some(SourceKind::Choco))
+            .map(|p| &p.id),
+    )
+    .await;
+    let cat = Catalog::embedded();
+    for p in &mut listing.items {
+        p.name = match p.source {
+            Some(src) => names::display_name(
+                src,
+                &p.id,
+                &p.name,
+                &p.version,
+                cat,
+                titles.get(&p.id).map(String::as_str),
+            ),
+            None => names::strip_version_tail(&p.name, &p.version),
+        };
+    }
+    Ok(listing)
+}
+
+async fn choco_titles<'a>(
+    state: &AppState,
+    ids: impl Iterator<Item = &'a String>,
+) -> std::collections::HashMap<String, String> {
+    let ids: Vec<String> = ids
+        .filter(|id| Catalog::embedded().by_choco(id).is_none())
+        .cloned()
+        .collect();
+    if ids.is_empty() {
+        return Default::default();
+    }
+    state.choco.titles(&ids).await
 }
 
 #[tauri::command]
@@ -88,14 +124,36 @@ pub async fn collect_updates(state: &AppState) -> Listing<UpgradeCandidate> {
             disabled()
         }
     });
-    collect(vec![(SourceKind::Winget, w), (SourceKind::Choco, c)])
+    let mut listing = collect(vec![(SourceKind::Winget, w), (SourceKind::Choco, c)]);
+    let cat = Catalog::embedded();
+    listing.items = names::owner_dedupe(listing.items, cat);
+    let titles = choco_titles(
+        state,
+        listing
+            .items
+            .iter()
+            .filter(|u| u.source == SourceKind::Choco)
+            .map(|u| &u.id),
+    )
+    .await;
+    for u in &mut listing.items {
+        u.name = names::display_name(
+            u.source,
+            &u.id,
+            &u.name,
+            &u.installed_version,
+            cat,
+            titles.get(&u.id).map(String::as_str),
+        );
+    }
+    listing
 }
 
 #[tauri::command]
 pub async fn search(
     state: State<'_, AppState>,
     query: String,
-) -> Result<Listing<SourcePackage>, AppError> {
+) -> Result<Listing<AppEntry>, AppError> {
     let q = SearchQuery::try_from(query)?;
     let choco_on = state.settings().choco.enabled;
     let (w, c) = tokio::join!(state.winget.search(&q), async {
@@ -112,10 +170,26 @@ pub async fn search(
             }
         }
     }
-    Ok(collect(vec![
-        (SourceKind::Winget, w),
-        (SourceKind::Choco, c),
-    ]))
+    let mut source_errors = collect::<AppEntry>(vec![
+        (
+            SourceKind::Winget,
+            w.as_ref().map(|_| vec![]).map_err(Clone::clone),
+        ),
+        (
+            SourceKind::Choco,
+            c.as_ref().map(|_| vec![]).map_err(Clone::clone),
+        ),
+    ])
+    .source_errors;
+    source_errors.dedup_by(|a, b| a.source == b.source);
+    Ok(Listing {
+        items: merge(
+            w.unwrap_or_default(),
+            c.unwrap_or_default(),
+            Catalog::embedded(),
+        ),
+        source_errors,
+    })
 }
 
 #[cfg(test)]

@@ -16,6 +16,9 @@ const COMMANDS: &[&str] = &[
     "retry_job",
     "clear_finished",
     "get_job_log",
+    "marketplace_home",
+    "marketplace_category",
+    "get_app",
 ];
 
 fn git(args: &[&str]) -> Option<String> {
