@@ -77,8 +77,39 @@ pub fn expand_env(s: &str) -> String {
 
 const ICON_FILE_CAP: u64 = 4 * 1024 * 1024;
 
+/// Registry values (some user-writable) must not make the elevated app open network shares,
+/// devices or removable media: only `X:\...` paths on fixed local drives are read.
+pub fn safe_local_path(p: &Path) -> bool {
+    use windows_sys::Win32::Storage::FileSystem::GetDriveTypeW;
+    const DRIVE_FIXED: u32 = 3;
+    let s = p.to_string_lossy();
+    let b = s.as_bytes();
+    if b.len() < 3 || !b[0].is_ascii_alphabetic() || b[1] != b':' || (b[2] != b'\\' && b[2] != b'/')
+    {
+        return false;
+    }
+    let root: Vec<u16> = format!("{}:\\", b[0] as char)
+        .encode_utf16()
+        .chain(Some(0))
+        .collect();
+    // SAFETY: valid NUL-terminated root path.
+    unsafe { GetDriveTypeW(root.as_ptr()) == DRIVE_FIXED }
+}
+
+/// MSIX package full names are letters, digits, dots, dashes and underscores only.
+pub fn valid_package_name(name: &str) -> bool {
+    !name.is_empty()
+        && name.len() <= 200
+        && name
+            .chars()
+            .all(|c| c.is_ascii_alphanumeric() || matches!(c, '.' | '_' | '-'))
+}
+
 /// PNG of the icon at `path[,index]`: image files are decoded; executables/DLLs are extracted.
 pub fn icon_from_file(path: &Path, index: i32, size: u32) -> Option<Vec<u8>> {
+    if !safe_local_path(path) {
+        return None;
+    }
     let ext = path.extension()?.to_string_lossy().to_ascii_lowercase();
     if matches!(ext.as_str(), "ico" | "png" | "bmp" | "jpg" | "jpeg") {
         if std::fs::metadata(path).ok()?.len() > ICON_FILE_CAP {
@@ -227,6 +258,9 @@ pub fn icon_for_entry(e: &ArpEntry, size: u32) -> Option<Vec<u8>> {
 
 /// The app's main program in `dir` or one level below (e.g. `Acrobat DC\Acrobat\Acrobat.exe`).
 pub fn main_exe(dir: &Path, app_name: &str) -> Option<PathBuf> {
+    if !safe_local_path(dir) {
+        return None;
+    }
     let list = |d: &Path| -> Vec<String> {
         std::fs::read_dir(d)
             .map(|it| {
@@ -254,7 +288,7 @@ pub fn main_exe(dir: &Path, app_name: &str) -> Option<PathBuf> {
 
 /// Logo of an installed MSIX package (`MSIX\<PackageFullName>` in winget's list).
 pub fn msix_icon(package_full_name: &str, program_files: &Path, size: u32) -> Option<Vec<u8>> {
-    if package_full_name.contains(['\\', '/']) || package_full_name.contains("..") {
+    if !valid_package_name(package_full_name) {
         return None;
     }
     let root = program_files.join("WindowsApps").join(package_full_name);
@@ -356,5 +390,37 @@ mod visual {
             }
         }
         sheet.save(out.join("sheet.png")).unwrap();
+    }
+}
+
+#[cfg(test)]
+mod path_policy {
+    use super::*;
+
+    #[test]
+    fn only_local_fixed_drive_paths_are_read() {
+        assert!(safe_local_path(Path::new(
+            r"C:\Windows\System32\notepad.exe"
+        )));
+        for bad in [
+            r"\host\share\x.ico",
+            r"\?\C:\x.ico",
+            r"\.\pipe\x",
+            r"relative\x.ico",
+            r"Z:\nope\x.ico",
+            r"C:x.ico",
+        ] {
+            assert!(!safe_local_path(Path::new(bad)), "{bad}");
+        }
+    }
+
+    #[test]
+    fn package_names_cannot_escape() {
+        assert!(valid_package_name(
+            "Microsoft.XboxIdentityProvider_12.130.16001.0_x64__8wekyb3d8bbwe"
+        ));
+        for bad in [r"..\x", "a/b", r"a\b", "C:evil", ""] {
+            assert!(!valid_package_name(bad), "{bad}");
+        }
     }
 }

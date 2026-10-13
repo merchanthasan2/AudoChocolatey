@@ -8,6 +8,7 @@ use std::io::Cursor;
 use std::net::IpAddr;
 
 const MAX_PIXELS_SIDE: u32 = 4096;
+const MAX_SVG_USES: usize = 64;
 
 fn bad(msg: impl Into<String>) -> AppError {
     AppError::new("parse", msg)
@@ -20,6 +21,11 @@ fn looks_like_svg(bytes: &[u8]) -> bool {
 
 fn render_svg(bytes: &[u8], max: u32) -> AppResult<Vec<u8>> {
     use resvg::usvg;
+    // <use> fan-out can expand exponentially while building the render tree; real icons use few.
+    let text = String::from_utf8_lossy(bytes).to_ascii_lowercase();
+    if text.matches("<use").count() > MAX_SVG_USES {
+        return Err(bad("svg: too complex"));
+    }
     let opt = usvg::Options {
         image_href_resolver: usvg::ImageHrefResolver {
             resolve_data: Box::new(|_, _, _| None),
@@ -212,5 +218,34 @@ mod tests {
         for ip in ["1.1.1.1", "140.82.112.3", "2606:4700::1111"] {
             assert!(is_public_ip(ip.parse().unwrap()), "{ip}");
         }
+    }
+}
+
+#[cfg(test)]
+mod bombs {
+    use super::*;
+
+    /// 10 levels of 10-way <use> fan-out (10^10 nodes if expanded naively) must not hang or
+    /// exhaust memory in the elevated process.
+    #[test]
+    fn svg_use_fan_out_is_refused_quickly() {
+        let mut svg = String::from(
+            r#"<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 10 10"><defs><rect id="l0" width="1" height="1"/>"#,
+        );
+        for level in 1..=10 {
+            svg.push_str(&format!(r#"<g id="l{level}">"#));
+            for _ in 0..10 {
+                svg.push_str(&format!(r##"<use xlink:href="#l{}"/>"##, level - 1));
+            }
+            svg.push_str("</g>");
+        }
+        svg.push_str(r##"</defs><use xlink:href="#l10"/></svg>"##);
+        let t = std::time::Instant::now();
+        let _ = to_png(svg.as_bytes(), 128);
+        assert!(
+            t.elapsed() < std::time::Duration::from_secs(2),
+            "took {:?}",
+            t.elapsed()
+        );
     }
 }

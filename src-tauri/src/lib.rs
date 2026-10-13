@@ -28,6 +28,7 @@ pub fn run() {
                 let not_found = || {
                     tauri::http::Response::builder()
                         .status(404)
+                        .header("Cache-Control", "max-age=600")
                         .body(Vec::new())
                         .unwrap()
                 };

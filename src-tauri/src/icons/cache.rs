@@ -8,10 +8,12 @@ use std::collections::HashMap;
 use std::future::Future;
 use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
-use std::time::{Duration, SystemTime};
+use std::time::{Duration, Instant, SystemTime};
 use tokio::sync::OnceCell;
 
 const MISS_TTL: Duration = Duration::from_secs(7 * 24 * 60 * 60);
+/// After a temporary failure, wait this long (in memory only) before trying that icon again.
+const RETRY_AFTER: Duration = Duration::from_secs(10 * 60);
 
 /// Result of looking for an app's original icon.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -27,14 +29,34 @@ type Cell = Arc<OnceCell<Option<Arc<[u8]>>>>;
 
 pub struct IconCache {
     dir: PathBuf,
+    retry_after: Duration,
     inflight: Mutex<HashMap<String, Cell>>,
+    failures: Mutex<HashMap<String, Instant>>,
 }
 
 impl IconCache {
     pub fn new(dir: PathBuf) -> Self {
+        Self::with_retry_after(dir, RETRY_AFTER)
+    }
+
+    pub fn with_retry_after(dir: PathBuf, retry_after: Duration) -> Self {
         Self {
             dir,
+            retry_after,
             inflight: Mutex::new(HashMap::new()),
+            failures: Mutex::new(HashMap::new()),
+        }
+    }
+
+    fn recently_failed(&self, key: &str) -> bool {
+        let mut f = self.failures.lock().unwrap_or_else(|p| p.into_inner());
+        match f.get(key) {
+            Some(at) if at.elapsed() < self.retry_after => true,
+            Some(_) => {
+                f.remove(key);
+                false
+            }
+            None => false,
         }
     }
 
@@ -67,7 +89,7 @@ impl IconCache {
         if let Ok(bytes) = std::fs::read(self.png_path(key)) {
             return Some(Arc::from(bytes));
         }
-        if self.fresh_miss(key) {
+        if self.fresh_miss(key) || self.recently_failed(key) {
             return None;
         }
         let cell = self
@@ -97,12 +119,19 @@ impl IconCache {
             })
             .await
             .clone();
-        // Don't keep a temporary failure in memory either: the next request retries.
-        if result.is_none() && !self.fresh_miss(key) {
-            self.inflight
-                .lock()
-                .unwrap_or_else(|p| p.into_inner())
-                .remove(key);
+        if result.is_none() {
+            // Release this key's slot (only if it is still ours) so a later request can retry.
+            let mut map = self.inflight.lock().unwrap_or_else(|p| p.into_inner());
+            if map.get(key).is_some_and(|c| Arc::ptr_eq(c, &cell)) {
+                map.remove(key);
+            }
+            drop(map);
+            if !self.fresh_miss(key) {
+                self.failures
+                    .lock()
+                    .unwrap_or_else(|p| p.into_inner())
+                    .insert(key.to_string(), Instant::now());
+            }
         }
         result
     }
@@ -173,21 +202,41 @@ mod tests {
         );
     }
 
-    /// Network hiccups and a busy winget must not hide an icon for a week.
+    /// A temporary failure is not retried on every view switch (10 min in memory), but it is never
+    /// written to disk: after a restart, or once the short window passes, it is tried again.
     #[tokio::test]
-    async fn temporary_failures_are_retried() {
+    async fn temporary_failures_back_off_briefly_then_retry() {
         let dir = tempfile::tempdir().unwrap();
-        let cache = IconCache::new(dir.path().to_path_buf());
+        let cache =
+            IconCache::with_retry_after(dir.path().to_path_buf(), Duration::from_millis(80));
         assert_eq!(
             cache
                 .get_or_compute("winget:Flaky", Box::pin(async { Lookup::Unavailable }))
                 .await,
             None
         );
-        let got = cache
+        let polled = Arc::new(AtomicUsize::new(0));
+        let p2 = polled.clone();
+        let soon = Box::pin(async move {
+            p2.fetch_add(1, Ordering::SeqCst);
+            Lookup::Found(vec![1])
+        });
+        assert_eq!(cache.get_or_compute("winget:Flaky", soon).await, None);
+        assert_eq!(
+            polled.load(Ordering::SeqCst),
+            0,
+            "must not hammer winget right after a failure"
+        );
+        tokio::time::sleep(Duration::from_millis(120)).await;
+        let later = cache
             .get_or_compute("winget:Flaky", Box::pin(async { Lookup::Found(vec![5]) }))
             .await;
-        assert_eq!(got.as_deref(), Some(&[5u8][..]));
+        assert_eq!(later.as_deref(), Some(&[5u8][..]));
+        let restarted = IconCache::new(dir.path().to_path_buf());
+        assert!(restarted
+            .get_or_compute("winget:Other", Box::pin(async { Lookup::Found(vec![2]) }))
+            .await
+            .is_some());
     }
 
     #[tokio::test]

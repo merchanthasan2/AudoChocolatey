@@ -21,6 +21,8 @@ const ICON_SIZE: u32 = 128;
 const ICON_CAP: usize = 1024 * 1024;
 const HTML_CAP: usize = 512 * 1024;
 const ARP_TTL: Duration = Duration::from_secs(10 * 60);
+/// winget's "no package found" (0x8A150014).
+const NO_APPLICATIONS_FOUND: i32 = -1978335212;
 
 /// `/winget%3AGit.Git` + `name=Git` -> ("winget:Git.Git", Some("Git")).
 pub fn parse_request(path: &str, query: Option<&str>) -> Option<(String, Option<String>)> {
@@ -54,6 +56,44 @@ fn percent_decode(s: &str) -> Option<String> {
     String::from_utf8(out).ok()
 }
 
+/// Keep only public internet addresses from a DNS answer.
+pub fn public_only(
+    addrs: impl IntoIterator<Item = std::net::SocketAddr>,
+) -> impl Iterator<Item = std::net::SocketAddr> {
+    addrs.into_iter().filter(|a| image::is_public_ip(a.ip()))
+}
+
+/// Redirect hops must stay on https and never point at a private IP literal.
+pub fn redirect_allowed(url: &reqwest::Url) -> bool {
+    if url.scheme() != "https" {
+        return false;
+    }
+    match url.host() {
+        Some(url::Host::Ipv4(ip)) => image::is_public_ip(ip.into()),
+        Some(url::Host::Ipv6(ip)) => image::is_public_ip(ip.into()),
+        Some(url::Host::Domain(_)) => true,
+        None => false,
+    }
+}
+
+/// DNS for icon downloads: every lookup (including redirects and re-resolution) drops private
+/// addresses, so a hostile site can't point the elevated app at the local network.
+struct PublicDns;
+
+impl reqwest::dns::Resolve for PublicDns {
+    fn resolve(&self, name: reqwest::dns::Name) -> reqwest::dns::Resolving {
+        let host = name.as_str().to_string();
+        Box::pin(async move {
+            let addrs: Vec<_> =
+                public_only(tokio::net::lookup_host((host.as_str(), 0)).await?).collect();
+            if addrs.is_empty() {
+                return Err("host has no public address".into());
+            }
+            Ok(Box::new(addrs.into_iter()) as reqwest::dns::Addrs)
+        })
+    }
+}
+
 /// Why a download didn't produce bytes.
 #[derive(Debug, PartialEq, Eq)]
 enum Fetch {
@@ -78,7 +118,7 @@ pub struct IconService {
     winget: Option<PathBuf>,
     program_files: Option<PathBuf>,
     choco_urls: Mutex<HashMap<String, String>>,
-    arp: Mutex<Option<(Instant, Arc<Vec<ArpEntry>>)>>,
+    arp: tokio::sync::Mutex<Option<(Instant, Arc<Vec<ArpEntry>>)>>,
     remote: Semaphore,
     shows: Semaphore,
 }
@@ -88,7 +128,16 @@ impl IconService {
         let http = reqwest::Client::builder()
             .https_only(true)
             .timeout(Duration::from_secs(8))
-            .redirect(reqwest::redirect::Policy::limited(3))
+            .dns_resolver(Arc::new(PublicDns))
+            .redirect(reqwest::redirect::Policy::custom(|attempt| {
+                if attempt.previous().len() >= 3 {
+                    attempt.error("too many redirects")
+                } else if redirect_allowed(attempt.url()) {
+                    attempt.follow()
+                } else {
+                    attempt.stop()
+                }
+            }))
             .user_agent(concat!(
                 "Mozilla/5.0 (Windows NT 10.0; Win64; x64) QuantumUpdater/",
                 env!("CARGO_PKG_VERSION")
@@ -102,7 +151,7 @@ impl IconService {
             winget,
             program_files: crate::sources::trust::program_files_dir(),
             choco_urls: Mutex::new(HashMap::new()),
-            arp: Mutex::new(None),
+            arp: tokio::sync::Mutex::new(None),
             remote: Semaphore::new(4),
             shows: Semaphore::new(2),
         }
@@ -119,8 +168,13 @@ impl IconService {
     }
 
     pub async fn resolve(&self, key: &str, name: Option<&str>) -> Option<Arc<[u8]>> {
+        // The Windows name decides which installed program's icon is used, so it is part of the key.
+        let cache_key = match name {
+            Some(n) => format!("{key}|{}", n.to_lowercase()),
+            None => key.to_string(),
+        };
         self.cache
-            .get_or_compute(key, self.compute(key, name))
+            .get_or_compute(&cache_key, self.compute(key, name))
             .await
     }
 
@@ -138,8 +192,10 @@ impl IconService {
         }
     }
 
+    /// Installed programs, scanned at most once per ARP_TTL even when many icons ask at once.
     async fn arp_entries(&self) -> Arc<Vec<ArpEntry>> {
-        if let Some((at, list)) = self.arp.lock().unwrap_or_else(|p| p.into_inner()).as_ref() {
+        let mut slot = self.arp.lock().await;
+        if let Some((at, list)) = slot.as_ref() {
             if at.elapsed() < ARP_TTL {
                 return list.clone();
             }
@@ -149,7 +205,7 @@ impl IconService {
                 .await
                 .unwrap_or_default(),
         );
-        *self.arp.lock().unwrap_or_else(|p| p.into_inner()) = Some((Instant::now(), list.clone()));
+        *slot = Some((Instant::now(), list.clone()));
         list
     }
 
@@ -237,8 +293,10 @@ impl IconService {
             let Ok(out) = self.runner.run(&spec).await else {
                 return Lookup::Unavailable;
             };
-            if out.code != Some(0) {
-                return Lookup::Unavailable;
+            match out.code {
+                Some(0) => {}
+                Some(NO_APPLICATIONS_FOUND) => return Lookup::Missing,
+                _ => return Lookup::Unavailable,
             }
             match crate::sources::winget::details::parse_show(&out.stdout).homepage {
                 Some(h) => h,
@@ -383,6 +441,42 @@ mod live {
                 "{key:45} {:>6} bytes  {:?}",
                 r.map(|b| b.len()).unwrap_or(0),
                 t.elapsed()
+            );
+        }
+    }
+}
+
+#[cfg(test)]
+mod network_policy {
+    use super::*;
+
+    #[test]
+    fn dns_answers_are_filtered_to_public_addresses() {
+        let addrs: Vec<std::net::SocketAddr> =
+            ["127.0.0.1:443", "10.0.0.5:443", "1.1.1.1:443", "[::1]:443"]
+                .iter()
+                .map(|s| s.parse().unwrap())
+                .collect();
+        let kept: Vec<_> = public_only(addrs).collect();
+        assert_eq!(
+            kept,
+            vec!["1.1.1.1:443".parse::<std::net::SocketAddr>().unwrap()]
+        );
+    }
+
+    #[test]
+    fn redirects_to_private_literals_are_refused() {
+        for (url, ok) in [
+            ("https://example.com/x.png", true),
+            ("https://127.0.0.1/x", false),
+            ("https://[::1]/x", false),
+            ("https://192.168.1.10/x", false),
+            ("http://example.com/x", false),
+        ] {
+            assert_eq!(
+                redirect_allowed(&reqwest::Url::parse(url).unwrap()),
+                ok,
+                "{url}"
             );
         }
     }
