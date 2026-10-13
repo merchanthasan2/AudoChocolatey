@@ -1,6 +1,7 @@
 // Checks every id in src-tauri/catalog/apps.json against the live sources:
 //   winget: `winget show --id <id> --exact --source winget` must find it
-//   choco:  community feed FindPackagesById must return it
+//   choco:   community feed Packages() tolower(Id) filter must return it
+//   msstore: `winget show --id <id> --exact --source msstore` must find it
 // Run manually (needs winget + internet): node scripts/validate-catalog.mjs
 import { readFileSync } from 'node:fs';
 import { execFile } from 'node:child_process';
@@ -11,9 +12,9 @@ const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const catalog = JSON.parse(readFileSync(join(root, 'src-tauri/catalog/apps.json'), 'utf8'));
 const winget = join(process.env.LOCALAPPDATA ?? '', 'Microsoft', 'WindowsApps', 'winget.exe');
 
-const wingetOk = (id) =>
+const wingetOk = (id, source = 'winget') =>
   new Promise((res) =>
-    execFile(winget, ['show', '--id', id, '--exact', '--source', 'winget', '--accept-source-agreements', '--disable-interactivity'],
+    execFile(winget, ['show', '--id', id, '--exact', '--source', source, '--accept-source-agreements', '--disable-interactivity'],
       { timeout: 60000, windowsHide: true },
       (err, stdout) => res(!err && /^Found /m.test(stdout))),
   );
@@ -41,6 +42,7 @@ const results = await pool(catalog.apps, 4, async (a) => ({
   // winget can briefly fail under parallel use (source lock); retry once before reporting.
   winget: a.winget ? (await wingetOk(a.winget)) || (await wingetOk(a.winget)) : null,
   choco: a.choco ? await chocoOk(a.choco) : null,
+  msstore: a.msstore ? (await wingetOk(a.msstore, 'msstore')) || (await wingetOk(a.msstore, 'msstore')) : null,
   a,
 }));
 let bad = 0;
@@ -48,6 +50,7 @@ for (const r of results) {
   const problems = [];
   if (r.winget === false) problems.push(`winget id ${r.a.winget} not found`);
   if (r.choco === false) problems.push(`choco id ${r.a.choco} not found`);
+  if (r.msstore === false) problems.push(`Store id ${r.a.msstore} not found`);
   if (problems.length) { bad++; console.log(`${r.key}: ${problems.join('; ')}`); }
 }
 console.log(`${catalog.apps.length} apps checked, ${bad} with problems.`);

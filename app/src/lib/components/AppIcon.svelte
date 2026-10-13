@@ -5,16 +5,18 @@
   const m = $derived(monogram(name));
   // Real icon from the app itself (served by the Rust icon cache); the tile shows until it loads
   // and stays if no original icon exists.
-  let failed = $state(false);
-  let loaded = $state(false);
-  $effect(() => { void iconKey; failed = false; loaded = false; });
   const src = $derived(iconKey ? `http://icon.localhost/${encodeURIComponent(iconKey)}?name=${encodeURIComponent(lookup ?? name)}` : null);
+  // Tied to the address, so a refreshed list with the same app keeps its icon shown.
+  let loadedSrc = $state<string | null>(null);
+  let failedSrc = $state<string | null>(null);
+  const loaded = $derived(src !== null && loadedSrc === src);
+  const failed = $derived(src !== null && failedSrc === src);
 </script>
 
 <div class="tile" class:has-img={loaded} style="--h:{m.hue};--s:{size}px" aria-hidden="true">
   {#if src && !failed}
     <img {src} alt="" draggable="false" loading="lazy" decoding="async"
-      onload={() => (loaded = true)} onerror={() => (failed = true)} class:show={loaded} />
+      onload={() => (loadedSrc = src)} onerror={() => (failedSrc = src)} class:show={loaded} />
   {/if}
   {#if !loaded}<span>{m.letters}</span>{/if}
 </div>

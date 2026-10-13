@@ -56,6 +56,19 @@ impl Default for ChocoSettings {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, TS)]
 #[serde(rename_all = "camelCase", default)]
 #[ts(export)]
+pub struct StoreSettings {
+    pub enabled: bool,
+}
+
+impl Default for StoreSettings {
+    fn default() -> Self {
+        Self { enabled: true }
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, TS)]
+#[serde(rename_all = "camelCase", default)]
+#[ts(export)]
 pub struct Settings {
     pub schema_version: u32,
     pub theme: Theme,
@@ -68,6 +81,8 @@ pub struct Settings {
     pub show_unknown_versions: bool,
     pub self_update: SelfUpdate,
     pub choco: ChocoSettings,
+    /// Microsoft Store apps (through winget's Store source).
+    pub store: StoreSettings,
     pub last_check_at: Option<String>,
 }
 
@@ -85,6 +100,7 @@ impl Default for Settings {
             show_unknown_versions: false,
             self_update: SelfUpdate::Notify,
             choco: ChocoSettings::default(),
+            store: StoreSettings::default(),
             last_check_at: None,
         }
     }
@@ -106,4 +122,5 @@ pub struct SettingsPatch {
     pub self_update: Option<SelfUpdate>,
     pub choco_enabled: Option<bool>,
     pub choco_bootstrap_prompted: Option<bool>,
+    pub store_enabled: Option<bool>,
 }

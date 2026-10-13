@@ -3,7 +3,7 @@
 use crate::error::AppError;
 use crate::ids::{SourceKind, SourceRef};
 use crate::jobs::model::Job;
-use crate::jobs::worker::JobSink;
+use crate::jobs::worker::{JobSink, QueueSnapshot};
 use crate::sources::model::{OpKind, OpRequest, UpgradeCandidate};
 use crate::state::AppState;
 use serde::Deserialize;
@@ -28,8 +28,8 @@ impl JobSink for TauriSink {
     fn progress(&self, job: &Job) {
         let _ = self.0.emit("job://progress", job);
     }
-    fn queue(&self, jobs: &[Job]) {
-        let _ = self.0.emit("queue://changed", jobs);
+    fn queue(&self, snapshot: &QueueSnapshot) {
+        let _ = self.0.emit("queue://changed", snapshot);
     }
 }
 
@@ -69,6 +69,67 @@ pub fn refuse_disabled_choco(
     Ok(())
 }
 
+/// Same promise for Microsoft Store apps.
+pub fn refuse_disabled_store(
+    ops: &[(OpRequest, String)],
+    store_enabled: bool,
+) -> Result<(), AppError> {
+    if !store_enabled
+        && ops
+            .iter()
+            .any(|(o, _)| o.target.source() == SourceKind::Msstore)
+    {
+        return Err(AppError::new(
+            "store_disabled",
+            "Microsoft Store apps are turned off. Turn them on in Settings to install this app.",
+        ));
+    }
+    Ok(())
+}
+
+/// Store apps install into the account running the app; refuse unless that's the person
+/// signed in at the desktop (`same_user` from `system::shell_user_matches`).
+pub fn refuse_store_other_user(
+    ops: &[(OpRequest, String)],
+    same_user: Option<bool>,
+) -> Result<(), AppError> {
+    let store = ops
+        .iter()
+        .any(|(o, _)| o.target.source() == SourceKind::Msstore);
+    if store && same_user != Some(true) {
+        return Err(AppError::new(
+            "other_user",
+            "Microsoft Store apps install into your own Windows account, but Quantum Updater is running as a different administrator, so they can't be installed here.",
+        ));
+    }
+    Ok(())
+}
+
+/// Closing the app kills its child processes (Job Object), so closing while a job runs asks first.
+pub fn close_blocked(jobs: &[Job]) -> bool {
+    // Any running job: phase lines are only recognised in English, so "Installing" can't be
+    // relied on to tell when an installer is running.
+    jobs.iter()
+        .any(|j| !j.phase.is_finished() && j.phase != crate::jobs::model::JobPhase::Queued)
+}
+
+/// The user chose to close while an installer runs.
+#[tauri::command]
+pub fn quit_anyway(app: AppHandle) {
+    app.exit(0);
+}
+
+/// Installing, updating or removing apps needs admin rights; dev builds run without them.
+pub fn refuse_unelevated(elevated: bool) -> Result<(), AppError> {
+    if elevated {
+        return Ok(());
+    }
+    Err(AppError::new(
+        "needs_admin",
+        "Quantum Updater needs administrator rights to install or change apps. Restart it as administrator.",
+    ))
+}
+
 fn display_name(name: String) -> String {
     let n: String = name.chars().filter(|c| !c.is_control()).take(120).collect();
     if n.trim().is_empty() {
@@ -84,19 +145,70 @@ pub fn enqueue(state: State<'_, AppState>, ops: Vec<EnqueueItem>) -> Result<Vec<
         .into_iter()
         .map(|i| (i.op, display_name(i.display_name)))
         .collect();
-    refuse_disabled_choco(&ops, state.settings().choco.enabled)?;
+    allowed(&state, &ops)?;
     Ok(state.queue.enqueue(ops))
+}
+
+/// Every check a change to the PC must pass, for new jobs and retries alike.
+fn allowed(state: &AppState, ops: &[(OpRequest, String)]) -> Result<(), AppError> {
+    refuse_unelevated(crate::commands::system::is_elevated())?;
+    let g = gates(state);
+    refuse_disabled_choco(ops, g.choco)?;
+    refuse_disabled_store(ops, g.store)?;
+    refuse_store_other_user(ops, g.same_user)
+}
+
+/// The per-source switches a change must pass.
+#[derive(Debug, Clone, Copy)]
+pub struct Gates {
+    pub choco: bool,
+    pub store: bool,
+    pub same_user: Option<bool>,
+}
+
+fn gates(state: &AppState) -> Gates {
+    let s = state.settings();
+    Gates {
+        choco: s.choco.enabled,
+        store: s.store.enabled,
+        same_user: crate::commands::system::shell_user_matches(),
+    }
+}
+
+/// Keeps only the operations a single click would allow, so "Update all" never does more.
+pub fn permitted(ops: Vec<(OpRequest, String)>, g: Gates) -> Vec<(OpRequest, String)> {
+    ops.into_iter()
+        .filter(|op| {
+            let one = std::slice::from_ref(op);
+            refuse_disabled_choco(one, g.choco).is_ok()
+                && refuse_disabled_store(one, g.store).is_ok()
+                && refuse_store_other_user(one, g.same_user).is_ok()
+        })
+        .collect()
 }
 
 #[tauri::command]
 pub async fn update_all(state: State<'_, AppState>) -> Result<Vec<String>, AppError> {
+    refuse_unelevated(crate::commands::system::is_elevated())?;
     let updates = crate::commands::library::collect_updates(&state).await;
-    Ok(state.queue.enqueue(upgrades_to_ops(updates.items)))
+    // `items` already excludes apps the user skipped or set to never update.
+    let ops = permitted(upgrades_to_ops(updates.items), gates(&state));
+    Ok(state.queue.enqueue(ops))
 }
 
 #[tauri::command]
-pub fn get_queue(state: State<'_, AppState>) -> Vec<Job> {
-    state.queue.snapshot()
+pub fn get_queue(state: State<'_, AppState>) -> QueueSnapshot {
+    state.queue.queue_snapshot()
+}
+
+#[tauri::command]
+pub fn pause_queue(state: State<'_, AppState>) {
+    state.queue.pause()
+}
+
+#[tauri::command]
+pub fn resume_queue(state: State<'_, AppState>) {
+    state.queue.resume()
 }
 
 #[tauri::command]
@@ -106,6 +218,9 @@ pub fn cancel_job(state: State<'_, AppState>, id: String) -> Result<(), AppError
 
 #[tauri::command]
 pub fn retry_job(state: State<'_, AppState>, id: String) -> Result<String, AppError> {
+    if let Some(j) = state.queue.snapshot().into_iter().find(|j| j.id == id) {
+        allowed(&state, &[(j.op, j.display_name)])?;
+    }
     state.queue.retry(&id)
 }
 
@@ -132,6 +247,135 @@ mod tests {
             available_version: "2".into(),
             source,
         }
+    }
+
+    #[test]
+    fn store_jobs_are_refused_while_the_store_is_off() {
+        let ops = vec![(
+            OpRequest {
+                kind: OpKind::Install,
+                target: SourceRef::new(SourceKind::Msstore, "9NKSQGP7F2NH").unwrap(),
+                version: None,
+            },
+            "WhatsApp".to_string(),
+        )];
+        assert_eq!(
+            refuse_disabled_store(&ops, false).unwrap_err().code,
+            "store_disabled"
+        );
+        assert!(refuse_disabled_store(&ops, true).is_ok());
+    }
+
+    #[test]
+    fn store_jobs_need_the_signed_in_user() {
+        let ops = vec![(
+            OpRequest {
+                kind: OpKind::Install,
+                target: SourceRef::new(SourceKind::Msstore, "9NKSQGP7F2NH").unwrap(),
+                version: None,
+            },
+            "WhatsApp".to_string(),
+        )];
+        assert!(refuse_store_other_user(&ops, Some(true)).is_ok());
+        assert_eq!(
+            refuse_store_other_user(&ops, Some(false)).unwrap_err().code,
+            "other_user"
+        );
+        assert_eq!(
+            refuse_store_other_user(&ops, None).unwrap_err().code,
+            "other_user"
+        );
+        let winget_only = upgrades_to_ops(vec![cand(SourceKind::Winget, "A.A")]);
+        assert!(refuse_store_other_user(&winget_only, Some(false)).is_ok());
+    }
+
+    #[test]
+    fn update_all_skips_what_a_single_update_would_refuse() {
+        let store = (
+            OpRequest {
+                kind: OpKind::Upgrade,
+                target: SourceRef::new(SourceKind::Msstore, "9NKSQGP7F2NH").unwrap(),
+                version: None,
+            },
+            "WhatsApp".to_string(),
+        );
+        let mut ops = upgrades_to_ops(vec![
+            cand(SourceKind::Winget, "A.A"),
+            cand(SourceKind::Choco, "b"),
+        ]);
+        ops.push(store);
+        let all_on = Gates {
+            choco: true,
+            store: true,
+            same_user: Some(true),
+        };
+        assert_eq!(permitted(ops.clone(), all_on).len(), 3);
+        assert_eq!(
+            permitted(
+                ops.clone(),
+                Gates {
+                    store: false,
+                    ..all_on
+                }
+            )
+            .len(),
+            2
+        );
+        let kept = permitted(
+            ops.clone(),
+            Gates {
+                same_user: Some(false),
+                ..all_on
+            },
+        );
+        assert!(kept
+            .iter()
+            .all(|(o, _)| o.target.source() != SourceKind::Msstore));
+        let kept = permitted(
+            ops,
+            Gates {
+                choco: false,
+                ..all_on
+            },
+        );
+        assert!(kept
+            .iter()
+            .all(|(o, _)| o.target.source() != SourceKind::Choco));
+    }
+
+    #[test]
+    fn closing_is_held_only_while_an_installer_runs() {
+        use crate::jobs::model::JobPhase;
+        let mk = |p: JobPhase| {
+            let mut j = Job::new(
+                "j1".into(),
+                upgrades_to_ops(vec![cand(SourceKind::Winget, "A.A")])
+                    .remove(0)
+                    .0,
+                "A".into(),
+            );
+            j.phase = p;
+            j
+        };
+        // Phase lines are English-only, so any running job holds the close (on German Windows a
+        // winget job never leaves Preparing in our eyes).
+        assert!(!close_blocked(&[
+            mk(JobPhase::Queued),
+            mk(JobPhase::Succeeded)
+        ]));
+        assert!(close_blocked(&[mk(JobPhase::Preparing)]));
+        assert!(close_blocked(&[mk(JobPhase::Downloading)]));
+        assert!(close_blocked(&[mk(JobPhase::Installing)]));
+        assert!(close_blocked(&[mk(JobPhase::Verifying)]));
+        assert!(!close_blocked(&[]));
+    }
+
+    #[test]
+    fn changes_are_refused_without_admin_rights() {
+        let err = refuse_unelevated(false).unwrap_err();
+        assert_eq!(err.code, "needs_admin");
+        assert!(err.message.contains("administrator"));
+        assert!(refuse_unelevated(true).is_ok());
     }
 
     #[test]

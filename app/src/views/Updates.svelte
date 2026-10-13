@@ -15,6 +15,10 @@
   import { uniqueKeys } from '../lib/logic/uniqueKeys';
   import { visibleUpdates } from '../lib/logic/visibleUpdates';
   import { clickGuard } from '../lib/logic/clickGuard';
+  import { ruleLabel } from '../lib/logic/rules';
+  import RowMenu from '../lib/components/RowMenu.svelte';
+
+  let showHidden = $state(false);
 
   const jobOf = (u: UpgradeCandidate) => queue.jobFor(u.source, u.id, 'upgrade');
   const isBusy = (u: UpgradeCandidate) => {
@@ -56,7 +60,6 @@
     const t = setInterval(() => (now = Date.now()), 30_000);
     return () => clearInterval(t);
   });
-  const sourceText = (s: string) => (s === 'winget' ? 'winget' : 'Chocolatey');
   const batchPct = $derived(queue.batchJobs.length ? (queue.batchDone / queue.batchJobs.length) * 100 : 0);
 </script>
 
@@ -86,7 +89,7 @@
 </div>
 
 {#each updates.sourceErrors as e (e.source)}
-  <div class="gap"><Banner text={`Couldn't check ${sourceText(e.source)}: ${e.message}`} action={{ label: 'Try again', run: () => updates.refresh() }} /></div>
+  <div class="gap"><Banner text="Some apps couldn't be checked for updates. The list may be incomplete." action={{ label: 'Try again', run: () => updates.refresh() }} /></div>
 {/each}
 {#if updates.error}<div class="gap"><Banner text={updates.error} action={{ label: 'Try again', run: () => updates.refresh() }} /></div>{/if}
 
@@ -104,20 +107,49 @@
     {#each rows as u, i (keys[i])}
       {@const job = jobOf(u)}
       <div class="row-wrap" in:rise={{ delay: Math.min(i, 8) * 40 }} out:collapse>
-        <AppRow name={u.name} meta="{u.installedVersion} → {u.availableVersion} · {sourceText(u.source)}" {job} mode="update" bar
+        <AppRow name={u.name} meta="{u.installedVersion} → {u.availableVersion}" {job} mode="update" bar
           iconKey="{u.source}:{u.id}">
           {#snippet lead()}
             <Checkbox label="Select {u.name}" checked={selected.has(keys[i])} disabled={isBusy(u)}
               onchange={(v) => (v ? selected.add(keys[i]) : selected.delete(keys[i]))} />
           {/snippet}
           {#snippet action()}
-            <JobButton {job} mode="update" name={u.name}
-              onstart={() => queue.update(u)} oncancel={(id) => queue.cancel(id)} onretry={(id) => queue.retry(id)} />
+            <span class="row-actions">
+              <JobButton {job} mode="update" name={u.name}
+                onstart={() => queue.update(u)} oncancel={(id) => queue.cancel(id)} onretry={(id) => queue.retry(id)} />
+              {#if !isBusy(u)}
+                <RowMenu label="More options for {u.name}" items={[
+                  { text: `Skip version ${u.availableVersion}`, run: () => updates.setRule(u, { kind: 'skipVersion', version: u.availableVersion }) },
+                  { text: 'Never update this app', run: () => updates.setRule(u, { kind: 'never' }) },
+                ]} />
+              {/if}
+            </span>
           {/snippet}
         </AppRow>
       </div>
     {/each}
   </div>
+{/if}
+
+{#if updates.hidden.length > 0}
+  <section class="hidden-section">
+    <button class="hidden-toggle" aria-expanded={showHidden} onclick={() => (showHidden = !showHidden)}>
+      <Icon name="eyeOff" size={16} /> Hidden ({updates.hidden.length})
+      <span class="chev" class:open={showHidden}><Icon name="chevron" size={14} /></span>
+    </button>
+    {#if showHidden}
+      <div class="card list" transition:collapse>
+        {#each updates.hidden as h (h.rule.key + h.candidate.id)}
+          <AppRow name={h.candidate.name} meta="{h.candidate.installedVersion} → {h.candidate.availableVersion} · {ruleLabel(h.rule.kind)}"
+            iconKey="{h.candidate.source}:{h.candidate.id}" mode="update">
+            {#snippet action()}
+              <button class="btn btn-quiet" onclick={() => updates.restore(h.rule.key)}>Show again</button>
+            {/snippet}
+          </AppRow>
+        {/each}
+      </div>
+    {/if}
+  </section>
 {/if}
 
 <style>
@@ -130,6 +162,12 @@
   .batch-bar { height: 6px; border-radius: 6px; background: var(--hairline-strong); overflow: hidden; }
   .batch-bar i { display: block; height: 100%; border-radius: 6px; background: var(--accent); transition: width 500ms var(--spring); }
   .list-head { display: flex; align-items: center; gap: 14px; padding: 10px 16px; border-bottom: 1px solid var(--hairline); font-size: 12.5px; }
+  .row-actions { display: inline-flex; align-items: center; gap: 4px; }
+  .hidden-section { margin-top: 18px; }
+  .hidden-toggle { display: inline-flex; align-items: center; gap: 8px; font-weight: 600; font-size: 13px; color: var(--muted); padding: 6px 4px; margin-bottom: 8px; }
+  .hidden-toggle:hover { color: var(--ink); }
+  .chev { display: inline-grid; transform: rotate(90deg); transition: transform var(--dur-quick) var(--ease-out); }
+  .chev.open { transform: rotate(-90deg); }
   .spinning { display: inline-grid; animation: spin 0.9s linear infinite; }
   @keyframes spin { to { transform: rotate(360deg); } }
 </style>

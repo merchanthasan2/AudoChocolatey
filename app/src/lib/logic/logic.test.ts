@@ -20,6 +20,12 @@ function job(phase: JobPhase, extra: Partial<Job> = {}): Job {
     bytesTotal: null,
     cancellable: ['queued', 'preparing', 'waiting', 'downloading'].includes(phase),
     rebootRequired: false,
+    reason: null,
+    verify: null,
+    fromVersion: null,
+    toVersion: null,
+    attempt: 0,
+    via: null,
     error: null,
     startedAt: null,
     endedAt: null,
@@ -186,7 +192,7 @@ describe('latestOnly.invalidate', () => {
   });
 });
 
-import { installedSet, isInstalled, missingFrom, withJobs, needsChoco } from './entries';
+import { installedSet, isInstalled, missingFrom, withJobs } from './entries';
 describe('entries', () => {
   const installed = [
     { id: 'Mozilla.Firefox', source: 'winget' as const },
@@ -217,9 +223,68 @@ describe('entries', () => {
     const bundle = [e('Git.Git', 'git'), e('VideoLAN.VLC', 'vlc'), e('7zip.7zip', '7zip'), e('Notepad++.Notepad++', 'notepadplusplus')];
     expect(missingFrom(bundle, set)).toEqual([e('7zip.7zip', '7zip'), e('Notepad++.Notepad++', 'notepadplusplus')]);
   });
-  it('Chocolatey-only apps need Chocolatey switched on', () => {
-    expect(needsChoco({ best: 'choco' }, false)).toBe(true);
-    expect(needsChoco({ best: 'choco' }, true)).toBe(false);
-    expect(needsChoco({ best: 'winget' }, false)).toBe(false);
+});
+
+import { notStarted } from './queue';
+describe('queue after a restart', () => {
+  it('finds jobs that never started, newest app request once', () => {
+    const list = [
+      job('cancelled', { id: 'j1', detail: 'Not started' }),
+      job('cancelled', { id: 'j2', detail: 'Stopped when the app closed' }),
+      job('cancelled', { id: 'j3', detail: null }),
+      job('queued', { id: 'j4', op: { kind: 'upgrade', target: { source: 'choco', id: 'git' }, version: null } }),
+      job('cancelled', { id: 'j5', detail: 'Not started' }),
+    ];
+    expect(notStarted(list).map((j) => j.id)).toEqual(['j5']);
+  });
+  it('a job already retried no longer counts', () => {
+    const other = { kind: 'install' as const, target: { source: 'winget' as const, id: 'Git.Git' }, version: null };
+    const list = [
+      job('cancelled', { id: 'j1', detail: 'Not started' }),
+      job('cancelled', { id: 'j2', detail: 'Not started', op: other }),
+      job('queued', { id: 'j3' }),
+    ];
+    expect(notStarted(list).map((j) => j.id)).toEqual(['j2']);
+  });
+});
+
+import { doneToast } from './doneToast';
+describe('finished-job toast', () => {
+  it('confirms normally, and is honest when the version did not move', () => {
+    expect(doneToast(job('succeeded', { op: { kind: 'upgrade', target: { source: 'winget', id: 'A' }, version: null }, verify: 'confirmed' })))
+      .toEqual({ text: 'Firefox updated', tone: 'ok' });
+    expect(doneToast(job('succeeded', { op: { kind: 'upgrade', target: { source: 'winget', id: 'A' }, version: null }, verify: 'unchanged', toVersion: '1.0' })))
+      .toEqual({ text: 'Firefox finished, but still reports version 1.0. It may finish updating after you restart it.', tone: 'warn' });
+    expect(doneToast(job('succeeded', { op: { kind: 'uninstall', target: { source: 'winget', id: 'A' }, version: null }, verify: 'unchanged' })))
+      .toEqual({ text: 'Firefox finished, but still appears to be installed.', tone: 'warn' });
+    expect(doneToast(job('succeeded', { rebootRequired: true }))).toEqual({ text: 'Firefox installed — restart to finish', tone: 'ok' });
+  });
+});
+
+import { ruleLabel } from './rules';
+describe('hidden update labels', () => {
+  it('says why an update is hidden', () => {
+    expect(ruleLabel({ kind: 'never' })).toBe('Never update');
+    expect(ruleLabel({ kind: 'skipVersion', version: '2.0' })).toBe('Skipping version 2.0');
+  });
+});
+
+import { bestId, needsSetup } from './entries';
+describe('Store apps', () => {
+  const store = { winget: null, choco: null, msstore: '9NKSQGP7F2NH', best: 'msstore' as const };
+  it('installs through the chosen source id', () => {
+    expect(bestId(store)).toBe('9NKSQGP7F2NH');
+    expect(bestId({ winget: 'A.A', choco: 'a', msstore: null, best: 'winget' })).toBe('A.A');
+    expect(bestId({ winget: null, choco: 'a', msstore: null, best: 'choco' })).toBe('a');
+  });
+  it('counts a Store app as installed', () => {
+    const set = installedSet([{ id: '9NKSQGP7F2NH', source: 'msstore' }]);
+    expect(isInstalled(store, set)).toBe(true);
+  });
+  it('needs setup only when its source is off', () => {
+    expect(needsSetup(store, { choco: true, store: false })).toBe(true);
+    expect(needsSetup(store, { choco: false, store: true })).toBe(false);
+    expect(needsSetup({ best: 'choco' }, { choco: false, store: true })).toBe(true);
+    expect(needsSetup({ best: 'winget' }, { choco: false, store: false })).toBe(false);
   });
 });

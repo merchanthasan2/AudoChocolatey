@@ -26,3 +26,21 @@ test('flags {@html} in svelte files', () => {
 test('ignores {@html} text outside svelte files', () => {
   assert.deepEqual(findViolations('// never use {@html}', 'app/src/lib/x.ts'), []);
 });
+
+test('flags package-tool names in screen text', () => {
+  const v = findViolations('<p class="muted">One place for winget and Chocolatey.</p>', 'app/src/views/Marketplace.svelte');
+  assert.equal(v.length, 1);
+  assert.equal(v[0].rule, 'tool-name');
+  assert.equal(findViolations('<span>Needs Chocolatey</span>', 'app/src/lib/components/AppCard.svelte').length, 1);
+});
+
+test('allows tool names used as code, comments, Settings and the Advanced block', () => {
+  const code = "{@const id = e.best === 'winget' ? e.winget : e.choco}\n// winget ids are case-insensitive";
+  assert.deepEqual(findViolations(code, 'app/src/views/Marketplace.svelte'), []);
+  assert.deepEqual(findViolations('<span>Chocolatey</span>', 'app/src/views/Settings.svelte'), []);
+  const adv = '<!-- advanced -->\n<span>Installs with winget</span>\n<!-- /advanced -->\n<span>winget</span>';
+  const v = findViolations(adv, 'app/src/lib/components/AppDetail.svelte');
+  assert.equal(v.length, 1);
+  assert.equal(v[0].line, 4);
+  assert.deepEqual(findViolations("const label = 'Chocolatey';", 'app/src/lib/logic/x.ts'), []);
+});

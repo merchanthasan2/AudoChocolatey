@@ -34,7 +34,16 @@
   </section>
 
   <section class="card group">
-    <h2>Sources</h2>
+    <h2>Updates</h2>
+    <div class="row">
+      <div><div class="label">Show apps with unknown versions</div><div class="hint">Some apps don't report a version, so updates can't be confirmed.</div></div>
+      <Toggle label="Show apps with unknown versions" checked={s.showUnknownVersions} onchange={(v) => settings.update({ showUnknownVersions: v })} />
+    </div>
+  </section>
+
+  <section class="card group">
+    <h2>Advanced: app sources</h2>
+    <p class="hint">Where Quantum Updater finds and installs apps. Most people never need to change these.</p>
     {#each overview.value?.sources ?? [] as src (src.kind)}
       <div class="row">
         <div>
@@ -51,8 +60,8 @@
       </div>
     {/each}
     <div class="row">
-      <div><div class="label">Show apps with unknown versions</div><div class="hint">Some apps don't report a version, so updates can't be confirmed.</div></div>
-      <Toggle label="Show apps with unknown versions" checked={s.showUnknownVersions} onchange={(v) => settings.update({ showUnknownVersions: v })} />
+      <div><div class="label">Microsoft Store apps</div><div class="hint">Find and install Store apps too. They install into your own Windows account.</div></div>
+      <Toggle label="Use Microsoft Store apps" checked={s.store.enabled} onchange={(v) => settings.update({ storeEnabled: v })} />
     </div>
   </section>
 

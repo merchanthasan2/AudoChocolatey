@@ -3,21 +3,26 @@
 //! and reports every change through a `JobSink` (Tauri events in the app, a recorder in tests).
 
 use crate::error::{AppError, AppResult};
-use crate::ids::SourceKind;
+use crate::ids::{SourceKind, SourceRef};
 use crate::jobs::exit_codes::{classify, Outcome};
+use crate::jobs::failure::FailureReason;
 use crate::jobs::model::{Job, JobPhase};
+use crate::jobs::persist;
 use crate::jobs::progress::{
     percent, ChocoLines, DownloadWatcher, LineParser, Signal, WingetLines,
 };
+use crate::jobs::verify;
 use crate::sources::model::{OpKind, OpRequest};
 use crate::sources::stream::{CancellationToken, CommandSpec, StreamRunner};
 use crate::sources::{choco, winget};
 use async_trait::async_trait;
+use serde::Serialize;
 use std::collections::{HashMap, VecDeque};
 use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
 use std::time::{Duration, Instant, SystemTime};
 use tokio::sync::Notify;
+use ts_rs::TS;
 
 /// Last-resort limit for a hung process. Installing is never interrupted by the download timeout.
 const SAFETY_TIMEOUT: Duration = Duration::from_secs(24 * 60 * 60);
@@ -27,7 +32,41 @@ const PROGRESS_EVERY: Duration = Duration::from_millis(100);
 pub trait JobSink: Send + Sync {
     fn changed(&self, job: &Job);
     fn progress(&self, job: &Job);
-    fn queue(&self, jobs: &[Job]);
+    fn queue(&self, snapshot: &QueueSnapshot);
+}
+
+/// Reads an app's installed version, to check a finished job really changed it.
+#[async_trait::async_trait]
+pub trait Verifier: Send + Sync {
+    async fn installed_version(&self, target: &SourceRef) -> AppResult<Option<String>>;
+}
+
+const VERIFY_TIMEOUT: Duration = Duration::from_secs(30);
+
+async fn read_version(v: &dyn Verifier, target: &SourceRef) -> Option<AppResult<Option<String>>> {
+    tokio::time::timeout(VERIFY_TIMEOUT, v.installed_version(target))
+        .await
+        .ok()
+}
+
+/// Picks a backup source for a failed job (see `jobs::fallback`), or None.
+#[async_trait::async_trait]
+pub trait Fallback: Send + Sync {
+    async fn alternate(
+        &self,
+        op: &OpRequest,
+        reason: FailureReason,
+        reached_installing: bool,
+    ) -> Option<SourceRef>;
+}
+
+/// The whole queue as the UI sees it.
+#[derive(Debug, Clone, Serialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export)]
+pub struct QueueSnapshot {
+    pub jobs: Vec<Job>,
+    pub paused: bool,
 }
 
 /// Is another Windows Installer session running?
@@ -136,6 +175,14 @@ pub struct WorkerDeps {
     pub gate_poll: Duration,
     /// Preparing/downloading taking longer than this is stopped (installing never is).
     pub download_timeout: Duration,
+    /// Without admin rights nothing is run: every job fails with NotElevated.
+    pub elevated: bool,
+    /// Where the queue and its history are kept between runs (`None` in tests).
+    pub jobs_file: Option<PathBuf>,
+    /// Checks the installed version before and after a job.
+    pub verifier: Option<Arc<dyn Verifier>>,
+    /// Backup sources for failed jobs.
+    pub fallback: Option<Arc<dyn Fallback>>,
 }
 
 #[derive(Default)]
@@ -145,6 +192,8 @@ struct Inner {
     tokens: HashMap<String, CancellationToken>,
     last_progress: HashMap<String, Instant>,
     next: u64,
+    /// Nothing new starts while paused; the running job finishes.
+    paused: bool,
 }
 
 #[derive(Clone)]
@@ -152,6 +201,8 @@ pub struct Queue {
     inner: Arc<Mutex<Inner>>,
     wake: Arc<Notify>,
     sink: Arc<dyn JobSink>,
+    /// Bumped whenever the saved state should change; a writer task saves the latest.
+    save: Option<tokio::sync::watch::Sender<u64>>,
 }
 
 const ORDER: [JobPhase; 5] = [
@@ -168,22 +219,50 @@ fn rank(p: JobPhase) -> usize {
 
 impl Queue {
     pub fn start(deps: WorkerDeps, sink: Arc<dyn JobSink>) -> Queue {
+        let mut inner = Inner::default();
+        let mut save = None;
+        if let Some(path) = deps.jobs_file.clone() {
+            let loaded = persist::load(&path);
+            inner.next = persist::next_id(&loaded.jobs);
+            inner.jobs = loaded.jobs;
+            if loaded.writable {
+                let (tx, rx) = tokio::sync::watch::channel(0u64);
+                save = Some((tx, rx, path));
+            }
+        }
         let q = Queue {
-            inner: Arc::default(),
+            inner: Arc::new(Mutex::new(inner)),
             wake: Arc::new(Notify::new()),
             sink,
+            save: save.as_ref().map(|(tx, _, _)| tx.clone()),
         };
+        if let Some((_tx, mut rx, path)) = save {
+            let inner = q.inner.clone();
+            tauri::async_runtime::spawn(async move {
+                while rx.changed().await.is_ok() {
+                    let jobs = inner.lock().unwrap_or_else(|p| p.into_inner()).jobs.clone();
+                    let path = path.clone();
+                    let _ = tokio::task::spawn_blocking(move || persist::save(&path, &jobs)).await;
+                }
+            });
+        }
         let worker = q.clone();
         let deps = Arc::new(deps);
         tauri::async_runtime::spawn(async move {
             loop {
                 let notified = worker.wake.notified();
-                let next = worker
-                    .lock()
-                    .jobs
-                    .iter()
-                    .find(|j| j.phase == JobPhase::Queued)
-                    .map(|j| j.id.clone());
+                let next = {
+                    let inner = worker.lock();
+                    (!inner.paused)
+                        .then(|| {
+                            inner
+                                .jobs
+                                .iter()
+                                .find(|j| j.phase == JobPhase::Queued)
+                                .map(|j| j.id.clone())
+                        })
+                        .flatten()
+                };
                 match next {
                     Some(id) => {
                         let (w, d, jid) = (worker.clone(), deps.clone(), id.clone());
@@ -192,8 +271,7 @@ impl Queue {
                         if handle.await.is_err() {
                             worker.lock().tokens.remove(&id);
                             worker.update(&id, |j| {
-                                j.error =
-                                    Some("Something went wrong while running this job.".into());
+                                j.fail(FailureReason::Crashed);
                                 j.set_phase(JobPhase::Failed);
                             });
                         }
@@ -222,9 +300,46 @@ impl Queue {
             .unwrap_or_default()
     }
 
+    pub fn queue_snapshot(&self) -> QueueSnapshot {
+        let inner = self.lock();
+        QueueSnapshot {
+            jobs: inner.jobs.clone(),
+            paused: inner.paused,
+        }
+    }
+
+    #[cfg(test)]
+    pub fn paused(&self) -> bool {
+        self.lock().paused
+    }
+
+    pub fn pause(&self) {
+        self.lock().paused = true;
+        self.emit_queue();
+    }
+
+    pub fn resume(&self) {
+        self.lock().paused = false;
+        self.emit_queue();
+        self.wake.notify_one();
+    }
+
+    /// Tells the UI and saves. Finished jobs beyond the history cap are dropped here.
     fn emit_queue(&self) {
-        let jobs = self.snapshot();
-        self.sink.queue(&jobs);
+        {
+            let mut inner = self.lock();
+            if inner.jobs.iter().filter(|j| j.phase.is_finished()).count() > persist::HISTORY {
+                let kept = persist::trim(std::mem::take(&mut inner.jobs));
+                let live: std::collections::HashSet<String> =
+                    kept.iter().map(|j| j.id.clone()).collect();
+                inner.logs.retain(|k, _| live.contains(k));
+                inner.jobs = kept;
+            }
+        }
+        self.sink.queue(&self.queue_snapshot());
+        if let Some(tx) = &self.save {
+            tx.send_modify(|n| *n = n.wrapping_add(1));
+        }
     }
 
     /// Adds operations; an identical operation already waiting or running returns its id.
@@ -322,6 +437,16 @@ impl Queue {
     }
 
     /// Apply a mutation to a job and emit `changed` (or `progress` when only numbers moved).
+    /// Appends a line to the job's log (kept for the details view and failure classification).
+    fn append_log(&self, id: &str, line: String) {
+        let mut inner = self.lock();
+        let log = inner.logs.entry(id.to_string()).or_default();
+        if log.len() == LOG_LINES {
+            log.pop_front();
+        }
+        log.push_back(line);
+    }
+
     fn update(&self, id: &str, f: impl FnOnce(&mut Job)) {
         let snapshot = {
             let mut inner = self.lock();
@@ -394,29 +519,77 @@ impl Queue {
         };
         self.sink.changed(&snapshot);
         self.emit_queue();
-        let outcome = self.execute(deps, id, &op, &token).await;
+        let before = match (&deps.verifier, op.kind) {
+            (Some(v), OpKind::Upgrade | OpKind::Uninstall) => read_version(v.as_ref(), &op.target)
+                .await
+                .and_then(Result::ok)
+                .flatten(),
+            _ => None,
+        };
+        let mut run_op = op.clone();
+        let mut outcome = self.execute(deps, id, &run_op, &token).await;
+        if let (Ok(Outcome::Failed(reason)), Some(fb)) = (&outcome, &deps.fallback) {
+            let reached = self
+                .lock()
+                .jobs
+                .iter()
+                .find(|j| j.id == id)
+                .is_some_and(|j| rank(j.phase) >= rank(JobPhase::Installing));
+            if let Some(alt) = fb.alternate(&op, *reason, reached).await {
+                self.append_log(
+                    id,
+                    format!(
+                        "--- Trying another source: {} {}",
+                        alt.source().as_str(),
+                        alt.id()
+                    ),
+                );
+                self.update(id, |j| j.restart_attempt(alt.clone()));
+                self.emit_queue();
+                // An update through another source installs that source's package over the app.
+                run_op = OpRequest {
+                    kind: OpKind::Install,
+                    target: alt,
+                    version: None,
+                };
+                outcome = self.execute(deps, id, &run_op, &token).await;
+            }
+        }
+        let check = match (&outcome, &deps.verifier) {
+            (Ok(Outcome::Succeeded { .. }), Some(v)) => {
+                self.advance(id, JobPhase::Verifying);
+                let after = read_version(v.as_ref(), &run_op.target).await;
+                Some(match after {
+                    Some(Ok(after)) => (
+                        verify::verdict(op.kind, before.as_deref(), after.as_deref()),
+                        after,
+                    ),
+                    _ => (verify::Verify::Unknown, None),
+                })
+            }
+            _ => None,
+        };
         self.update(id, |j| match outcome {
             Ok(Outcome::Succeeded { reboot }) => {
                 j.reboot_required = reboot;
+                if let Some((verdict, after)) = check {
+                    j.verify = Some(verdict);
+                    j.from_version = before;
+                    j.to_version = after;
+                }
                 j.set_phase(JobPhase::Succeeded);
             }
             Ok(Outcome::Skipped(why)) => {
                 j.detail = Some(why);
                 j.set_phase(JobPhase::Skipped);
             }
-            Ok(Outcome::Failed(why)) => {
-                j.error = Some(why);
-                j.set_phase(JobPhase::Failed);
-            }
+            Ok(Outcome::Failed(why)) => j.fail(why),
             Err(e) if e.code == "cancelled" => j.set_phase(JobPhase::Cancelled),
-            Err(e) => {
-                j.error = Some(if e.code == "timeout" {
-                    "Timed out".into()
-                } else {
-                    e.message
-                });
-                j.set_phase(JobPhase::Failed);
-            }
+            Err(e) => j.fail(if e.code == "timeout" {
+                FailureReason::TimedOut
+            } else {
+                FailureReason::Unknown
+            }),
         });
         let mut inner = self.lock();
         inner.tokens.remove(id);
@@ -430,20 +603,27 @@ impl Queue {
         op: &OpRequest,
         token: &CancellationToken,
     ) -> AppResult<Outcome> {
+        if !deps.elevated {
+            self.append_log(id, "Not running as administrator; nothing was run".into());
+            return Ok(Outcome::Failed(FailureReason::NotElevated));
+        }
         let source = op.target.source();
         let (exe, argv) = match source {
-            SourceKind::Winget => (deps.winget.clone(), winget::args::build_op(op)?),
+            SourceKind::Winget | SourceKind::Msstore => {
+                (deps.winget.clone(), winget::args::build_op(op)?)
+            }
             SourceKind::Choco => (deps.choco.clone(), choco::args::build_op(op)?),
         };
         let Some(exe) = exe else {
-            let tool = if source == SourceKind::Winget {
-                "winget"
-            } else {
-                "Chocolatey"
-            };
-            return Ok(Outcome::Failed(format!("{tool} is not installed")));
+            self.append_log(id, format!("{source:?} is not installed"));
+            return Ok(Outcome::Failed(FailureReason::ToolMissing));
         };
-        let total = match &deps.sizer {
+        // Store apps have no installer file to measure.
+        let sizer = deps
+            .sizer
+            .as_ref()
+            .filter(|_| source != SourceKind::Msstore);
+        let total = match sizer {
             Some(s) => tokio::select! {
                 t = s.total(op) => t,
                 _ = token.cancelled() => return Err(AppError::new("cancelled", "Stopped")),
@@ -468,18 +648,11 @@ impl Queue {
         }
 
         let parser: Mutex<Box<dyn LineParser>> = Mutex::new(match source {
-            SourceKind::Winget => Box::new(WingetLines::default()),
+            SourceKind::Winget | SourceKind::Msstore => Box::new(WingetLines::default()),
             SourceKind::Choco => Box::new(ChocoLines::default()),
         });
         let on_line = |line: String| {
-            {
-                let mut inner = self.lock();
-                let log = inner.logs.entry(id.to_string()).or_default();
-                if log.len() == LOG_LINES {
-                    log.pop_front();
-                }
-                log.push_back(line.clone());
-            }
+            self.append_log(id, line.clone());
             let signals = parser.lock().expect("parser").feed(&line);
             for s in signals {
                 match s {
@@ -531,10 +704,24 @@ impl Queue {
         };
         match result {
             Err(e) if e.code == "cancelled" && timed_out => {
-                Ok(Outcome::Failed("The download timed out".into()))
+                Ok(Outcome::Failed(FailureReason::TimedOut))
             }
-            Err(e) => Err(e),
-            Ok(code) => Ok(classify(source, op.kind, code)),
+            Err(e) => {
+                self.append_log(id, format!("Error: {}", e.message));
+                Err(e)
+            }
+            Ok(code) => {
+                if let Some(c) = code {
+                    self.append_log(id, format!("Exit code {c} (0x{:08X})", c as u32));
+                }
+                let tail: Vec<String> = self
+                    .lock()
+                    .logs
+                    .get(id)
+                    .map(|l| l.iter().rev().take(60).cloned().collect())
+                    .unwrap_or_default();
+                Ok(classify(source, op.kind, code, &tail))
+            }
         }
     }
 }
@@ -636,7 +823,7 @@ mod tests {
                 self.bytes.lock().unwrap().push(b);
             }
         }
-        fn queue(&self, _jobs: &[Job]) {}
+        fn queue(&self, _snapshot: &QueueSnapshot) {}
     }
 
     impl Rec {
@@ -681,6 +868,10 @@ mod tests {
             sample_every: Duration::from_millis(20),
             gate_poll: Duration::from_millis(20),
             download_timeout: Duration::from_secs(60),
+            elevated: true,
+            jobs_file: None,
+            verifier: None,
+            fallback: None,
         };
         (Queue::start(deps, rec.clone()), rec)
     }
@@ -838,7 +1029,7 @@ mod tests {
             .remove(0);
         let j = until_finished(&q, &id).await;
         assert_eq!(j.phase, JobPhase::Skipped);
-        assert_eq!(j.detail.as_deref(), Some("No applicable update"));
+        assert_eq!(j.detail.as_deref(), Some("Already up to date"));
     }
 
     #[tokio::test]
@@ -914,6 +1105,10 @@ mod tests {
             sample_every: Duration::from_millis(20),
             gate_poll: Duration::from_millis(20),
             download_timeout: timeout,
+            elevated: true,
+            jobs_file: None,
+            verifier: None,
+            fallback: None,
         }
     }
 
@@ -943,7 +1138,7 @@ mod tests {
         ]);
         let a = until_finished(&q, &ids[0]).await;
         assert_eq!(a.phase, JobPhase::Failed);
-        assert_eq!(a.error.as_deref(), Some("The download timed out"));
+        assert_eq!(a.reason, Some(FailureReason::TimedOut));
         assert_eq!(until_finished(&q, &ids[1]).await.phase, JobPhase::Succeeded);
     }
 
@@ -1045,6 +1240,257 @@ mod tests {
         assert_eq!(until_finished(&q, &ids[1]).await.phase, JobPhase::Succeeded);
     }
 
+    fn deps_with_file(stream: Arc<FakeStream>, file: Option<PathBuf>) -> WorkerDeps {
+        WorkerDeps {
+            stream,
+            winget: Some(r"C:ake\winget.exe".into()),
+            choco: Some(r"C:ake\choco.exe".into()),
+            gate: Arc::new(NoGate),
+            sizer: None,
+            winget_temp: std::env::temp_dir().join("qu-test-none"),
+            sample_every: Duration::from_millis(20),
+            gate_poll: Duration::from_millis(20),
+            download_timeout: Duration::from_secs(60),
+            elevated: true,
+            jobs_file: file,
+            verifier: None,
+            fallback: None,
+        }
+    }
+
+    struct SeqVerifier(StdMutex<std::collections::VecDeque<AppResult<Option<String>>>>);
+    #[async_trait::async_trait]
+    impl Verifier for SeqVerifier {
+        async fn installed_version(&self, _t: &SourceRef) -> AppResult<Option<String>> {
+            self.0.lock().unwrap().pop_front().unwrap_or(Ok(None))
+        }
+    }
+
+    #[tokio::test]
+    async fn successful_update_is_verified_before_it_reports_done() {
+        let rec = Arc::new(Rec::default());
+        let mut deps = deps_with_file(FakeStream::new(vec![]), None);
+        deps.verifier = Some(Arc::new(SeqVerifier(StdMutex::new(
+            [Ok(Some("1.0".into())), Ok(Some("1.1".into()))].into(),
+        ))));
+        let q = Queue::start(deps, rec.clone());
+        let id = q
+            .enqueue(vec![op(SourceKind::Winget, "A.A", OpKind::Upgrade)])
+            .remove(0);
+        let j = until_finished(&q, &id).await;
+        assert_eq!(j.phase, JobPhase::Succeeded);
+        assert_eq!(j.verify, Some(crate::jobs::verify::Verify::Confirmed));
+        assert_eq!(j.from_version.as_deref(), Some("1.0"));
+        assert_eq!(j.to_version.as_deref(), Some("1.1"));
+        let phases = rec.phases_of(&id);
+        assert_eq!(
+            &phases[phases.len() - 2..],
+            [JobPhase::Verifying, JobPhase::Succeeded]
+        );
+    }
+
+    #[tokio::test]
+    async fn a_failed_check_still_counts_as_done() {
+        let mut deps = deps_with_file(FakeStream::new(vec![]), None);
+        deps.verifier = Some(Arc::new(SeqVerifier(StdMutex::new(
+            [Ok(Some("1.0".into())), Err(AppError::new("timeout", "x"))].into(),
+        ))));
+        let q = Queue::start(deps, Arc::new(Rec::default()));
+        let id = q
+            .enqueue(vec![op(SourceKind::Winget, "A.A", OpKind::Upgrade)])
+            .remove(0);
+        let j = until_finished(&q, &id).await;
+        assert_eq!(j.phase, JobPhase::Succeeded);
+        assert_eq!(j.verify, Some(crate::jobs::verify::Verify::Unknown));
+    }
+
+    /// Offers one fixed alternate; records what it was asked.
+    struct FixedFallback(SourceRef, StdMutex<Vec<(FailureReason, bool)>>);
+    #[async_trait::async_trait]
+    impl Fallback for FixedFallback {
+        async fn alternate(
+            &self,
+            _op: &OpRequest,
+            reason: FailureReason,
+            reached_installing: bool,
+        ) -> Option<SourceRef> {
+            self.1.lock().unwrap().push((reason, reached_installing));
+            (!reached_installing).then(|| self.0.clone())
+        }
+    }
+
+    const HASH_MISMATCH: i32 = 0x8A150011u32 as i32;
+
+    #[tokio::test]
+    async fn a_failed_download_retries_once_from_the_backup_source() {
+        let stream = FakeStream::new(vec![
+            (
+                vec![(5, "Downloading https://example.com/x.exe")],
+                Some(HASH_MISMATCH),
+            ),
+            (vec![(5, "Successfully installed")], Some(0)),
+        ]);
+        let mut deps = deps_with_file(stream.clone(), None);
+        let alt = SourceRef::new(SourceKind::Choco, "spotify").unwrap();
+        let fb = Arc::new(FixedFallback(alt.clone(), StdMutex::new(vec![])));
+        deps.fallback = Some(fb.clone());
+        let q = Queue::start(deps, Arc::new(Rec::default()));
+        let id = q
+            .enqueue(vec![op(
+                SourceKind::Winget,
+                "Spotify.Spotify",
+                OpKind::Install,
+            )])
+            .remove(0);
+        let j = until_finished(&q, &id).await;
+        assert_eq!(j.phase, JobPhase::Succeeded, "{j:?}");
+        assert_eq!(j.via, Some(alt));
+        assert_eq!(j.attempt, 1);
+        assert_eq!(
+            j.op.target.source(),
+            SourceKind::Winget,
+            "the request itself is unchanged"
+        );
+        assert_eq!(stream.runs.load(AO::SeqCst), 2);
+        assert_eq!(
+            fb.1.lock().unwrap()[0],
+            (FailureReason::HashMismatch, false)
+        );
+        assert!(q
+            .log(&id)
+            .iter()
+            .any(|l| l.contains("Trying another source")));
+    }
+
+    #[tokio::test]
+    async fn no_backup_once_an_installer_has_run() {
+        let stream = FakeStream::new(vec![(
+            vec![(5, "Starting package install..."), (5, "Installer failed")],
+            Some(HASH_MISMATCH),
+        )]);
+        let mut deps = deps_with_file(stream.clone(), None);
+        let fb = Arc::new(FixedFallback(
+            SourceRef::new(SourceKind::Choco, "spotify").unwrap(),
+            StdMutex::new(vec![]),
+        ));
+        deps.fallback = Some(fb.clone());
+        let q = Queue::start(deps, Arc::new(Rec::default()));
+        let id = q
+            .enqueue(vec![op(
+                SourceKind::Winget,
+                "Spotify.Spotify",
+                OpKind::Install,
+            )])
+            .remove(0);
+        let j = until_finished(&q, &id).await;
+        assert_eq!(j.phase, JobPhase::Failed);
+        assert_eq!(j.via, None);
+        assert_eq!(stream.runs.load(AO::SeqCst), 1);
+        assert!(fb.1.lock().unwrap()[0].1, "reported that an installer ran");
+    }
+
+    #[tokio::test]
+    async fn paused_queue_finishes_the_current_job_but_starts_nothing_new() {
+        let stream = FakeStream::new(vec![
+            (vec![(200, "Successfully installed")], Some(0)),
+            (vec![], Some(0)),
+        ]);
+        let q = Queue::start(
+            deps_with_file(stream.clone(), None),
+            Arc::new(Rec::default()),
+        );
+        let ids = q.enqueue(vec![
+            op(SourceKind::Winget, "A.A", OpKind::Install),
+            op(SourceKind::Winget, "B.B", OpKind::Install),
+        ]);
+        for _ in 0..200 {
+            if stream.runs.load(AO::SeqCst) == 1 {
+                break;
+            }
+            tokio::time::sleep(Duration::from_millis(5)).await;
+        }
+        q.pause();
+        assert!(q.paused());
+        assert_eq!(until_finished(&q, &ids[0]).await.phase, JobPhase::Succeeded);
+        tokio::time::sleep(Duration::from_millis(150)).await;
+        let b = q.snapshot().into_iter().find(|j| j.id == ids[1]).unwrap();
+        assert_eq!(b.phase, JobPhase::Queued);
+        assert_eq!(stream.runs.load(AO::SeqCst), 1);
+        q.resume();
+        assert_eq!(until_finished(&q, &ids[1]).await.phase, JobPhase::Succeeded);
+    }
+
+    #[tokio::test]
+    async fn history_survives_a_restart_and_ids_continue() {
+        let dir = tempfile::tempdir().unwrap();
+        let file = dir.path().join("jobs.json");
+        let q = Queue::start(
+            deps_with_file(FakeStream::new(vec![]), Some(file.clone())),
+            Arc::new(Rec::default()),
+        );
+        let id = q
+            .enqueue(vec![op(SourceKind::Winget, "A.A", OpKind::Install)])
+            .remove(0);
+        until_finished(&q, &id).await;
+        let mut saved = false;
+        for _ in 0..200 {
+            if crate::jobs::persist::load(&file)
+                .jobs
+                .iter()
+                .any(|j| j.id == id && j.phase == JobPhase::Succeeded)
+            {
+                saved = true;
+                break;
+            }
+            tokio::time::sleep(Duration::from_millis(10)).await;
+        }
+        assert!(saved, "finished job was written to jobs.json");
+        let q2 = Queue::start(
+            deps_with_file(FakeStream::new(vec![]), Some(file.clone())),
+            Arc::new(Rec::default()),
+        );
+        assert!(q2
+            .snapshot()
+            .iter()
+            .any(|j| j.id == id && j.phase == JobPhase::Succeeded));
+        let id2 = q2
+            .enqueue(vec![op(SourceKind::Winget, "B.B", OpKind::Install)])
+            .remove(0);
+        assert_ne!(id2, id);
+    }
+
+    #[tokio::test]
+    async fn a_non_elevated_queue_never_runs_anything() {
+        let rec = Arc::new(Rec::default());
+        let stream = FakeStream::new(vec![]);
+        let deps = WorkerDeps {
+            stream: stream.clone(),
+            winget: Some(r"C:ake\winget.exe".into()),
+            choco: Some(r"C:ake\choco.exe".into()),
+            gate: Arc::new(NoGate),
+            sizer: None,
+            winget_temp: std::env::temp_dir(),
+            sample_every: Duration::from_millis(20),
+            gate_poll: Duration::from_millis(20),
+            download_timeout: Duration::from_secs(60),
+            elevated: false,
+            jobs_file: None,
+            verifier: None,
+            fallback: None,
+        };
+        let q = Queue::start(deps, rec);
+        let id = q
+            .enqueue(vec![op(
+                SourceKind::Winget,
+                "Mozilla.Firefox",
+                OpKind::Install,
+            )])
+            .remove(0);
+        let j = until_finished(&q, &id).await;
+        assert_eq!(j.reason, Some(FailureReason::NotElevated));
+        assert_eq!(stream.runs.load(std::sync::atomic::Ordering::SeqCst), 0);
+    }
+
     #[tokio::test]
     async fn missing_tool_fails_with_a_clear_message() {
         let rec = Arc::new(Rec::default());
@@ -1058,6 +1504,10 @@ mod tests {
             sample_every: Duration::from_millis(20),
             gate_poll: Duration::from_millis(20),
             download_timeout: Duration::from_secs(60),
+            elevated: true,
+            jobs_file: None,
+            verifier: None,
+            fallback: None,
         };
         let q = Queue::start(deps, rec);
         let id = q
@@ -1065,6 +1515,7 @@ mod tests {
             .remove(0);
         let j = until_finished(&q, &id).await;
         assert_eq!(j.phase, JobPhase::Failed);
-        assert_eq!(j.error.as_deref(), Some("Chocolatey is not installed"));
+        assert_eq!(j.reason, Some(FailureReason::ToolMissing));
+        assert!(!j.error.unwrap().contains("Chocolatey"));
     }
 }

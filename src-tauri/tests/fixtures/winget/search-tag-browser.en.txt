@@ -1,0 +1,488 @@
+Name                                            Id                                           Version           Match
+--------------------------------------------------------------------------------------------------------------------------------------------------
+0xGingi-Browser                                 0xGingi.Browser                              115.0.5790.110    Tag: browser
+115浏览器                                       115.115Chrome                                36.0.1            Tag: browser
+360极速浏览器                                   360.360Chrome                                23.0.1253.0       Tag: browser
+360 极速浏览器X                                 360.360Chrome.X                              23.1.1298.64      Tag: browser
+360企业安全浏览器                               360.360Ent                                   13.3.4100.143     Tag: browser
+360游戏浏览器                                   360.360GT                                    13.6.1047.0       Tag: browser
+360安全浏览器                                   360.360SE                                    16.1.2000.64      Tag: browser
+Kivixa                                          990aa.Kivixa                                 0.10.0+100000     Tag: browser
+Slide Browser                                   AGILELEAP.SlideBrowser                       2.0.0             Tag: browser
+Ablaze Floorp                                   Ablaze.Floorp                                12.18.1@156.0.1   Tag: browser
+AdsPower Global                                 AdsPower.AdsPower                            8.9.23            Tag: browser
+Mercury Browser AVX1                            Alex313031.Mercury                           129.0.2           Tag: browser
+Mercury AVX2                                    Alex313031.Mercury.AVX2                      129.0.2           Tag: browser
+Thorium                                         Alex313031.Thorium                           138.0.7204.303    Tag: browser
+Thorium (AVX2)                                  Alex313031.Thorium.AVX2                      156.0.8078.28     Tag: browser
+夸克                                            Alibaba.Quark                                7.3.5.1009        Tag: browser
+UC浏览器                                        Alibaba.UC                                   1.1.0.21          Tag: browser
+Safari                                          Apple.Safari                                 5.34.57.2         Tag: browser
+Basilisk                                        Basilisk.Basilisk                            52.9.2026.09.24   Tag: browser
+Brave                                           Brave.Brave                                  155.1.97.56       Tag: browser
+Brave Beta                                      Brave.Brave.Beta                             155.1.98.52       Tag: browser
+Brave Dev                                       Brave.Brave.Dev                              119.1.61.87       Tag: browser
+Brave Nightly                                   Brave.Brave.Nightly                          155.1.99.20       Tag: browser
+Brave Origin Nightly                            Brave.BraveOrigin.Nightly                    155.1.99.20       Tag: browser
+BrowserClaw Server                              BrowserOS.BrowserClawServer                  0.0.72            Tag: browser
+BrowserOS                                       BrowserOS.BrowserOS                          155.0.8309.26     Tag: browser
+BrowserOS neo                                   BrowserOS.BrowserOS.Neo                      155.0.8309.26     Tag: browser
+BrowserOS                                       BrowserOS.BrowserOSCLI                       0.2.2             Tag: browser
+BrowserStackLocal                               BrowserStack.BrowserStackLocal               3.7.8             Tag: browser
+catalyst-browser                                CatalystDevOrg.CatalystBrowser               3.9.8             Tag: browser
+Catsxp                                          Catsxp.Catsxp                                155.6.10.2        Tag: browser
+Cent Browser                                    CentStudio.CentBrowser                       5.2.1168.83       Tag: browser
+CoolDesk                                        CoolDesk.CoolDesk                            2.0.15            Tag: browser
+Chromium-Gost                                   CryptoPro.Chromium-Gost                      152.0.7977.149    Tag: browser
+Browser Wrangler                                DamianH.BrowserWrangler                      2026.726.20       Tag: browser
+DevLogBus                                       DanSherwin.DevLogBus                         1.4.0             Tag: browser
+Dichromate                                      Dichromate.Browser                           111.0.5563.65     Tag: browser
+Dot Browser                                     Dothq.DotBrowser                             87.0              Tag: browser
+DuckDuckGo                                      DuckDuckGo.DesktopBrowser                    0.172.4.0         Tag: browser
+DuckDuckGo Preview                              DuckDuckGo.DesktopBrowser.Preview            0.176.1.0         Tag: browser
+Ecosia Browser                                  Ecosia.EcosiaBrowser                         148.1.7778.12     Tag: browser
+FactChecker Pro                                 FactcheckerPro.FactCheckerPro                1.5.0             Tag: browser
+Universal Search Suggestions                    Fefedu973.UniversalSearchSuggestions         1.1.0.0           Tag: browser
+Mypal                                           Feodor2.Mypal                                78.0.2            Tag: browser
+Floweb                                          Floweb.Floweb                                2.0.10            Tag: browser
+Browser Bookmarks for PowerToys Command Palette GOODJINC.CmdPalBrowserBookmarks              0.2.3             Tag: browser
+Gologin                                         Gologin.Gologin                              4.28.0            Tag: browser
+Google Chrome                                   Google.Chrome                                155.0.8059.40     Tag: browser
+Google Chrome Beta                              Google.Chrome.Beta                           156.0.8078.17     Tag: browser
+Google Chrome Beta (EXE)                        Google.Chrome.Beta.EXE                       156.0.8078.17     Tag: browser
+Google Chrome Canary                            Google.Chrome.Canary                         157.0.8102.0      Tag: browser
+Google Chrome Dev                               Google.Chrome.Dev                            157.0.8092.0      Tag: browser
+Google Chrome Dev (EXE)                         Google.Chrome.Dev.EXE                        157.0.8092.0      Tag: browser
+Google Chrome (EXE)                             Google.Chrome.EXE                            155.0.8059.40     Tag: browser
+Ninarium                                        GuraNotFound.Ninarium                        132.0.6834.83     Tag: browser
+Chromium                                        Hibbiki.Chromium                             155.0.8059.40     Tag: browser
+Momentum                                        HolmeZ.Momentum                              3.0.4             Tag: browser
+HUAWEI Browser                                  Huawei.HuaweiBrowser                         12.1.3.310        Tag: browser
+IceCat                                          Icecat.Icecat                                115.24.0          Tag: browser
+Vieb                                            Jelmerro.Vieb                                12.10.0           Tag: browser
+Falkon (Nightly)                                KDE.Falkon.Nightly                           master            Tag: browser
+Questionmark Secure Browser                     Learnosity.QuestionmarkSecure                6.1.64.0          Tag: browser
+联想浏览器                                      Lenovo.SLBrowser                             9.0.8.9131        Tag: browser
+LibreWolf                                       LibreWolf.LibreWolf                          157.0.1-1         Tag: browser
+Maxthon                                         Maxthon.Maxthon                              7.5.3.2400        Tag: browser
+Maxthon Cloud Browser                           Maxthon.Maxthon.4                            4.9.5.1000        Tag: browser
+MX5                                             Maxthon.Maxthon.5                            5.3.8.2000        Tag: browser
+Guardian Browser                                Meazure.GuardianBrowser                      4.5.0             Tag: browser
+Tabbit                                          Meituan.TabbitBrowser                        0.25.8.0          Tag: browser
+Tabbit Browser                                  Meituan.TabbitBrowser.CN                     0.25.8.0          Tag: browser
+Microsoft Edge                                  Microsoft.Edge                               155.0.4283.45     Tag: browser
+Microsoft Edge Beta                             Microsoft.Edge.Beta                          156.0.4314.15     Tag: browser
+Microsoft Edge Canary                           Microsoft.Edge.Canary                        142.0.3539.0      Tag: browser
+Microsoft Edge Dev                              Microsoft.Edge.Dev                           157.0.4322.0      Tag: browser
+Min                                             MinBrowser.Min                               1.35.7            Tag: browser
+Pale Moon                                       MoonchildProductions.PaleMoon                35.0.2            Tag: browser
+Mozilla Firefox (en-US)                         Mozilla.Firefox                              157.0.1           Tag: browser
+Firefox Developer Edition (en-US)               Mozilla.Firefox.DeveloperEdition             156.0             Tag: browser
+Firefox Developer Edition (ach)                 Mozilla.Firefox.DeveloperEdition.ach         151.0             Tag: browser
+Firefox Developer Edition (af)                  Mozilla.Firefox.DeveloperEdition.af          151.0             Tag: browser
+Firefox Developer Edition (an)                  Mozilla.Firefox.DeveloperEdition.an          151.0             Tag: browser
+Firefox Developer Edition (ar)                  Mozilla.Firefox.DeveloperEdition.ar          151.0             Tag: browser
+Firefox Developer Edition (ast)                 Mozilla.Firefox.DeveloperEdition.ast         151.0             Tag: browser
+Firefox Developer Edition (az)                  Mozilla.Firefox.DeveloperEdition.az          151.0             Tag: browser
+Firefox Developer Edition (be)                  Mozilla.Firefox.DeveloperEdition.be          151.0             Tag: browser
+Firefox Developer Edition (bg)                  Mozilla.Firefox.DeveloperEdition.bg          151.0             Tag: browser
+Firefox Developer Edition (bn)                  Mozilla.Firefox.DeveloperEdition.bn          151.0             Tag: browser
+Firefox Developer Edition (br)                  Mozilla.Firefox.DeveloperEdition.br          151.0             Tag: browser
+Firefox Developer Edition (bs)                  Mozilla.Firefox.DeveloperEdition.bs          151.0             Tag: browser
+Firefox Developer Edition (ca)                  Mozilla.Firefox.DeveloperEdition.ca          151.0             Tag: browser
+Firefox Developer Edition (ca-valencia)         Mozilla.Firefox.DeveloperEdition.ca-valencia 151.0             Tag: browser
+Firefox Developer Edition (cak)                 Mozilla.Firefox.DeveloperEdition.cak         151.0             Tag: browser
+Firefox Developer Edition (cs)                  Mozilla.Firefox.DeveloperEdition.cs          151.0             Tag: browser
+Firefox Developer Edition (cy)                  Mozilla.Firefox.DeveloperEdition.cy          151.0             Tag: browser
+Firefox Developer Edition (da)                  Mozilla.Firefox.DeveloperEdition.da          151.0             Tag: browser
+Firefox Developer Edition (de)                  Mozilla.Firefox.DeveloperEdition.de          151.0             Tag: browser
+Firefox Developer Edition (dsb)                 Mozilla.Firefox.DeveloperEdition.dsb         151.0             Tag: browser
+Firefox Developer Edition (el)                  Mozilla.Firefox.DeveloperEdition.el          151.0             Tag: browser
+Firefox Developer Edition (en-CA)               Mozilla.Firefox.DeveloperEdition.en-CA       151.0             Tag: browser
+Firefox Developer Edition (en-GB)               Mozilla.Firefox.DeveloperEdition.en-GB       151.0             Tag: browser
+Firefox Developer Edition (eo)                  Mozilla.Firefox.DeveloperEdition.eo          151.0             Tag: browser
+Firefox Developer Edition (es-AR)               Mozilla.Firefox.DeveloperEdition.es-AR       151.0             Tag: browser
+Firefox Developer Edition (es-CL)               Mozilla.Firefox.DeveloperEdition.es-CL       151.0             Tag: browser
+Firefox Developer Edition (es-ES)               Mozilla.Firefox.DeveloperEdition.es-ES       151.0             Tag: browser
+Firefox Developer Edition (es-MX)               Mozilla.Firefox.DeveloperEdition.es-MX       151.0             Tag: browser
+Firefox Developer Edition (et)                  Mozilla.Firefox.DeveloperEdition.et          151.0             Tag: browser
+Firefox Developer Edition (eu)                  Mozilla.Firefox.DeveloperEdition.eu          151.0             Tag: browser
+Firefox Developer Edition (fa)                  Mozilla.Firefox.DeveloperEdition.fa          151.0             Tag: browser
+Firefox Developer Edition (ff)                  Mozilla.Firefox.DeveloperEdition.ff          151.0             Tag: browser
+Firefox Developer Edition (fi)                  Mozilla.Firefox.DeveloperEdition.fi          151.0             Tag: browser
+Firefox Developer Edition (fr)                  Mozilla.Firefox.DeveloperEdition.fr          151.0             Tag: browser
+Firefox Developer Edition (fur)                 Mozilla.Firefox.DeveloperEdition.fur         151.0             Tag: browser
+Firefox Developer Edition (fy-NL)               Mozilla.Firefox.DeveloperEdition.fy-NL       151.0             Tag: browser
+Firefox Developer Edition (ga-IE)               Mozilla.Firefox.DeveloperEdition.ga-IE       151.0             Tag: browser
+Firefox Developer Edition (gd)                  Mozilla.Firefox.DeveloperEdition.gd          151.0             Tag: browser
+Firefox Developer Edition (gl)                  Mozilla.Firefox.DeveloperEdition.gl          151.0             Tag: browser
+Firefox Developer Edition (gn)                  Mozilla.Firefox.DeveloperEdition.gn          151.0             Tag: browser
+Firefox Developer Edition (gu-IN)               Mozilla.Firefox.DeveloperEdition.gu-IN       151.0             Tag: browser
+Firefox Developer Edition (he)                  Mozilla.Firefox.DeveloperEdition.he          151.0             Tag: browser
+Firefox Developer Edition (hi-IN)               Mozilla.Firefox.DeveloperEdition.hi-IN       151.0             Tag: browser
+Firefox Developer Edition (hr)                  Mozilla.Firefox.DeveloperEdition.hr          151.0             Tag: browser
+Firefox Developer Edition (hsb)                 Mozilla.Firefox.DeveloperEdition.hsb         151.0             Tag: browser
+Firefox Developer Edition (hu)                  Mozilla.Firefox.DeveloperEdition.hu          151.0             Tag: browser
+Firefox Developer Edition (hy-AM)               Mozilla.Firefox.DeveloperEdition.hy-AM       151.0             Tag: browser
+Firefox Developer Edition (ia)                  Mozilla.Firefox.DeveloperEdition.ia          151.0             Tag: browser
+Firefox Developer Edition (id)                  Mozilla.Firefox.DeveloperEdition.id          151.0             Tag: browser
+Firefox Developer Edition (is)                  Mozilla.Firefox.DeveloperEdition.is          151.0             Tag: browser
+Firefox Developer Edition (it)                  Mozilla.Firefox.DeveloperEdition.it          151.0             Tag: browser
+Firefox Developer Edition (ja)                  Mozilla.Firefox.DeveloperEdition.ja          151.0             Tag: browser
+Firefox Developer Edition (ka)                  Mozilla.Firefox.DeveloperEdition.ka          151.0             Tag: browser
+Firefox Developer Edition (kab)                 Mozilla.Firefox.DeveloperEdition.kab         151.0             Tag: browser
+Firefox Developer Edition (kk)                  Mozilla.Firefox.DeveloperEdition.kk          151.0             Tag: browser
+Firefox Developer Edition (km)                  Mozilla.Firefox.DeveloperEdition.km          151.0             Tag: browser
+Firefox Developer Edition (kn)                  Mozilla.Firefox.DeveloperEdition.kn          151.0             Tag: browser
+Firefox Developer Edition (ko)                  Mozilla.Firefox.DeveloperEdition.ko          151.0             Tag: browser
+Firefox Developer Edition (lij)                 Mozilla.Firefox.DeveloperEdition.lij         151.0             Tag: browser
+Firefox Developer Edition (lt)                  Mozilla.Firefox.DeveloperEdition.lt          151.0             Tag: browser
+Firefox Developer Edition (lv)                  Mozilla.Firefox.DeveloperEdition.lv          151.0             Tag: browser
+Firefox Developer Edition (mk)                  Mozilla.Firefox.DeveloperEdition.mk          151.0             Tag: browser
+Firefox Developer Edition (mr)                  Mozilla.Firefox.DeveloperEdition.mr          151.0             Tag: browser
+Firefox Developer Edition (ms)                  Mozilla.Firefox.DeveloperEdition.ms          151.0             Tag: browser
+Firefox Developer Edition (my)                  Mozilla.Firefox.DeveloperEdition.my          151.0             Tag: browser
+Firefox Developer Edition (nb-NO)               Mozilla.Firefox.DeveloperEdition.nb-NO       151.0             Tag: browser
+Firefox Developer Edition (ne-NP)               Mozilla.Firefox.DeveloperEdition.ne-NP       151.0             Tag: browser
+Firefox Developer Edition (nl)                  Mozilla.Firefox.DeveloperEdition.nl          151.0             Tag: browser
+Firefox Developer Edition (nn-NO)               Mozilla.Firefox.DeveloperEdition.nn-NO       151.0             Tag: browser
+Firefox Developer Edition (oc)                  Mozilla.Firefox.DeveloperEdition.oc          151.0             Tag: browser
+Firefox Developer Edition (pa-IN)               Mozilla.Firefox.DeveloperEdition.pa-IN       151.0             Tag: browser
+Firefox Developer Edition (pl)                  Mozilla.Firefox.DeveloperEdition.pl          151.0             Tag: browser
+Firefox Developer Edition (pt-BR)               Mozilla.Firefox.DeveloperEdition.pt-BR       151.0             Tag: browser
+Firefox Developer Edition (pt-PT)               Mozilla.Firefox.DeveloperEdition.pt-PT       151.0             Tag: browser
+Firefox Developer Edition (rm)                  Mozilla.Firefox.DeveloperEdition.rm          151.0             Tag: browser
+Firefox Developer Edition (ro)                  Mozilla.Firefox.DeveloperEdition.ro          151.0             Tag: browser
+Firefox Developer Edition (ru)                  Mozilla.Firefox.DeveloperEdition.ru          151.0             Tag: browser
+Firefox Developer Edition (sc)                  Mozilla.Firefox.DeveloperEdition.sc          151.0             Tag: browser
+Firefox Developer Edition (sco)                 Mozilla.Firefox.DeveloperEdition.sco         151.0             Tag: browser
+Firefox Developer Edition (si)                  Mozilla.Firefox.DeveloperEdition.si          151.0             Tag: browser
+Firefox Developer Edition (sk)                  Mozilla.Firefox.DeveloperEdition.sk          151.0             Tag: browser
+Firefox Developer Edition (sl)                  Mozilla.Firefox.DeveloperEdition.sl          151.0             Tag: browser
+Firefox Developer Edition (son)                 Mozilla.Firefox.DeveloperEdition.son         151.0             Tag: browser
+Firefox Developer Edition (sq)                  Mozilla.Firefox.DeveloperEdition.sq          151.0             Tag: browser
+Firefox Developer Edition (sr)                  Mozilla.Firefox.DeveloperEdition.sr          151.0             Tag: browser
+Firefox Developer Edition (sv-SE)               Mozilla.Firefox.DeveloperEdition.sv-SE       151.0             Tag: browser
+Firefox Developer Edition (szl)                 Mozilla.Firefox.DeveloperEdition.szl         151.0             Tag: browser
+Firefox Developer Edition (ta)                  Mozilla.Firefox.DeveloperEdition.ta          151.0             Tag: browser
+Firefox Developer Edition (te)                  Mozilla.Firefox.DeveloperEdition.te          151.0             Tag: browser
+Firefox Developer Edition (tg)                  Mozilla.Firefox.DeveloperEdition.tg          151.0             Tag: browser
+Firefox Developer Edition (th)                  Mozilla.Firefox.DeveloperEdition.th          151.0             Tag: browser
+Firefox Developer Edition (tl)                  Mozilla.Firefox.DeveloperEdition.tl          151.0             Tag: browser
+Firefox Developer Edition (tr)                  Mozilla.Firefox.DeveloperEdition.tr          151.0             Tag: browser
+Firefox Developer Edition (trs)                 Mozilla.Firefox.DeveloperEdition.trs         151.0             Tag: browser
+Firefox Developer Edition (uk)                  Mozilla.Firefox.DeveloperEdition.uk          151.0             Tag: browser
+Firefox Developer Edition (ur)                  Mozilla.Firefox.DeveloperEdition.ur          151.0             Tag: browser
+Firefox Developer Edition (uz)                  Mozilla.Firefox.DeveloperEdition.uz          151.0             Tag: browser
+Firefox Developer Edition (vi)                  Mozilla.Firefox.DeveloperEdition.vi          151.0             Tag: browser
+Firefox Developer Edition (xh)                  Mozilla.Firefox.DeveloperEdition.xh          151.0             Tag: browser
+Firefox Developer Edition (zh-CN)               Mozilla.Firefox.DeveloperEdition.zh-CN       151.0             Tag: browser
+Firefox Developer Edition (zh-TW)               Mozilla.Firefox.DeveloperEdition.zh-TW       151.0             Tag: browser
+Mozilla Firefox ESR (en-US)                     Mozilla.Firefox.ESR                          153.4.0           Tag: browser
+Mozilla Firefox ESR (MSIX)                      Mozilla.Firefox.ESR.MSIX                     153.4.0           Tag: browser
+Mozilla Firefox ESR (ach)                       Mozilla.Firefox.ESR.ach                      153.4.0           Tag: browser
+Mozilla Firefox ESR (af)                        Mozilla.Firefox.ESR.af                       153.4.0           Tag: browser
+Mozilla Firefox ESR (an)                        Mozilla.Firefox.ESR.an                       153.4.0           Tag: browser
+Mozilla Firefox ESR (ar)                        Mozilla.Firefox.ESR.ar                       153.4.0           Tag: browser
+Mozilla Firefox ESR (ast)                       Mozilla.Firefox.ESR.ast                      153.4.0           Tag: browser
+Mozilla Firefox ESR (az)                        Mozilla.Firefox.ESR.az                       153.4.0           Tag: browser
+Mozilla Firefox ESR (be)                        Mozilla.Firefox.ESR.be                       153.4.0           Tag: browser
+Mozilla Firefox ESR (bg)                        Mozilla.Firefox.ESR.bg                       153.4.0           Tag: browser
+Mozilla Firefox ESR (bn)                        Mozilla.Firefox.ESR.bn                       153.4.0           Tag: browser
+Mozilla Firefox ESR (br)                        Mozilla.Firefox.ESR.br                       153.4.0           Tag: browser
+Mozilla Firefox ESR (bs)                        Mozilla.Firefox.ESR.bs                       153.4.0           Tag: browser
+Mozilla Firefox ESR (ca)                        Mozilla.Firefox.ESR.ca                       153.4.0           Tag: browser
+Mozilla Firefox ESR (ca-valencia)               Mozilla.Firefox.ESR.ca-valencia              153.4.0           Tag: browser
+Mozilla Firefox ESR (cak)                       Mozilla.Firefox.ESR.cak                      153.4.0           Tag: browser
+Mozilla Firefox ESR (cs)                        Mozilla.Firefox.ESR.cs                       153.4.0           Tag: browser
+Mozilla Firefox ESR (cy)                        Mozilla.Firefox.ESR.cy                       153.4.0           Tag: browser
+Mozilla Firefox ESR (da)                        Mozilla.Firefox.ESR.da                       153.4.0           Tag: browser
+Mozilla Firefox ESR (de)                        Mozilla.Firefox.ESR.de                       153.4.0           Tag: browser
+Mozilla Firefox ESR (dsb)                       Mozilla.Firefox.ESR.dsb                      153.4.0           Tag: browser
+Mozilla Firefox ESR (el)                        Mozilla.Firefox.ESR.el                       153.4.0           Tag: browser
+Mozilla Firefox ESR (en-CA)                     Mozilla.Firefox.ESR.en-CA                    153.4.0           Tag: browser
+Mozilla Firefox ESR (en-GB)                     Mozilla.Firefox.ESR.en-GB                    153.4.0           Tag: browser
+Mozilla Firefox ESR (eo)                        Mozilla.Firefox.ESR.eo                       153.4.0           Tag: browser
+Mozilla Firefox ESR (es-AR)                     Mozilla.Firefox.ESR.es-AR                    153.4.0           Tag: browser
+Mozilla Firefox ESR (es-CL)                     Mozilla.Firefox.ESR.es-CL                    153.4.0           Tag: browser
+Mozilla Firefox ESR (es-ES)                     Mozilla.Firefox.ESR.es-ES                    153.4.0           Tag: browser
+Mozilla Firefox ESR (es-MX)                     Mozilla.Firefox.ESR.es-MX                    153.4.0           Tag: browser
+Mozilla Firefox ESR (et)                        Mozilla.Firefox.ESR.et                       153.4.0           Tag: browser
+Mozilla Firefox ESR (eu)                        Mozilla.Firefox.ESR.eu                       153.4.0           Tag: browser
+Mozilla Firefox ESR (fa)                        Mozilla.Firefox.ESR.fa                       153.4.0           Tag: browser
+Mozilla Firefox ESR (ff)                        Mozilla.Firefox.ESR.ff                       153.4.0           Tag: browser
+Mozilla Firefox ESR (fi)                        Mozilla.Firefox.ESR.fi                       153.4.0           Tag: browser
+Mozilla Firefox ESR (fr)                        Mozilla.Firefox.ESR.fr                       153.4.0           Tag: browser
+Mozilla Firefox ESR (fur)                       Mozilla.Firefox.ESR.fur                      153.4.0           Tag: browser
+Mozilla Firefox ESR (fy-NL)                     Mozilla.Firefox.ESR.fy-NL                    153.4.0           Tag: browser
+Mozilla Firefox ESR (ga-IE)                     Mozilla.Firefox.ESR.ga-IE                    153.4.0           Tag: browser
+Mozilla Firefox ESR (gd)                        Mozilla.Firefox.ESR.gd                       153.4.0           Tag: browser
+Mozilla Firefox ESR (gl)                        Mozilla.Firefox.ESR.gl                       153.4.0           Tag: browser
+Mozilla Firefox ESR (gn)                        Mozilla.Firefox.ESR.gn                       153.4.0           Tag: browser
+Mozilla Firefox ESR (gu-IN)                     Mozilla.Firefox.ESR.gu-IN                    153.4.0           Tag: browser
+Mozilla Firefox ESR (he)                        Mozilla.Firefox.ESR.he                       153.4.0           Tag: browser
+Mozilla Firefox ESR (hi-IN)                     Mozilla.Firefox.ESR.hi-IN                    153.4.0           Tag: browser
+Mozilla Firefox ESR (hr)                        Mozilla.Firefox.ESR.hr                       153.4.0           Tag: browser
+Mozilla Firefox ESR (hsb)                       Mozilla.Firefox.ESR.hsb                      153.4.0           Tag: browser
+Mozilla Firefox ESR (hu)                        Mozilla.Firefox.ESR.hu                       153.4.0           Tag: browser
+Mozilla Firefox ESR (hy-AM)                     Mozilla.Firefox.ESR.hy-AM                    153.4.0           Tag: browser
+Mozilla Firefox ESR (ia)                        Mozilla.Firefox.ESR.ia                       153.4.0           Tag: browser
+Mozilla Firefox ESR (id)                        Mozilla.Firefox.ESR.id                       153.4.0           Tag: browser
+Mozilla Firefox ESR (is)                        Mozilla.Firefox.ESR.is                       153.4.0           Tag: browser
+Mozilla Firefox ESR (it)                        Mozilla.Firefox.ESR.it                       153.4.0           Tag: browser
+Mozilla Firefox ESR (ja)                        Mozilla.Firefox.ESR.ja                       153.4.0           Tag: browser
+Mozilla Firefox ESR (ka)                        Mozilla.Firefox.ESR.ka                       153.4.0           Tag: browser
+Mozilla Firefox ESR (kab)                       Mozilla.Firefox.ESR.kab                      153.4.0           Tag: browser
+Mozilla Firefox ESR (kk)                        Mozilla.Firefox.ESR.kk                       153.4.0           Tag: browser
+Mozilla Firefox ESR (km)                        Mozilla.Firefox.ESR.km                       153.4.0           Tag: browser
+Mozilla Firefox ESR (kn)                        Mozilla.Firefox.ESR.kn                       153.4.0           Tag: browser
+Mozilla Firefox ESR (ko)                        Mozilla.Firefox.ESR.ko                       153.4.0           Tag: browser
+Mozilla Firefox ESR (lij)                       Mozilla.Firefox.ESR.lij                      153.4.0           Tag: browser
+Mozilla Firefox ESR (lt)                        Mozilla.Firefox.ESR.lt                       153.4.0           Tag: browser
+Mozilla Firefox ESR (lv)                        Mozilla.Firefox.ESR.lv                       153.4.0           Tag: browser
+Mozilla Firefox ESR (mk)                        Mozilla.Firefox.ESR.mk                       153.4.0           Tag: browser
+Mozilla Firefox ESR (mr)                        Mozilla.Firefox.ESR.mr                       153.4.0           Tag: browser
+Mozilla Firefox ESR (ms)                        Mozilla.Firefox.ESR.ms                       153.4.0           Tag: browser
+Mozilla Firefox ESR (my)                        Mozilla.Firefox.ESR.my                       153.4.0           Tag: browser
+Mozilla Firefox ESR (nb-NO)                     Mozilla.Firefox.ESR.nb-NO                    153.4.0           Tag: browser
+Mozilla Firefox ESR (ne-NP)                     Mozilla.Firefox.ESR.ne-NP                    153.4.0           Tag: browser
+Mozilla Firefox ESR (nl)                        Mozilla.Firefox.ESR.nl                       153.4.0           Tag: browser
+Mozilla Firefox ESR (nn-NO)                     Mozilla.Firefox.ESR.nn-NO                    153.4.0           Tag: browser
+Mozilla Firefox ESR (oc)                        Mozilla.Firefox.ESR.oc                       153.4.0           Tag: browser
+Mozilla Firefox ESR (pa-IN)                     Mozilla.Firefox.ESR.pa-IN                    153.4.0           Tag: browser
+Mozilla Firefox ESR (pl)                        Mozilla.Firefox.ESR.pl                       153.4.0           Tag: browser
+Mozilla Firefox ESR (pt-BR)                     Mozilla.Firefox.ESR.pt-BR                    153.4.0           Tag: browser
+Mozilla Firefox ESR (pt-PT)                     Mozilla.Firefox.ESR.pt-PT                    153.4.0           Tag: browser
+Mozilla Firefox ESR (rm)                        Mozilla.Firefox.ESR.rm                       153.4.0           Tag: browser
+Mozilla Firefox ESR (ro)                        Mozilla.Firefox.ESR.ro                       153.4.0           Tag: browser
+Mozilla Firefox ESR (ru)                        Mozilla.Firefox.ESR.ru                       153.4.0           Tag: browser
+Mozilla Firefox ESR (sat)                       Mozilla.Firefox.ESR.sat                      153.1.0           Tag: browser
+Mozilla Firefox ESR (sc)                        Mozilla.Firefox.ESR.sc                       153.4.0           Tag: browser
+Mozilla Firefox ESR (sco)                       Mozilla.Firefox.ESR.sco                      153.4.0           Tag: browser
+Mozilla Firefox ESR (si)                        Mozilla.Firefox.ESR.si                       153.4.0           Tag: browser
+Mozilla Firefox ESR (sk)                        Mozilla.Firefox.ESR.sk                       153.4.0           Tag: browser
+Mozilla Firefox ESR (skr)                       Mozilla.Firefox.ESR.skr                      153.1.0           Tag: browser
+Mozilla Firefox ESR (sl)                        Mozilla.Firefox.ESR.sl                       153.4.0           Tag: browser
+Mozilla Firefox ESR (son)                       Mozilla.Firefox.ESR.son                      153.4.0           Tag: browser
+Mozilla Firefox ESR (sq)                        Mozilla.Firefox.ESR.sq                       153.4.0           Tag: browser
+Mozilla Firefox ESR (sr)                        Mozilla.Firefox.ESR.sr                       153.4.0           Tag: browser
+Mozilla Firefox ESR (sv-SE)                     Mozilla.Firefox.ESR.sv-SE                    153.4.0           Tag: browser
+Mozilla Firefox ESR (szl)                       Mozilla.Firefox.ESR.szl                      153.4.0           Tag: browser
+Mozilla Firefox ESR (ta)                        Mozilla.Firefox.ESR.ta                       153.4.0           Tag: browser
+Mozilla Firefox ESR (te)                        Mozilla.Firefox.ESR.te                       153.4.0           Tag: browser
+Mozilla Firefox ESR (tg)                        Mozilla.Firefox.ESR.tg                       153.4.0           Tag: browser
+Mozilla Firefox ESR (th)                        Mozilla.Firefox.ESR.th                       153.4.0           Tag: browser
+Mozilla Firefox ESR (tl)                        Mozilla.Firefox.ESR.tl                       153.4.0           Tag: browser
+Mozilla Firefox ESR (tr)                        Mozilla.Firefox.ESR.tr                       153.4.0           Tag: browser
+Mozilla Firefox ESR (trs)                       Mozilla.Firefox.ESR.trs                      153.4.0           Tag: browser
+Mozilla Firefox ESR (uk)                        Mozilla.Firefox.ESR.uk                       153.4.0           Tag: browser
+Mozilla Firefox ESR (ur)                        Mozilla.Firefox.ESR.ur                       153.4.0           Tag: browser
+Mozilla Firefox ESR (uz)                        Mozilla.Firefox.ESR.uz                       153.4.0           Tag: browser
+Mozilla Firefox ESR (vi)                        Mozilla.Firefox.ESR.vi                       153.4.0           Tag: browser
+Mozilla Firefox ESR (xh)                        Mozilla.Firefox.ESR.xh                       153.4.0           Tag: browser
+Mozilla Firefox ESR (zh-CN)                     Mozilla.Firefox.ESR.zh-CN                    153.4.0           Tag: browser
+Mozilla Firefox ESR (zh-TW)                     Mozilla.Firefox.ESR.zh-TW                    153.4.0           Tag: browser
+Mozilla Firefox (MSIX)                          Mozilla.Firefox.MSIX                         157.0.1           Tag: browser
+Mozilla Firefox (MSIX) Nightly                  Mozilla.Firefox.Nightly.MSIX                 160.2610.1218.0   Tag: browser
+Mozilla Firefox (ach)                           Mozilla.Firefox.ach                          157.0.1           Tag: browser
+Mozilla Firefox (af)                            Mozilla.Firefox.af                           157.0.1           Tag: browser
+Mozilla Firefox (an)                            Mozilla.Firefox.an                           157.0.1           Tag: browser
+Mozilla Firefox (ar)                            Mozilla.Firefox.ar                           157.0.1           Tag: browser
+Mozilla Firefox (ast)                           Mozilla.Firefox.ast                          157.0.1           Tag: browser
+Mozilla Firefox (az)                            Mozilla.Firefox.az                           157.0.1           Tag: browser
+Mozilla Firefox (be)                            Mozilla.Firefox.be                           157.0.1           Tag: browser
+Mozilla Firefox (bg)                            Mozilla.Firefox.bg                           157.0.1           Tag: browser
+Mozilla Firefox (bn)                            Mozilla.Firefox.bn                           157.0.1           Tag: browser
+Mozilla Firefox (br)                            Mozilla.Firefox.br                           157.0.1           Tag: browser
+Mozilla Firefox (bs)                            Mozilla.Firefox.bs                           157.0.1           Tag: browser
+Mozilla Firefox (ca)                            Mozilla.Firefox.ca                           157.0.1           Tag: browser
+Mozilla Firefox (ca-valencia)                   Mozilla.Firefox.ca-valencia                  157.0.1           Tag: browser
+Mozilla Firefox (cak)                           Mozilla.Firefox.cak                          157.0.1           Tag: browser
+Mozilla Firefox (cs)                            Mozilla.Firefox.cs                           157.0.1           Tag: browser
+Mozilla Firefox (cy)                            Mozilla.Firefox.cy                           157.0.1           Tag: browser
+Mozilla Firefox (da)                            Mozilla.Firefox.da                           157.0.1           Tag: browser
+Mozilla Firefox (de)                            Mozilla.Firefox.de                           157.0.1           Tag: browser
+Mozilla Firefox (dsb)                           Mozilla.Firefox.dsb                          157.0.1           Tag: browser
+Mozilla Firefox (el)                            Mozilla.Firefox.el                           157.0.1           Tag: browser
+Mozilla Firefox (en-CA)                         Mozilla.Firefox.en-CA                        157.0.1           Tag: browser
+Mozilla Firefox (en-GB)                         Mozilla.Firefox.en-GB                        157.0.1           Tag: browser
+Mozilla Firefox (eo)                            Mozilla.Firefox.eo                           157.0.1           Tag: browser
+Mozilla Firefox (es-AR)                         Mozilla.Firefox.es-AR                        157.0.1           Tag: browser
+Mozilla Firefox (es-CL)                         Mozilla.Firefox.es-CL                        157.0.1           Tag: browser
+Mozilla Firefox (es-ES)                         Mozilla.Firefox.es-ES                        157.0.1           Tag: browser
+Mozilla Firefox (es-MX)                         Mozilla.Firefox.es-MX                        157.0.1           Tag: browser
+Mozilla Firefox (et)                            Mozilla.Firefox.et                           157.0.1           Tag: browser
+Mozilla Firefox (eu)                            Mozilla.Firefox.eu                           157.0.1           Tag: browser
+Mozilla Firefox (fa)                            Mozilla.Firefox.fa                           157.0.1           Tag: browser
+Mozilla Firefox (ff)                            Mozilla.Firefox.ff                           157.0.1           Tag: browser
+Mozilla Firefox (fi)                            Mozilla.Firefox.fi                           157.0.1           Tag: browser
+Mozilla Firefox (fr)                            Mozilla.Firefox.fr                           157.0.1           Tag: browser
+Mozilla Firefox (fur)                           Mozilla.Firefox.fur                          157.0.1           Tag: browser
+Mozilla Firefox (fy-NL)                         Mozilla.Firefox.fy-NL                        157.0.1           Tag: browser
+Mozilla Firefox (ga-IE)                         Mozilla.Firefox.ga-IE                        157.0.1           Tag: browser
+Mozilla Firefox (gd)                            Mozilla.Firefox.gd                           157.0.1           Tag: browser
+Mozilla Firefox (gl)                            Mozilla.Firefox.gl                           157.0.1           Tag: browser
+Mozilla Firefox (gn)                            Mozilla.Firefox.gn                           157.0.1           Tag: browser
+Mozilla Firefox (gu-IN)                         Mozilla.Firefox.gu-IN                        157.0.1           Tag: browser
+Mozilla Firefox (he)                            Mozilla.Firefox.he                           157.0.1           Tag: browser
+Mozilla Firefox (hi-IN)                         Mozilla.Firefox.hi-IN                        157.0.1           Tag: browser
+Mozilla Firefox (hr)                            Mozilla.Firefox.hr                           157.0.1           Tag: browser
+Mozilla Firefox (hsb)                           Mozilla.Firefox.hsb                          157.0.1           Tag: browser
+Mozilla Firefox (hu)                            Mozilla.Firefox.hu                           157.0.1           Tag: browser
+Mozilla Firefox (hy-AM)                         Mozilla.Firefox.hy-AM                        157.0.1           Tag: browser
+Mozilla Firefox (ia)                            Mozilla.Firefox.ia                           157.0.1           Tag: browser
+Mozilla Firefox (id)                            Mozilla.Firefox.id                           157.0.1           Tag: browser
+Mozilla Firefox (is)                            Mozilla.Firefox.is                           157.0.1           Tag: browser
+Mozilla Firefox (it)                            Mozilla.Firefox.it                           157.0.1           Tag: browser
+Mozilla Firefox (ja)                            Mozilla.Firefox.ja                           157.0.1           Tag: browser
+Mozilla Firefox (ka)                            Mozilla.Firefox.ka                           157.0.1           Tag: browser
+Mozilla Firefox (kab)                           Mozilla.Firefox.kab                          157.0.1           Tag: browser
+Mozilla Firefox (kk)                            Mozilla.Firefox.kk                           157.0.1           Tag: browser
+Mozilla Firefox (km)                            Mozilla.Firefox.km                           157.0.1           Tag: browser
+Mozilla Firefox (kn)                            Mozilla.Firefox.kn                           157.0.1           Tag: browser
+Mozilla Firefox (ko)                            Mozilla.Firefox.ko                           157.0.1           Tag: browser
+Mozilla Firefox (lij)                           Mozilla.Firefox.lij                          157.0.1           Tag: browser
+Mozilla Firefox (lt)                            Mozilla.Firefox.lt                           157.0.1           Tag: browser
+Mozilla Firefox (lv)                            Mozilla.Firefox.lv                           157.0.1           Tag: browser
+Mozilla Firefox (mk)                            Mozilla.Firefox.mk                           157.0.1           Tag: browser
+Mozilla Firefox (mr)                            Mozilla.Firefox.mr                           157.0.1           Tag: browser
+Mozilla Firefox (ms)                            Mozilla.Firefox.ms                           157.0.1           Tag: browser
+Mozilla Firefox (my)                            Mozilla.Firefox.my                           157.0.1           Tag: browser
+Mozilla Firefox (nb-NO)                         Mozilla.Firefox.nb-NO                        157.0.1           Tag: browser
+Mozilla Firefox (ne-NP)                         Mozilla.Firefox.ne-NP                        157.0.1           Tag: browser
+Mozilla Firefox (nl)                            Mozilla.Firefox.nl                           157.0.1           Tag: browser
+Mozilla Firefox (nn-NO)                         Mozilla.Firefox.nn-NO                        157.0.1           Tag: browser
+Mozilla Firefox (oc)                            Mozilla.Firefox.oc                           157.0.1           Tag: browser
+Mozilla Firefox (pa-IN)                         Mozilla.Firefox.pa-IN                        157.0.1           Tag: browser
+Mozilla Firefox (pl)                            Mozilla.Firefox.pl                           157.0.1           Tag: browser
+Mozilla Firefox (pt-BR)                         Mozilla.Firefox.pt-BR                        157.0.1           Tag: browser
+Mozilla Firefox (pt-PT)                         Mozilla.Firefox.pt-PT                        157.0.1           Tag: browser
+Mozilla Firefox (rm)                            Mozilla.Firefox.rm                           157.0.1           Tag: browser
+Mozilla Firefox (ro)                            Mozilla.Firefox.ro                           157.0.1           Tag: browser
+Mozilla Firefox (ru)                            Mozilla.Firefox.ru                           157.0.1           Tag: browser
+Mozilla Firefox (sc)                            Mozilla.Firefox.sc                           157.0.1           Tag: browser
+Mozilla Firefox (sco)                           Mozilla.Firefox.sco                          157.0.1           Tag: browser
+Mozilla Firefox (si)                            Mozilla.Firefox.si                           157.0.1           Tag: browser
+Mozilla Firefox (sk)                            Mozilla.Firefox.sk                           157.0.1           Tag: browser
+Mozilla Firefox (sl)                            Mozilla.Firefox.sl                           157.0.1           Tag: browser
+Mozilla Firefox (son)                           Mozilla.Firefox.son                          157.0.1           Tag: browser
+Mozilla Firefox (sq)                            Mozilla.Firefox.sq                           157.0.1           Tag: browser
+Mozilla Firefox (sr)                            Mozilla.Firefox.sr                           157.0.1           Tag: browser
+Mozilla Firefox (sv-SE)                         Mozilla.Firefox.sv-SE                        157.0.1           Tag: browser
+Mozilla Firefox (szl)                           Mozilla.Firefox.szl                          157.0.1           Tag: browser
+Mozilla Firefox (ta)                            Mozilla.Firefox.ta                           157.0.1           Tag: browser
+Mozilla Firefox (te)                            Mozilla.Firefox.te                           157.0.1           Tag: browser
+Mozilla Firefox (tg)                            Mozilla.Firefox.tg                           157.0.1           Tag: browser
+Mozilla Firefox (th)                            Mozilla.Firefox.th                           157.0.1           Tag: browser
+Mozilla Firefox (tl)                            Mozilla.Firefox.tl                           157.0.1           Tag: browser
+Mozilla Firefox (tr)                            Mozilla.Firefox.tr                           157.0.1           Tag: browser
+Mozilla Firefox (trs)                           Mozilla.Firefox.trs                          157.0.1           Tag: browser
+Mozilla Firefox (uk)                            Mozilla.Firefox.uk                           157.0.1           Tag: browser
+Mozilla Firefox (ur)                            Mozilla.Firefox.ur                           157.0.1           Tag: browser
+Mozilla Firefox (uz)                            Mozilla.Firefox.uz                           157.0.1           Tag: browser
+Mozilla Firefox (vi)                            Mozilla.Firefox.vi                           157.0.1           Tag: browser
+Mozilla Firefox (xh)                            Mozilla.Firefox.xh                           157.0.1           Tag: browser
+Mozilla Firefox (zh-CN)                         Mozilla.Firefox.zh-CN                        157.0.1           Tag: browser
+Mozilla Firefox (zh-TW)                         Mozilla.Firefox.zh-TW                        157.0.1           Tag: browser
+SeaMonkey                                       Mozilla.SeaMonkey                            2.53.24           Tag: browser
+Mullvad Browser                                 MullvadVPN.MullvadBrowser                    15.0.24           Tag: browser
+NetSurf                                         NetSurf.NetSurf                              3.11.0            Tag: browser
+NordLayer Browser                               NordSecurity.NordLayerBrowser                1.6.3.1320        Tag: browser
+Opera Stable                                    Opera.Opera                                  137.0.6036.39     Tag: browser
+Opera beta                                      Opera.Opera.Beta                             126.0.5750.30     Tag: browser
+Opera developer                                 Opera.Opera.Dev                              138.0.6038.0      Tag: browser
+Opera Air                                       Opera.OperaAir                               136.0.6008.70     Tag: browser
+Opera GX Stable                                 Opera.OperaGX                                136.0.6008.111    Tag: browser
+Prisma Access Browser                           PaloAltoNetworks.PrismaAccessBrowser         155.16.5.40       Tag: browser
+Fortify                                         PeculiarVentures.Fortify                     2.1.0             Tag: browser
+Comet                                           Perplexity.Comet                             154.0.8037.181    Tag: browser
+TheWorld                                        Phoenix.TheWorld                             7.0.0.108         Tag: browser
+RoxyBrowser                                     RoxyBrowser.RoxyBrowser                      4.0.7             Tag: browser
+旗鱼浏览器                                      Ruanmei.Qiyu                                 2.1.1.2           Tag: browser
+Search Deflector                                SearchDeflector.SearchDeflector              1.3.2             Tag: browser
+seewo browser                                   Seewo.SeewoBrowser                           2.0.10.3573       Tag: browser
+Selebrow                                        SelebrowProject.Selebrow                     1.6.1             Tag: browser
+Servo                                           Servo.Servo                                  1.0               Tag: browser
+Servo Nightly Builds                            Servo.Servo.Nightly                          1.0               Tag: browser
+Shift                                           Shift.Shift                                  9.6.8.1270        Tag: browser
+Simprint                                        Simprint.Simprint                            0.2.32            Tag: browser
+Inssist                                         SlashedIo.Inssist                            16.1.0            Tag: browser
+Snipe                                           SnipeGroupLimited.Snipe                      140.0.7339.129    Tag: browser
+Station                                         Station.Station                              3.3.0             Tag: browser
+TON Browser                                     TONresistor.TONBrowser                       1.5.3             Tag: browser
+QQ浏览器                                        Tencent.QQBrowser                            11.1.5155.400     Tag: browser
+Arc                                             TheBrowserCompany.Arc                        1.125.0.458       Tag: browser
+Edgescape Navigator                             TheDoggyBradSoftwareLabs.EdgescapeNavigator  2.0               Tag: browser
+Tor Browser                                     TorProject.TorBrowser                        15.0.25           Tag: browser
+Twinkstar Browser                               Twinkstar.TwinkstarBrowser                   11.4.1000.2609    Tag: browser
+Vivaldi                                         Vivaldi.Vivaldi                              8.2.4133.84       Tag: browser
+Vivaldi (Snapshot)                              Vivaldi.Vivaldi.Snapshot                     8.3.4185.3        Tag: browser
+Waterfox                                        Waterfox.Waterfox                            6.7.5             Tag: browser
+Yandex Browser                                  Yandex.Browser                               26.10.0.1796      Tag: browser
+KUZIRA                                          ZUBOLAND.KUZIRA                              0.9.36            Tag: browser
+Zen Browser                                     Zen-Team.Zen-Browser                         1.23.2b           Tag: browser
+Zen Browser - Twilight                          Zen-Team.Zen-Browser.Twilight                1.24t             Tag: browser
+Ulaa                                            Zoho.Ulaa                                    155.0.8059.40     Tag: browser
+Flōt                                            andrewbrey.flot                              3.0.0             Tag: browser
+Companion                                       brunurd.companion                            1.5.9             Tag: browser
+ungoogled-chromium                              eloston.ungoogled-chromium                   153.0.8010.52     Tag: browser
+apposition                                      jvondev.apposition                           1.1.5             Tag: browser
+Pennywise                                       kamranahmedse.pennywise                      0.8.0             Tag: browser
+K-Meleon                                        kmeleonbrowser.K-Meleon                      75.1              Tag: browser
+Noi                                             lencx.Noi                                    1.1.0             Tag: browser
+qutebrowser                                     qutebrowser.qutebrowser                      3.7.0             Tag: browser
+Stele                                           scimusmn.stele                               2.3.1             Tag: browser
+AI Browser Toolkit                              skssmd.AIBrowserToolkit                      0.7.8             Tag: browser
+Wexond                                          wexond.wexond                                5.2.0             Tag: browser
+Supermium                                       win32ss.Supermium                            144.0.7559.247 R2 Tag: browser
+ZZZ Browser                                     zengjiangy.ZZZBrowser                        2.2.2             Tag: browser
+Kameleo App                                     Kameleo.App                                  5.3.1             Tag: Browser
+BrowserDownloadsView                            NirSoft.BrowserDownloadsView                 1.51              Tag: Browser
+Y8 Browser                                      Y8Games.Y8Browser                            1.0.11            Tag: Browser
+ACDSee Free                                     ACDSystems.ACDSee.Free                       2.5.0.1164        Tag: file browser
+Biscuit                                         Biscuit.Biscuit                              2.1.2             Tag: webbrowser
+Puffin Secure Browser                           CloudMosaInc.PuffinSecureBrowser             10.1.1.609        Tag: webbrowser
+r3dfox                                          EclipseCommunity.r3dfox                      152.0.4-hotfix    Tag: webbrowser
+Polypane                                        Firstversionist.Polypane                     31.0.0            Tag: webbrowser
+Slimjet Web Browser                             FlashPeak.Slimjet                            50                Tag: webbrowser
+Ghostery Private Browser                        Ghostery.GhosteryDawn                        2024.8.2          Tag: webbrowser
+Helium                                          ImputNet.Helium                              0.19.2.1          Tag: webbrowser
+Falkon                                          KDE.Falkon                                   3.1.0             Tag: webbrowser
+MiniBrowser                                     Kafan.MiniBrowser                            1.0.0.134         Tag: webbrowser
+Firefox Beta (MSIX)                             Mozilla.Firefox.Beta.MSIX                    159.0.1.0         Tag: webbrowser
+Firefox Developer Edition (MSIX)                Mozilla.Firefox.DeveloperEdition.MSIX        159.0.1.0         Tag: webbrowser
+Firefox - Unbranded Build - Beta                Mozilla.Firefox.Unbranded.Beta               147.0b1           Tag: webbrowser
+Mozilla Flowstate Pinebuild                     Mozilla.Flowstate                            106.0a1           Tag: webbrowser
+RheoEcho Boundless LeafSheep                    Rheoecho.leafsheep                           1.1.0.0           Tag: webbrowser
+Chromium Installer                              RobRich999.Chromium_Clang.AVX2               148.0.7759.0      Tag: webbrowser
+SRWare Iron                                     SRWare.Iron                                  147.0.7750.0      Tag: webbrowser
+Waterfox Classic                                Waterfox.WaterfoxClassic                     2022.11           Tag: webbrowser
+Cromite                                         uazo.cromite                                 153.0.8010.37     Tag: webbrowser
+AI-Hands                                        AIWander.AI-Hands                            1.0.1             Tag: browser-automation
+Ghostlight                                      Sylin.Ghostlight                             1.3.14            Tag: browser-automation
+Sigma File Manager                              AlekseyHoffman.SigmaFileManager              2.2.0             Tag: file-browser
+Brows                                           Brows.App                                    0.57.0.56         Tag: file-browser
+BertBrowser                                     RobWalsh.BertBrowser                         1.1.3             Tag: file-browser
+remotefs                                        mightymorgs.remotefs                         0.4.0             Tag: file-browser
+Brows3                                          Brows3Team.Brows3                            0.2.46            Tag: s3-browser
+DB Browser for SQLite                           DBBrowserForSQLite.DBBrowserForSQLite        3.13.1            Tag: database-browser
+RazorSQL                                        RichardsonSoftware.RazorSQL                  10.0.6            Tag: database-browser
+Aiko                                            Dubsky.Aiko                                  1.1.0             Tag: anime-watchlist.-anime-browser
+ImageGlass                                      DuongDieuPhap.ImageGlass                     10.0.906.0        Tag: photo-browser
+Safe Exam Browser                               ETHZurich.SafeExamBrowser                    3.10.1            Tag: lockdown-browser
+GoAwayEdge                                      Exploitox.GoAwayEdge                         2.0.3             Tag: anti-edgebrowser
+Picasa                                          Google.Picasa                                3.9.136.200       Tag: image-browser
+Profile Manager                                 Mozilla.ProfileManager                       1.0               Tag: browserprofiles
+Browser Tamer                                   aloneguid.bt                                 6.3.1             Tag: opera-browser
+Privaxy                                         PierreBarre.Privaxy                          0.5.2             Tag: browserinjecting
+Chromium Installer                              RobRich999.Chromium_Clang.AVX                148.0.7759.0      Tag: chromium-browser
+Chromium Installer                              RobRich999.Chromium_Clang.AVX512             148.0.7759.0      Tag: chromium-browser
+SnmpLens                                        Wasabules.SnmpLens                           1.5.0             Tag: mib-browser
+AutoWikiBrowser                                 WikimediaProject.AutoWikiBrowser             6.5               Tag: auto-wiki-browser
+Hister                                          asciimoo.hister                              0.20.0            Tag: browser-history
+WingetRepoBrowser                               donid.WingetRepoBrowser                      0.3               Tag: winget-repo-browser
+Rclone Browser                                  kapitainsky.RcloneBrowser                    1.8.0             Tag: rclone-browser
+pytubepp-helper                                 neosubhamoy.pytubepp-helper                  0.8.0             Tag: browser-extension-helper
+TermioWin                                       termio.soft-jp.com.TermioWin                 1.2.25            Tag: browser-terminal
+OpenAI Translator                               yetone.OpenAITranslator                      0.6.43            Tag: browser-extension
+BrowserSelect — select browser dynamically      zumoshi.BrowserSelect                        1.4.1             Tag: web-browsers

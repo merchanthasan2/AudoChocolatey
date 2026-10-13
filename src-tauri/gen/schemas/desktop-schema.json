@@ -249,10 +249,46 @@
           "markdownDescription": "Enables the marketplace_category command without any pre-configured scope."
         },
         {
+          "description": "Enables the marketplace_category_more command without any pre-configured scope.",
+          "type": "string",
+          "const": "allow-marketplace-category-more",
+          "markdownDescription": "Enables the marketplace_category_more command without any pre-configured scope."
+        },
+        {
           "description": "Enables the marketplace_home command without any pre-configured scope.",
           "type": "string",
           "const": "allow-marketplace-home",
           "markdownDescription": "Enables the marketplace_home command without any pre-configured scope."
+        },
+        {
+          "description": "Enables the pause_queue command without any pre-configured scope.",
+          "type": "string",
+          "const": "allow-pause-queue",
+          "markdownDescription": "Enables the pause_queue command without any pre-configured scope."
+        },
+        {
+          "description": "Enables the quit_anyway command without any pre-configured scope.",
+          "type": "string",
+          "const": "allow-quit-anyway",
+          "markdownDescription": "Enables the quit_anyway command without any pre-configured scope."
+        },
+        {
+          "description": "Enables the relaunch_as_admin command without any pre-configured scope.",
+          "type": "string",
+          "const": "allow-relaunch-as-admin",
+          "markdownDescription": "Enables the relaunch_as_admin command without any pre-configured scope."
+        },
+        {
+          "description": "Enables the remove_rule command without any pre-configured scope.",
+          "type": "string",
+          "const": "allow-remove-rule",
+          "markdownDescription": "Enables the remove_rule command without any pre-configured scope."
+        },
+        {
+          "description": "Enables the resume_queue command without any pre-configured scope.",
+          "type": "string",
+          "const": "allow-resume-queue",
+          "markdownDescription": "Enables the resume_queue command without any pre-configured scope."
         },
         {
           "description": "Enables the retry_job command without any pre-configured scope.",
@@ -265,6 +301,12 @@
           "type": "string",
           "const": "allow-search",
           "markdownDescription": "Enables the search command without any pre-configured scope."
+        },
+        {
+          "description": "Enables the set_rule command without any pre-configured scope.",
+          "type": "string",
+          "const": "allow-set-rule",
+          "markdownDescription": "Enables the set_rule command without any pre-configured scope."
         },
         {
           "description": "Enables the update_all command without any pre-configured scope.",
@@ -351,10 +393,46 @@
           "markdownDescription": "Denies the marketplace_category command without any pre-configured scope."
         },
         {
+          "description": "Denies the marketplace_category_more command without any pre-configured scope.",
+          "type": "string",
+          "const": "deny-marketplace-category-more",
+          "markdownDescription": "Denies the marketplace_category_more command without any pre-configured scope."
+        },
+        {
           "description": "Denies the marketplace_home command without any pre-configured scope.",
           "type": "string",
           "const": "deny-marketplace-home",
           "markdownDescription": "Denies the marketplace_home command without any pre-configured scope."
+        },
+        {
+          "description": "Denies the pause_queue command without any pre-configured scope.",
+          "type": "string",
+          "const": "deny-pause-queue",
+          "markdownDescription": "Denies the pause_queue command without any pre-configured scope."
+        },
+        {
+          "description": "Denies the quit_anyway command without any pre-configured scope.",
+          "type": "string",
+          "const": "deny-quit-anyway",
+          "markdownDescription": "Denies the quit_anyway command without any pre-configured scope."
+        },
+        {
+          "description": "Denies the relaunch_as_admin command without any pre-configured scope.",
+          "type": "string",
+          "const": "deny-relaunch-as-admin",
+          "markdownDescription": "Denies the relaunch_as_admin command without any pre-configured scope."
+        },
+        {
+          "description": "Denies the remove_rule command without any pre-configured scope.",
+          "type": "string",
+          "const": "deny-remove-rule",
+          "markdownDescription": "Denies the remove_rule command without any pre-configured scope."
+        },
+        {
+          "description": "Denies the resume_queue command without any pre-configured scope.",
+          "type": "string",
+          "const": "deny-resume-queue",
+          "markdownDescription": "Denies the resume_queue command without any pre-configured scope."
         },
         {
           "description": "Denies the retry_job command without any pre-configured scope.",
@@ -367,6 +445,12 @@
           "type": "string",
           "const": "deny-search",
           "markdownDescription": "Denies the search command without any pre-configured scope."
+        },
+        {
+          "description": "Denies the set_rule command without any pre-configured scope.",
+          "type": "string",
+          "const": "deny-set-rule",
+          "markdownDescription": "Denies the set_rule command without any pre-configured scope."
         },
         {
           "description": "Denies the update_all command without any pre-configured scope.",

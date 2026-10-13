@@ -3,16 +3,18 @@
 //! are never emitted.
 
 use crate::error::{AppError, AppResult};
-use crate::ids::SourceKind;
+use crate::ids::{SourceKind, WingetId};
 use crate::sources::model::{OpKind, OpRequest};
 
 const AGREE_SOURCE: &str = "--accept-source-agreements";
 const NO_PROMPT: &str = "--disable-interactivity";
 
 pub fn build_op(op: &OpRequest) -> AppResult<Vec<String>> {
-    if op.target.source() != SourceKind::Winget {
-        return Err(AppError::new("invalid_input", "not a winget package"));
-    }
+    let source = match op.target.source() {
+        SourceKind::Winget => "winget",
+        SourceKind::Msstore => "msstore",
+        SourceKind::Choco => return Err(AppError::new("invalid_input", "not a winget package")),
+    };
     let id = op.target.id();
     let mut argv: Vec<&str> = match op.kind {
         OpKind::Install | OpKind::Upgrade => vec![
@@ -25,7 +27,7 @@ pub fn build_op(op: &OpRequest) -> AppResult<Vec<String>> {
             id,
             "--exact",
             "--source",
-            "winget",
+            source,
             "--silent",
             NO_PROMPT,
             "--accept-package-agreements",
@@ -41,7 +43,11 @@ pub fn build_op(op: &OpRequest) -> AppResult<Vec<String>> {
             AGREE_SOURCE,
         ],
     };
-    let version = op.version.as_ref().filter(|_| op.kind != OpKind::Uninstall);
+    // The Store always installs its current version.
+    let version = op
+        .version
+        .as_ref()
+        .filter(|_| op.kind != OpKind::Uninstall && op.target.source() != SourceKind::Msstore);
     if let Some(v) = version {
         argv.extend(["--version", v.as_str()]);
     }
@@ -54,6 +60,20 @@ pub fn version() -> Vec<String> {
 
 pub fn list() -> Vec<String> {
     ["list", AGREE_SOURCE, NO_PROMPT].map(String::from).to_vec()
+}
+
+/// One app's installed row (for checking a job's result).
+pub fn list_id(id: &WingetId) -> Vec<String> {
+    [
+        "list",
+        "--id",
+        id.as_str(),
+        "--exact",
+        AGREE_SOURCE,
+        NO_PROMPT,
+    ]
+    .map(String::from)
+    .to_vec()
 }
 
 pub fn upgrade(include_unknown: bool) -> Vec<String> {
@@ -81,6 +101,38 @@ pub fn search(query: &str) -> Vec<String> {
     .to_vec()
 }
 
+/// Packages carrying a tag (tags come from the catalog, never from the UI).
+pub fn search_tag(tag: &str) -> Vec<String> {
+    [
+        "search",
+        "--tag",
+        tag,
+        "--source",
+        "winget",
+        AGREE_SOURCE,
+        NO_PROMPT,
+    ]
+    .map(String::from)
+    .to_vec()
+}
+
+/// Store search: a short list, since Store matches get loose quickly.
+pub fn search_store(query: &str) -> Vec<String> {
+    [
+        "search",
+        "--query",
+        query,
+        "--source",
+        "msstore",
+        "--count",
+        "20",
+        AGREE_SOURCE,
+        NO_PROMPT,
+    ]
+    .map(String::from)
+    .to_vec()
+}
+
 pub fn export(path: &str) -> Vec<String> {
     [
         "export",
@@ -99,6 +151,26 @@ mod tests {
     use super::*;
     use crate::ids::{PkgVersion, SourceKind, SourceRef};
     use crate::sources::model::{OpKind, OpRequest};
+
+    #[test]
+    fn store_apps_install_from_the_store_source() {
+        let o = OpRequest {
+            kind: OpKind::Install,
+            target: SourceRef::new(SourceKind::Msstore, "9NKSQGP7F2NH").unwrap(),
+            version: Some(PkgVersion::try_from("1.0".to_string()).unwrap()),
+        };
+        let a = build_op(&o).unwrap();
+        assert_eq!(&a[..4], ["install", "--id", "9NKSQGP7F2NH", "--exact"]);
+        assert!(a.windows(2).any(|w| w == ["--source", "msstore"]), "{a:?}");
+        assert!(a.contains(&"--accept-package-agreements".to_string()));
+        assert!(
+            !a.contains(&"--version".to_string()),
+            "the Store has no versions"
+        );
+        let s = search_store("whats app");
+        assert!(s.windows(2).any(|w| w == ["--source", "msstore"]), "{s:?}");
+        assert!(s.windows(2).any(|w| w == ["--query", "whats app"]), "{s:?}");
+    }
 
     fn op(kind: OpKind, id: &str, version: Option<&str>) -> OpRequest {
         OpRequest {

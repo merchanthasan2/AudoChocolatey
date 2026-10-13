@@ -88,6 +88,16 @@ impl<R: Runner> ChocoSource<R> {
             .await
     }
 
+    /// Installed version of one package, or None when it isn't installed.
+    pub async fn installed_version(&self, id: &ChocoId) -> AppResult<Option<String>> {
+        let major = self.major_version().await;
+        let out = self.run(args::list_id(major, id), 30).await?;
+        Ok(parse::pipe_rows(&out.stdout, 2)
+            .into_iter()
+            .find(|r| r[0].eq_ignore_ascii_case(id.as_str()))
+            .map(|r| r[1].clone()))
+    }
+
     pub async fn list_installed(&self) -> AppResult<Vec<InstalledPackage>> {
         let major = self.major_version().await;
         let out = self.run(args::list(major), 90).await?;
@@ -208,6 +218,38 @@ mod tests {
 
     fn src(r: FakeRunner) -> ChocoSource<FakeRunner> {
         ChocoSource::new(r, Some(r"C:\ProgramData\chocolatey\bin\choco.exe".into()))
+    }
+
+    #[tokio::test]
+    async fn installed_version_of_one_package() {
+        let id = ChocoId::try_from("vcredist140".to_string()).unwrap();
+        let s = src(FakeRunner::new()
+            .on(
+                "--version",
+                0,
+                "2.7.4
+",
+            )
+            .on(
+                "list",
+                0,
+                include_str!("../../../tests/fixtures/choco/list-id.v2.txt"),
+            ));
+        assert_eq!(
+            s.installed_version(&id).await.unwrap().as_deref(),
+            Some("14.44.35211")
+        );
+        let call = s
+            .runner
+            .calls()
+            .into_iter()
+            .find(|c| c[0] == "list")
+            .unwrap();
+        assert_eq!(call, ["list", "vcredist140", "--exact", "-r"]);
+        let s = src(FakeRunner::new()
+            .on("--version", 0, "2.7.4")
+            .on("list", 0, ""));
+        assert_eq!(s.installed_version(&id).await.unwrap(), None);
     }
 
     #[tokio::test]

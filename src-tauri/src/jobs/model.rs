@@ -1,10 +1,13 @@
 //! A queued package operation and the phases the UI animates (Get -> ring -> spin -> tick).
 
+use crate::ids::SourceRef;
+use crate::jobs::failure::FailureReason;
+use crate::jobs::verify::Verify;
 use crate::sources::model::OpRequest;
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use ts_rs::TS;
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, TS)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, TS)]
 #[serde(rename_all = "lowercase")]
 #[ts(export)]
 pub enum JobPhase {
@@ -30,7 +33,7 @@ impl JobPhase {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Serialize, TS)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export)]
 pub struct Job {
@@ -48,6 +51,16 @@ pub struct Job {
     pub cancellable: bool,
     pub reboot_required: bool,
     pub error: Option<String>,
+    /// Why it failed (drives the message and backup-source decisions).
+    pub reason: Option<FailureReason>,
+    /// Whether the installed version really changed (set after success).
+    pub verify: Option<Verify>,
+    pub from_version: Option<String>,
+    pub to_version: Option<String>,
+    /// 0 for the first try, 1 when a backup source was used.
+    pub attempt: u8,
+    /// The package actually used when it differs from `op.target` (backup source).
+    pub via: Option<SourceRef>,
     /// Unix epoch milliseconds.
     #[ts(type = "number | null")]
     pub started_at: Option<u64>,
@@ -76,6 +89,12 @@ impl Job {
             cancellable: true,
             reboot_required: false,
             error: None,
+            reason: None,
+            verify: None,
+            from_version: None,
+            to_version: None,
+            attempt: 0,
+            via: None,
             started_at: None,
             ended_at: None,
         }
@@ -87,6 +106,27 @@ impl Job {
             phase,
             JobPhase::Queued | JobPhase::Preparing | JobPhase::Waiting | JobPhase::Downloading
         )
+    }
+
+    /// Starts over from Preparing with a backup source (the only way a phase moves back).
+    pub fn restart_attempt(&mut self, via: SourceRef) {
+        self.attempt += 1;
+        self.via = Some(via);
+        self.phase = JobPhase::Preparing;
+        self.cancellable = true;
+        self.detail = Some("Trying another source".into());
+        self.error = None;
+        self.reason = None;
+        self.percent = None;
+        self.bytes_done = None;
+        self.bytes_total = None;
+    }
+
+    /// Ends the job as Failed with a reason and its plain message.
+    pub fn fail(&mut self, reason: FailureReason) {
+        self.reason = Some(reason);
+        self.error = Some(reason.message(&self.display_name));
+        self.set_phase(JobPhase::Failed);
     }
 
     pub fn set_phase(&mut self, phase: JobPhase) {

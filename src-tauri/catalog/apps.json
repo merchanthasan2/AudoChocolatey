@@ -1,15 +1,15 @@
 {
   "categories": [
-    { "id": "browsers", "name": "Browsers" },
-    { "id": "developer", "name": "Developer tools" },
-    { "id": "media", "name": "Music, video & photo" },
-    { "id": "design", "name": "Design & 3D" },
-    { "id": "communication", "name": "Chat & meetings" },
-    { "id": "productivity", "name": "Productivity" },
-    { "id": "utilities", "name": "Utilities" },
-    { "id": "gaming", "name": "Gaming" },
-    { "id": "security", "name": "Security & privacy" },
-    { "id": "ai", "name": "AI" }
+    { "id": "browsers", "name": "Browsers", "tags": ["browser", "web-browser"] },
+    { "id": "developer", "name": "Developer tools", "tags": ["developer-tools", "code-editor", "ide"] },
+    { "id": "media", "name": "Music, video & photo", "tags": ["media-player", "video-editor", "music", "image-editor"] },
+    { "id": "design", "name": "Design & 3D", "tags": ["3d", "graphics", "image-editor"] },
+    { "id": "communication", "name": "Chat & meetings", "tags": ["chat", "messaging", "video-conferencing"] },
+    { "id": "productivity", "name": "Productivity", "tags": ["productivity", "note-taking", "office"] },
+    { "id": "utilities", "name": "Utilities", "tags": ["utility", "utilities", "file-manager"] },
+    { "id": "gaming", "name": "Gaming", "tags": ["gaming", "game-launcher"] },
+    { "id": "security", "name": "Security & privacy", "tags": ["password-manager", "vpn", "antivirus", "security"] },
+    { "id": "ai", "name": "AI", "tags": ["ai", "llm", "chatbot"] }
   ],
   "apps": [
     { "key": "firefox", "name": "Firefox", "publisher": "Mozilla", "category": "browsers", "blurb": "Fast, private browsing from a non-profit.", "winget": "Mozilla.Firefox", "choco": "firefox", "featured": true },
@@ -42,7 +42,7 @@
     { "key": "android-studio", "name": "Android Studio", "publisher": "Google", "category": "developer", "blurb": "Build apps for Android.", "winget": "Google.AndroidStudio", "choco": "androidstudio" },
 
     { "key": "vlc", "name": "VLC media player", "publisher": "VideoLAN", "category": "media", "blurb": "Plays almost any video or audio file.", "winget": "VideoLAN.VLC", "choco": "vlc", "featured": true },
-    { "key": "spotify", "name": "Spotify", "publisher": "Spotify", "category": "media", "blurb": "Music and podcasts, everywhere.", "winget": "Spotify.Spotify", "choco": "spotify", "featured": true },
+    { "key": "spotify", "name": "Spotify", "publisher": "Spotify", "category": "media", "blurb": "Music and podcasts, everywhere.", "winget": "Spotify.Spotify", "choco": "spotify", "msstore": "9NCBCSZSJRSB", "featured": true },
     { "key": "obs-studio", "name": "OBS Studio", "publisher": "OBS Project", "category": "media", "blurb": "Record and stream your screen.", "winget": "OBSProject.OBSStudio", "choco": "obs-studio", "featured": true },
     { "key": "audacity", "name": "Audacity", "publisher": "Audacity", "category": "media", "blurb": "Record and edit audio, free.", "winget": "Audacity.Audacity", "choco": "audacity" },
     { "key": "handbrake", "name": "HandBrake", "publisher": "HandBrake Team", "category": "media", "blurb": "Convert video to almost any format.", "winget": "HandBrake.HandBrake", "choco": "handbrake" },

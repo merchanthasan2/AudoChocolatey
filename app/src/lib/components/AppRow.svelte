@@ -35,7 +35,8 @@
     if (ui.kind === 'failed') return job.error ?? 'Something went wrong';
     const size = job.bytesTotal ? ` · ${formatBytes(job.bytesTotal)}` : '';
     const pct = ui.percent != null ? ` · ${Math.round(ui.percent)}%` : '';
-    return `${ui.label}${size}${pct}`;
+    const retry = job.attempt > 0 ? 'Trying another way · ' : '';
+    return `${retry}${ui.label}${size}${pct}`;
   });
 </script>
 

@@ -1,0 +1,4 @@
+Name          Id           Version
+----------------------------------
+WhatsApp      9NKSQGP7F2NH Unknown
+WhatsApp Beta 9NBDXK71NK08 Unknown

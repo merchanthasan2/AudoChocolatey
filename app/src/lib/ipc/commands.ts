@@ -16,7 +16,9 @@ export type { AppError } from './bindings/AppError';
 export const getOverview = () => invoke<Overview>('get_overview');
 export const getDiagnostics = () => invoke<Diagnostics>('get_diagnostics');
 export const listInstalled = () => invoke<Listing<InstalledPackage>>('list_installed');
-export const listUpdates = () => invoke<Listing<UpgradeCandidate>>('list_updates');
+export const listUpdates = () => invoke<UpdatesListing>('list_updates');
+export const setRule = (target: SourceRef, name: string, kind: RuleKind) => invoke<UpdatesListing>('set_rule', { target, name, kind });
+export const removeRule = (key: string) => invoke<UpdatesListing>('remove_rule', { key });
 export const search = (query: string) => invoke<Listing<AppEntry>>('search', { query });
 export const getSettings = () => invoke<Settings>('get_settings');
 export const updateSettings = (patch: SettingsPatch) => invoke<Settings>('update_settings', { patch });
@@ -29,18 +31,31 @@ import type { BundleView } from './bindings/BundleView';
 export type { AppEntry, Home, AppDetails, BundleView };
 export const marketplaceHome = () => invoke<Home>('marketplace_home');
 export const marketplaceCategory = (id: string) => invoke<AppEntry[]>('marketplace_category', { id });
+export const marketplaceCategoryMore = (id: string) => invoke<AppEntry[]>('marketplace_category_more', { id });
 export const getApp = (entry: AppEntry) => invoke<AppDetails>('get_app', { entry });
 
 // Install queue
 import type { Job } from './bindings/Job';
+import type { QueueSnapshot } from './bindings/QueueSnapshot';
 import type { EnqueueItem } from './bindings/EnqueueItem';
 import type { OpRequest } from './bindings/OpRequest';
-export type { Job, EnqueueItem, OpRequest };
+export type { Job, EnqueueItem, OpRequest, QueueSnapshot };
+import type { UpdatesListing } from './bindings/UpdatesListing';
+import type { RuleKind } from './bindings/RuleKind';
+import type { Rule } from './bindings/Rule';
+import type { HiddenUpdate } from './bindings/HiddenUpdate';
+import type { SourceRef } from './bindings/SourceRef';
+export type { UpdatesListing, RuleKind, Rule, HiddenUpdate, SourceRef };
 export type { JobPhase } from './bindings/JobPhase';
 
 export const enqueue = (ops: EnqueueItem[]) => invoke<string[]>('enqueue', { ops });
 export const updateAll = () => invoke<string[]>('update_all');
-export const getQueue = () => invoke<Job[]>('get_queue');
+export const getQueue = () => invoke<QueueSnapshot>('get_queue');
+export const pauseQueue = () => invoke<void>('pause_queue');
+export const resumeQueue = () => invoke<void>('resume_queue');
+export const quitAnyway = () => invoke<void>('quit_anyway');
+/** Restarts through the Windows admin prompt; rejects if the person says no. */
+export const relaunchAsAdmin = () => invoke<void>('relaunch_as_admin');
 export const cancelJob = (id: string) => invoke<void>('cancel_job', { id });
 export const retryJob = (id: string) => invoke<string>('retry_job', { id });
 export const clearFinished = () => invoke<void>('clear_finished');

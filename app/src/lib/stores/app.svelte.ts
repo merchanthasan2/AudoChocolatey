@@ -7,10 +7,13 @@ import { onJobChanged, onJobProgress, onQueueChanged } from '../ipc/events';
 import { latestOnly, STALE } from '../logic/latestOnly';
 import { jobFor } from '../logic/jobFor';
 import { tidyResults } from '../logic/tidyResults';
-import { missingFrom, installedSet, withJobs, needsChoco } from '../logic/entries';
+import { missingFrom, installedSet, withJobs, needsSetup, bestId } from '../logic/entries';
+import { notStarted } from '../logic/queue';
+import { doneToast } from '../logic/doneToast';
 import { resolveMotion, resolveTheme } from '../logic/theme';
 import type { SourceKind } from '../ipc/bindings/SourceKind';
 import type { OpKind } from '../ipc/bindings/OpKind';
+import type { UpdatesListing, RuleKind } from '../ipc/commands';
 
 const message = (e: unknown) => (e as { message?: string })?.message ?? String(e);
 
@@ -23,7 +26,7 @@ class Router {
 export const router = new Router();
 
 /* ---------------------------------------------------------------- toasts */
-export interface Toast { id: number; text: string; tone: 'ok' | 'error'; action?: { label: string; run: () => void } }
+export interface Toast { id: number; text: string; tone: 'ok' | 'warn' | 'error'; action?: { label: string; run: () => void } }
 class Toasts {
   list = $state<Toast[]>([]);
   #next = 1;
@@ -65,6 +68,8 @@ class OverviewStore {
   chocoReady = $derived(
     (this.value?.sources.some((s) => s.kind === 'choco' && s.state === 'ready') ?? false) && settings.value?.choco.enabled !== false,
   );
+  /** Which optional sources can install right now. */
+  on = $derived({ choco: this.chocoReady, store: settings.value?.store.enabled !== false });
   async load() {
     try { this.value = await api.getOverview(); this.error = null; } catch (e) { this.error = message(e); }
   }
@@ -93,14 +98,22 @@ class SettingsStore {
 export const settings = new SettingsStore();
 
 /* ---------------------------------------------------------------- library */
-class Section<T> {
+class Section<T, L extends Listing<T> = Listing<T>> {
   items = $state<T[]>([]);
+  /** The whole last response (extra fields such as hidden updates). */
+  last = $state<L | null>(null);
   sourceErrors = $state<Listing<T>['sourceErrors']>([]);
   loading = $state(false);
   loaded = $state(false);
   loadedAt = $state<number | null>(null);
   error = $state<string | null>(null);
-  constructor(private fetcher: () => Promise<Listing<T>>) {}
+  constructor(private fetcher: () => Promise<L>) {}
+  /** Take a fresh response from another command (e.g. after changing a rule). */
+  accept(l: L) {
+    this.items = l.items;
+    this.sourceErrors = l.sourceErrors;
+    this.last = l;
+  }
   async refresh() {
     if (this.loading) return;
     this.loading = true;
@@ -108,6 +121,7 @@ class Section<T> {
       const l = await this.fetcher();
       this.items = l.items;
       this.sourceErrors = l.sourceErrors;
+      this.last = l;
       this.error = null;
       this.loadedAt = Date.now();
     } catch (e) {
@@ -119,12 +133,25 @@ class Section<T> {
   }
 }
 export const installed = new Section<InstalledPackage>(api.listInstalled);
-export const updates = new Section<UpgradeCandidate>(api.listUpdates);
+class UpdatesSection extends Section<UpgradeCandidate, UpdatesListing> {
+  hidden = $derived(this.last?.hidden ?? []);
+  async setRule(c: UpgradeCandidate, kind: RuleKind) {
+    try { this.accept(await api.setRule({ source: c.source, id: c.id }, c.name, kind)); }
+    catch (e) { toasts.push({ text: message(e), tone: 'error' }); }
+  }
+  async restore(key: string) {
+    try { this.accept(await api.removeRule(key)); }
+    catch (e) { toasts.push({ text: message(e), tone: 'error' }); }
+  }
+}
+export const updates = new UpdatesSection(api.listUpdates);
 
 /* ---------------------------------------------------------------- queue */
 const FINISHED = new Set(['succeeded', 'failed', 'cancelled', 'skipped']);
 class QueueStore {
   jobs = $state<Job[]>([]);
+  paused = $state(false);
+  notStarted = $derived(notStarted(this.jobs));
   active = $derived(this.jobs.filter((j) => !FINISHED.has(j.phase)));
   current = $derived(this.active.find((j) => j.phase !== 'queued'));
   #started = false;
@@ -135,8 +162,8 @@ class QueueStore {
     this.#started = true;
     await onJobChanged((j) => this.#upsert(j, true));
     await onJobProgress((j) => this.#upsert(j, false));
-    await onQueueChanged((all) => (this.jobs = all));
-    try { this.jobs = await api.getQueue(); } catch { /* empty queue */ }
+    await onQueueChanged((s) => { this.jobs = s.jobs; this.paused = s.paused; });
+    try { const s = await api.getQueue(); this.jobs = s.jobs; this.paused = s.paused; } catch { /* empty queue */ }
   }
 
   #upsert(job: Job, announce: boolean) {
@@ -144,12 +171,11 @@ class QueueStore {
     this.jobs = prev ? this.jobs.map((j) => (j.id === job.id ? job : j)) : [...this.jobs, job];
     if (!announce || prev?.phase === job.phase) return;
     if (job.phase === 'succeeded') {
-      const verb = job.op.kind === 'uninstall' ? 'removed' : job.op.kind === 'upgrade' ? 'updated' : 'installed';
-      toasts.push({ text: `${job.displayName} ${verb}${job.rebootRequired ? ' — restart to finish' : ''}`, tone: 'ok' });
+      toasts.push(doneToast(job), job.verify === 'unchanged' ? 8000 : undefined);
       this.#scheduleRefresh();
     } else if (job.phase === 'failed') {
       toasts.push(
-        { text: `Couldn't finish ${job.displayName}: ${job.error ?? 'unknown error'}`, tone: 'error', action: { label: 'Retry', run: () => this.retry(job.id) } },
+        { text: job.error ?? `Couldn't finish ${job.displayName}.`, tone: 'error', action: { label: 'Retry', run: () => this.retry(job.id) } },
         8000,
       );
     }
@@ -173,13 +199,13 @@ class QueueStore {
   install(p: { source: SourceKind; id: string; name: string }) { return this.#enqueue('install', p.source, p.id, p.name); }
   /** Install a catalog/search entry through its best source. */
   installEntry(e: AppEntry) {
-    const id = e.best === 'winget' ? e.winget : e.choco;
+    const id = bestId(e);
     return id ? this.#enqueue('install', e.best, id, e.name) : Promise.resolve();
   }
   /** What a bundle would queue now: not installed, not already queued, installable. */
   bundleMissing(entries: AppEntry[]) {
     const present = withJobs(installedSet(installed.items), this.jobs);
-    return missingFrom(entries, present).filter((e) => !needsChoco(e, overview.chocoReady));
+    return missingFrom(entries, present).filter((e) => !needsSetup(e, overview.on));
   }
   /** Queue every app of a bundle that isn't there yet; returns how many were queued. Waits for
    *  a good installed list, so apps already on the PC are never reinstalled. */
@@ -187,7 +213,7 @@ class QueueStore {
     if (!installed.loaded || installed.error) return 0;
     const missing = this.bundleMissing(entries);
     const ops = missing.flatMap((e) => {
-      const id = e.best === 'winget' ? e.winget : e.choco;
+      const id = bestId(e);
       return id ? [{ op: { kind: 'install' as const, target: { source: e.best, id }, version: null }, displayName: e.name }] : [];
     });
     if (ops.length === 0) return 0;
@@ -223,6 +249,13 @@ class QueueStore {
     try { await api.retryJob(id); } catch (e) { toasts.push({ text: message(e), tone: 'error' }); }
   }
   async clearFinished() { await api.clearFinished(); }
+  async setPaused(on: boolean) {
+    try { await (on ? api.pauseQueue() : api.resumeQueue()); } catch (e) { toasts.push({ text: message(e), tone: 'error' }); }
+  }
+  /** Re-queue what an app restart stopped before it started. */
+  async retryNotStarted() {
+    for (const j of this.notStarted) await this.retry(j.id);
+  }
 }
 export const queue = new QueueStore();
 
@@ -274,14 +307,31 @@ class MarketStore {
   home = $state<Home | null>(null);
   category = $state<string | null>(null);
   categoryApps = $state<AppEntry[]>([]);
+  /** Live extras below the hand-checked apps (not checked by us). */
+  more = $state<AppEntry[]>([]);
+  moreLoading = $state(false);
   detail = $state<AppEntry | null>(null);
+  #catGuard = latestOnly<AppEntry[]>();
+  #moreGuard = latestOnly<AppEntry[]>();
   async load() {
     if (this.home) return;
     try { this.home = await api.marketplaceHome(); } catch (e) { toasts.push({ text: message(e), tone: 'error' }); }
   }
+  /** Switching quickly never shows one category's apps under another's name. */
   async openCategory(id: string | null) {
     this.category = id;
-    this.categoryApps = id ? await api.marketplaceCategory(id) : [];
+    this.categoryApps = [];
+    this.more = [];
+    if (!id) { this.#catGuard.invalidate(); this.#moreGuard.invalidate(); return; }
+    try {
+      const apps = await this.#catGuard.run(api.marketplaceCategory(id));
+      if (apps !== STALE) this.categoryApps = apps;
+    } catch (e) { toasts.push({ text: message(e), tone: 'error' }); }
+    this.moreLoading = true;
+    try {
+      const more = await this.#moreGuard.run(api.marketplaceCategoryMore(id));
+      if (more !== STALE) { this.more = more; this.moreLoading = false; }
+    } catch { this.moreLoading = false; }
   }
 }
 export const market = new MarketStore();

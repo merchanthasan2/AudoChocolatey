@@ -188,6 +188,7 @@ impl IconService {
         match source {
             "choco" => self.choco_icon(id).await,
             "winget" => self.homepage_icon(id).await,
+            "msstore" => self.store_icon(id).await,
             _ => Lookup::Missing,
         }
     }
@@ -259,6 +260,26 @@ impl IconService {
             }
         };
         self.fetch_icon(&url).await
+    }
+
+    /// The Store listing's own logo (the same endpoint winget's Store source uses).
+    async fn store_icon(&self, id: &str) -> Lookup {
+        let Ok(sid) = crate::ids::StoreId::try_from(id.to_string()) else {
+            return Lookup::Missing;
+        };
+        let url = format!(
+            "https://storeedgefd.dsx.mp.microsoft.com/v9.0/products/{}?market=US&locale=en-us&deviceFamily=Windows.Desktop",
+            sid.as_str()
+        );
+        let json = match self.fetch(&url, HTML_CAP, Overflow::Fail).await {
+            Ok(j) => j,
+            Err(Fetch::Gone) => return Lookup::Missing,
+            Err(Fetch::Retry) => return Lookup::Unavailable,
+        };
+        match sources::store_icon_url(&String::from_utf8_lossy(&json)) {
+            Some(icon) => self.fetch_icon(&icon).await,
+            None => Lookup::Missing,
+        }
     }
 
     /// Publisher homepage (from `winget show`), then its declared icon or /favicon.ico.

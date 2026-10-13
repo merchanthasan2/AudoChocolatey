@@ -5,7 +5,7 @@ pub mod details;
 pub mod parse;
 
 use crate::error::{AppError, AppResult};
-use crate::ids::{SearchQuery, SourceKind, WingetId};
+use crate::ids::{SearchQuery, SourceKind, StoreId, WingetId};
 use crate::sources::model::{
     InstalledPackage, SourcePackage, SourceState, SourceStatus, UpgradeCandidate,
 };
@@ -86,16 +86,25 @@ impl<R: Runner> WingetSource<R> {
         Ok(rows
             .into_iter()
             .map(|r| {
-                let managed = r.source.as_deref() == Some("winget") && valid(&r.id);
+                let source = row_source(r.source.as_deref(), &r.id);
                 InstalledPackage {
                     name: r.name,
                     id: r.id,
                     version: r.version,
                     available: r.extra,
-                    source: managed.then_some(SourceKind::Winget),
+                    source,
                 }
             })
             .collect())
+    }
+
+    /// Installed version of one app, or None when it isn't installed.
+    pub async fn installed_version(&self, id: &WingetId) -> AppResult<Option<String>> {
+        let rows = self.query(args::list_id(id), 30, true).await?;
+        Ok(rows
+            .into_iter()
+            .find(|r| r.id.eq_ignore_ascii_case(id.as_str()))
+            .map(|r| r.version))
     }
 
     pub async fn list_upgrades(&self, include_unknown: bool) -> AppResult<Vec<UpgradeCandidate>> {
@@ -107,14 +116,15 @@ impl<R: Runner> WingetSource<R> {
             .await;
         Ok(rows
             .into_iter()
-            .filter(|r| r.source.as_deref() == Some("winget") && valid(&r.id) && r.id != SELF_ID)
+            .filter(|r| r.id != SELF_ID)
             .filter_map(|r| {
+                let source = row_source(r.source.as_deref(), &r.id)?;
                 Some(UpgradeCandidate {
                     available_version: r.extra?,
                     name: r.name,
                     id: r.id,
                     installed_version: r.version,
-                    source: SourceKind::Winget,
+                    source,
                 })
             })
             .collect())
@@ -122,13 +132,22 @@ impl<R: Runner> WingetSource<R> {
 
     /// Package details (`winget show --exact`), used by the app details panel.
     pub async fn show(&self, id: &WingetId) -> AppResult<details::ShowInfo> {
+        self.show_in("winget", id.as_str()).await
+    }
+
+    /// Store app details (publisher, licence, description).
+    pub async fn show_store(&self, id: &StoreId) -> AppResult<details::ShowInfo> {
+        self.show_in("msstore", id.as_str()).await
+    }
+
+    async fn show_in(&self, source: &str, id: &str) -> AppResult<details::ShowInfo> {
         let args = [
             "show",
             "--id",
-            id.as_str(),
+            id,
             "--exact",
             "--source",
-            "winget",
+            source,
             "--accept-source-agreements",
             "--disable-interactivity",
         ]
@@ -142,6 +161,49 @@ impl<R: Runner> WingetSource<R> {
             ));
         }
         Ok(details::parse_show(&out.stdout))
+    }
+
+    /// Every winget package with a tag (local index, fast). Unfiltered; see `catalog::browse`.
+    pub async fn search_tag(&self, tag: &str) -> AppResult<Vec<SourcePackage>> {
+        if tag.starts_with('-') || tag.is_empty() {
+            return Err(AppError::new("invalid_input", "bad tag"));
+        }
+        let rows = self.query(args::search_tag(tag), 30, false).await?;
+        Ok(rows
+            .into_iter()
+            .filter(|r| valid(&r.id))
+            .map(|r| SourcePackage {
+                version: (!r.version.is_empty() && r.version != "Unknown").then_some(r.version),
+                name: r.name,
+                id: r.id,
+                source: SourceKind::Winget,
+                matched_on: None,
+                description: None,
+                homepage: None,
+                icon_url: None,
+            })
+            .collect())
+    }
+
+    /// Microsoft Store search. No Source or version columns: versions are "Unknown".
+    pub async fn search_store(&self, q: &SearchQuery) -> AppResult<Vec<SourcePackage>> {
+        let rows = self
+            .query(args::search_store(q.as_str()), 60, false)
+            .await?;
+        Ok(rows
+            .into_iter()
+            .filter(|r| StoreId::try_from(r.id.clone()).is_ok())
+            .map(|r| SourcePackage {
+                version: None,
+                name: r.name,
+                id: r.id,
+                source: SourceKind::Msstore,
+                matched_on: None,
+                description: None,
+                homepage: None,
+                icon_url: None,
+            })
+            .collect())
     }
 
     pub async fn search(&self, q: &SearchQuery) -> AppResult<Vec<SourcePackage>> {
@@ -215,6 +277,16 @@ fn valid(id: &str) -> bool {
     WingetId::try_from(id.to_string()).is_ok()
 }
 
+/// Which source manages a `list`/`upgrade` row: winget and Store rows with valid ids only;
+/// anything else (MSIX\..., ARP\...) is handled by Windows.
+fn row_source(source: Option<&str>, id: &str) -> Option<SourceKind> {
+    match source {
+        Some("winget") if valid(id) => Some(SourceKind::Winget),
+        Some("msstore") if StoreId::try_from(id.to_string()).is_ok() => Some(SourceKind::Msstore),
+        _ => None,
+    }
+}
+
 fn tail(out: &ProcessOutput) -> String {
     let text = format!("{} {}", out.stdout.trim(), out.stderr.trim());
     let text = text.trim();
@@ -243,6 +315,59 @@ mod tests {
     const NO_RESULTS: &str = include_str!("../../../tests/fixtures/winget/no-results.en.txt");
     const SEARCH_SOURCED: &str =
         include_str!("../../../tests/fixtures/winget/search-firefox-sourced.en.txt");
+
+    #[tokio::test]
+    async fn installed_version_of_one_app() {
+        let found = include_str!("../../../tests/fixtures/winget/list-id.en.txt");
+        let missing = include_str!("../../../tests/fixtures/winget/list-id-missing.en.txt");
+        let id = crate::ids::WingetId::try_from("Docker.DockerDesktop".to_string()).unwrap();
+        let s = src(FakeRunner::new().on("list", 0, found));
+        assert_eq!(
+            s.installed_version(&id).await.unwrap().as_deref(),
+            Some("4.94.0")
+        );
+        let call = &s.runner.calls()[0];
+        assert!(
+            call.windows(2)
+                .any(|w| w == ["--id", "Docker.DockerDesktop"]),
+            "{call:?}"
+        );
+        assert!(call.contains(&"--exact".to_string()));
+        let s = src(FakeRunner::new().on("list", NO_APPLICATIONS_FOUND, missing));
+        assert_eq!(s.installed_version(&id).await.unwrap(), None);
+    }
+
+    #[tokio::test]
+    async fn store_search_and_installed_store_apps() {
+        let s = src(FakeRunner::new().on(
+            "search",
+            0,
+            include_str!("../../../tests/fixtures/winget/search-msstore.en.txt"),
+        ));
+        let q = SearchQuery::try_from("whatsapp".to_string()).unwrap();
+        let r = s.search_store(&q).await.unwrap();
+        assert_eq!(r.len(), 2);
+        assert_eq!(r[0].id, "9NKSQGP7F2NH");
+        assert_eq!(r[0].source, SourceKind::Msstore);
+        assert_eq!(r[0].version, None);
+
+        let s = src(FakeRunner::new().on(
+            "list",
+            0,
+            include_str!("../../../tests/fixtures/winget/list-msstore.en.txt"),
+        ));
+        let items = s.list_installed().await.unwrap();
+        let todo = items.iter().find(|p| p.id == "9NBLGGH5R558").unwrap();
+        assert_eq!(todo.source, Some(SourceKind::Msstore));
+        let docker = items
+            .iter()
+            .find(|p| p.id == "Docker.DockerDesktop")
+            .unwrap();
+        assert_eq!(docker.source, Some(SourceKind::Winget));
+        assert!(items
+            .iter()
+            .any(|p| p.id.starts_with("MSIX\\") && p.source.is_none()));
+    }
 
     fn src(r: FakeRunner) -> WingetSource<FakeRunner> {
         WingetSource::new(r, Some(r"C:\fake\winget.exe".into()))

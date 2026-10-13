@@ -129,9 +129,55 @@ pub fn msix_logo(manifest: &str) -> Option<String> {
     LOGO.captures(manifest).map(|c| c[1].to_string())
 }
 
+/// The Store listing's own logo: the largest "logo" image, else the "tile" closest to 150 px.
+/// Only https images on Microsoft's Store image host are accepted.
+pub fn store_icon_url(json: &str) -> Option<String> {
+    let v: serde_json::Value = serde_json::from_str(json).ok()?;
+    let images = v.get("Payload")?.get("Images")?.as_array()?;
+    let ok = |u: &str| u.starts_with("https://store-images.s-microsoft.com/");
+    let pick = |kind: &str| {
+        images
+            .iter()
+            .filter(|i| i.get("ImageType").and_then(|t| t.as_str()) == Some(kind))
+            .filter_map(|i| {
+                let url = i.get("Url")?.as_str()?;
+                let w = i.get("Width").and_then(|w| w.as_u64()).unwrap_or(0);
+                ok(url).then(|| (w, url.to_string()))
+            })
+            .collect::<Vec<_>>()
+    };
+    if let Some((_, u)) = pick("logo").into_iter().max_by_key(|(w, _)| *w) {
+        return Some(u);
+    }
+    pick("tile")
+        .into_iter()
+        .min_by_key(|(w, _)| w.abs_diff(150))
+        .map(|(_, u)| u)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn store_logo_is_the_largest_logo_image() {
+        let json = include_str!("../../tests/fixtures/winget/store-product-whatsapp.json");
+        let url = store_icon_url(json).unwrap();
+        assert!(
+            url.starts_with("https://store-images.s-microsoft.com/image/apps.8453."),
+            "the 300 px logo: {url}"
+        );
+        assert_eq!(store_icon_url(r#"{"Payload":{"Images":[]}}"#), None);
+        assert_eq!(store_icon_url("not json"), None);
+        // Only https images on Microsoft's image host are accepted.
+        let evil = r#"{"Payload":{"Images":[{"ImageType":"logo","Width":100,"Url":"http://evil.example/x.png"}]}}"#;
+        assert_eq!(store_icon_url(evil), None);
+        let tile = r#"{"Payload":{"Images":[{"ImageType":"tile","Width":150,"Url":"https://store-images.s-microsoft.com/image/t.png"},{"ImageType":"screenshot","Width":1920,"Url":"https://store-images.s-microsoft.com/image/s.png"}]}}"#;
+        assert_eq!(
+            store_icon_url(tile).as_deref(),
+            Some("https://store-images.s-microsoft.com/image/t.png")
+        );
+    }
     use std::path::PathBuf;
 
     #[test]

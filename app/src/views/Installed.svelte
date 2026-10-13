@@ -16,7 +16,7 @@
   });
   const keys = $derived(uniqueKeys(shown, (p) => `${p.source ?? 'local'}:${p.id}`));
   const managed = $derived(installed.items.filter((p) => p.source).length);
-  const sourceText = (s: string | null) => (s === 'winget' ? 'winget' : s === 'choco' ? 'Chocolatey' : 'Managed by Windows');
+  const sourceText = (s: string | null) => (s ? 'Kept up to date here' : 'Updates handled by Windows');
 </script>
 
 <header class="head">
@@ -30,7 +30,7 @@
 </header>
 
 {#each installed.sourceErrors as e (e.source)}
-  <div class="gap"><Banner text={`Couldn't read ${sourceText(e.source)} apps: ${e.message}`} action={{ label: 'Try again', run: () => installed.refresh() }} /></div>
+  <div class="gap"><Banner text="Some installed apps couldn't be read. The list may be incomplete." action={{ label: 'Try again', run: () => installed.refresh() }} /></div>
 {/each}
 
 {#if !installed.loaded}

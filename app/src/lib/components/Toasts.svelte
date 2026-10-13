@@ -7,11 +7,11 @@
 
 <div class="stack" aria-live="polite">
   {#each toasts.list as t (t.id)}
-    <div class="toast" class:error={t.tone === 'error'} in:rise={{ y: 14 }} out:fade={{ duration: 160 }}
+    <div class="toast" class:error={t.tone === 'error'} class:warn={t.tone === 'warn'} in:rise={{ y: 14 }} out:fade={{ duration: 160 }}
       role="status" onmouseenter={() => toasts.pause(t.id)} onmouseleave={() => toasts.resume(t.id)}
       onfocusin={() => toasts.pause(t.id)} onfocusout={() => toasts.resume(t.id)}
       onoutrostart={(e) => (e.currentTarget.style.pointerEvents = 'none')}>
-      <span class="ic"><Icon name={t.tone === 'error' ? 'alert' : 'check'} size={15} stroke={2.2} /></span>
+      <span class="ic"><Icon name={t.tone === 'ok' ? 'check' : 'alert'} size={15} stroke={2.2} /></span>
       <span class="text">{t.text}</span>
       {#if t.action}
         <button class="act" onclick={() => { t.action?.run(); toasts.dismiss(t.id); }}>{t.action.label}</button>
@@ -30,6 +30,7 @@
   }
   .ic { display: grid; place-items: center; width: 22px; height: 22px; border-radius: 50%; background: var(--accent); color: var(--accent-ink); flex: none; }
   .error .ic { background: var(--danger); color: #fff; }
+  .warn .ic { background: var(--warn-soft); color: var(--warn-ink); }
   .text { flex: 1; min-width: 0; }
   .act { font-weight: 700; color: var(--canvas); text-decoration: underline; text-underline-offset: 3px; }
   .close { opacity: 0.6; display: grid; place-items: center; width: 22px; height: 22px; border-radius: 50%; color: var(--canvas); }

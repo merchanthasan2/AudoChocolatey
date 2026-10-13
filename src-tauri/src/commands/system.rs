@@ -1,3 +1,4 @@
+use crate::error::AppError;
 use crate::sources::model::SourceStatus;
 use crate::state::AppState;
 use serde::Serialize;
@@ -37,6 +38,104 @@ pub fn build_overview(is_elevated: bool, sources: Vec<SourceStatus>) -> Overview
     }
 }
 
+/// Is this app running as the Windows user signed in to its session? `None` when nobody is
+/// signed in yet. False means "over-the-shoulder" admin: per-user installs (Store apps) would
+/// land in the admin's account, not the person's at the keyboard. Uses the session's sign-in
+/// name only; no other process is opened.
+pub fn shell_user_matches() -> Option<bool> {
+    use windows_sys::Win32::Security::Authentication::Identity::{
+        GetUserNameExW, NameSamCompatible,
+    };
+    use windows_sys::Win32::System::RemoteDesktop::{
+        ProcessIdToSessionId, WTSDomainName, WTSFreeMemory, WTSQuerySessionInformationW,
+        WTSUserName, WTS_CURRENT_SERVER_HANDLE, WTS_INFO_CLASS,
+    };
+
+    fn session_text(session: u32, class: WTS_INFO_CLASS) -> Option<String> {
+        let mut buf: *mut u16 = std::ptr::null_mut();
+        let mut bytes = 0u32;
+        // SAFETY: out-pointers are valid; the buffer is freed with WTSFreeMemory below.
+        let ok = unsafe {
+            WTSQuerySessionInformationW(
+                WTS_CURRENT_SERVER_HANDLE,
+                session,
+                class,
+                &mut buf,
+                &mut bytes,
+            )
+        };
+        if ok == 0 || buf.is_null() {
+            return None;
+        }
+        // SAFETY: the system returned `bytes` bytes of UTF-16 (including the terminator).
+        let text = unsafe { std::slice::from_raw_parts(buf, (bytes as usize) / 2) };
+        let s = String::from_utf16_lossy(text)
+            .trim_end_matches(char::from(0))
+            .to_string();
+        // SAFETY: buf came from WTSQuerySessionInformationW.
+        unsafe { WTSFreeMemory(buf.cast()) };
+        Some(s)
+    }
+
+    let mut session = 0u32;
+    // SAFETY: valid out-pointer.
+    if unsafe { ProcessIdToSessionId(std::process::id(), &mut session) } == 0 {
+        return None;
+    }
+    let user = session_text(session, WTSUserName)?;
+    if user.is_empty() {
+        return None;
+    }
+    let domain = session_text(session, WTSDomainName).unwrap_or_default();
+    let signed_in = format!("{domain}\\{user}");
+
+    let mut buf = [0u16; 512];
+    let mut len = buf.len() as u32;
+    // SAFETY: buffer and length describe writable memory.
+    if unsafe { GetUserNameExW(NameSamCompatible, buf.as_mut_ptr(), &mut len) } == 0 {
+        return None;
+    }
+    let ours = String::from_utf16_lossy(&buf[..len as usize]);
+    Some(ours.eq_ignore_ascii_case(&signed_in))
+}
+
+/// Restarts the app through the standard Windows admin prompt (UAC). The person decides; if
+/// they say no, this app keeps running and nothing changes.
+#[tauri::command]
+pub fn relaunch_as_admin(app: tauri::AppHandle) -> Result<(), AppError> {
+    use std::os::windows::ffi::OsStrExt;
+    use windows_sys::Win32::UI::Shell::ShellExecuteW;
+    use windows_sys::Win32::UI::WindowsAndMessaging::SW_SHOWNORMAL;
+    let exe = std::env::current_exe()
+        .map_err(|e| AppError::new("io", format!("can't find the app's own file: {e}")))?;
+    let wide = |s: &std::ffi::OsStr| {
+        s.encode_wide()
+            .chain(std::iter::once(0))
+            .collect::<Vec<u16>>()
+    };
+    let (verb, file) = (wide(std::ffi::OsStr::new("runas")), wide(exe.as_os_str()));
+    // SAFETY: both strings are NUL-terminated UTF-16 that outlive the call.
+    let r = unsafe {
+        ShellExecuteW(
+            std::ptr::null_mut(),
+            verb.as_ptr(),
+            file.as_ptr(),
+            std::ptr::null(),
+            std::ptr::null(),
+            SW_SHOWNORMAL,
+        )
+    };
+    // ShellExecute returns a value above 32 on success; below means declined or failed.
+    if (r as isize) <= 32 {
+        return Err(AppError::new(
+            "declined",
+            "Admin access wasn't granted, so nothing changed.",
+        ));
+    }
+    app.exit(0);
+    Ok(())
+}
+
 pub fn is_elevated() -> bool {
     // SAFETY: IsUserAnAdmin takes no arguments and has no preconditions.
     unsafe { windows_sys::Win32::UI::Shell::IsUserAnAdmin() != 0 }
@@ -74,6 +173,15 @@ pub async fn get_diagnostics(
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn this_test_runs_as_the_signed_in_user() {
+        // Tests run as the signed-in user (or with nobody signed in, in CI).
+        assert_ne!(shell_user_matches(), Some(false));
+        if std::env::var("USERNAME").is_ok() && std::env::var("CI").is_err() {
+            assert_eq!(shell_user_matches(), Some(true));
+        }
+    }
     use crate::ids::SourceKind;
     use crate::sources::model::SourceState;
 

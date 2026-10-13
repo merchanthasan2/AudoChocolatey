@@ -28,17 +28,29 @@
     <header>
       <h2>Activity</h2>
       <div class="actions">
+        {#if queue.active.length > 0 || queue.paused}
+          <button class="btn btn-quiet" onclick={() => queue.setPaused(!queue.paused)}>{queue.paused ? 'Resume' : 'Pause'}</button>
+        {/if}
         {#if hasFinished}<button class="btn btn-quiet" onclick={() => queue.clearFinished()}>Clear finished</button>{/if}
         <button class="icon-btn" aria-label="Close" onclick={() => (open = false)}><Icon name="x" size={16} /></button>
       </div>
     </header>
     <div class="body">
+      {#if queue.paused}
+        <p class="note">Paused. What's running now will finish; nothing new starts until you resume.</p>
+      {/if}
+      {#if queue.notStarted.length > 0}
+        <div class="note row">
+          <span>{queue.notStarted.length === 1 ? '1 job' : `${queue.notStarted.length} jobs`} didn't run because Quantum Updater closed.</span>
+          <button class="btn btn-quiet" onclick={() => queue.retryNotStarted()}>Run {queue.notStarted.length === 1 ? 'it' : 'them'} now</button>
+        </div>
+      {/if}
       {#if jobs.length === 0}
         <p class="muted empty">Nothing running. Installs and updates will show up here.</p>
       {:else}
         <div class="card list">
           {#each jobs as j (j.id)}
-            <AppRow name={j.displayName} meta="{kindText[j.op.kind]} · {j.op.target.source === 'winget' ? 'winget' : 'Chocolatey'}" job={j} mode={verb[j.op.kind]} iconKey="{j.op.target.source}:{j.op.target.id}">
+            <AppRow name={j.displayName} meta={j.detail ?? kindText[j.op.kind]} job={j} mode={verb[j.op.kind]} iconKey="{j.op.target.source}:{j.op.target.id}">
               {#snippet action()}
                 <JobButton job={j} mode={verb[j.op.kind]} name={j.displayName}
                   onstart={() => queue.retry(j.id)} oncancel={(id) => queue.cancel(id)} onretry={(id) => queue.retry(id)} />
@@ -64,4 +76,6 @@
   .icon-btn:hover { background: var(--pill); color: var(--ink); }
   .body { overflow: auto; padding: 0 20px 24px; }
   .empty { padding: 24px 4px; }
+  .note { margin: 0 0 12px; padding: 10px 14px; border-radius: 12px; background: var(--card); box-shadow: var(--shadow-card); font-size: 13px; color: var(--ink-2); }
+  .note.row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 </style>

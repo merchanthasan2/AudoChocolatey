@@ -2,6 +2,7 @@
 //! `AppEntry` shape every list in the UI uses. Ids are validated against the live sources by
 //! `scripts/validate-catalog.mjs`.
 
+pub mod browse;
 pub mod merge;
 pub mod names;
 
@@ -16,6 +17,10 @@ use ts_rs::TS;
 pub struct Category {
     pub id: String,
     pub name: String,
+    /// winget tags for the live "more apps" list (Rust-side only).
+    #[serde(default, skip_serializing)]
+    #[ts(skip)]
+    pub tags: Vec<String>,
 }
 
 #[derive(Debug, Clone, Deserialize)]
@@ -27,8 +32,15 @@ pub struct CatalogApp {
     pub blurb: String,
     pub winget: Option<String>,
     pub choco: Option<String>,
+    /// Microsoft Store product id, when the Store has the same app.
+    #[serde(default)]
+    pub msstore: Option<String>,
     #[serde(default)]
     pub featured: bool,
+    /// Set for apps whose Chocolatey package installs beside (not over) the winget one, so an
+    /// update must never switch to Chocolatey.
+    #[serde(default, rename = "noUpgradeFallback")]
+    pub no_upgrade_fallback: bool,
 }
 
 #[derive(Debug, Clone, Deserialize, Serialize, TS)]
@@ -53,9 +65,10 @@ pub struct AppEntry {
     pub category: Option<String>,
     pub winget: Option<String>,
     pub choco: Option<String>,
+    pub msstore: Option<String>,
     pub version: Option<String>,
     pub homepage: Option<String>,
-    /// Which source an install uses: winget when available, else Chocolatey.
+    /// Which source an install uses: winget, else Chocolatey, else the Store.
     pub best: SourceKind,
     pub curated: bool,
     /// `<source>:<id>` for the icon service.
@@ -72,6 +85,8 @@ pub struct Catalog {
     #[serde(skip)]
     by_choco: HashMap<String, usize>,
     #[serde(skip)]
+    by_msstore: HashMap<String, usize>,
+    #[serde(skip)]
     by_key: HashMap<String, usize>,
 }
 
@@ -85,6 +100,9 @@ static EMBEDDED: LazyLock<Catalog> = LazyLock::new(|| {
         }
         if let Some(ch) = &a.choco {
             c.by_choco.insert(ch.to_ascii_lowercase(), i);
+        }
+        if let Some(s) = &a.msstore {
+            c.by_msstore.insert(s.to_ascii_uppercase(), i);
         }
     }
     c
@@ -111,15 +129,35 @@ impl Catalog {
             .map(|&i| &self.apps[i])
     }
 
+    pub fn by_msstore(&self, id: &str) -> Option<&CatalogApp> {
+        self.by_msstore
+            .get(&id.to_ascii_uppercase())
+            .map(|&i| &self.apps[i])
+    }
+
+    /// The catalog app a package in a given source belongs to.
+    pub fn by_source(&self, source: SourceKind, id: &str) -> Option<&CatalogApp> {
+        match source {
+            SourceKind::Winget => self.by_winget(id),
+            SourceKind::Choco => self.by_choco(id),
+            SourceKind::Msstore => self.by_msstore(id),
+        }
+    }
+
     pub fn entry(&self, a: &CatalogApp) -> AppEntry {
         let best = if a.winget.is_some() {
             SourceKind::Winget
-        } else {
+        } else if a.choco.is_some() {
             SourceKind::Choco
+        } else {
+            SourceKind::Msstore
         };
         let icon_key = match best {
             SourceKind::Winget => format!("winget:{}", a.winget.as_deref().unwrap_or_default()),
             SourceKind::Choco => format!("choco:{}", a.choco.as_deref().unwrap_or_default()),
+            SourceKind::Msstore => {
+                format!("msstore:{}", a.msstore.as_deref().unwrap_or_default())
+            }
         };
         AppEntry {
             key: a.key.clone(),
@@ -129,6 +167,7 @@ impl Catalog {
             category: Some(a.category.clone()),
             winget: a.winget.clone(),
             choco: a.choco.clone(),
+            msstore: a.msstore.clone(),
             version: None,
             homepage: None,
             best,

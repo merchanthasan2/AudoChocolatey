@@ -1,14 +1,14 @@
 <script lang="ts">
   import type { AppEntry } from '../ipc/commands';
   import { queue, installed, market, overview } from '../stores/app.svelte';
-  import { installedSet, isInstalled, needsChoco } from '../logic/entries';
+  import { installedSet, isInstalled, needsSetup, bestId as idOf } from '../logic/entries';
   import AppIcon from './AppIcon.svelte';
   import JobButton from './JobButton.svelte';
 
   let { app }: { app: AppEntry } = $props();
 
   const done = $derived(isInstalled(app, installedSet(installed.items)));
-  const bestId = $derived(app.best === 'winget' ? app.winget : app.choco);
+  const bestId = $derived(idOf(app));
   const job = $derived(bestId ? queue.jobFor(app.best, bestId, 'install') : undefined);
   // The name Windows uses for this app when installed, so the tile shows its exact local icon.
   const localName = $derived(
@@ -24,8 +24,8 @@
     <div class="action">
       {#if done}
         <span class="badge">Installed</span>
-      {:else if needsChoco(app, overview.chocoReady)}
-        <span class="badge" title="Turn on Chocolatey in Settings to use this app">Needs Chocolatey</span>
+      {:else if needsSetup(app, overview.on)}
+        <span class="badge" title="This app comes from a source that's turned off. Turn it on in Settings.">Needs setup</span>
       {:else}
         <JobButton {job} mode="install" name={app.name}
           onstart={() => queue.installEntry(app)} oncancel={(id) => queue.cancel(id)} onretry={(id) => queue.retry(id)} />
@@ -33,7 +33,7 @@
     </div>
   </div>
   <h3 class="truncate">{app.name}</h3>
-  <p class="pub truncate">{app.publisher ?? (app.best === 'winget' ? 'winget' : 'Chocolatey')}</p>
+  <p class="pub truncate">{app.publisher ?? ''}</p>
   {#if app.blurb}<p class="blurb">{app.blurb}</p>{/if}
 </article>
 

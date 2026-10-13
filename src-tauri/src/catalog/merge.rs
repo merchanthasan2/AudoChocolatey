@@ -49,6 +49,7 @@ fn uncurated_winget(p: &SourcePackage) -> AppEntry {
         category: None,
         winget: Some(p.id.clone()),
         choco: None,
+        msstore: None,
         version: p.version.clone(),
         homepage: p.homepage.clone(),
         best: SourceKind::Winget,
@@ -66,6 +67,7 @@ fn uncurated_choco(p: &SourcePackage) -> AppEntry {
         category: None,
         winget: None,
         choco: Some(p.id.clone()),
+        msstore: None,
         version: p.version.clone(),
         homepage: p.homepage.clone(),
         best: SourceKind::Choco,
@@ -74,9 +76,30 @@ fn uncurated_choco(p: &SourcePackage) -> AppEntry {
     }
 }
 
+fn uncurated_store(p: &SourcePackage) -> AppEntry {
+    AppEntry {
+        key: format!("m:{}", p.id),
+        name: p.name.clone(),
+        publisher: None,
+        blurb: p.description.clone(),
+        category: None,
+        winget: None,
+        choco: None,
+        msstore: Some(p.id.clone()),
+        version: None,
+        homepage: p.homepage.clone(),
+        best: SourceKind::Msstore,
+        curated: false,
+        icon_key: format!("msstore:{}", p.id),
+    }
+}
+
+/// Store results join an app only through a catalog mapping: Store and desktop builds of the
+/// same app install side by side, so a name match is never enough.
 pub fn merge(
     winget: Vec<SourcePackage>,
     choco: Vec<SourcePackage>,
+    store: Vec<SourcePackage>,
     cat: &Catalog,
 ) -> Vec<AppEntry> {
     let mut out: Vec<AppEntry> = Vec::new();
@@ -140,6 +163,25 @@ pub fn merge(
             }
         }
     }
+    for p in store {
+        if let Some(app) = cat.by_msstore(&p.id) {
+            match by_key.get(&app.key) {
+                Some(&i) => out[i].msstore = Some(p.id.clone()),
+                None => {
+                    let mut e = cat.entry(app);
+                    e.msstore = Some(p.id.clone());
+                    by_key.insert(e.key.clone(), out.len());
+                    out.push(e);
+                }
+            }
+            continue;
+        }
+        let e = uncurated_store(&p);
+        if !by_key.contains_key(&e.key) {
+            by_key.insert(e.key.clone(), out.len());
+            out.push(e);
+        }
+    }
     out
 }
 
@@ -188,6 +230,7 @@ mod tests {
         let out = merge(
             vec![w("Mozilla.Firefox", "Mozilla Firefox (en-US)")],
             vec![c("Firefox", "Mozilla Firefox")],
+            vec![],
             Catalog::embedded(),
         );
         assert_eq!(out.len(), 1);
@@ -205,6 +248,7 @@ mod tests {
         let out = merge(
             vec![w("Contoso.Widget", "Contoso Widget")],
             vec![c("contoso-widget", "Contoso Widget")],
+            vec![],
             Catalog::embedded(),
         );
         assert_eq!(out.len(), 1, "{out:?}");
@@ -245,9 +289,57 @@ mod tests {
             ),
         ];
         for (a, b) in cases {
-            let out = merge(vec![a.clone()], vec![b.clone()], Catalog::embedded());
+            let out = merge(
+                vec![a.clone()],
+                vec![b.clone()],
+                vec![],
+                Catalog::embedded(),
+            );
             assert_eq!(out.len(), 2, "{} must not merge with {}", a.name, b.name);
         }
+    }
+
+    fn m(id: &str, name: &str) -> SourcePackage {
+        SourcePackage {
+            name: name.into(),
+            id: id.into(),
+            version: None,
+            source: SourceKind::Msstore,
+            matched_on: None,
+            description: None,
+            homepage: None,
+            icon_url: None,
+        }
+    }
+
+    #[test]
+    fn store_results_are_never_merged_by_name() {
+        let out = merge(
+            vec![w("Brave.Brave", "Brave")],
+            vec![],
+            vec![m("XP8C9QZMS2PC1T", "Brave")],
+            Catalog::embedded(),
+        );
+        assert_eq!(out.len(), 2, "{out:?}");
+        let store = &out[1];
+        assert_eq!(store.key, "m:XP8C9QZMS2PC1T");
+        assert_eq!(store.best, SourceKind::Msstore);
+        assert_eq!(store.msstore.as_deref(), Some("XP8C9QZMS2PC1T"));
+        assert_eq!(store.icon_key, "msstore:XP8C9QZMS2PC1T");
+    }
+
+    #[test]
+    fn a_catalog_store_id_joins_its_app() {
+        let out = merge(
+            vec![w("Spotify.Spotify", "Spotify")],
+            vec![],
+            vec![m("9NCBCSZSJRSB", "Spotify - Music and Podcasts")],
+            Catalog::embedded(),
+        );
+        assert_eq!(out.len(), 1, "{out:?}");
+        assert_eq!(out[0].key, "spotify");
+        assert_eq!(out[0].best, SourceKind::Winget);
+        assert_eq!(out[0].msstore.as_deref(), Some("9NCBCSZSJRSB"));
     }
 
     #[test]
@@ -255,6 +347,7 @@ mod tests {
         let out = merge(
             vec![],
             vec![c("some-tool", "Some Tool")],
+            vec![],
             Catalog::embedded(),
         );
         assert_eq!(out[0].best, SourceKind::Choco);
@@ -268,6 +361,7 @@ mod tests {
         let out = merge(
             vec![w("B.B", "Bee"), w("A.A", "Ay")],
             vec![c("zed", "Zed")],
+            vec![],
             Catalog::embedded(),
         );
         let keys: Vec<_> = out.iter().map(|e| e.key.as_str()).collect();
