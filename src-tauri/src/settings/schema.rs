@@ -84,6 +84,8 @@ pub struct Settings {
     /// Microsoft Store apps (through winget's Store source).
     pub store: StoreSettings,
     pub last_check_at: Option<String>,
+    /// The one-time "still running in the tray" note was shown.
+    pub tray_hint_shown: bool,
 }
 
 impl Default for Settings {
@@ -102,6 +104,7 @@ impl Default for Settings {
             choco: ChocoSettings::default(),
             store: StoreSettings::default(),
             last_check_at: None,
+            tray_hint_shown: false,
         }
     }
 }

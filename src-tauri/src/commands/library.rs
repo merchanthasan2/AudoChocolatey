@@ -168,7 +168,9 @@ pub async fn list_updates(
 
 /// Checks again and applies rules. "Update all" uses exactly `items` of this.
 pub async fn collect_updates(state: &AppState) -> UpdatesListing {
+    let _one_at_a_time = state.check_lock.lock().await;
     let raw = collect_raw_updates(state).await;
+    state.mark_checked();
     *state.last_updates.lock().unwrap_or_else(|p| p.into_inner()) = Some(raw);
     current_updates(state)
 }

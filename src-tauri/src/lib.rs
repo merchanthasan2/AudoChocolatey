@@ -74,6 +74,7 @@ pub fn run(launch: launch::Launch) {
             if background::window::show_at_start(launch.mode, start_in_tray) {
                 background::shell::show_main(app.handle());
             }
+            background::runner::start(app.handle().clone(), app.path().app_local_data_dir()?);
             if let Err(e) = background::shell::install(app.handle()) {
                 // No tray (e.g. Explorer not ready at sign-in): make sure the app is visible.
                 eprintln!("tray unavailable: {e}");
@@ -93,6 +94,15 @@ pub fn run(launch: launch::Launch) {
                     background::window::CloseAction::Hide => {
                         api.prevent_close();
                         let _ = window.hide();
+                        if !state.settings().tray_hint_shown {
+                            let (title, body) = background::toast::TRAY_HINT;
+                            background::toast::show(title, body);
+                            state
+                                .settings
+                                .lock()
+                                .unwrap_or_else(|p| p.into_inner())
+                                .mark_tray_hint_shown();
+                        }
                     }
                     background::window::CloseAction::Guard => {
                         api.prevent_close();

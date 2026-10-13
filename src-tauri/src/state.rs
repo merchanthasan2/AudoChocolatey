@@ -115,6 +115,10 @@ pub struct AppState {
     /// The last checked update list before rules (so rule changes don't need a new check).
     pub last_updates: Mutex<Option<Listing<UpgradeCandidate>>>,
     /// Category "more apps" lists, by category id (see commands::catalog).
+    /// One update check at a time (scheduler, tray, Updates page).
+    pub check_lock: tokio::sync::Mutex<()>,
+    /// When the last check finished (ms since epoch), from any trigger.
+    last_check_ms: std::sync::atomic::AtomicU64,
     pub more_apps: tokio::sync::Mutex<
         std::collections::HashMap<String, (std::time::Instant, Vec<crate::catalog::AppEntry>)>,
     >,
@@ -177,8 +181,27 @@ impl AppState {
             rules: Mutex::new(RuleStore::open(config_dir.join("rules.json"))),
             last_updates: Mutex::new(None),
             more_apps: tokio::sync::Mutex::new(Default::default()),
+            check_lock: tokio::sync::Mutex::new(()),
+            last_check_ms: std::sync::atomic::AtomicU64::new(0),
             config_dir,
         }
+    }
+
+    pub fn last_check(&self) -> Option<u64> {
+        match self
+            .last_check_ms
+            .load(std::sync::atomic::Ordering::Relaxed)
+        {
+            0 => None,
+            t => Some(t),
+        }
+    }
+
+    pub fn mark_checked(&self) {
+        self.last_check_ms.store(
+            crate::jobs::model::now_ms(),
+            std::sync::atomic::Ordering::Relaxed,
+        );
     }
 
     pub fn settings(&self) -> crate::settings::schema::Settings {

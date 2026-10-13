@@ -9,4 +9,8 @@ export type Settings = { schemaVersion: number, theme: Theme, motion: Motion, ch
 /**
  * Microsoft Store apps (through winget's Store source).
  */
-store: StoreSettings, lastCheckAt: string | null, };
+store: StoreSettings, lastCheckAt: string | null, 
+/**
+ * The one-time "still running in the tray" note was shown.
+ */
+trayHintShown: boolean, };

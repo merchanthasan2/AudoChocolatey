@@ -32,6 +32,18 @@ impl SettingsStore {
         self.read_only
     }
 
+    /// Records that the tray note was shown (Rust-only flag, not part of the UI patch).
+    pub fn mark_tray_hint_shown(&mut self) {
+        if self.current.tray_hint_shown || self.read_only {
+            return;
+        }
+        let mut next = self.current.clone();
+        next.tray_hint_shown = true;
+        if write_atomic(&self.path, &next).is_ok() {
+            self.current = next;
+        }
+    }
+
     pub fn apply(&mut self, patch: SettingsPatch) -> AppResult<Settings> {
         if self.read_only {
             return Err(AppError::new(
