@@ -121,7 +121,7 @@ fn backup_and_default(path: &PathBuf) -> (Settings, bool) {
     (Settings::default(), !moved)
 }
 
-fn write_atomic(path: &PathBuf, settings: &Settings) -> AppResult<()> {
+fn write_atomic(path: &std::path::Path, settings: &Settings) -> AppResult<()> {
     let json = serde_json::to_vec_pretty(settings).expect("settings serialize");
     crate::fsutil::write_atomic(path, &json)
         .map_err(|e| AppError::new("settings", format!("could not save settings: {e}")))
