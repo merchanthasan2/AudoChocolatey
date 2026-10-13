@@ -23,8 +23,8 @@
   <div class="scrim" transition:fade={{ duration: 160 }}></div>
   <div class="dialog card" role="alertdialog" aria-modal="true" aria-labelledby="cg-title" aria-describedby="cg-body"
     transition:scale={{ start: 0.96, duration: 180 }}>
-    <h2 id="cg-title">{name} is still installing</h2>
-    <p id="cg-body" class="muted">Closing now stops the installer, which can leave the app broken. It usually takes a minute or two.</p>
+    <h2 id="cg-title">Still working on {name}</h2>
+    <p id="cg-body" class="muted">Closing now stops it, and an install stopped halfway can leave the app broken. It usually takes a minute or two.</p>
     <div class="buttons">
       <button class="btn btn-quiet danger" onclick={() => quitAnyway()}>Close anyway</button>
       <button class="btn btn-primary" bind:this={keep} onclick={() => (open = false)}>Keep it open</button>

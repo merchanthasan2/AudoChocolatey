@@ -105,14 +105,12 @@ pub fn refuse_store_other_user(
     Ok(())
 }
 
-/// Closing the app kills its child processes (Job Object), so closing mid-install asks first.
+/// Closing the app kills its child processes (Job Object), so closing while a job runs asks first.
 pub fn close_blocked(jobs: &[Job]) -> bool {
-    jobs.iter().any(|j| {
-        matches!(
-            j.phase,
-            crate::jobs::model::JobPhase::Installing | crate::jobs::model::JobPhase::Verifying
-        )
-    })
+    // Any running job: phase lines are only recognised in English, so "Installing" can't be
+    // relied on to tell when an installer is running.
+    jobs.iter()
+        .any(|j| !j.phase.is_finished() && j.phase != crate::jobs::model::JobPhase::Queued)
 }
 
 /// The user chose to close while an installer runs.
@@ -154,10 +152,39 @@ pub fn enqueue(state: State<'_, AppState>, ops: Vec<EnqueueItem>) -> Result<Vec<
 /// Every check a change to the PC must pass, for new jobs and retries alike.
 fn allowed(state: &AppState, ops: &[(OpRequest, String)]) -> Result<(), AppError> {
     refuse_unelevated(crate::commands::system::is_elevated())?;
-    let settings = state.settings();
-    refuse_disabled_choco(ops, settings.choco.enabled)?;
-    refuse_disabled_store(ops, settings.store.enabled)?;
-    refuse_store_other_user(ops, crate::commands::system::shell_user_matches())
+    let g = gates(state);
+    refuse_disabled_choco(ops, g.choco)?;
+    refuse_disabled_store(ops, g.store)?;
+    refuse_store_other_user(ops, g.same_user)
+}
+
+/// The per-source switches a change must pass.
+#[derive(Debug, Clone, Copy)]
+pub struct Gates {
+    pub choco: bool,
+    pub store: bool,
+    pub same_user: Option<bool>,
+}
+
+fn gates(state: &AppState) -> Gates {
+    let s = state.settings();
+    Gates {
+        choco: s.choco.enabled,
+        store: s.store.enabled,
+        same_user: crate::commands::system::shell_user_matches(),
+    }
+}
+
+/// Keeps only the operations a single click would allow, so "Update all" never does more.
+pub fn permitted(ops: Vec<(OpRequest, String)>, g: Gates) -> Vec<(OpRequest, String)> {
+    ops.into_iter()
+        .filter(|op| {
+            let one = std::slice::from_ref(op);
+            refuse_disabled_choco(one, g.choco).is_ok()
+                && refuse_disabled_store(one, g.store).is_ok()
+                && refuse_store_other_user(one, g.same_user).is_ok()
+        })
+        .collect()
 }
 
 #[tauri::command]
@@ -165,7 +192,8 @@ pub async fn update_all(state: State<'_, AppState>) -> Result<Vec<String>, AppEr
     refuse_unelevated(crate::commands::system::is_elevated())?;
     let updates = crate::commands::library::collect_updates(&state).await;
     // `items` already excludes apps the user skipped or set to never update.
-    Ok(state.queue.enqueue(upgrades_to_ops(updates.items)))
+    let ops = permitted(upgrades_to_ops(updates.items), gates(&state));
+    Ok(state.queue.enqueue(ops))
 }
 
 #[tauri::command]
@@ -262,6 +290,60 @@ mod tests {
     }
 
     #[test]
+    fn update_all_skips_what_a_single_update_would_refuse() {
+        let store = (
+            OpRequest {
+                kind: OpKind::Upgrade,
+                target: SourceRef::new(SourceKind::Msstore, "9NKSQGP7F2NH").unwrap(),
+                version: None,
+            },
+            "WhatsApp".to_string(),
+        );
+        let mut ops = upgrades_to_ops(vec![
+            cand(SourceKind::Winget, "A.A"),
+            cand(SourceKind::Choco, "b"),
+        ]);
+        ops.push(store);
+        let all_on = Gates {
+            choco: true,
+            store: true,
+            same_user: Some(true),
+        };
+        assert_eq!(permitted(ops.clone(), all_on).len(), 3);
+        assert_eq!(
+            permitted(
+                ops.clone(),
+                Gates {
+                    store: false,
+                    ..all_on
+                }
+            )
+            .len(),
+            2
+        );
+        let kept = permitted(
+            ops.clone(),
+            Gates {
+                same_user: Some(false),
+                ..all_on
+            },
+        );
+        assert!(kept
+            .iter()
+            .all(|(o, _)| o.target.source() != SourceKind::Msstore));
+        let kept = permitted(
+            ops,
+            Gates {
+                choco: false,
+                ..all_on
+            },
+        );
+        assert!(kept
+            .iter()
+            .all(|(o, _)| o.target.source() != SourceKind::Choco));
+    }
+
+    #[test]
     fn closing_is_held_only_while_an_installer_runs() {
         use crate::jobs::model::JobPhase;
         let mk = |p: JobPhase| {
@@ -275,10 +357,14 @@ mod tests {
             j.phase = p;
             j
         };
+        // Phase lines are English-only, so any running job holds the close (on German Windows a
+        // winget job never leaves Preparing in our eyes).
         assert!(!close_blocked(&[
-            mk(JobPhase::Downloading),
-            mk(JobPhase::Queued)
+            mk(JobPhase::Queued),
+            mk(JobPhase::Succeeded)
         ]));
+        assert!(close_blocked(&[mk(JobPhase::Preparing)]));
+        assert!(close_blocked(&[mk(JobPhase::Downloading)]));
         assert!(close_blocked(&[mk(JobPhase::Installing)]));
         assert!(close_blocked(&[mk(JobPhase::Verifying)]));
         assert!(!close_blocked(&[]));

@@ -28,8 +28,16 @@ pub struct Loaded {
 
 /// Jobs that were unfinished when the app stopped end as stopped or interrupted; none restart.
 pub fn recover(jobs: Vec<Job>) -> Vec<Job> {
+    let cat = crate::catalog::Catalog::embedded();
     jobs.into_iter()
         .map(|mut j| {
+            // The file is user-writable: show the real package (never a stored label) and never
+            // keep a pinned version, so "Run them now" can't be dressed up as another app.
+            j.display_name = cat
+                .by_source(j.op.target.source(), j.op.target.id())
+                .map(|a| a.name.clone())
+                .unwrap_or_else(|| j.op.target.id().to_string());
+            j.op.version = None;
             match j.phase {
                 JobPhase::Queued => {
                     j.set_phase(JobPhase::Cancelled);
@@ -214,6 +222,26 @@ mod tests {
             .replace("Mozilla.Firefox", "-evil --flag");
         std::fs::write(&p, text).unwrap();
         assert!(load(&p).jobs.is_empty());
+    }
+
+    #[test]
+    fn restored_jobs_show_the_real_package_and_never_pin_a_version() {
+        let mut forged = job(1, JobPhase::Queued);
+        forged.op.target = SourceRef::new(SourceKind::Winget, "Evil.Tool").unwrap();
+        forged.op.version = Some(crate::ids::PkgVersion::try_from("0.1".to_string()).unwrap());
+        forged.display_name = "Firefox".into();
+        let mut real = job(2, JobPhase::Queued);
+        real.display_name = "anything".into();
+        let out = recover(vec![forged, real]);
+        assert_eq!(
+            out[0].display_name, "Evil.Tool",
+            "unknown apps show their id"
+        );
+        assert_eq!(out[0].op.version, None);
+        assert_eq!(
+            out[1].display_name, "Firefox",
+            "catalog apps show the catalog name"
+        );
     }
 
     #[test]
