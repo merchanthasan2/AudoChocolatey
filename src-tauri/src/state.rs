@@ -1,12 +1,15 @@
 //! Long-lived services shared by all commands.
 
 use crate::commands::jobs::TauriSink;
+use crate::commands::library::Listing;
 use crate::error::AppResult;
 use crate::icons::IconService;
 use crate::ids::{ChocoId, SourceKind, SourceRef, WingetId};
 use crate::jobs::worker::{Queue, SystemMsiGate, Verifier, WingetSizer, WorkerDeps};
+use crate::rules::RuleStore;
 use crate::settings::SettingsStore;
 use crate::sources::choco::ChocoSource;
+use crate::sources::model::UpgradeCandidate;
 use crate::sources::process::{ExePaths, SystemRunner};
 use crate::sources::stream::SystemStreamRunner;
 use crate::sources::winget::WingetSource;
@@ -45,6 +48,9 @@ pub struct AppState {
     pub queue: Queue,
     pub icons: IconService,
     pub config_dir: PathBuf,
+    pub rules: Mutex<RuleStore>,
+    /// The last checked update list before rules (so rule changes don't need a new check).
+    pub last_updates: Mutex<Option<Listing<UpgradeCandidate>>>,
 }
 
 impl AppState {
@@ -93,6 +99,8 @@ impl AppState {
             settings: Mutex::new(SettingsStore::open(config_dir.join("settings.json"))),
             queue,
             icons,
+            rules: Mutex::new(RuleStore::open(config_dir.join("rules.json"))),
+            last_updates: Mutex::new(None),
             config_dir,
         }
     }

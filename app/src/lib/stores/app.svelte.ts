@@ -13,6 +13,7 @@ import { doneToast } from '../logic/doneToast';
 import { resolveMotion, resolveTheme } from '../logic/theme';
 import type { SourceKind } from '../ipc/bindings/SourceKind';
 import type { OpKind } from '../ipc/bindings/OpKind';
+import type { UpdatesListing, RuleKind } from '../ipc/commands';
 
 const message = (e: unknown) => (e as { message?: string })?.message ?? String(e);
 
@@ -95,14 +96,22 @@ class SettingsStore {
 export const settings = new SettingsStore();
 
 /* ---------------------------------------------------------------- library */
-class Section<T> {
+class Section<T, L extends Listing<T> = Listing<T>> {
   items = $state<T[]>([]);
+  /** The whole last response (extra fields such as hidden updates). */
+  last = $state<L | null>(null);
   sourceErrors = $state<Listing<T>['sourceErrors']>([]);
   loading = $state(false);
   loaded = $state(false);
   loadedAt = $state<number | null>(null);
   error = $state<string | null>(null);
-  constructor(private fetcher: () => Promise<Listing<T>>) {}
+  constructor(private fetcher: () => Promise<L>) {}
+  /** Take a fresh response from another command (e.g. after changing a rule). */
+  accept(l: L) {
+    this.items = l.items;
+    this.sourceErrors = l.sourceErrors;
+    this.last = l;
+  }
   async refresh() {
     if (this.loading) return;
     this.loading = true;
@@ -110,6 +119,7 @@ class Section<T> {
       const l = await this.fetcher();
       this.items = l.items;
       this.sourceErrors = l.sourceErrors;
+      this.last = l;
       this.error = null;
       this.loadedAt = Date.now();
     } catch (e) {
@@ -121,7 +131,18 @@ class Section<T> {
   }
 }
 export const installed = new Section<InstalledPackage>(api.listInstalled);
-export const updates = new Section<UpgradeCandidate>(api.listUpdates);
+class UpdatesSection extends Section<UpgradeCandidate, UpdatesListing> {
+  hidden = $derived(this.last?.hidden ?? []);
+  async setRule(c: UpgradeCandidate, kind: RuleKind) {
+    try { this.accept(await api.setRule({ source: c.source, id: c.id }, c.name, kind)); }
+    catch (e) { toasts.push({ text: message(e), tone: 'error' }); }
+  }
+  async restore(key: string) {
+    try { this.accept(await api.removeRule(key)); }
+    catch (e) { toasts.push({ text: message(e), tone: 'error' }); }
+  }
+}
+export const updates = new UpdatesSection(api.listUpdates);
 
 /* ---------------------------------------------------------------- queue */
 const FINISHED = new Set(['succeeded', 'failed', 'cancelled', 'skipped']);

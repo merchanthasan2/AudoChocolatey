@@ -12,6 +12,8 @@ const COMMANDS: &[&str] = &[
     "enqueue",
     "update_all",
     "get_queue",
+    "set_rule",
+    "remove_rule",
     "pause_queue",
     "resume_queue",
     "quit_anyway",

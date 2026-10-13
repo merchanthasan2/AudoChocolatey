@@ -3,7 +3,8 @@
 
 use crate::catalog::{merge::merge, names, AppEntry, Catalog};
 use crate::error::{AppError, AppResult};
-use crate::ids::{SearchQuery, SourceKind};
+use crate::ids::{SearchQuery, SourceKind, SourceRef};
+use crate::rules::{apply_rules, rule_key, HiddenUpdate, Rule, RuleKind};
 use crate::sources::model::{InstalledPackage, UpgradeCandidate};
 use crate::state::AppState;
 use serde::Serialize;
@@ -107,15 +108,103 @@ async fn choco_titles<'a>(
     state.choco.titles(&ids).await
 }
 
+/// The Updates screen: what can be updated, what the user hid, and the rules behind that.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export)]
+pub struct UpdatesListing {
+    pub items: Vec<UpgradeCandidate>,
+    pub hidden: Vec<HiddenUpdate>,
+    pub rules: Vec<Rule>,
+    pub source_errors: Vec<SourceError>,
+}
+
+/// Applies rules to the raw list; the bool says whether an expired skip was removed.
+pub fn updates_listing(
+    raw: Listing<UpgradeCandidate>,
+    rules: &mut Vec<Rule>,
+    cat: &Catalog,
+) -> (UpdatesListing, bool) {
+    let (items, hidden, changed) = apply_rules(raw.items, rules, cat);
+    (
+        UpdatesListing {
+            items,
+            hidden,
+            rules: rules.clone(),
+            source_errors: raw.source_errors,
+        },
+        changed,
+    )
+}
+
+/// The last checked list with the current rules applied (no new check).
+pub fn current_updates(state: &AppState) -> UpdatesListing {
+    let raw = state
+        .last_updates
+        .lock()
+        .unwrap_or_else(|p| p.into_inner())
+        .clone()
+        .unwrap_or(Listing {
+            items: Vec::new(),
+            source_errors: Vec::new(),
+        });
+    let mut store = state.rules.lock().unwrap_or_else(|p| p.into_inner());
+    let (listing, changed) = updates_listing(raw, store.rules_mut(), Catalog::embedded());
+    if changed {
+        let _ = store.save();
+    }
+    listing
+}
+
 #[tauri::command]
-pub async fn list_updates(
-    state: State<'_, AppState>,
-) -> Result<Listing<UpgradeCandidate>, AppError> {
+pub async fn list_updates(state: State<'_, AppState>) -> Result<UpdatesListing, AppError> {
     Ok(collect_updates(&state).await)
 }
 
-/// The update list shown on the Updates screen; "Update all" uses exactly this list.
-pub async fn collect_updates(state: &AppState) -> Listing<UpgradeCandidate> {
+/// Checks again and applies rules. "Update all" uses exactly `items` of this.
+pub async fn collect_updates(state: &AppState) -> UpdatesListing {
+    let raw = collect_raw_updates(state).await;
+    *state.last_updates.lock().unwrap_or_else(|p| p.into_inner()) = Some(raw);
+    current_updates(state)
+}
+
+#[tauri::command]
+pub fn set_rule(
+    state: State<'_, AppState>,
+    target: SourceRef,
+    name: String,
+    kind: RuleKind,
+) -> Result<UpdatesListing, AppError> {
+    let name: String = name.chars().filter(|c| !c.is_control()).take(120).collect();
+    let rule = Rule {
+        key: rule_key(&target, Catalog::embedded()),
+        target,
+        name,
+        kind,
+        created_at: crate::jobs::model::now_ms(),
+    };
+    state
+        .rules
+        .lock()
+        .unwrap_or_else(|p| p.into_inner())
+        .set(rule)?;
+    Ok(current_updates(&state))
+}
+
+#[tauri::command]
+pub fn remove_rule(state: State<'_, AppState>, key: String) -> Result<UpdatesListing, AppError> {
+    if key.len() > 200 {
+        return Err(AppError::new("invalid_input", "not a rule"));
+    }
+    state
+        .rules
+        .lock()
+        .unwrap_or_else(|p| p.into_inner())
+        .remove(&key)?;
+    Ok(current_updates(&state))
+}
+
+async fn collect_raw_updates(state: &AppState) -> Listing<UpgradeCandidate> {
     let s = state.settings();
     let (w, c) = tokio::join!(state.winget.list_upgrades(s.show_unknown_versions), async {
         if s.choco.enabled {
@@ -196,6 +285,37 @@ pub async fn search(
 mod tests {
     use super::*;
     use crate::error::AppError;
+
+    #[test]
+    fn ruled_apps_leave_the_list_that_update_all_uses() {
+        use crate::ids::SourceRef;
+        use crate::rules::{rule_key, Rule, RuleKind};
+        let cand = |id: &str| UpgradeCandidate {
+            name: id.into(),
+            id: id.into(),
+            installed_version: "1".into(),
+            available_version: "2".into(),
+            source: SourceKind::Winget,
+        };
+        let raw = Listing {
+            items: vec![cand("A.A"), cand("B.B")],
+            source_errors: vec![],
+        };
+        let target = SourceRef::new(SourceKind::Winget, "B.B").unwrap();
+        let mut rules = vec![Rule {
+            key: rule_key(&target, Catalog::embedded()),
+            target,
+            name: "B".into(),
+            kind: RuleKind::Never,
+            created_at: 1,
+        }];
+        let (l, changed) = updates_listing(raw, &mut rules, Catalog::embedded());
+        assert!(!changed);
+        assert_eq!(l.items.len(), 1);
+        assert_eq!(l.items[0].id, "A.A");
+        assert_eq!(l.hidden[0].candidate.id, "B.B");
+        assert_eq!(l.rules.len(), 1);
+    }
 
     #[test]
     fn missing_choco_is_silent() {

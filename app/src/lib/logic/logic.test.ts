@@ -263,3 +263,11 @@ describe('finished-job toast', () => {
     expect(doneToast(job('succeeded', { rebootRequired: true }))).toEqual({ text: 'Firefox installed — restart to finish', tone: 'ok' });
   });
 });
+
+import { ruleLabel } from './rules';
+describe('hidden update labels', () => {
+  it('says why an update is hidden', () => {
+    expect(ruleLabel({ kind: 'never' })).toBe('Never update');
+    expect(ruleLabel({ kind: 'skipVersion', version: '2.0' })).toBe('Skipping version 2.0');
+  });
+});

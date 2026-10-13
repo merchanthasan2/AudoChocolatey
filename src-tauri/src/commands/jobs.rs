@@ -120,6 +120,7 @@ pub fn enqueue(state: State<'_, AppState>, ops: Vec<EnqueueItem>) -> Result<Vec<
 pub async fn update_all(state: State<'_, AppState>) -> Result<Vec<String>, AppError> {
     refuse_unelevated(crate::commands::system::is_elevated())?;
     let updates = crate::commands::library::collect_updates(&state).await;
+    // `items` already excludes apps the user skipped or set to never update.
     Ok(state.queue.enqueue(upgrades_to_ops(updates.items)))
 }
 

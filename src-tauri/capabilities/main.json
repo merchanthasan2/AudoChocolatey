@@ -23,6 +23,8 @@
     "allow-enqueue",
     "allow-update-all",
     "allow-get-queue",
+    "allow-set-rule",
+    "allow-remove-rule",
     "allow-pause-queue",
     "allow-resume-queue",
     "allow-quit-anyway",

@@ -5,6 +5,7 @@ mod fsutil;
 mod icons;
 mod ids;
 mod jobs;
+mod rules;
 mod settings;
 mod sources;
 mod state;
@@ -70,6 +71,8 @@ pub fn run() {
             commands::settings::update_settings,
             commands::jobs::enqueue,
             commands::jobs::update_all,
+            commands::library::set_rule,
+            commands::library::remove_rule,
             commands::jobs::get_queue,
             commands::jobs::pause_queue,
             commands::jobs::resume_queue,
