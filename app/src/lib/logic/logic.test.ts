@@ -24,6 +24,8 @@ function job(phase: JobPhase, extra: Partial<Job> = {}): Job {
     verify: null,
     fromVersion: null,
     toVersion: null,
+    attempt: 0,
+    via: null,
     error: null,
     startedAt: null,
     endedAt: null,

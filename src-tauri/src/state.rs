@@ -1,15 +1,19 @@
 //! Long-lived services shared by all commands.
 
+use crate::catalog::Catalog;
 use crate::commands::jobs::TauriSink;
 use crate::commands::library::Listing;
 use crate::error::AppResult;
 use crate::icons::IconService;
 use crate::ids::{ChocoId, SourceKind, SourceRef, WingetId};
-use crate::jobs::worker::{Queue, SystemMsiGate, Verifier, WingetSizer, WorkerDeps};
+use crate::jobs::failure::FailureReason;
+use crate::jobs::fallback;
+use crate::jobs::worker::{Fallback, Queue, SystemMsiGate, Verifier, WingetSizer, WorkerDeps};
 use crate::rules::RuleStore;
 use crate::settings::SettingsStore;
 use crate::sources::choco::ChocoSource;
 use crate::sources::model::UpgradeCandidate;
+use crate::sources::model::{OpKind, OpRequest};
 use crate::sources::process::{ExePaths, SystemRunner};
 use crate::sources::stream::SystemStreamRunner;
 use crate::sources::winget::WingetSource;
@@ -47,10 +51,63 @@ impl Verifier for SystemVerifier {
     }
 }
 
+/// Backup sources for the queue: catalog alternates, the user's source settings, and for
+/// updates a Chocolatey version newer than what's installed.
+struct SystemFallback {
+    settings: Arc<Mutex<SettingsStore>>,
+    winget: WingetSource<SystemRunner>,
+    choco: ChocoSource<SystemRunner>,
+}
+
+#[async_trait::async_trait]
+impl Fallback for SystemFallback {
+    async fn alternate(
+        &self,
+        op: &OpRequest,
+        reason: FailureReason,
+        reached_installing: bool,
+    ) -> Option<SourceRef> {
+        let s = self
+            .settings
+            .lock()
+            .unwrap_or_else(|p| p.into_inner())
+            .get();
+        let on = fallback::Enabled {
+            choco: s.choco.enabled && self.choco.exe().is_some(),
+            store: s.store.enabled && crate::commands::system::shell_user_matches() == Some(true),
+        };
+        let alt = fallback::candidate(
+            op.kind,
+            &op.target,
+            reason,
+            reached_installing,
+            Catalog::embedded(),
+            on,
+        )?;
+        if op.kind == OpKind::Upgrade {
+            let installed = self
+                .winget
+                .installed_version(&WingetId::try_from(op.target.id().to_string()).ok()?)
+                .await
+                .ok()??;
+            let latest = self
+                .choco
+                .package(&ChocoId::try_from(alt.id().to_string()).ok()?)
+                .await
+                .ok()??
+                .version?;
+            if crate::versions::compare(&latest, &installed) != std::cmp::Ordering::Greater {
+                return None;
+            }
+        }
+        Some(alt)
+    }
+}
+
 pub struct AppState {
     pub winget: WingetSource<SystemRunner>,
     pub choco: ChocoSource<SystemRunner>,
-    pub settings: Mutex<SettingsStore>,
+    pub settings: Arc<Mutex<SettingsStore>>,
     pub queue: Queue,
     pub icons: IconService,
     pub config_dir: PathBuf,
@@ -74,6 +131,9 @@ impl AppState {
                 http,
             }) as _)
         });
+        let settings = Arc::new(Mutex::new(SettingsStore::open(
+            config_dir.join("settings.json"),
+        )));
         let queue = Queue::start(
             WorkerDeps {
                 stream: Arc::new(SystemStreamRunner),
@@ -87,6 +147,11 @@ impl AppState {
                 download_timeout: Duration::from_secs(60 * 60),
                 elevated: crate::commands::system::is_elevated(),
                 jobs_file: Some(data_dir.join("jobs.json")),
+                fallback: Some(Arc::new(SystemFallback {
+                    settings: settings.clone(),
+                    winget: WingetSource::new(SystemRunner, paths.winget.clone()),
+                    choco: ChocoSource::new(SystemRunner, paths.choco.clone()),
+                })),
                 verifier: Some(Arc::new(SystemVerifier {
                     winget: WingetSource::new(SystemRunner, paths.winget.clone()),
                     choco: ChocoSource::new(SystemRunner, paths.choco.clone()),
@@ -102,7 +167,7 @@ impl AppState {
         Self {
             winget: WingetSource::new(SystemRunner, paths.winget),
             choco: ChocoSource::new(SystemRunner, paths.choco),
-            settings: Mutex::new(SettingsStore::open(config_dir.join("settings.json"))),
+            settings,
             queue,
             icons,
             rules: Mutex::new(RuleStore::open(config_dir.join("rules.json"))),

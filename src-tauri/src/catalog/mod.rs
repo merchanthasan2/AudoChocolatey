@@ -32,6 +32,10 @@ pub struct CatalogApp {
     pub msstore: Option<String>,
     #[serde(default)]
     pub featured: bool,
+    /// Set for apps whose Chocolatey package installs beside (not over) the winget one, so an
+    /// update must never switch to Chocolatey.
+    #[serde(default, rename = "noUpgradeFallback")]
+    pub no_upgrade_fallback: bool,
 }
 
 #[derive(Debug, Clone, Deserialize, Serialize, TS)]

@@ -2,6 +2,7 @@
 import type { FailureReason } from "./FailureReason";
 import type { JobPhase } from "./JobPhase";
 import type { OpRequest } from "./OpRequest";
+import type { SourceRef } from "./SourceRef";
 import type { Verify } from "./Verify";
 
 export type Job = { id: string, op: OpRequest, displayName: string, phase: JobPhase, detail: string | null, 
@@ -17,6 +18,14 @@ reason: FailureReason | null,
  * Whether the installed version really changed (set after success).
  */
 verify: Verify | null, fromVersion: string | null, toVersion: string | null, 
+/**
+ * 0 for the first try, 1 when a backup source was used.
+ */
+attempt: number, 
+/**
+ * The package actually used when it differs from `op.target` (backup source).
+ */
+via: SourceRef | null, 
 /**
  * Unix epoch milliseconds.
  */

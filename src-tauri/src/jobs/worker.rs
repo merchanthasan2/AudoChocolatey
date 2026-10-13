@@ -49,6 +49,17 @@ async fn read_version(v: &dyn Verifier, target: &SourceRef) -> Option<AppResult<
         .ok()
 }
 
+/// Picks a backup source for a failed job (see `jobs::fallback`), or None.
+#[async_trait::async_trait]
+pub trait Fallback: Send + Sync {
+    async fn alternate(
+        &self,
+        op: &OpRequest,
+        reason: FailureReason,
+        reached_installing: bool,
+    ) -> Option<SourceRef>;
+}
+
 /// The whole queue as the UI sees it.
 #[derive(Debug, Clone, Serialize, TS)]
 #[serde(rename_all = "camelCase")]
@@ -170,6 +181,8 @@ pub struct WorkerDeps {
     pub jobs_file: Option<PathBuf>,
     /// Checks the installed version before and after a job.
     pub verifier: Option<Arc<dyn Verifier>>,
+    /// Backup sources for failed jobs.
+    pub fallback: Option<Arc<dyn Fallback>>,
 }
 
 #[derive(Default)]
@@ -513,11 +526,39 @@ impl Queue {
                 .flatten(),
             _ => None,
         };
-        let outcome = self.execute(deps, id, &op, &token).await;
+        let mut run_op = op.clone();
+        let mut outcome = self.execute(deps, id, &run_op, &token).await;
+        if let (Ok(Outcome::Failed(reason)), Some(fb)) = (&outcome, &deps.fallback) {
+            let reached = self
+                .lock()
+                .jobs
+                .iter()
+                .find(|j| j.id == id)
+                .is_some_and(|j| rank(j.phase) >= rank(JobPhase::Installing));
+            if let Some(alt) = fb.alternate(&op, *reason, reached).await {
+                self.append_log(
+                    id,
+                    format!(
+                        "--- Trying another source: {} {}",
+                        alt.source().as_str(),
+                        alt.id()
+                    ),
+                );
+                self.update(id, |j| j.restart_attempt(alt.clone()));
+                self.emit_queue();
+                // An update through another source installs that source's package over the app.
+                run_op = OpRequest {
+                    kind: OpKind::Install,
+                    target: alt,
+                    version: None,
+                };
+                outcome = self.execute(deps, id, &run_op, &token).await;
+            }
+        }
         let check = match (&outcome, &deps.verifier) {
             (Ok(Outcome::Succeeded { .. }), Some(v)) => {
                 self.advance(id, JobPhase::Verifying);
-                let after = read_version(v.as_ref(), &op.target).await;
+                let after = read_version(v.as_ref(), &run_op.target).await;
                 Some(match after {
                     Some(Ok(after)) => (
                         verify::verdict(op.kind, before.as_deref(), after.as_deref()),
@@ -830,6 +871,7 @@ mod tests {
             elevated: true,
             jobs_file: None,
             verifier: None,
+            fallback: None,
         };
         (Queue::start(deps, rec.clone()), rec)
     }
@@ -1066,6 +1108,7 @@ mod tests {
             elevated: true,
             jobs_file: None,
             verifier: None,
+            fallback: None,
         }
     }
 
@@ -1211,6 +1254,7 @@ mod tests {
             elevated: true,
             jobs_file: file,
             verifier: None,
+            fallback: None,
         }
     }
 
@@ -1258,6 +1302,91 @@ mod tests {
         let j = until_finished(&q, &id).await;
         assert_eq!(j.phase, JobPhase::Succeeded);
         assert_eq!(j.verify, Some(crate::jobs::verify::Verify::Unknown));
+    }
+
+    /// Offers one fixed alternate; records what it was asked.
+    struct FixedFallback(SourceRef, StdMutex<Vec<(FailureReason, bool)>>);
+    #[async_trait::async_trait]
+    impl Fallback for FixedFallback {
+        async fn alternate(
+            &self,
+            _op: &OpRequest,
+            reason: FailureReason,
+            reached_installing: bool,
+        ) -> Option<SourceRef> {
+            self.1.lock().unwrap().push((reason, reached_installing));
+            (!reached_installing).then(|| self.0.clone())
+        }
+    }
+
+    const HASH_MISMATCH: i32 = 0x8A150011u32 as i32;
+
+    #[tokio::test]
+    async fn a_failed_download_retries_once_from_the_backup_source() {
+        let stream = FakeStream::new(vec![
+            (
+                vec![(5, "Downloading https://example.com/x.exe")],
+                Some(HASH_MISMATCH),
+            ),
+            (vec![(5, "Successfully installed")], Some(0)),
+        ]);
+        let mut deps = deps_with_file(stream.clone(), None);
+        let alt = SourceRef::new(SourceKind::Choco, "spotify").unwrap();
+        let fb = Arc::new(FixedFallback(alt.clone(), StdMutex::new(vec![])));
+        deps.fallback = Some(fb.clone());
+        let q = Queue::start(deps, Arc::new(Rec::default()));
+        let id = q
+            .enqueue(vec![op(
+                SourceKind::Winget,
+                "Spotify.Spotify",
+                OpKind::Install,
+            )])
+            .remove(0);
+        let j = until_finished(&q, &id).await;
+        assert_eq!(j.phase, JobPhase::Succeeded, "{j:?}");
+        assert_eq!(j.via, Some(alt));
+        assert_eq!(j.attempt, 1);
+        assert_eq!(
+            j.op.target.source(),
+            SourceKind::Winget,
+            "the request itself is unchanged"
+        );
+        assert_eq!(stream.runs.load(AO::SeqCst), 2);
+        assert_eq!(
+            fb.1.lock().unwrap()[0],
+            (FailureReason::HashMismatch, false)
+        );
+        assert!(q
+            .log(&id)
+            .iter()
+            .any(|l| l.contains("Trying another source")));
+    }
+
+    #[tokio::test]
+    async fn no_backup_once_an_installer_has_run() {
+        let stream = FakeStream::new(vec![(
+            vec![(5, "Starting package install..."), (5, "Installer failed")],
+            Some(HASH_MISMATCH),
+        )]);
+        let mut deps = deps_with_file(stream.clone(), None);
+        let fb = Arc::new(FixedFallback(
+            SourceRef::new(SourceKind::Choco, "spotify").unwrap(),
+            StdMutex::new(vec![]),
+        ));
+        deps.fallback = Some(fb.clone());
+        let q = Queue::start(deps, Arc::new(Rec::default()));
+        let id = q
+            .enqueue(vec![op(
+                SourceKind::Winget,
+                "Spotify.Spotify",
+                OpKind::Install,
+            )])
+            .remove(0);
+        let j = until_finished(&q, &id).await;
+        assert_eq!(j.phase, JobPhase::Failed);
+        assert_eq!(j.via, None);
+        assert_eq!(stream.runs.load(AO::SeqCst), 1);
+        assert!(fb.1.lock().unwrap()[0].1, "reported that an installer ran");
     }
 
     #[tokio::test]
@@ -1347,6 +1476,7 @@ mod tests {
             elevated: false,
             jobs_file: None,
             verifier: None,
+            fallback: None,
         };
         let q = Queue::start(deps, rec);
         let id = q
@@ -1377,6 +1507,7 @@ mod tests {
             elevated: true,
             jobs_file: None,
             verifier: None,
+            fallback: None,
         };
         let q = Queue::start(deps, rec);
         let id = q

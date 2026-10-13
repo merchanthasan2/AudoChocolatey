@@ -1,5 +1,6 @@
 //! A queued package operation and the phases the UI animates (Get -> ring -> spin -> tick).
 
+use crate::ids::SourceRef;
 use crate::jobs::failure::FailureReason;
 use crate::jobs::verify::Verify;
 use crate::sources::model::OpRequest;
@@ -56,6 +57,10 @@ pub struct Job {
     pub verify: Option<Verify>,
     pub from_version: Option<String>,
     pub to_version: Option<String>,
+    /// 0 for the first try, 1 when a backup source was used.
+    pub attempt: u8,
+    /// The package actually used when it differs from `op.target` (backup source).
+    pub via: Option<SourceRef>,
     /// Unix epoch milliseconds.
     #[ts(type = "number | null")]
     pub started_at: Option<u64>,
@@ -88,6 +93,8 @@ impl Job {
             verify: None,
             from_version: None,
             to_version: None,
+            attempt: 0,
+            via: None,
             started_at: None,
             ended_at: None,
         }
@@ -99,6 +106,20 @@ impl Job {
             phase,
             JobPhase::Queued | JobPhase::Preparing | JobPhase::Waiting | JobPhase::Downloading
         )
+    }
+
+    /// Starts over from Preparing with a backup source (the only way a phase moves back).
+    pub fn restart_attempt(&mut self, via: SourceRef) {
+        self.attempt += 1;
+        self.via = Some(via);
+        self.phase = JobPhase::Preparing;
+        self.cancellable = true;
+        self.detail = Some("Trying another source".into());
+        self.error = None;
+        self.reason = None;
+        self.percent = None;
+        self.bytes_done = None;
+        self.bytes_total = None;
     }
 
     /// Ends the job as Failed with a reason and its plain message.
