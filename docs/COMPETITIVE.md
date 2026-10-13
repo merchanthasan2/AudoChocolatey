@@ -18,7 +18,7 @@
 | Backup source when one fails | No | No | Yes |
 | Microsoft Store apps | No | No | Yes |
 | Per-app install options (version, scope) | Yes | Some | No |
-| Developer tools (pip, npm, .NET tool, PowerShell Gallery, Scoop) | Yes | No | No (Scoop dropped, ADR 026) |
+| Developer tools (pip, npm, Bun, Cargo, vcpkg, .NET tool, PowerShell Gallery, Scoop) | Yes (Cargo through cargo-binstall since 3.1.7) | No | No (Scoop dropped, ADR 026; Cargo not planned: developer-only, installs per user, unvetted downloads) |
 | Drivers | No | IObit sells a separate Driver Booster | Planned later (drivers phase, needs approval) |
 | Languages | 40+ | Some | English only |
 
