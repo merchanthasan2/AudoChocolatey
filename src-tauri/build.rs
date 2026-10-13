@@ -18,6 +18,7 @@ const COMMANDS: &[&str] = &[
     "pause_queue",
     "resume_queue",
     "quit_anyway",
+    "relaunch_as_admin",
     "cancel_job",
     "retry_job",
     "clear_finished",

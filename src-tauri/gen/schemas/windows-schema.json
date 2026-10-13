@@ -273,6 +273,12 @@
           "markdownDescription": "Enables the quit_anyway command without any pre-configured scope."
         },
         {
+          "description": "Enables the relaunch_as_admin command without any pre-configured scope.",
+          "type": "string",
+          "const": "allow-relaunch-as-admin",
+          "markdownDescription": "Enables the relaunch_as_admin command without any pre-configured scope."
+        },
+        {
           "description": "Enables the remove_rule command without any pre-configured scope.",
           "type": "string",
           "const": "allow-remove-rule",
@@ -409,6 +415,12 @@
           "type": "string",
           "const": "deny-quit-anyway",
           "markdownDescription": "Denies the quit_anyway command without any pre-configured scope."
+        },
+        {
+          "description": "Denies the relaunch_as_admin command without any pre-configured scope.",
+          "type": "string",
+          "const": "deny-relaunch-as-admin",
+          "markdownDescription": "Denies the relaunch_as_admin command without any pre-configured scope."
         },
         {
           "description": "Denies the remove_rule command without any pre-configured scope.",

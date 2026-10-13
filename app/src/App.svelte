@@ -1,6 +1,8 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import { router, overview, settings, installed, updates, queue } from './lib/stores/app.svelte';
+  import { router, overview, settings, installed, updates, queue, toasts } from './lib/stores/app.svelte';
+  import { relaunchAsAdmin } from './lib/ipc/commands';
+  import Banner from './lib/components/Banner.svelte';
   import Sidebar from './lib/components/Sidebar.svelte';
   import Toasts from './lib/components/Toasts.svelte';
   import QueueDrawer from './lib/components/QueueDrawer.svelte';
@@ -13,6 +15,12 @@
   import { viewFade } from './lib/motion';
 
   let drawer = $state(false);
+
+  // Admin rights come only from the person, through the normal Windows prompt.
+  async function askForAdmin() {
+    try { await relaunchAsAdmin(); }
+    catch { toasts.push({ text: "Admin access wasn't granted, so nothing changed.", tone: 'warn' }); }
+  }
   let searchInput = $state<HTMLInputElement>();
   let scroller = $state<HTMLElement>();
 
@@ -45,6 +53,12 @@
   <Sidebar onqueue={() => (drawer = true)} />
   <main bind:this={scroller}>
     <div class="content">
+      {#if overview.value && !overview.value.isElevated}
+        <div class="admin-banner">
+          <Banner icon="shield" text="Quantum Updater needs administrator access to install and update apps. Windows will ask you to confirm."
+            action={{ label: 'Allow admin access', run: askForAdmin }} />
+        </div>
+      {/if}
       {#key router.view}
         <div in:viewFade>
           {#if router.view === 'marketplace'}
@@ -76,4 +90,5 @@
     box-shadow: inset 1px 1px 0 var(--hairline);
   }
   .content { max-width: 1040px; margin: 0 auto; padding: 34px 40px 64px; }
+  .admin-banner { margin-bottom: 16px; }
 </style>

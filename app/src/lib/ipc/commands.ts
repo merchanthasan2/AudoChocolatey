@@ -54,6 +54,8 @@ export const getQueue = () => invoke<QueueSnapshot>('get_queue');
 export const pauseQueue = () => invoke<void>('pause_queue');
 export const resumeQueue = () => invoke<void>('resume_queue');
 export const quitAnyway = () => invoke<void>('quit_anyway');
+/** Restarts through the Windows admin prompt; rejects if the person says no. */
+export const relaunchAsAdmin = () => invoke<void>('relaunch_as_admin');
 export const cancelJob = (id: string) => invoke<void>('cancel_job', { id });
 export const retryJob = (id: string) => invoke<string>('retry_job', { id });
 export const clearFinished = () => invoke<void>('clear_finished');

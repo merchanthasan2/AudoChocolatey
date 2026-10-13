@@ -1,3 +1,4 @@
+use crate::error::AppError;
 use crate::sources::model::SourceStatus;
 use crate::state::AppState;
 use serde::Serialize;
@@ -96,6 +97,43 @@ pub fn shell_user_matches() -> Option<bool> {
     }
     let ours = String::from_utf16_lossy(&buf[..len as usize]);
     Some(ours.eq_ignore_ascii_case(&signed_in))
+}
+
+/// Restarts the app through the standard Windows admin prompt (UAC). The person decides; if
+/// they say no, this app keeps running and nothing changes.
+#[tauri::command]
+pub fn relaunch_as_admin(app: tauri::AppHandle) -> Result<(), AppError> {
+    use std::os::windows::ffi::OsStrExt;
+    use windows_sys::Win32::UI::Shell::ShellExecuteW;
+    use windows_sys::Win32::UI::WindowsAndMessaging::SW_SHOWNORMAL;
+    let exe = std::env::current_exe()
+        .map_err(|e| AppError::new("io", format!("can't find the app's own file: {e}")))?;
+    let wide = |s: &std::ffi::OsStr| {
+        s.encode_wide()
+            .chain(std::iter::once(0))
+            .collect::<Vec<u16>>()
+    };
+    let (verb, file) = (wide(std::ffi::OsStr::new("runas")), wide(exe.as_os_str()));
+    // SAFETY: both strings are NUL-terminated UTF-16 that outlive the call.
+    let r = unsafe {
+        ShellExecuteW(
+            std::ptr::null_mut(),
+            verb.as_ptr(),
+            file.as_ptr(),
+            std::ptr::null(),
+            std::ptr::null(),
+            SW_SHOWNORMAL,
+        )
+    };
+    // ShellExecute returns a value above 32 on success; below means declined or failed.
+    if (r as isize) <= 32 {
+        return Err(AppError::new(
+            "declined",
+            "Admin access wasn't granted, so nothing changed.",
+        ));
+    }
+    app.exit(0);
+    Ok(())
 }
 
 pub fn is_elevated() -> bool {
