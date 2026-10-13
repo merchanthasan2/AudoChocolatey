@@ -1,12 +1,13 @@
 <script lang="ts">
   import type { BundleView } from '../ipc/commands';
   import { queue, installed, toasts } from '../stores/app.svelte';
-  import { installedSet, missingFrom } from '../logic/entries';
   import { clickGuard } from '../logic/clickGuard';
   import AppIcon from './AppIcon.svelte';
 
   let { bundle }: { bundle: BundleView } = $props();
-  const missing = $derived(missingFrom(bundle.apps, installedSet(installed.items)));
+  // Until the installed list is in, "missing" would mean "everything".
+  const ready = $derived(installed.loaded && !installed.error);
+  const missing = $derived(queue.bundleMissing(bundle.apps));
   const guard = clickGuard(1000);
 
   async function installAll() {
@@ -26,7 +27,9 @@
   <p class="muted">{bundle.blurb}</p>
   <p class="list">{bundle.apps.map((a) => a.name).join(' · ')}</p>
   <div class="foot">
-    {#if missing.length === 0}
+    {#if !ready}
+      <button class="btn btn-primary" disabled>{installed.error ? "Couldn't check installed apps" : 'Checking your apps…'}</button>
+    {:else if missing.length === 0}
       <span class="badge">All installed</span>
     {:else}
       <button class="btn btn-primary" onclick={installAll}>

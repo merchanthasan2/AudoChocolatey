@@ -3,6 +3,7 @@
 pub mod args;
 pub mod odata;
 pub mod parse;
+pub mod titles;
 
 use crate::error::{AppError, AppResult};
 use crate::ids::{ChocoId, SearchQuery, SourceKind};
@@ -12,7 +13,6 @@ use crate::sources::model::{
 use crate::sources::process::{CommandSpec, ProcessOutput, Runner};
 use std::collections::HashMap;
 use std::path::PathBuf;
-use std::sync::{Arc, Mutex};
 use std::time::Duration;
 
 pub struct ChocoSource<R: Runner> {
@@ -20,7 +20,7 @@ pub struct ChocoSource<R: Runner> {
     exe: Option<PathBuf>,
     http: reqwest::Client,
     major: tokio::sync::OnceCell<u32>,
-    titles: Mutex<HashMap<String, String>>,
+    titles: titles::TitleCache,
 }
 
 impl<R: Runner> ChocoSource<R> {
@@ -36,7 +36,7 @@ impl<R: Runner> ChocoSource<R> {
             exe,
             http,
             major: tokio::sync::OnceCell::new(),
-            titles: Mutex::new(HashMap::new()),
+            titles: titles::TitleCache::default(),
         }
     }
 
@@ -137,50 +137,26 @@ impl<R: Runner> ChocoSource<R> {
     }
 
     /// Human titles for package ids ("vcredist140" -> "Microsoft Visual C++ Redistributable ...").
-    /// Looked up on the community feed 4 at a time and cached; a failed lookup returns nothing
-    /// for that id (the caller keeps the id) and is retried next time.
+    /// Ids without a title (lookup failed, timed out or offline) are left out; the caller shows
+    /// the id. See `titles::lookup` for the time limit and miss cache.
     pub async fn titles(&self, ids: &[String]) -> HashMap<String, String> {
-        let missing: Vec<ChocoId> = {
-            let cache = self.titles.lock().unwrap_or_else(|p| p.into_inner());
-            ids.iter()
-                .filter(|id| !cache.contains_key(&id.to_ascii_lowercase()))
-                .filter_map(|id| ChocoId::try_from(id.clone()).ok())
-                .collect()
-        };
-        let gate = Arc::new(tokio::sync::Semaphore::new(4));
-        let mut set = tokio::task::JoinSet::new();
-        for id in missing {
-            let (http, gate) = (self.http.clone(), gate.clone());
-            set.spawn(async move {
-                let _permit = gate.acquire_owned().await.ok()?;
+        let http = self.http.clone();
+        let fetch = move |id: ChocoId| {
+            let http = http.clone();
+            async move {
                 let resp = http.get(odata::by_id_url(&id)).send().await.ok()?;
                 if !resp.status().is_success() {
                     return None;
                 }
                 let xml = resp.text().await.ok()?;
-                let title = odata::parse_feed(&xml)
+                odata::parse_feed(&xml)
                     .ok()?
                     .into_iter()
                     .next()
-                    .map(|p| p.name)?;
-                Some((id.as_str().to_ascii_lowercase(), title))
-            });
-        }
-        let mut found = Vec::new();
-        while let Some(joined) = set.join_next().await {
-            if let Ok(Some(pair)) = joined {
-                found.push(pair);
+                    .map(|p| p.name)
             }
-        }
-        let mut cache = self.titles.lock().unwrap_or_else(|p| p.into_inner());
-        cache.extend(found);
-        ids.iter()
-            .filter_map(|id| {
-                cache
-                    .get(&id.to_ascii_lowercase())
-                    .map(|t| (id.clone(), t.clone()))
-            })
-            .collect()
+        };
+        titles::lookup(ids, &self.titles, fetch, titles::DEADLINE).await
     }
 
     /// Latest package metadata from the community feed (details panel).

@@ -19,3 +19,21 @@ export function isInstalled(entry: Ids, set: Set<string>): boolean {
 export function missingFrom<T extends Ids>(entries: T[], set: Set<string>): T[] {
   return entries.filter((e) => !isInstalled(e, set));
 }
+
+type JobLike = { op: { kind: string; target: { source: 'winget' | 'choco'; id: string } }; phase: string };
+const GONE = new Set(['failed', 'cancelled']);
+
+/** Adds apps with a queued, running or finished-ok job, so a bundle never queues them twice
+ *  (the installed list lags a second or two behind a finished install). */
+export function withJobs(set: Set<string>, jobs: JobLike[]): Set<string> {
+  const out = new Set(set);
+  for (const j of jobs) {
+    if (j.op.kind !== 'uninstall' && !GONE.has(j.phase)) out.add(`${j.op.target.source}:${j.op.target.id.toLowerCase()}`);
+  }
+  return out;
+}
+
+/** True when the app installs through Chocolatey but Chocolatey is off or missing. */
+export function needsChoco(entry: { best: 'winget' | 'choco' }, chocoReady: boolean): boolean {
+  return entry.best === 'choco' && !chocoReady;
+}

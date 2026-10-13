@@ -7,7 +7,7 @@ import { onJobChanged, onJobProgress, onQueueChanged } from '../ipc/events';
 import { latestOnly, STALE } from '../logic/latestOnly';
 import { jobFor } from '../logic/jobFor';
 import { tidyResults } from '../logic/tidyResults';
-import { missingFrom, installedSet } from '../logic/entries';
+import { missingFrom, installedSet, withJobs, needsChoco } from '../logic/entries';
 import { resolveMotion, resolveTheme } from '../logic/theme';
 import type { SourceKind } from '../ipc/bindings/SourceKind';
 import type { OpKind } from '../ipc/bindings/OpKind';
@@ -61,7 +61,10 @@ export const toasts = new Toasts();
 class OverviewStore {
   value = $state<Overview | null>(null);
   error = $state<string | null>(null);
-  chocoReady = $derived(this.value?.sources.some((s) => s.kind === 'choco' && s.state === 'ready') ?? false);
+  /** Chocolatey is installed and working, and the user hasn't switched it off in Settings. */
+  chocoReady = $derived(
+    (this.value?.sources.some((s) => s.kind === 'choco' && s.state === 'ready') ?? false) && settings.value?.choco.enabled !== false,
+  );
   async load() {
     try { this.value = await api.getOverview(); this.error = null; } catch (e) { this.error = message(e); }
   }
@@ -173,15 +176,23 @@ class QueueStore {
     const id = e.best === 'winget' ? e.winget : e.choco;
     return id ? this.#enqueue('install', e.best, id, e.name) : Promise.resolve();
   }
-  /** Queue every app of a bundle that isn't installed yet; returns how many were queued. */
+  /** What a bundle would queue now: not installed, not already queued, installable. */
+  bundleMissing(entries: AppEntry[]) {
+    const present = withJobs(installedSet(installed.items), this.jobs);
+    return missingFrom(entries, present).filter((e) => !needsChoco(e, overview.chocoReady));
+  }
+  /** Queue every app of a bundle that isn't there yet; returns how many were queued. Waits for
+   *  a good installed list, so apps already on the PC are never reinstalled. */
   async installMany(entries: AppEntry[]) {
-    const missing = missingFrom(entries, installedSet(installed.items));
+    if (!installed.loaded || installed.error) return 0;
+    const missing = this.bundleMissing(entries);
     const ops = missing.flatMap((e) => {
       const id = e.best === 'winget' ? e.winget : e.choco;
       return id ? [{ op: { kind: 'install' as const, target: { source: e.best, id }, version: null }, displayName: e.name }] : [];
     });
     if (ops.length === 0) return 0;
-    try { this.batch = await api.enqueue(ops); } catch (e) { toasts.push({ text: message(e), tone: 'error' }); }
+    // Not `this.batch`: that tracks update runs for the Updates header.
+    try { await api.enqueue(ops); } catch (e) { toasts.push({ text: message(e), tone: 'error' }); return 0; }
     return ops.length;
   }
   update(c: UpgradeCandidate) { return this.#enqueue('upgrade', c.source, c.id, c.name); }

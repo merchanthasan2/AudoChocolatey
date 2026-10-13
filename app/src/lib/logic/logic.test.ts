@@ -186,7 +186,7 @@ describe('latestOnly.invalidate', () => {
   });
 });
 
-import { installedSet, isInstalled, missingFrom } from './entries';
+import { installedSet, isInstalled, missingFrom, withJobs, needsChoco } from './entries';
 describe('entries', () => {
   const installed = [
     { id: 'Mozilla.Firefox', source: 'winget' as const },
@@ -204,5 +204,22 @@ describe('entries', () => {
     const set = installedSet(installed);
     const bundle = [e('Mozilla.Firefox', 'firefox'), e('Git.Git', 'git'), e(null, 'vcredist140')];
     expect(missingFrom(bundle, set)).toEqual([e('Git.Git', 'git')]);
+  });
+  const job = (source: 'winget' | 'choco', id: string, phase: string, kind = 'install') =>
+    ({ op: { kind, target: { source, id } }, phase }) as never;
+  it('apps queued, running or just installed are not queued again', () => {
+    const set = withJobs(installedSet(installed), [
+      job('winget', 'Git.Git', 'downloading'),
+      job('winget', 'VideoLAN.VLC', 'succeeded'),
+      job('winget', '7zip.7zip', 'failed'),
+      job('winget', 'Notepad++.Notepad++', 'installing', 'uninstall'),
+    ]);
+    const bundle = [e('Git.Git', 'git'), e('VideoLAN.VLC', 'vlc'), e('7zip.7zip', '7zip'), e('Notepad++.Notepad++', 'notepadplusplus')];
+    expect(missingFrom(bundle, set)).toEqual([e('7zip.7zip', '7zip'), e('Notepad++.Notepad++', 'notepadplusplus')]);
+  });
+  it('Chocolatey-only apps need Chocolatey switched on', () => {
+    expect(needsChoco({ best: 'choco' }, false)).toBe(true);
+    expect(needsChoco({ best: 'choco' }, true)).toBe(false);
+    expect(needsChoco({ best: 'winget' }, false)).toBe(false);
   });
 });

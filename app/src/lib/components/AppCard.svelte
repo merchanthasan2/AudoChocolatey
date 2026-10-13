@@ -1,7 +1,7 @@
 <script lang="ts">
   import type { AppEntry } from '../ipc/commands';
-  import { queue, installed, market } from '../stores/app.svelte';
-  import { installedSet, isInstalled } from '../logic/entries';
+  import { queue, installed, market, overview } from '../stores/app.svelte';
+  import { installedSet, isInstalled, needsChoco } from '../logic/entries';
   import AppIcon from './AppIcon.svelte';
   import JobButton from './JobButton.svelte';
 
@@ -24,6 +24,8 @@
     <div class="action">
       {#if done}
         <span class="badge">Installed</span>
+      {:else if needsChoco(app, overview.chocoReady)}
+        <span class="badge" title="Turn on Chocolatey in Settings to use this app">Needs Chocolatey</span>
       {:else}
         <JobButton {job} mode="install" name={app.name}
           onstart={() => queue.installEntry(app)} oncancel={(id) => queue.cancel(id)} onretry={(id) => queue.retry(id)} />

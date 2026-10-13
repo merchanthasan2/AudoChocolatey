@@ -1,7 +1,7 @@
 //! Queue commands: everything that changes software on the PC goes through here.
 
 use crate::error::AppError;
-use crate::ids::SourceRef;
+use crate::ids::{SourceKind, SourceRef};
 use crate::jobs::model::Job;
 use crate::jobs::worker::JobSink;
 use crate::sources::model::{OpKind, OpRequest, UpgradeCandidate};
@@ -50,6 +50,25 @@ pub fn upgrades_to_ops(items: Vec<UpgradeCandidate>) -> Vec<(OpRequest, String)>
         .collect()
 }
 
+/// The "Use Chocolatey" setting is a promise that choco never runs; the UI hides those buttons,
+/// and this holds the line if a button slips through.
+pub fn refuse_disabled_choco(
+    ops: &[(OpRequest, String)],
+    choco_enabled: bool,
+) -> Result<(), AppError> {
+    if !choco_enabled
+        && ops
+            .iter()
+            .any(|(o, _)| o.target.source() == SourceKind::Choco)
+    {
+        return Err(AppError::new(
+            "choco_disabled",
+            "Chocolatey is turned off. Turn it on in Settings to use Chocolatey apps.",
+        ));
+    }
+    Ok(())
+}
+
 fn display_name(name: String) -> String {
     let n: String = name.chars().filter(|c| !c.is_control()).take(120).collect();
     if n.trim().is_empty() {
@@ -60,12 +79,13 @@ fn display_name(name: String) -> String {
 }
 
 #[tauri::command]
-pub fn enqueue(state: State<'_, AppState>, ops: Vec<EnqueueItem>) -> Vec<String> {
-    state.queue.enqueue(
-        ops.into_iter()
-            .map(|i| (i.op, display_name(i.display_name)))
-            .collect(),
-    )
+pub fn enqueue(state: State<'_, AppState>, ops: Vec<EnqueueItem>) -> Result<Vec<String>, AppError> {
+    let ops: Vec<_> = ops
+        .into_iter()
+        .map(|i| (i.op, display_name(i.display_name)))
+        .collect();
+    refuse_disabled_choco(&ops, state.settings().choco.enabled)?;
+    Ok(state.queue.enqueue(ops))
 }
 
 #[tauri::command]
@@ -102,7 +122,6 @@ pub fn get_job_log(state: State<'_, AppState>, id: String) -> Vec<String> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::ids::SourceKind;
     use crate::sources::model::UpgradeCandidate;
 
     fn cand(source: SourceKind, id: &str) -> UpgradeCandidate {
@@ -113,6 +132,18 @@ mod tests {
             available_version: "2".into(),
             source,
         }
+    }
+
+    #[test]
+    fn chocolatey_jobs_are_refused_while_chocolatey_is_off() {
+        let ops = upgrades_to_ops(vec![
+            cand(SourceKind::Winget, "Mozilla.Firefox"),
+            cand(SourceKind::Choco, "filezilla"),
+        ]);
+        let err = refuse_disabled_choco(&ops, false).unwrap_err();
+        assert_eq!(err.code, "choco_disabled");
+        assert!(refuse_disabled_choco(&ops, true).is_ok());
+        assert!(refuse_disabled_choco(&ops[..1], false).is_ok());
     }
 
     #[test]
