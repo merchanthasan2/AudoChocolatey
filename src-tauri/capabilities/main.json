@@ -26,6 +26,9 @@
     "allow-cancel-job",
     "allow-retry-job",
     "allow-clear-finished",
-    "allow-get-job-log"
+    "allow-get-job-log",
+    "allow-marketplace-home",
+    "allow-marketplace-category",
+    "allow-get-app"
   ]
 }

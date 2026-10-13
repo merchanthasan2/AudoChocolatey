@@ -4,6 +4,7 @@
   import Sidebar from './lib/components/Sidebar.svelte';
   import Toasts from './lib/components/Toasts.svelte';
   import QueueDrawer from './lib/components/QueueDrawer.svelte';
+  import AppDetail from './lib/components/AppDetail.svelte';
   import Marketplace from './views/Marketplace.svelte';
   import Updates from './views/Updates.svelte';
   import Installed from './views/Installed.svelte';
@@ -61,6 +62,7 @@
 </div>
 
 <QueueDrawer bind:open={drawer} />
+<AppDetail />
 <Toasts />
 
 <style>

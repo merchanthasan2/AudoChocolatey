@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-marketplace-category"
+description = "Enables the marketplace_category command without any pre-configured scope."
+commands.allow = ["marketplace_category"]
+
+[[permission]]
+identifier = "deny-marketplace-category"
+description = "Denies the marketplace_category command without any pre-configured scope."
+commands.deny = ["marketplace_category"]

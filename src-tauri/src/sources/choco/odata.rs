@@ -23,9 +23,13 @@ pub fn search_url(q: &SearchQuery) -> String {
 
 /// One package's latest version (for its IconUrl when it isn't in recent search results).
 pub fn by_id_url(id: &ChocoId) -> String {
+    let filter = format!(
+        "tolower(Id) eq '{}' and IsLatestVersion",
+        id.as_str().to_ascii_lowercase()
+    );
     format!(
-        "https://community.chocolatey.org/api/v2/FindPackagesById()?id={}&$filter=IsLatestVersion",
-        encode(&format!("'{}'", id.as_str()))
+        "https://community.chocolatey.org/api/v2/Packages()?$filter={}&$top=1",
+        encode(&filter)
     )
 }
 
@@ -188,6 +192,14 @@ mod tests {
     const FEED: &str = include_str!("../../../tests/fixtures/choco/odata-search-firefox.xml");
 
     #[test]
+    fn by_id_feed_gives_the_package_title() {
+        let xml = include_str!("../../../tests/fixtures/choco/odata-by-id-vsbuildtools.xml");
+        let r = parse_feed(xml).unwrap();
+        assert_eq!(r.len(), 1, "{r:?}");
+        assert_eq!(r[0].name, "Visual Studio 2022 Build Tools");
+    }
+
+    #[test]
     fn parses_and_dedupes_feed() {
         let r = parse_feed(FEED).unwrap();
         assert_eq!(r.len(), 1, "{r:?}");
@@ -214,6 +226,23 @@ mod tests {
             plain(md),
             "Bitdefender TrafficLight Safer browsing. See the site for details. Blocks bad links"
         );
+    }
+
+    /// FindPackagesById + IsLatestVersion returns an empty feed (found live); ids are stored
+    /// with capitals ("Firefox"), so the filter must compare case-insensitively.
+    #[test]
+    fn by_id_url_uses_a_case_insensitive_latest_filter() {
+        let url = by_id_url(&ChocoId::try_from("vcredist140".to_string()).unwrap());
+        assert!(
+            url.starts_with("https://community.chocolatey.org/api/v2/Packages()?"),
+            "{url}"
+        );
+        assert!(
+            url.contains("tolower%28Id%29%20eq%20%27vcredist140%27"),
+            "{url}"
+        );
+        assert!(url.contains("IsLatestVersion"), "{url}");
+        assert!(!url.contains("FindPackagesById"), "{url}");
     }
 
     #[test]

@@ -1,12 +1,13 @@
 // Application state: one reactive store per concern, all backed by the typed IPC layer.
 import * as api from '../ipc/commands';
 import type {
-  Overview, Listing, InstalledPackage, UpgradeCandidate, SourcePackage, Settings, SettingsPatch, Job,
+  Overview, Listing, InstalledPackage, UpgradeCandidate, Settings, SettingsPatch, Job, AppEntry, Home,
 } from '../ipc/commands';
 import { onJobChanged, onJobProgress, onQueueChanged } from '../ipc/events';
 import { latestOnly, STALE } from '../logic/latestOnly';
 import { jobFor } from '../logic/jobFor';
 import { tidyResults } from '../logic/tidyResults';
+import { missingFrom, installedSet, withJobs, needsChoco } from '../logic/entries';
 import { resolveMotion, resolveTheme } from '../logic/theme';
 import type { SourceKind } from '../ipc/bindings/SourceKind';
 import type { OpKind } from '../ipc/bindings/OpKind';
@@ -60,7 +61,10 @@ export const toasts = new Toasts();
 class OverviewStore {
   value = $state<Overview | null>(null);
   error = $state<string | null>(null);
-  chocoReady = $derived(this.value?.sources.some((s) => s.kind === 'choco' && s.state === 'ready') ?? false);
+  /** Chocolatey is installed and working, and the user hasn't switched it off in Settings. */
+  chocoReady = $derived(
+    (this.value?.sources.some((s) => s.kind === 'choco' && s.state === 'ready') ?? false) && settings.value?.choco.enabled !== false,
+  );
   async load() {
     try { this.value = await api.getOverview(); this.error = null; } catch (e) { this.error = message(e); }
   }
@@ -167,6 +171,30 @@ class QueueStore {
     }
   }
   install(p: { source: SourceKind; id: string; name: string }) { return this.#enqueue('install', p.source, p.id, p.name); }
+  /** Install a catalog/search entry through its best source. */
+  installEntry(e: AppEntry) {
+    const id = e.best === 'winget' ? e.winget : e.choco;
+    return id ? this.#enqueue('install', e.best, id, e.name) : Promise.resolve();
+  }
+  /** What a bundle would queue now: not installed, not already queued, installable. */
+  bundleMissing(entries: AppEntry[]) {
+    const present = withJobs(installedSet(installed.items), this.jobs);
+    return missingFrom(entries, present).filter((e) => !needsChoco(e, overview.chocoReady));
+  }
+  /** Queue every app of a bundle that isn't there yet; returns how many were queued. Waits for
+   *  a good installed list, so apps already on the PC are never reinstalled. */
+  async installMany(entries: AppEntry[]) {
+    if (!installed.loaded || installed.error) return 0;
+    const missing = this.bundleMissing(entries);
+    const ops = missing.flatMap((e) => {
+      const id = e.best === 'winget' ? e.winget : e.choco;
+      return id ? [{ op: { kind: 'install' as const, target: { source: e.best, id }, version: null }, displayName: e.name }] : [];
+    });
+    if (ops.length === 0) return 0;
+    // Not `this.batch`: that tracks update runs for the Updates header.
+    try { await api.enqueue(ops); } catch (e) { toasts.push({ text: message(e), tone: 'error' }); return 0; }
+    return ops.length;
+  }
   update(c: UpgradeCandidate) { return this.#enqueue('upgrade', c.source, c.id, c.name); }
   uninstall(p: { source: SourceKind; id: string; name: string }) { return this.#enqueue('uninstall', p.source, p.id, p.name); }
   /** Job ids of the last "Update all/selected" run, for the "Updating 2 of 5" header. */
@@ -201,12 +229,12 @@ export const queue = new QueueStore();
 /* ---------------------------------------------------------------- search */
 class SearchStore {
   query = $state('');
-  results = $state<SourcePackage[]>([]);
-  sourceErrors = $state<Listing<SourcePackage>['sourceErrors']>([]);
+  results = $state<AppEntry[]>([]);
+  sourceErrors = $state<Listing<AppEntry>['sourceErrors']>([]);
   loading = $state(false);
   error = $state<string | null>(null);
   searched = $state('');
-  #guard = latestOnly<Listing<SourcePackage>>();
+  #guard = latestOnly<Listing<AppEntry>>();
   #timer: ReturnType<typeof setTimeout> | undefined;
 
   set(q: string) {
@@ -226,7 +254,9 @@ class SearchStore {
     try {
       const r = await this.#guard.run(api.search(q));
       if (r === STALE) return;
-      this.results = tidyResults(r.items, q);
+      // Rank by name and fold language editions; the merged entry is kept whole.
+      const tidy = tidyResults(r.items.map((e) => ({ id: e.winget ?? e.choco ?? e.key, name: e.name, source: e.best, entry: e })), q);
+      this.results = tidy.map((t) => t.entry);
       this.sourceErrors = r.sourceErrors;
       this.error = null;
       this.searched = q;
@@ -238,3 +268,20 @@ class SearchStore {
   }
 }
 export const search = new SearchStore();
+
+/* ---------------------------------------------------------------- marketplace */
+class MarketStore {
+  home = $state<Home | null>(null);
+  category = $state<string | null>(null);
+  categoryApps = $state<AppEntry[]>([]);
+  detail = $state<AppEntry | null>(null);
+  async load() {
+    if (this.home) return;
+    try { this.home = await api.marketplaceHome(); } catch (e) { toasts.push({ text: message(e), tone: 'error' }); }
+  }
+  async openCategory(id: string | null) {
+    this.category = id;
+    this.categoryApps = id ? await api.marketplaceCategory(id) : [];
+  }
+}
+export const market = new MarketStore();

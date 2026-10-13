@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-marketplace-home"
+description = "Enables the marketplace_home command without any pre-configured scope."
+commands.allow = ["marketplace_home"]
+
+[[permission]]
+identifier = "deny-marketplace-home"
+description = "Denies the marketplace_home command without any pre-configured scope."
+commands.deny = ["marketplace_home"]

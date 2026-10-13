@@ -185,3 +185,41 @@ describe('latestOnly.invalidate', () => {
     expect(await p).toBe(STALE);
   });
 });
+
+import { installedSet, isInstalled, missingFrom, withJobs, needsChoco } from './entries';
+describe('entries', () => {
+  const installed = [
+    { id: 'Mozilla.Firefox', source: 'winget' as const },
+    { id: 'vcredist140', source: 'choco' as const },
+    { id: 'ARP\Machine\X64\Thing', source: null },
+  ];
+  const e = (winget: string | null, choco: string | null) => ({ winget, choco });
+  it('an app counts as installed through either source, case-insensitively', () => {
+    const set = installedSet(installed);
+    expect(isInstalled(e('mozilla.firefox', 'firefox'), set)).toBe(true);
+    expect(isInstalled(e(null, 'VCREDIST140'), set)).toBe(true);
+    expect(isInstalled(e('Git.Git', 'git'), set)).toBe(false);
+  });
+  it('bundles only queue what is missing', () => {
+    const set = installedSet(installed);
+    const bundle = [e('Mozilla.Firefox', 'firefox'), e('Git.Git', 'git'), e(null, 'vcredist140')];
+    expect(missingFrom(bundle, set)).toEqual([e('Git.Git', 'git')]);
+  });
+  const job = (source: 'winget' | 'choco', id: string, phase: string, kind = 'install') =>
+    ({ op: { kind, target: { source, id } }, phase }) as never;
+  it('apps queued, running or just installed are not queued again', () => {
+    const set = withJobs(installedSet(installed), [
+      job('winget', 'Git.Git', 'downloading'),
+      job('winget', 'VideoLAN.VLC', 'succeeded'),
+      job('winget', '7zip.7zip', 'failed'),
+      job('winget', 'Notepad++.Notepad++', 'installing', 'uninstall'),
+    ]);
+    const bundle = [e('Git.Git', 'git'), e('VideoLAN.VLC', 'vlc'), e('7zip.7zip', '7zip'), e('Notepad++.Notepad++', 'notepadplusplus')];
+    expect(missingFrom(bundle, set)).toEqual([e('7zip.7zip', '7zip'), e('Notepad++.Notepad++', 'notepadplusplus')]);
+  });
+  it('Chocolatey-only apps need Chocolatey switched on', () => {
+    expect(needsChoco({ best: 'choco' }, false)).toBe(true);
+    expect(needsChoco({ best: 'choco' }, true)).toBe(false);
+    expect(needsChoco({ best: 'winget' }, false)).toBe(false);
+  });
+});

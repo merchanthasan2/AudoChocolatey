@@ -44,5 +44,10 @@
       color: hsl(var(--h) 60% 86%);
       box-shadow: inset 0 0 0 1px hsl(var(--h) 50% 80% / 0.1);
     }
+    :global(:root:not([data-theme='light'])) img { filter: var(--icon-halo); }
   }
+  /* Dark logos (Spotify, GitHub, OBS) vanish on a dark canvas; a faint light edge keeps the
+     original artwork untouched but visible. */
+  .tile { --icon-halo: drop-shadow(0 0 0.6px rgb(255 255 255 / 0.55)) drop-shadow(0 0 1.5px rgb(255 255 255 / 0.18)); }
+  :global(:root[data-theme='dark']) img { filter: var(--icon-halo); }
 </style>

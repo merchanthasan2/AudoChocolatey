@@ -17,9 +17,19 @@ export const getOverview = () => invoke<Overview>('get_overview');
 export const getDiagnostics = () => invoke<Diagnostics>('get_diagnostics');
 export const listInstalled = () => invoke<Listing<InstalledPackage>>('list_installed');
 export const listUpdates = () => invoke<Listing<UpgradeCandidate>>('list_updates');
-export const search = (query: string) => invoke<Listing<SourcePackage>>('search', { query });
+export const search = (query: string) => invoke<Listing<AppEntry>>('search', { query });
 export const getSettings = () => invoke<Settings>('get_settings');
 export const updateSettings = (patch: SettingsPatch) => invoke<Settings>('update_settings', { patch });
+
+// Marketplace (curated catalog)
+import type { AppEntry } from './bindings/AppEntry';
+import type { Home } from './bindings/Home';
+import type { AppDetails } from './bindings/AppDetails';
+import type { BundleView } from './bindings/BundleView';
+export type { AppEntry, Home, AppDetails, BundleView };
+export const marketplaceHome = () => invoke<Home>('marketplace_home');
+export const marketplaceCategory = (id: string) => invoke<AppEntry[]>('marketplace_category', { id });
+export const getApp = (entry: AppEntry) => invoke<AppDetails>('get_app', { entry });
 
 // Install queue
 import type { Job } from './bindings/Job';

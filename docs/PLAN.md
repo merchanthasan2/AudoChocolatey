@@ -5,13 +5,13 @@
 > **Spec:** [superpowers/specs/2026-10-12-quantum-updater-v3-redesign-design.md](superpowers/specs/2026-10-12-quantum-updater-v3-redesign-design.md)
 > **Detailed phase plans:** `docs/superpowers/plans/`. Each phase's plan is written just before the phase starts, because it depends on code from earlier phases.
 
-**Status:** P0, P1, P3 core, P4, P5 done · next: P2 catalog → P3 extras → P6 → P7 → P8 · **Last updated:** 2026-10-13
+**Status:** P0, P1, P2, P3 core, P4, P5 done · next: P3 extras → P6 → P7 → P8 · **Last updated:** 2026-10-13
 
 | Phase | Name | Status | Detailed plan |
 |---|---|---|---|
 | P0 | Cleanup and foundation | Done (merged to main; UAC + build SHA confirmed by owner) | [p0-foundation](superpowers/plans/2026-10-12-p0-foundation.md) |
 | P1 | Rust core and sources | Done (branch v3/p1-core) | [p1-rust-core](superpowers/plans/2026-10-12-p1-rust-core.md) |
-| P2 | Combined catalog | Not started | (to be written) |
+| P2 | Combined catalog | Done (branch v3/p2-catalog) | [p2-catalog](superpowers/plans/2026-10-13-p2-catalog.md) |
 | P3 | Queue and real progress | Core done (branch v3/p3-core); extras after P4 | [p3-core-queue](superpowers/plans/2026-10-12-p3-core-queue.md) |
 | P4 | New interface (Warm Store + springy motion) | Done (branch v3/p4-ui) | [p4-interface](superpowers/plans/2026-10-12-p4-interface.md) |
 | P5 | Real icons | Done, pulled forward (branch v3/p4-ui) | [p5-icons](superpowers/plans/2026-10-12-p5-icons.md) |
@@ -43,11 +43,13 @@ Goal: one runtime, a fresh Svelte shell, admin manifest really embedded, locked-
 - [x] Commands: `get_overview` (full), `get_diagnostics`, `list_installed`, `list_updates`, `search` (unmerged)
 
 ## P2: Combined catalog
-- [ ] `catalog/normalize.rs` + tests (incl. must-not-merge near misses)
-- [ ] `catalog/mappings.json` seeded with about 300 top apps; `catalog.json` (featured, categories, bundles, descriptions, icon sources)
-- [ ] `catalog/merge.rs`: mapping, then conservative heuristic, else separate; best source; owner-wins updates
-- [ ] Source status + choco-absent mode ("Requires Chocolatey"); verify `Chocolatey.Chocolatey` winget ID; bootstrap job
-- [ ] Commands: `marketplace_home`, `marketplace_category`, merged `search` + `search://partial`, `get_app`
+- [x] `catalog/merge.rs` normalize + tests (incl. must-not-merge near misses, FirefoxESR vs Firefox MSIX)
+- [x] `catalog/apps.json`: 96 curated apps in 10 categories plus 5 bundles, every id validated live (`scripts/validate-catalog.mjs`); ADR 023
+- [x] Merge: mapping, then strict heuristic, else separate; best source; Chocolatey owns updates of apps it installed
+- [x] Proper names: catalog name, then Chocolatey package title, then the source name without its version tail
+- [x] "Requires Chocolatey" badge when Chocolatey is off; Chocolatey bootstrap job moves to P6 (settings completion)
+- [x] Commands: `marketplace_home`, `marketplace_category`, merged `search`, `get_app`; `search://partial` dropped (both sources answer in 1–3 s)
+- [x] UI: category chips and pages, featured cards, bundles (install only what's missing), app details panel
 
 ## P3: Queue and real progress
 - [x] Streaming runner: Job Object (kill the whole process tree), split output on CR and LF (moved from P1)
@@ -68,7 +70,8 @@ Goal: one runtime, a fresh Svelte shell, admin manifest really embedded, locked-
 - [x] Shell: sidebar (Updates first, owner request), Ctrl+K, activity pill + drawer, toasts, state router
 - [x] Components: AppIcon (real icon, monogram fallback), AppRow (live status + progress bar), JobButton (Get → ring → check → Done), ProgressRing, Checkbox, Skeleton, CountRoll, EmptyState, Banner, Segmented, Toggle
 - [x] Views: Updates (select + Update selected/all, per-row and batch progress), Marketplace (popular apps + search), Installed (uninstall), Settings
-- [ ] *(P2)* Marketplace categories and bundles, AppDetail, Updates "Hidden", Chocolatey onboarding
+- [x] *(P2)* Marketplace categories and bundles, AppDetail
+- [ ] *(P3 extras / P6)* Updates "Hidden", Chocolatey onboarding
 - [x] vitest for UI logic (17 tests); screenshot review of every view in light/dark at 1200x780 and 960x640
 
 ## P5: Real icons
@@ -128,6 +131,11 @@ Goal: one runtime, a fresh Svelte shell, admin manifest really embedded, locked-
 | 2026-10-12 | P3: persistence/recovery, rules, bundles, pause and post-success verification moved to "P3 extras" after P4 | Owner wants a usable app first |
 | 2026-10-12 | P4: owner asked for Updates as the start screen, selectable updates, and visible update animations | Done: Updates first, checkboxes + "Update N selected", per-row progress bars, batch "Updating 2 of 5" bar |
 | 2026-10-12 | P5 pulled forward; bundled icons dropped in favour of live originals only | Owner: "icons need to be actual original"; ADR 022 |
+| 2026-10-13 | P2: catalog is 96 hand-checked apps instead of about 300 auto-mapped ones | Every id is validated against live winget and Chocolatey; a wrong mapping installs the wrong program as admin |
+| 2026-10-13 | P2: Chocolatey by-id lookups use `Packages()?$filter=tolower(Id) eq '…' and IsLatestVersion` | `FindPackagesById` with a filter returns nothing; this also fixed Chocolatey icons |
+| 2026-10-13 | P2: the name merge keeps bracketed words and requires the Chocolatey id to name the app | Live search paired Firefox MSIX (winget) with FirefoxESR, whose Chocolatey title is plain "Mozilla Firefox" |
+| 2026-10-13 | P2 review (0 Critical, 3 Important fixed): Chocolatey title lookups capped at 3 s with a 10-minute miss cache; bundles wait for the installed list and skip queued apps; "Use Chocolatey" off is enforced by the queue too | Fresh whole-branch review |
+| 2026-10-13 | Deferred from P2 review to P8: detail panel dialog focus handling, category stale guard, cancel `winget show` on close, same-name merge tests, retry of Chocolatey jobs while it's off | Review minors |
 | 2026-10-13 | Icon cache remembers only definite misses | Temporary winget/network failures had hidden icons for 7 days |
 | 2026-10-13 | Debug builds use their own WebView2 profile | WebView2 refuses to share a profile between an elevated and a normal instance |
 | 2026-10-13 | P4/P5 review: misdirected clicks fixed (likely cause of the unexplained vcredist140 job); icon SSRF, path and DoS hardening | Review findings; tests added for each |

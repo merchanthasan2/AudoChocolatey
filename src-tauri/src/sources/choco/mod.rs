@@ -3,6 +3,7 @@
 pub mod args;
 pub mod odata;
 pub mod parse;
+pub mod titles;
 
 use crate::error::{AppError, AppResult};
 use crate::ids::{ChocoId, SearchQuery, SourceKind};
@@ -10,6 +11,7 @@ use crate::sources::model::{
     InstalledPackage, SourcePackage, SourceState, SourceStatus, UpgradeCandidate,
 };
 use crate::sources::process::{CommandSpec, ProcessOutput, Runner};
+use std::collections::HashMap;
 use std::path::PathBuf;
 use std::time::Duration;
 
@@ -18,6 +20,7 @@ pub struct ChocoSource<R: Runner> {
     exe: Option<PathBuf>,
     http: reqwest::Client,
     major: tokio::sync::OnceCell<u32>,
+    titles: titles::TitleCache,
 }
 
 impl<R: Runner> ChocoSource<R> {
@@ -33,6 +36,7 @@ impl<R: Runner> ChocoSource<R> {
             exe,
             http,
             major: tokio::sync::OnceCell::new(),
+            titles: titles::TitleCache::default(),
         }
     }
 
@@ -130,6 +134,44 @@ impl<R: Runner> ChocoSource<R> {
                 source: SourceKind::Choco,
             })
             .collect())
+    }
+
+    /// Human titles for package ids ("vcredist140" -> "Microsoft Visual C++ Redistributable ...").
+    /// Ids without a title (lookup failed, timed out or offline) are left out; the caller shows
+    /// the id. See `titles::lookup` for the time limit and miss cache.
+    pub async fn titles(&self, ids: &[String]) -> HashMap<String, String> {
+        let http = self.http.clone();
+        let fetch = move |id: ChocoId| {
+            let http = http.clone();
+            async move {
+                let resp = http.get(odata::by_id_url(&id)).send().await.ok()?;
+                if !resp.status().is_success() {
+                    return None;
+                }
+                let xml = resp.text().await.ok()?;
+                odata::parse_feed(&xml)
+                    .ok()?
+                    .into_iter()
+                    .next()
+                    .map(|p| p.name)
+            }
+        };
+        titles::lookup(ids, &self.titles, fetch, titles::DEADLINE).await
+    }
+
+    /// Latest package metadata from the community feed (details panel).
+    pub async fn package(&self, id: &ChocoId) -> AppResult<Option<SourcePackage>> {
+        let resp = self
+            .http
+            .get(odata::by_id_url(id))
+            .send()
+            .await
+            .map_err(|e| AppError::new("network", format!("Chocolatey feed: {e}")))?;
+        let xml = resp
+            .text()
+            .await
+            .map_err(|e| AppError::new("network", format!("Chocolatey feed: {e}")))?;
+        Ok(odata::parse_feed(&xml)?.into_iter().next())
     }
 
     pub async fn search(&self, q: &SearchQuery) -> AppResult<Vec<SourcePackage>> {

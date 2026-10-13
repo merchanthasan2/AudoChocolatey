@@ -152,3 +152,14 @@
 - **Consequences:**
   - First-time Marketplace icons need one `winget show` plus a homepage request per app (1–3 s each, 2 at a time). After that they come from the cache instantly and work offline.
   - Packages without an original icon (e.g. the Chocolatey `vcredist140` package) keep the monogram.
+
+### ADR 023: Curated Catalog and Strict Merging (P2)
+- **Status:** Accepted
+- **Context:** winget and Chocolatey list many of the same apps under different ids and names. Showing both copies is confusing; merging the wrong pair is worse, because the app installs as admin.
+- **Decision:**
+  - A hand-checked catalog (`src-tauri/catalog/apps.json`, embedded in the exe) maps each app to its winget and Chocolatey ids, with a display name, publisher, category and short blurb. `scripts/validate-catalog.mjs` checks every id against the live sources before a catalog change is committed.
+  - Search results not in the catalog are merged only when the normalized names are identical, the winget publisher appears in the Chocolatey package, and the Chocolatey id names the same app. Bracketed qualifiers such as "(MSIX)" or "(ESR)" count as part of the name. Anything less certain stays as two rows.
+  - Names shown everywhere: catalog name, then the Chocolatey package title, then the source name without a trailing version.
+  - When both sources offer an update for the same catalog app, Chocolatey owns it (it only lists packages it installed) and the winget row is dropped.
+  - Installs use winget when the app has a winget id, otherwise Chocolatey.
+- **Consequences:** apps outside the catalog may appear twice in search. The catalog needs occasional upkeep as ids change; the validator makes that a one-command check.
