@@ -114,6 +114,10 @@ pub struct AppState {
     pub rules: Mutex<RuleStore>,
     /// The last checked update list before rules (so rule changes don't need a new check).
     pub last_updates: Mutex<Option<Listing<UpgradeCandidate>>>,
+    /// Category "more apps" lists, by category id (see commands::catalog).
+    pub more_apps: tokio::sync::Mutex<
+        std::collections::HashMap<String, (std::time::Instant, Vec<crate::catalog::AppEntry>)>,
+    >,
 }
 
 impl AppState {
@@ -172,6 +176,7 @@ impl AppState {
             icons,
             rules: Mutex::new(RuleStore::open(config_dir.join("rules.json"))),
             last_updates: Mutex::new(None),
+            more_apps: tokio::sync::Mutex::new(Default::default()),
             config_dir,
         }
     }

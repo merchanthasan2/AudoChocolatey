@@ -163,6 +163,28 @@ impl<R: Runner> WingetSource<R> {
         Ok(details::parse_show(&out.stdout))
     }
 
+    /// Every winget package with a tag (local index, fast). Unfiltered; see `catalog::browse`.
+    pub async fn search_tag(&self, tag: &str) -> AppResult<Vec<SourcePackage>> {
+        if tag.starts_with('-') || tag.is_empty() {
+            return Err(AppError::new("invalid_input", "bad tag"));
+        }
+        let rows = self.query(args::search_tag(tag), 30, false).await?;
+        Ok(rows
+            .into_iter()
+            .filter(|r| valid(&r.id))
+            .map(|r| SourcePackage {
+                version: (!r.version.is_empty() && r.version != "Unknown").then_some(r.version),
+                name: r.name,
+                id: r.id,
+                source: SourceKind::Winget,
+                matched_on: None,
+                description: None,
+                homepage: None,
+                icon_url: None,
+            })
+            .collect())
+    }
+
     /// Microsoft Store search. No Source or version columns: versions are "Unknown".
     pub async fn search_store(&self, q: &SearchQuery) -> AppResult<Vec<SourcePackage>> {
         let rows = self

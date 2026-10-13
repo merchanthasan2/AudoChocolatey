@@ -307,14 +307,31 @@ class MarketStore {
   home = $state<Home | null>(null);
   category = $state<string | null>(null);
   categoryApps = $state<AppEntry[]>([]);
+  /** Live extras below the hand-checked apps (not checked by us). */
+  more = $state<AppEntry[]>([]);
+  moreLoading = $state(false);
   detail = $state<AppEntry | null>(null);
+  #catGuard = latestOnly<AppEntry[]>();
+  #moreGuard = latestOnly<AppEntry[]>();
   async load() {
     if (this.home) return;
     try { this.home = await api.marketplaceHome(); } catch (e) { toasts.push({ text: message(e), tone: 'error' }); }
   }
+  /** Switching quickly never shows one category's apps under another's name. */
   async openCategory(id: string | null) {
     this.category = id;
-    this.categoryApps = id ? await api.marketplaceCategory(id) : [];
+    this.categoryApps = [];
+    this.more = [];
+    if (!id) { this.#catGuard.invalidate(); this.#moreGuard.invalidate(); return; }
+    try {
+      const apps = await this.#catGuard.run(api.marketplaceCategory(id));
+      if (apps !== STALE) this.categoryApps = apps;
+    } catch (e) { toasts.push({ text: message(e), tone: 'error' }); }
+    this.moreLoading = true;
+    try {
+      const more = await this.#moreGuard.run(api.marketplaceCategoryMore(id));
+      if (more !== STALE) { this.more = more; this.moreLoading = false; }
+    } catch { this.moreLoading = false; }
   }
 }
 export const market = new MarketStore();

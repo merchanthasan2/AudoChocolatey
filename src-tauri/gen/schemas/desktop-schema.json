@@ -249,6 +249,12 @@
           "markdownDescription": "Enables the marketplace_category command without any pre-configured scope."
         },
         {
+          "description": "Enables the marketplace_category_more command without any pre-configured scope.",
+          "type": "string",
+          "const": "allow-marketplace-category-more",
+          "markdownDescription": "Enables the marketplace_category_more command without any pre-configured scope."
+        },
+        {
           "description": "Enables the marketplace_home command without any pre-configured scope.",
           "type": "string",
           "const": "allow-marketplace-home",
@@ -379,6 +385,12 @@
           "type": "string",
           "const": "deny-marketplace-category",
           "markdownDescription": "Denies the marketplace_category command without any pre-configured scope."
+        },
+        {
+          "description": "Denies the marketplace_category_more command without any pre-configured scope.",
+          "type": "string",
+          "const": "deny-marketplace-category-more",
+          "markdownDescription": "Denies the marketplace_category_more command without any pre-configured scope."
         },
         {
           "description": "Denies the marketplace_home command without any pre-configured scope.",

@@ -12,6 +12,7 @@ const COMMANDS: &[&str] = &[
     "enqueue",
     "update_all",
     "get_queue",
+    "marketplace_category_more",
     "set_rule",
     "remove_rule",
     "pause_queue",

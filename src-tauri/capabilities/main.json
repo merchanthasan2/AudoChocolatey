@@ -23,6 +23,7 @@
     "allow-enqueue",
     "allow-update-all",
     "allow-get-queue",
+    "allow-marketplace-category-more",
     "allow-set-rule",
     "allow-remove-rule",
     "allow-pause-queue",

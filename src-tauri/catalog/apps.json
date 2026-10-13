@@ -1,15 +1,15 @@
 {
   "categories": [
-    { "id": "browsers", "name": "Browsers" },
-    { "id": "developer", "name": "Developer tools" },
-    { "id": "media", "name": "Music, video & photo" },
-    { "id": "design", "name": "Design & 3D" },
-    { "id": "communication", "name": "Chat & meetings" },
-    { "id": "productivity", "name": "Productivity" },
-    { "id": "utilities", "name": "Utilities" },
-    { "id": "gaming", "name": "Gaming" },
-    { "id": "security", "name": "Security & privacy" },
-    { "id": "ai", "name": "AI" }
+    { "id": "browsers", "name": "Browsers", "tags": ["browser", "web-browser"] },
+    { "id": "developer", "name": "Developer tools", "tags": ["developer-tools", "code-editor", "ide"] },
+    { "id": "media", "name": "Music, video & photo", "tags": ["media-player", "video-editor", "music", "image-editor"] },
+    { "id": "design", "name": "Design & 3D", "tags": ["3d", "graphics", "image-editor"] },
+    { "id": "communication", "name": "Chat & meetings", "tags": ["chat", "messaging", "video-conferencing"] },
+    { "id": "productivity", "name": "Productivity", "tags": ["productivity", "note-taking", "office"] },
+    { "id": "utilities", "name": "Utilities", "tags": ["utility", "utilities", "file-manager"] },
+    { "id": "gaming", "name": "Gaming", "tags": ["gaming", "game-launcher"] },
+    { "id": "security", "name": "Security & privacy", "tags": ["password-manager", "vpn", "antivirus", "security"] },
+    { "id": "ai", "name": "AI", "tags": ["ai", "llm", "chatbot"] }
   ],
   "apps": [
     { "key": "firefox", "name": "Firefox", "publisher": "Mozilla", "category": "browsers", "blurb": "Fast, private browsing from a non-profit.", "winget": "Mozilla.Firefox", "choco": "firefox", "featured": true },

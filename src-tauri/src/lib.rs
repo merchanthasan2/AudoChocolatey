@@ -71,6 +71,7 @@ pub fn run() {
             commands::settings::update_settings,
             commands::jobs::enqueue,
             commands::jobs::update_all,
+            commands::catalog::marketplace_category_more,
             commands::library::set_rule,
             commands::library::remove_rule,
             commands::jobs::get_queue,

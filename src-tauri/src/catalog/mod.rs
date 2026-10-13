@@ -2,6 +2,7 @@
 //! `AppEntry` shape every list in the UI uses. Ids are validated against the live sources by
 //! `scripts/validate-catalog.mjs`.
 
+pub mod browse;
 pub mod merge;
 pub mod names;
 
@@ -16,6 +17,10 @@ use ts_rs::TS;
 pub struct Category {
     pub id: String,
     pub name: String,
+    /// winget tags for the live "more apps" list (Rust-side only).
+    #[serde(default, skip_serializing)]
+    #[ts(skip)]
+    pub tags: Vec<String>,
 }
 
 #[derive(Debug, Clone, Deserialize)]

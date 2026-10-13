@@ -101,6 +101,21 @@ pub fn search(query: &str) -> Vec<String> {
     .to_vec()
 }
 
+/// Packages carrying a tag (tags come from the catalog, never from the UI).
+pub fn search_tag(tag: &str) -> Vec<String> {
+    [
+        "search",
+        "--tag",
+        tag,
+        "--source",
+        "winget",
+        AGREE_SOURCE,
+        NO_PROMPT,
+    ]
+    .map(String::from)
+    .to_vec()
+}
+
 /// Store search: a short list, since Store matches get loose quickly.
 pub fn search_store(query: &str) -> Vec<String> {
     [

@@ -31,6 +31,7 @@ import type { BundleView } from './bindings/BundleView';
 export type { AppEntry, Home, AppDetails, BundleView };
 export const marketplaceHome = () => invoke<Home>('marketplace_home');
 export const marketplaceCategory = (id: string) => invoke<AppEntry[]>('marketplace_category', { id });
+export const marketplaceCategoryMore = (id: string) => invoke<AppEntry[]>('marketplace_category_more', { id });
 export const getApp = (entry: AppEntry) => invoke<AppDetails>('get_app', { entry });
 
 // Install queue

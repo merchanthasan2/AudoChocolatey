@@ -1,25 +1,24 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import { search, queue, installed, overview, market } from '../lib/stores/app.svelte';
+  import { search, market } from '../lib/stores/app.svelte';
   import SearchField from '../lib/components/SearchField.svelte';
-  import AppRow from '../lib/components/AppRow.svelte';
+  import EntryRow from '../lib/components/EntryRow.svelte';
   import AppCard from '../lib/components/AppCard.svelte';
   import BundleCard from '../lib/components/BundleCard.svelte';
-  import JobButton from '../lib/components/JobButton.svelte';
   import Skeleton from '../lib/components/Skeleton.svelte';
   import EmptyState from '../lib/components/EmptyState.svelte';
   import Banner from '../lib/components/Banner.svelte';
   import Icon from '../lib/components/Icon.svelte';
   import { rise } from '../lib/motion';
   import { uniqueKeys } from '../lib/logic/uniqueKeys';
-  import { installedSet, isInstalled, needsSetup, bestId } from '../lib/logic/entries';
 
   let { input = $bindable() }: { input?: HTMLInputElement } = $props();
   onMount(() => market.load());
 
-  const set = $derived(installedSet(installed.items));
   const keys = $derived(uniqueKeys(search.results, (e) => e.key));
   const searching = $derived(search.query.trim().length >= 2);
+  let moreShown = $state(30);
+  $effect(() => { void market.category; moreShown = 30; });
   const categoryName = $derived(market.home?.categories.find((c) => c.id === market.category)?.name ?? '');
 </script>
 
@@ -45,27 +44,7 @@
   {:else}
     <div class="card list" class:dim={search.loading}>
       {#each search.results as e, i (keys[i])}
-        {@const id = bestId(e)}
-        {@const job = id ? queue.jobFor(e.best, id, 'install') : undefined}
-        {@const setup = needsSetup(e, overview.on)}
-        <div class="row-wrap" in:rise={{ delay: Math.min(i, 8) * 50 }}>
-          <button class="row-hit" aria-label="About {e.name}" onclick={() => (market.detail = e)}></button>
-          <AppRow name={e.name} meta={[e.version, e.blurb ?? ''].filter(Boolean).join(' · ')}
-            {job} mode="install" iconKey={e.iconKey}>
-            {#snippet action()}
-              <span class="row-action">
-                {#if isInstalled(e, set)}
-                  <span class="badge">Installed</span>
-                {:else if setup}
-                  <span class="badge" title="This app comes from a source that's turned off. Turn it on in Settings.">Needs setup</span>
-                {:else}
-                  <JobButton {job} mode="install" name={e.name}
-                    onstart={() => queue.installEntry(e)} oncancel={(id) => queue.cancel(id)} onretry={(id) => queue.retry(id)} />
-                {/if}
-              </span>
-            {/snippet}
-          </AppRow>
-        </div>
+        <div in:rise={{ delay: Math.min(i, 8) * 50 }}><EntryRow {e} /></div>
       {/each}
     </div>
   {/if}
@@ -79,6 +58,21 @@
       <div in:rise={{ delay: Math.min(i, 12) * 30, y: 8 }}><AppCard {app} /></div>
     {/each}
   </div>
+  {#if market.moreLoading || market.more.length > 0}
+    <section class="more">
+      <div class="section-head"><h2>More apps</h2><span class="muted">Found by tag. Not checked by us, so look at the details before installing.</span></div>
+      {#if market.moreLoading}
+        <Skeleton rows={4} />
+      {:else}
+        <div class="card list">
+          {#each market.more.slice(0, moreShown) as e (e.key)}<EntryRow {e} />{/each}
+        </div>
+        {#if market.more.length > moreShown}
+          <button class="btn btn-quiet show-more" onclick={() => (moreShown += 30)}>Show more ({market.more.length - moreShown} left)</button>
+        {/if}
+      {/if}
+    </section>
+  {/if}
 {:else if market.home}
   <nav class="chips" aria-label="Categories">
     {#each market.home.categories as c (c.id)}
@@ -110,10 +104,6 @@
   .search { margin-top: 12px; max-width: 640px; }
   .banner-gap { margin-bottom: 12px; }
   .list.dim { opacity: 0.6; transition: opacity var(--dur-quick) ease; }
-  .row-wrap { position: relative; }
-  .row-hit { position: absolute; inset: 0; z-index: 0; }
-  .row-wrap :global(.row) { position: relative; pointer-events: none; }
-  .row-action { pointer-events: auto; position: relative; z-index: 1; }
   .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 26px; }
   .chip {
     display: inline-flex; align-items: center; gap: 8px; height: 34px; padding: 0 14px; border-radius: 999px;
@@ -124,6 +114,8 @@
   .chip:hover { background: var(--card-hover); color: var(--ink); }
   .n { font-size: 11px; color: var(--faint); }
   section { margin-bottom: 32px; }
+  .more .section-head { flex-wrap: wrap; }
+  .show-more { margin-top: 12px; }
   .section-head { display: flex; align-items: baseline; gap: 10px; margin-bottom: 14px; }
   .back { display: inline-flex; align-items: center; gap: 4px; font-weight: 600; color: var(--muted); margin-right: 8px; }
   .back:hover { color: var(--ink); }

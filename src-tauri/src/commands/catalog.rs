@@ -1,6 +1,6 @@
 //! Marketplace commands backed by the embedded catalog, plus app details from the sources.
 
-use crate::catalog::{AppEntry, Catalog};
+use crate::catalog::{browse, merge::merge, AppEntry, Catalog};
 use crate::error::AppError;
 use crate::ids::{ChocoId, SourceKind, StoreId, WingetId};
 use crate::state::AppState;
@@ -105,6 +105,37 @@ pub fn marketplace_home() -> Home {
 #[tauri::command]
 pub fn marketplace_category(id: String) -> Vec<AppEntry> {
     category(Catalog::embedded(), &id)
+}
+
+const MORE_TTL: std::time::Duration = std::time::Duration::from_secs(6 * 60 * 60);
+
+/// Live extras for a category page (winget packages with the category's tags). Cached 6 hours;
+/// one fetch at a time. The tags come from the catalog, never from the UI.
+#[tauri::command]
+pub async fn marketplace_category_more(
+    state: State<'_, AppState>,
+    id: String,
+) -> Result<Vec<AppEntry>, AppError> {
+    let cat = Catalog::embedded();
+    let tags = browse::tags_for(&id, cat);
+    if tags.is_empty() {
+        return Ok(Vec::new());
+    }
+    let mut cache = state.more_apps.lock().await;
+    if let Some((at, list)) = cache.get(&id) {
+        if at.elapsed() < MORE_TTL {
+            return Ok(list.clone());
+        }
+    }
+    let mut raw = Vec::new();
+    for t in &tags {
+        if let Ok(found) = state.winget.search_tag(t).await {
+            raw.extend(found);
+        }
+    }
+    let list = merge(browse::filter_more(raw, cat), Vec::new(), Vec::new(), cat);
+    cache.insert(id, (std::time::Instant::now(), list.clone()));
+    Ok(list)
 }
 
 /// Details for any entry: catalog apps by key, or `w:<id>` / `c:<id>` from search results.
