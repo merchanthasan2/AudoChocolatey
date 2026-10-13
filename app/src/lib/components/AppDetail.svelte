@@ -55,8 +55,8 @@
       {#if done}
         <span class="badge">Installed</span>
       {:else if needsChoco(app, overview.chocoReady)}
-        <span class="badge">Needs Chocolatey</span>
-        <span class="muted small">Turn on Chocolatey in Settings to install this app.</span>
+        <span class="badge">Needs setup</span>
+        <span class="muted small">This app comes from a source that's turned off. Turn it on in Settings.</span>
       {:else}
         <JobButton {job} mode="install" name={app.name}
           onstart={() => queue.installEntry(app)} oncancel={(id) => queue.cancel(id)} onretry={(id) => queue.retry(id)} />
@@ -76,12 +76,21 @@
     </section>
 
     <section class="facts">
-      <div><span class="k">Available from</span><span class="v">{[app.winget ? 'winget' : '', app.choco ? 'Chocolatey' : ''].filter(Boolean).join(' · ')}</span></div>
-      <div><span class="k">Installs with</span><span class="v">{app.best === 'winget' ? 'winget' : 'Chocolatey'}</span></div>
+      {#if details?.publisher ?? app.publisher}<div><span class="k">Publisher</span><span class="v">{details?.publisher ?? app.publisher}</span></div>{/if}
       {#if host}<div><span class="k">Website</span><span class="v">{host}</span></div>{/if}
       {#if details?.license}<div><span class="k">License</span><span class="v">{details.license}</span></div>{/if}
-      <div><span class="k">Package</span><span class="v mono">{bestId}</span></div>
     </section>
+
+    <details class="advanced">
+      <summary>Advanced</summary>
+      <!-- advanced -->
+      <div class="facts">
+        <div><span class="k">Available from</span><span class="v">{[app.winget ? 'winget' : '', app.choco ? 'Chocolatey' : ''].filter(Boolean).join(' · ')}</span></div>
+        <div><span class="k">Installs with</span><span class="v">{app.best === 'winget' ? 'winget' : 'Chocolatey'}</span></div>
+        <div><span class="k">Package id</span><span class="v mono">{bestId}</span></div>
+      </div>
+      <!-- /advanced -->
+    </details>
   </aside>
 {/if}
 
@@ -104,6 +113,10 @@
   .line { height: 11px; border-radius: 6px; background: var(--pill); margin: 8px 0; }
   .line.short { width: 60%; }
   .facts { display: grid; gap: 8px; padding: 14px 16px; border-radius: 12px; background: var(--card); box-shadow: var(--shadow-card); }
+  .advanced { margin-top: 14px; }
+  .advanced summary { cursor: pointer; font-size: 13px; font-weight: 600; color: var(--muted); padding: 4px 0; list-style-position: inside; }
+  .advanced summary:hover { color: var(--ink); }
+  .advanced .facts { margin-top: 8px; }
   .facts div { display: flex; justify-content: space-between; gap: 16px; font-size: 13px; }
   .k { color: var(--muted); }
   .v { font-weight: 550; text-align: right; min-width: 0; overflow: hidden; text-overflow: ellipsis; }

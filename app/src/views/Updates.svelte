@@ -60,7 +60,6 @@
     const t = setInterval(() => (now = Date.now()), 30_000);
     return () => clearInterval(t);
   });
-  const sourceText = (s: string) => (s === 'winget' ? 'winget' : 'Chocolatey');
   const batchPct = $derived(queue.batchJobs.length ? (queue.batchDone / queue.batchJobs.length) * 100 : 0);
 </script>
 
@@ -90,7 +89,7 @@
 </div>
 
 {#each updates.sourceErrors as e (e.source)}
-  <div class="gap"><Banner text={`Couldn't check ${sourceText(e.source)}: ${e.message}`} action={{ label: 'Try again', run: () => updates.refresh() }} /></div>
+  <div class="gap"><Banner text="Some apps couldn't be checked for updates. The list may be incomplete." action={{ label: 'Try again', run: () => updates.refresh() }} /></div>
 {/each}
 {#if updates.error}<div class="gap"><Banner text={updates.error} action={{ label: 'Try again', run: () => updates.refresh() }} /></div>{/if}
 
@@ -108,7 +107,7 @@
     {#each rows as u, i (keys[i])}
       {@const job = jobOf(u)}
       <div class="row-wrap" in:rise={{ delay: Math.min(i, 8) * 40 }} out:collapse>
-        <AppRow name={u.name} meta="{u.installedVersion} → {u.availableVersion} · {sourceText(u.source)}" {job} mode="update" bar
+        <AppRow name={u.name} meta="{u.installedVersion} → {u.availableVersion}" {job} mode="update" bar
           iconKey="{u.source}:{u.id}">
           {#snippet lead()}
             <Checkbox label="Select {u.name}" checked={selected.has(keys[i])} disabled={isBusy(u)}

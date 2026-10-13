@@ -23,4 +23,4 @@ for (const t of TARGETS) {
 }
 for (const v of violations) console.error(`${v.file}:${v.line} [${v.rule}] ${v.excerpt}`);
 if (violations.length) { console.error(`${violations.length} policy violation(s).`); process.exit(1); }
-console.log('Frontend policy OK: no emoji, no {@html}.');
+console.log('Frontend policy OK: no emoji, no {@html}, no package-tool names on screens.');

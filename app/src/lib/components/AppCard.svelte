@@ -25,7 +25,7 @@
       {#if done}
         <span class="badge">Installed</span>
       {:else if needsChoco(app, overview.chocoReady)}
-        <span class="badge" title="Turn on Chocolatey in Settings to use this app">Needs Chocolatey</span>
+        <span class="badge" title="This app comes from a source that's turned off. Turn it on in Settings.">Needs setup</span>
       {:else}
         <JobButton {job} mode="install" name={app.name}
           onstart={() => queue.installEntry(app)} oncancel={(id) => queue.cancel(id)} onretry={(id) => queue.retry(id)} />
@@ -33,7 +33,7 @@
     </div>
   </div>
   <h3 class="truncate">{app.name}</h3>
-  <p class="pub truncate">{app.publisher ?? (app.best === 'winget' ? 'winget' : 'Chocolatey')}</p>
+  <p class="pub truncate">{app.publisher ?? ''}</p>
   {#if app.blurb}<p class="blurb">{app.blurb}</p>{/if}
 </article>
 

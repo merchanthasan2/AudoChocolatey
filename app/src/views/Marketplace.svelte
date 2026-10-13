@@ -20,23 +20,22 @@
   const set = $derived(installedSet(installed.items));
   const keys = $derived(uniqueKeys(search.results, (e) => e.key));
   const searching = $derived(search.query.trim().length >= 2);
-  const sourcesText = (e: { winget: string | null; choco: string | null }) =>
-    [e.winget ? 'winget' : '', e.choco ? 'Chocolatey' : ''].filter(Boolean).join(' · ');
   const categoryName = $derived(market.home?.categories.find((c) => c.id === market.category)?.name ?? '');
 </script>
 
 <header class="head">
   <h1>Find apps</h1>
-  <p class="muted">One place for winget and Chocolatey. Everything installs quietly in the background.</p>
+  <p class="muted">Thousands of apps, installed quietly in the background.</p>
   <div class="search"><SearchField value={search.query} oninput={(v) => search.set(v)} bind:input /></div>
 </header>
 
 {#if searching}
-  {#each search.sourceErrors as e (e.source)}
+  {#if search.sourceErrors.length > 0}
+    {@const offline = search.sourceErrors.some((e) => e.code === 'network')}
     <div class="banner-gap">
-      <Banner text={e.code === 'network' ? "Couldn't reach the Chocolatey catalog. Showing winget results." : `${e.source === 'winget' ? 'winget' : 'Chocolatey'} search didn't finish: ${e.message}`} icon={e.code === 'network' ? 'offline' : 'alert'} />
+      <Banner text={offline ? "Part of the catalog couldn't be reached. Showing what we found." : "Part of the search didn't finish. Showing what we found."} icon={offline ? 'offline' : 'alert'} />
     </div>
-  {/each}
+  {/if}
   {#if search.loading && search.results.length === 0}
     <Skeleton rows={6} />
   {:else if search.error}
@@ -51,14 +50,14 @@
         {@const needsChoco = e.best === 'choco' && !overview.chocoReady}
         <div class="row-wrap" in:rise={{ delay: Math.min(i, 8) * 50 }}>
           <button class="row-hit" aria-label="About {e.name}" onclick={() => (market.detail = e)}></button>
-          <AppRow name={e.name} meta={[e.version, sourcesText(e), needsChoco ? 'Requires Chocolatey' : '', e.blurb ?? ''].filter(Boolean).join(' · ')}
+          <AppRow name={e.name} meta={[e.version, e.blurb ?? ''].filter(Boolean).join(' · ')}
             {job} mode="install" iconKey={e.iconKey}>
             {#snippet action()}
               <span class="row-action">
                 {#if isInstalled(e, set)}
                   <span class="badge">Installed</span>
                 {:else if needsChoco}
-                  <span class="badge" title="Turn on Chocolatey in Settings to use these apps">Needs Chocolatey</span>
+                  <span class="badge" title="This app comes from a source that's turned off. Turn it on in Settings.">Needs setup</span>
                 {:else}
                   <JobButton {job} mode="install" name={e.name}
                     onstart={() => queue.installEntry(e)} oncancel={(id) => queue.cancel(id)} onretry={(id) => queue.retry(id)} />
