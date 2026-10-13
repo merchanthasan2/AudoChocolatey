@@ -17,6 +17,8 @@
 | P5 | Real icons | Done, pulled forward (branch v3/p4-ui) | [p5-icons](superpowers/plans/2026-10-12-p5-icons.md) |
 | P6 | Background and extras | Not started | (to be written) |
 | P7 | Distribution (signing, auto-update, winget) | Not started | (to be written) |
+| P7b | Payment and licensing | Not started; questions for the owner first | (to be written) |
+| PD | Drivers (signed Windows Update drivers, maker tools, driver list) | Planned, **awaiting owner approval** | [drivers](superpowers/plans/2026-10-13-drivers.md) |
 | P8 | Docs and hardening | Not started | (to be written) |
 
 ---
