@@ -37,6 +37,73 @@ pub fn build_overview(is_elevated: bool, sources: Vec<SourceStatus>) -> Overview
     }
 }
 
+/// Is this app running as the same Windows user as the desktop (explorer)? `None` when there is
+/// no desktop yet. False means "over-the-shoulder" admin: per-user installs (Store apps) would
+/// land in the admin's account, not the person's at the keyboard.
+pub fn shell_user_matches() -> Option<bool> {
+    use windows_sys::Win32::Foundation::{CloseHandle, HANDLE};
+    use windows_sys::Win32::Security::{
+        EqualSid, GetTokenInformation, TokenUser, TOKEN_QUERY, TOKEN_USER,
+    };
+    use windows_sys::Win32::System::Threading::{
+        GetCurrentProcess, OpenProcess, OpenProcessToken, PROCESS_QUERY_LIMITED_INFORMATION,
+    };
+    use windows_sys::Win32::UI::WindowsAndMessaging::{GetShellWindow, GetWindowThreadProcessId};
+
+    // Reads a process token's user SID into an owned buffer.
+    fn user_sid(process: HANDLE) -> Option<Vec<u8>> {
+        let mut token: HANDLE = std::ptr::null_mut();
+        // SAFETY: valid process handle and out-pointer; the token is closed below.
+        if unsafe { OpenProcessToken(process, TOKEN_QUERY, &mut token) } == 0 {
+            return None;
+        }
+        let mut buf = vec![0u8; 256];
+        let mut len = 0u32;
+        // SAFETY: buffer and length describe writable memory; token is open.
+        let ok = unsafe {
+            GetTokenInformation(
+                token,
+                TokenUser,
+                buf.as_mut_ptr().cast(),
+                buf.len() as u32,
+                &mut len,
+            )
+        };
+        // SAFETY: token was opened above.
+        unsafe { CloseHandle(token) };
+        (ok != 0).then_some(buf)
+    }
+
+    // SAFETY: no preconditions; returns null without a desktop shell.
+    let shell = unsafe { GetShellWindow() };
+    if shell.is_null() {
+        return None;
+    }
+    let mut pid = 0u32;
+    // SAFETY: shell is a window handle; pid is a valid out-pointer.
+    unsafe { GetWindowThreadProcessId(shell, &mut pid) };
+    if pid == 0 {
+        return None;
+    }
+    // SAFETY: plain OpenProcess with query-only rights; closed below.
+    let proc = unsafe { OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, 0, pid) };
+    if proc.is_null() {
+        return None;
+    }
+    let theirs = user_sid(proc);
+    // SAFETY: proc was opened above.
+    unsafe { CloseHandle(proc) };
+    // SAFETY: pseudo-handle for this process, always valid.
+    let ours = user_sid(unsafe { GetCurrentProcess() });
+    let (theirs, ours) = (theirs?, ours?);
+    let sid = |b: &Vec<u8>| {
+        // SAFETY: GetTokenInformation(TokenUser) filled the buffer with a TOKEN_USER.
+        unsafe { (*(b.as_ptr() as *const TOKEN_USER)).User.Sid }
+    };
+    // SAFETY: both SIDs point into live buffers filled by the system.
+    Some(unsafe { EqualSid(sid(&theirs), sid(&ours)) } != 0)
+}
+
 pub fn is_elevated() -> bool {
     // SAFETY: IsUserAnAdmin takes no arguments and has no preconditions.
     unsafe { windows_sys::Win32::UI::Shell::IsUserAnAdmin() != 0 }
@@ -74,6 +141,12 @@ pub async fn get_diagnostics(
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn this_test_runs_as_the_desktop_user() {
+        // Tests run unelevated as the signed-in user (or with no desktop at all in CI).
+        assert_ne!(shell_user_matches(), Some(false));
+    }
     use crate::ids::SourceKind;
     use crate::sources::model::SourceState;
 

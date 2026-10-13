@@ -190,7 +190,7 @@ describe('latestOnly.invalidate', () => {
   });
 });
 
-import { installedSet, isInstalled, missingFrom, withJobs, needsChoco } from './entries';
+import { installedSet, isInstalled, missingFrom, withJobs } from './entries';
 describe('entries', () => {
   const installed = [
     { id: 'Mozilla.Firefox', source: 'winget' as const },
@@ -220,11 +220,6 @@ describe('entries', () => {
     ]);
     const bundle = [e('Git.Git', 'git'), e('VideoLAN.VLC', 'vlc'), e('7zip.7zip', '7zip'), e('Notepad++.Notepad++', 'notepadplusplus')];
     expect(missingFrom(bundle, set)).toEqual([e('7zip.7zip', '7zip'), e('Notepad++.Notepad++', 'notepadplusplus')]);
-  });
-  it('Chocolatey-only apps need Chocolatey switched on', () => {
-    expect(needsChoco({ best: 'choco' }, false)).toBe(true);
-    expect(needsChoco({ best: 'choco' }, true)).toBe(false);
-    expect(needsChoco({ best: 'winget' }, false)).toBe(false);
   });
 });
 
@@ -269,5 +264,25 @@ describe('hidden update labels', () => {
   it('says why an update is hidden', () => {
     expect(ruleLabel({ kind: 'never' })).toBe('Never update');
     expect(ruleLabel({ kind: 'skipVersion', version: '2.0' })).toBe('Skipping version 2.0');
+  });
+});
+
+import { bestId, needsSetup } from './entries';
+describe('Store apps', () => {
+  const store = { winget: null, choco: null, msstore: '9NKSQGP7F2NH', best: 'msstore' as const };
+  it('installs through the chosen source id', () => {
+    expect(bestId(store)).toBe('9NKSQGP7F2NH');
+    expect(bestId({ winget: 'A.A', choco: 'a', msstore: null, best: 'winget' })).toBe('A.A');
+    expect(bestId({ winget: null, choco: 'a', msstore: null, best: 'choco' })).toBe('a');
+  });
+  it('counts a Store app as installed', () => {
+    const set = installedSet([{ id: '9NKSQGP7F2NH', source: 'msstore' }]);
+    expect(isInstalled(store, set)).toBe(true);
+  });
+  it('needs setup only when its source is off', () => {
+    expect(needsSetup(store, { choco: true, store: false })).toBe(true);
+    expect(needsSetup(store, { choco: false, store: true })).toBe(false);
+    expect(needsSetup({ best: 'choco' }, { choco: false, store: true })).toBe(true);
+    expect(needsSetup({ best: 'winget' }, { choco: false, store: false })).toBe(false);
   });
 });

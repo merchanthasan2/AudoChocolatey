@@ -4,7 +4,7 @@
 use crate::catalog::Catalog;
 use crate::error::{AppError, AppResult};
 use crate::fsutil::{read_json, set_aside, write_atomic, Read};
-use crate::ids::{PkgVersion, SourceKind, SourceRef};
+use crate::ids::{PkgVersion, SourceRef};
 use crate::sources::model::UpgradeCandidate;
 use crate::versions::compare;
 use serde::{Deserialize, Serialize};
@@ -46,19 +46,13 @@ pub struct HiddenUpdate {
 
 /// Catalog apps share one key across sources, so a rule survives an owner change.
 pub fn rule_key(target: &SourceRef, cat: &Catalog) -> String {
-    let app = match target.source() {
-        SourceKind::Winget => cat.by_winget(target.id()),
-        SourceKind::Choco => cat.by_choco(target.id()),
-    };
-    match app {
+    match cat.by_source(target.source(), target.id()) {
         Some(a) => format!("app:{}", a.key),
-        None => {
-            let src = match target.source() {
-                SourceKind::Winget => "winget",
-                SourceKind::Choco => "choco",
-            };
-            format!("{src}:{}", target.id().to_ascii_lowercase())
-        }
+        None => format!(
+            "{}:{}",
+            target.source().as_str(),
+            target.id().to_ascii_lowercase()
+        ),
     }
 }
 

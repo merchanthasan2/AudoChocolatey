@@ -5,9 +5,9 @@ import type { SourceKind } from "./SourceKind";
  * One app as the UI shows it, whichever source(s) it comes from. When it comes back from the
  * UI (details panel), its ids are re-validated before use.
  */
-export type AppEntry = { key: string, name: string, publisher: string | null, blurb: string | null, category: string | null, winget: string | null, choco: string | null, version: string | null, homepage: string | null, 
+export type AppEntry = { key: string, name: string, publisher: string | null, blurb: string | null, category: string | null, winget: string | null, choco: string | null, msstore: string | null, version: string | null, homepage: string | null, 
 /**
- * Which source an install uses: winget when available, else Chocolatey.
+ * Which source an install uses: winget, else Chocolatey, else the Store.
  */
 best: SourceKind, curated: boolean, 
 /**

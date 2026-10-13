@@ -59,6 +59,10 @@
         {/if}
       </div>
     {/each}
+    <div class="row">
+      <div><div class="label">Microsoft Store apps</div><div class="hint">Find and install Store apps too. They install into your own Windows account.</div></div>
+      <Toggle label="Use Microsoft Store apps" checked={s.store.enabled} onchange={(v) => settings.update({ storeEnabled: v })} />
+    </div>
   </section>
 
   <section class="card group">

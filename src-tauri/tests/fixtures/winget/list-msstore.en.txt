@@ -1,0 +1,5 @@
+Name                                                         Id                                                                                         Version             Available Source
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Microsoft To Do                                              9NBLGGH5R558                                                                               2.178.8571.0                  msstore
+Docker Desktop                                               Docker.DockerDesktop                                                                       4.94.0              4.95.0    winget
+Adobe Acrobat                                                MSIX\AdobeAcrobatDCCoreApp_26.1.0.0_x64__33qsgwvbcw8mw                                     26.1.0.0                      

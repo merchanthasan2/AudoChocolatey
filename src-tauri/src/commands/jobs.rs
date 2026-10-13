@@ -69,6 +69,42 @@ pub fn refuse_disabled_choco(
     Ok(())
 }
 
+/// Same promise for Microsoft Store apps.
+pub fn refuse_disabled_store(
+    ops: &[(OpRequest, String)],
+    store_enabled: bool,
+) -> Result<(), AppError> {
+    if !store_enabled
+        && ops
+            .iter()
+            .any(|(o, _)| o.target.source() == SourceKind::Msstore)
+    {
+        return Err(AppError::new(
+            "store_disabled",
+            "Microsoft Store apps are turned off. Turn them on in Settings to install this app.",
+        ));
+    }
+    Ok(())
+}
+
+/// Store apps install into the account running the app; refuse unless that's the person
+/// signed in at the desktop (`same_user` from `system::shell_user_matches`).
+pub fn refuse_store_other_user(
+    ops: &[(OpRequest, String)],
+    same_user: Option<bool>,
+) -> Result<(), AppError> {
+    let store = ops
+        .iter()
+        .any(|(o, _)| o.target.source() == SourceKind::Msstore);
+    if store && same_user != Some(true) {
+        return Err(AppError::new(
+            "other_user",
+            "Microsoft Store apps install into your own Windows account, but Quantum Updater is running as a different administrator, so they can't be installed here.",
+        ));
+    }
+    Ok(())
+}
+
 /// Closing the app kills its child processes (Job Object), so closing mid-install asks first.
 pub fn close_blocked(jobs: &[Job]) -> bool {
     jobs.iter().any(|j| {
@@ -111,9 +147,17 @@ pub fn enqueue(state: State<'_, AppState>, ops: Vec<EnqueueItem>) -> Result<Vec<
         .into_iter()
         .map(|i| (i.op, display_name(i.display_name)))
         .collect();
-    refuse_unelevated(crate::commands::system::is_elevated())?;
-    refuse_disabled_choco(&ops, state.settings().choco.enabled)?;
+    allowed(&state, &ops)?;
     Ok(state.queue.enqueue(ops))
+}
+
+/// Every check a change to the PC must pass, for new jobs and retries alike.
+fn allowed(state: &AppState, ops: &[(OpRequest, String)]) -> Result<(), AppError> {
+    refuse_unelevated(crate::commands::system::is_elevated())?;
+    let settings = state.settings();
+    refuse_disabled_choco(ops, settings.choco.enabled)?;
+    refuse_disabled_store(ops, settings.store.enabled)?;
+    refuse_store_other_user(ops, crate::commands::system::shell_user_matches())
 }
 
 #[tauri::command]
@@ -146,7 +190,9 @@ pub fn cancel_job(state: State<'_, AppState>, id: String) -> Result<(), AppError
 
 #[tauri::command]
 pub fn retry_job(state: State<'_, AppState>, id: String) -> Result<String, AppError> {
-    refuse_unelevated(crate::commands::system::is_elevated())?;
+    if let Some(j) = state.queue.snapshot().into_iter().find(|j| j.id == id) {
+        allowed(&state, &[(j.op, j.display_name)])?;
+    }
     state.queue.retry(&id)
 }
 
@@ -173,6 +219,46 @@ mod tests {
             available_version: "2".into(),
             source,
         }
+    }
+
+    #[test]
+    fn store_jobs_are_refused_while_the_store_is_off() {
+        let ops = vec![(
+            OpRequest {
+                kind: OpKind::Install,
+                target: SourceRef::new(SourceKind::Msstore, "9NKSQGP7F2NH").unwrap(),
+                version: None,
+            },
+            "WhatsApp".to_string(),
+        )];
+        assert_eq!(
+            refuse_disabled_store(&ops, false).unwrap_err().code,
+            "store_disabled"
+        );
+        assert!(refuse_disabled_store(&ops, true).is_ok());
+    }
+
+    #[test]
+    fn store_jobs_need_the_signed_in_user() {
+        let ops = vec![(
+            OpRequest {
+                kind: OpKind::Install,
+                target: SourceRef::new(SourceKind::Msstore, "9NKSQGP7F2NH").unwrap(),
+                version: None,
+            },
+            "WhatsApp".to_string(),
+        )];
+        assert!(refuse_store_other_user(&ops, Some(true)).is_ok());
+        assert_eq!(
+            refuse_store_other_user(&ops, Some(false)).unwrap_err().code,
+            "other_user"
+        );
+        assert_eq!(
+            refuse_store_other_user(&ops, None).unwrap_err().code,
+            "other_user"
+        );
+        let winget_only = upgrades_to_ops(vec![cand(SourceKind::Winget, "A.A")]);
+        assert!(refuse_store_other_user(&winget_only, Some(false)).is_ok());
     }
 
     #[test]

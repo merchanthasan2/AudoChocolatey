@@ -7,7 +7,7 @@ import { onJobChanged, onJobProgress, onQueueChanged } from '../ipc/events';
 import { latestOnly, STALE } from '../logic/latestOnly';
 import { jobFor } from '../logic/jobFor';
 import { tidyResults } from '../logic/tidyResults';
-import { missingFrom, installedSet, withJobs, needsChoco } from '../logic/entries';
+import { missingFrom, installedSet, withJobs, needsSetup, bestId } from '../logic/entries';
 import { notStarted } from '../logic/queue';
 import { doneToast } from '../logic/doneToast';
 import { resolveMotion, resolveTheme } from '../logic/theme';
@@ -68,6 +68,8 @@ class OverviewStore {
   chocoReady = $derived(
     (this.value?.sources.some((s) => s.kind === 'choco' && s.state === 'ready') ?? false) && settings.value?.choco.enabled !== false,
   );
+  /** Which optional sources can install right now. */
+  on = $derived({ choco: this.chocoReady, store: settings.value?.store.enabled !== false });
   async load() {
     try { this.value = await api.getOverview(); this.error = null; } catch (e) { this.error = message(e); }
   }
@@ -197,13 +199,13 @@ class QueueStore {
   install(p: { source: SourceKind; id: string; name: string }) { return this.#enqueue('install', p.source, p.id, p.name); }
   /** Install a catalog/search entry through its best source. */
   installEntry(e: AppEntry) {
-    const id = e.best === 'winget' ? e.winget : e.choco;
+    const id = bestId(e);
     return id ? this.#enqueue('install', e.best, id, e.name) : Promise.resolve();
   }
   /** What a bundle would queue now: not installed, not already queued, installable. */
   bundleMissing(entries: AppEntry[]) {
     const present = withJobs(installedSet(installed.items), this.jobs);
-    return missingFrom(entries, present).filter((e) => !needsChoco(e, overview.chocoReady));
+    return missingFrom(entries, present).filter((e) => !needsSetup(e, overview.on));
   }
   /** Queue every app of a bundle that isn't there yet; returns how many were queued. Waits for
    *  a good installed list, so apps already on the PC are never reinstalled. */
@@ -211,7 +213,7 @@ class QueueStore {
     if (!installed.loaded || installed.error) return 0;
     const missing = this.bundleMissing(entries);
     const ops = missing.flatMap((e) => {
-      const id = e.best === 'winget' ? e.winget : e.choco;
+      const id = bestId(e);
       return id ? [{ op: { kind: 'install' as const, target: { source: e.best, id }, version: null }, displayName: e.name }] : [];
     });
     if (ops.length === 0) return 0;

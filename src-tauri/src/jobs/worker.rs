@@ -568,14 +568,21 @@ impl Queue {
         }
         let source = op.target.source();
         let (exe, argv) = match source {
-            SourceKind::Winget => (deps.winget.clone(), winget::args::build_op(op)?),
+            SourceKind::Winget | SourceKind::Msstore => {
+                (deps.winget.clone(), winget::args::build_op(op)?)
+            }
             SourceKind::Choco => (deps.choco.clone(), choco::args::build_op(op)?),
         };
         let Some(exe) = exe else {
             self.append_log(id, format!("{source:?} is not installed"));
             return Ok(Outcome::Failed(FailureReason::ToolMissing));
         };
-        let total = match &deps.sizer {
+        // Store apps have no installer file to measure.
+        let sizer = deps
+            .sizer
+            .as_ref()
+            .filter(|_| source != SourceKind::Msstore);
+        let total = match sizer {
             Some(s) => tokio::select! {
                 t = s.total(op) => t,
                 _ = token.cancelled() => return Err(AppError::new("cancelled", "Stopped")),
@@ -600,7 +607,7 @@ impl Queue {
         }
 
         let parser: Mutex<Box<dyn LineParser>> = Mutex::new(match source {
-            SourceKind::Winget => Box::new(WingetLines::default()),
+            SourceKind::Winget | SourceKind::Msstore => Box::new(WingetLines::default()),
             SourceKind::Choco => Box::new(ChocoLines::default()),
         });
         let on_line = |line: String| {

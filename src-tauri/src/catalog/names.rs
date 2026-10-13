@@ -33,10 +33,7 @@ pub fn display_name(
     cat: &Catalog,
     choco_title: Option<&str>,
 ) -> String {
-    let mapped = match source {
-        SourceKind::Winget => cat.by_winget(id),
-        SourceKind::Choco => cat.by_choco(id),
-    };
+    let mapped = cat.by_source(source, id);
     if let Some(app) = mapped {
         return app.name.clone();
     }

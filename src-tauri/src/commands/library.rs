@@ -244,14 +244,25 @@ pub async fn search(
     query: String,
 ) -> Result<Listing<AppEntry>, AppError> {
     let q = SearchQuery::try_from(query)?;
-    let choco_on = state.settings().choco.enabled;
-    let (w, c) = tokio::join!(state.winget.search(&q), async {
-        if choco_on {
-            state.choco.search(&q).await
-        } else {
-            disabled()
+    let settings = state.settings();
+    let (choco_on, store_on) = (settings.choco.enabled, settings.store.enabled);
+    let (w, c, m) = tokio::join!(
+        state.winget.search(&q),
+        async {
+            if choco_on {
+                state.choco.search(&q).await
+            } else {
+                disabled()
+            }
+        },
+        async {
+            if store_on {
+                state.winget.search_store(&q).await
+            } else {
+                Ok(Vec::new())
+            }
         }
-    });
+    );
     if let Ok(items) = &c {
         for p in items {
             if let Some(url) = &p.icon_url {
@@ -268,6 +279,10 @@ pub async fn search(
             SourceKind::Choco,
             c.as_ref().map(|_| vec![]).map_err(Clone::clone),
         ),
+        (
+            SourceKind::Msstore,
+            m.as_ref().map(|_| vec![]).map_err(Clone::clone),
+        ),
     ])
     .source_errors;
     source_errors.dedup_by(|a, b| a.source == b.source);
@@ -275,6 +290,7 @@ pub async fn search(
         items: merge(
             w.unwrap_or_default(),
             c.unwrap_or_default(),
+            m.unwrap_or_default(),
             Catalog::embedded(),
         ),
         source_errors,

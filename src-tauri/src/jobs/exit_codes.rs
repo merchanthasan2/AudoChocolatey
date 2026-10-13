@@ -90,7 +90,7 @@ pub fn classify(source: SourceKind, kind: OpKind, code: Option<i32>, tail: &[Str
         return Outcome::Failed(r);
     }
     match source {
-        SourceKind::Winget => match code as u32 {
+        SourceKind::Winget | SourceKind::Msstore => match code as u32 {
             0x8A150109 | 0x8A15010B => Outcome::Succeeded { reboot: true },
             0x8A15002B | 0x8A15004F => Outcome::Skipped("Already up to date".into()),
             0x8A150061 | 0x8A15010D if kind == OpKind::Install => {

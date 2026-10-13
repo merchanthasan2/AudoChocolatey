@@ -42,7 +42,7 @@
     { "key": "android-studio", "name": "Android Studio", "publisher": "Google", "category": "developer", "blurb": "Build apps for Android.", "winget": "Google.AndroidStudio", "choco": "androidstudio" },
 
     { "key": "vlc", "name": "VLC media player", "publisher": "VideoLAN", "category": "media", "blurb": "Plays almost any video or audio file.", "winget": "VideoLAN.VLC", "choco": "vlc", "featured": true },
-    { "key": "spotify", "name": "Spotify", "publisher": "Spotify", "category": "media", "blurb": "Music and podcasts, everywhere.", "winget": "Spotify.Spotify", "choco": "spotify", "featured": true },
+    { "key": "spotify", "name": "Spotify", "publisher": "Spotify", "category": "media", "blurb": "Music and podcasts, everywhere.", "winget": "Spotify.Spotify", "choco": "spotify", "msstore": "9NCBCSZSJRSB", "featured": true },
     { "key": "obs-studio", "name": "OBS Studio", "publisher": "OBS Project", "category": "media", "blurb": "Record and stream your screen.", "winget": "OBSProject.OBSStudio", "choco": "obs-studio", "featured": true },
     { "key": "audacity", "name": "Audacity", "publisher": "Audacity", "category": "media", "blurb": "Record and edit audio, free.", "winget": "Audacity.Audacity", "choco": "audacity" },
     { "key": "handbrake", "name": "HandBrake", "publisher": "HandBrake Team", "category": "media", "blurb": "Convert video to almost any format.", "winget": "HandBrake.HandBrake", "choco": "handbrake" },

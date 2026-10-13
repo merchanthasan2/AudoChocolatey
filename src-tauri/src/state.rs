@@ -37,6 +37,12 @@ impl Verifier for SystemVerifier {
                     .installed_version(&ChocoId::try_from(target.id().to_string())?)
                     .await
             }
+            // Store ids are valid winget ids; `winget list --id` finds Store apps too.
+            SourceKind::Msstore => {
+                self.winget
+                    .installed_version(&WingetId::try_from(target.id().to_string())?)
+                    .await
+            }
         }
     }
 }

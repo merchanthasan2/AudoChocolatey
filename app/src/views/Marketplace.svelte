@@ -12,7 +12,7 @@
   import Icon from '../lib/components/Icon.svelte';
   import { rise } from '../lib/motion';
   import { uniqueKeys } from '../lib/logic/uniqueKeys';
-  import { installedSet, isInstalled } from '../lib/logic/entries';
+  import { installedSet, isInstalled, needsSetup, bestId } from '../lib/logic/entries';
 
   let { input = $bindable() }: { input?: HTMLInputElement } = $props();
   onMount(() => market.load());
@@ -45,9 +45,9 @@
   {:else}
     <div class="card list" class:dim={search.loading}>
       {#each search.results as e, i (keys[i])}
-        {@const bestId = e.best === 'winget' ? e.winget : e.choco}
-        {@const job = bestId ? queue.jobFor(e.best, bestId, 'install') : undefined}
-        {@const needsChoco = e.best === 'choco' && !overview.chocoReady}
+        {@const id = bestId(e)}
+        {@const job = id ? queue.jobFor(e.best, id, 'install') : undefined}
+        {@const setup = needsSetup(e, overview.on)}
         <div class="row-wrap" in:rise={{ delay: Math.min(i, 8) * 50 }}>
           <button class="row-hit" aria-label="About {e.name}" onclick={() => (market.detail = e)}></button>
           <AppRow name={e.name} meta={[e.version, e.blurb ?? ''].filter(Boolean).join(' · ')}
@@ -56,7 +56,7 @@
               <span class="row-action">
                 {#if isInstalled(e, set)}
                   <span class="badge">Installed</span>
-                {:else if needsChoco}
+                {:else if setup}
                   <span class="badge" title="This app comes from a source that's turned off. Turn it on in Settings.">Needs setup</span>
                 {:else}
                   <JobButton {job} mode="install" name={e.name}

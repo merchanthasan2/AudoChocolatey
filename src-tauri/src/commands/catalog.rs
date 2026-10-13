@@ -2,7 +2,7 @@
 
 use crate::catalog::{AppEntry, Catalog};
 use crate::error::AppError;
-use crate::ids::{ChocoId, SourceKind, WingetId};
+use crate::ids::{ChocoId, SourceKind, StoreId, WingetId};
 use crate::state::AppState;
 use serde::Serialize;
 use tauri::State;
@@ -135,6 +135,15 @@ pub async fn get_app(state: State<'_, AppState>, entry: AppEntry) -> Result<AppD
                 d.description = p.description.or(d.description);
                 d.homepage = p.homepage.or(d.homepage);
                 d.version = p.version.or(d.version);
+            }
+        }
+        SourceKind::Msstore => {
+            let id = StoreId::try_from(d.entry.msstore.clone().unwrap_or_default())?;
+            if let Ok(info) = state.winget.show_store(&id).await {
+                d.description = info.description.or(d.description);
+                d.homepage = info.homepage.or(d.homepage);
+                d.publisher = info.publisher.or(d.publisher);
+                d.license = info.license;
             }
         }
     }

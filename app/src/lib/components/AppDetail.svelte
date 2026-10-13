@@ -1,11 +1,12 @@
 <script lang="ts">
   import { market, queue, installed, overview } from '../stores/app.svelte';
   import { getApp, type AppDetails } from '../ipc/commands';
-  import { installedSet, isInstalled, needsChoco } from '../logic/entries';
+  import { installedSet, isInstalled, needsSetup, bestId as idOf } from '../logic/entries';
   import AppIcon from './AppIcon.svelte';
   import JobButton from './JobButton.svelte';
   import Icon from './Icon.svelte';
   import { fade } from 'svelte/transition';
+  import { sourceName } from '../logic/sources';
 
   const app = $derived(market.detail);
   let details = $state<AppDetails | null>(null);
@@ -22,7 +23,7 @@
   });
 
   const done = $derived(app ? isInstalled(app, installedSet(installed.items)) : false);
-  const bestId = $derived(app ? (app.best === 'winget' ? app.winget : app.choco) : null);
+  const bestId = $derived(app ? idOf(app) : null);
   const job = $derived(app && bestId ? queue.jobFor(app.best, bestId, 'install') : undefined);
   const host = $derived.by(() => {
     const h = details?.homepage;
@@ -54,7 +55,7 @@
     <div class="cta">
       {#if done}
         <span class="badge">Installed</span>
-      {:else if needsChoco(app, overview.chocoReady)}
+      {:else if needsSetup(app, overview.on)}
         <span class="badge">Needs setup</span>
         <span class="muted small">This app comes from a source that's turned off. Turn it on in Settings.</span>
       {:else}
@@ -63,6 +64,9 @@
       {/if}
       {#if details?.version ?? app.version}<span class="muted small">Version {details?.version ?? app.version}</span>{/if}
     </div>
+    {#if app.best === 'msstore' && !done}
+      <p class="muted small terms">Installing means you accept the publisher's licence and the Microsoft Store terms.</p>
+    {/if}
 
     <section>
       <h3>About</h3>
@@ -75,18 +79,20 @@
       {/if}
     </section>
 
+    {#if (details?.publisher ?? app.publisher) || host || details?.license}
     <section class="facts">
       {#if details?.publisher ?? app.publisher}<div><span class="k">Publisher</span><span class="v">{details?.publisher ?? app.publisher}</span></div>{/if}
       {#if host}<div><span class="k">Website</span><span class="v">{host}</span></div>{/if}
       {#if details?.license}<div><span class="k">License</span><span class="v">{details.license}</span></div>{/if}
     </section>
+    {/if}
 
     <details class="advanced">
       <summary>Advanced</summary>
       <!-- advanced -->
       <div class="facts">
-        <div><span class="k">Available from</span><span class="v">{[app.winget ? 'winget' : '', app.choco ? 'Chocolatey' : ''].filter(Boolean).join(' · ')}</span></div>
-        <div><span class="k">Installs with</span><span class="v">{app.best === 'winget' ? 'winget' : 'Chocolatey'}</span></div>
+        <div><span class="k">Available from</span><span class="v">{[app.winget ? 'winget' : '', app.choco ? 'Chocolatey' : '', app.msstore ? 'Microsoft Store' : ''].filter(Boolean).join(' · ')}</span></div>
+        <div><span class="k">Installs with</span><span class="v">{sourceName(app.best)}</span></div>
         <div><span class="k">Package id</span><span class="v mono">{bestId}</span></div>
       </div>
       <!-- /advanced -->
@@ -107,6 +113,7 @@
   .title h2 { font-size: 22px; }
   .cta { display: flex; align-items: center; gap: 12px; margin: 18px 0 22px; }
   .small { font-size: 12.5px; }
+  .terms { margin: -12px 0 18px; }
   section { margin-bottom: 20px; }
   h3 { font-family: var(--font-display); font-size: 14px; font-weight: 650; margin: 0 0 6px; }
   .desc { color: var(--ink-2); line-height: 1.55; user-select: text; }

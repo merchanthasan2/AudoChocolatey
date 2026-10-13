@@ -14,12 +14,28 @@ use ts_rs::TS;
 pub enum SourceKind {
     Winget,
     Choco,
+    /// Microsoft Store apps, installed through winget's `msstore` source.
+    Msstore,
+}
+
+impl SourceKind {
+    /// The serialized name (`winget`, `choco`, `msstore`), used in keys like `winget:<id>`.
+    pub fn as_str(self) -> &'static str {
+        match self {
+            Self::Winget => "winget",
+            Self::Choco => "choco",
+            Self::Msstore => "msstore",
+        }
+    }
 }
 
 static WINGET_ID: LazyLock<Regex> =
     LazyLock::new(|| Regex::new(r"^[A-Za-z0-9][A-Za-z0-9.+_\-]{0,127}$").unwrap());
 static CHOCO_ID: LazyLock<Regex> =
     LazyLock::new(|| Regex::new(r"^[A-Za-z0-9][A-Za-z0-9._\-]{0,99}$").unwrap());
+/// Store product ids: `9` + 11 or `XP` + 12 uppercase letters/digits.
+static STORE_ID: LazyLock<Regex> =
+    LazyLock::new(|| Regex::new(r"^(9[A-Z0-9]{11}|XP[A-Z0-9]{12})$").unwrap());
 static VERSION: LazyLock<Regex> =
     LazyLock::new(|| Regex::new(r"^[A-Za-z0-9][A-Za-z0-9.+_\-]{0,63}$").unwrap());
 
@@ -67,6 +83,7 @@ macro_rules! validated_string {
 validated_string!(WingetId, WINGET_ID, "winget package id");
 validated_string!(ChocoId, CHOCO_ID, "Chocolatey package id");
 validated_string!(PkgVersion, VERSION, "package version");
+validated_string!(StoreId, STORE_ID, "Microsoft Store product id");
 
 /// A package in a specific source; the id is validated against that source's rules.
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize, TS)]
@@ -89,6 +106,7 @@ impl SourceRef {
         match source {
             SourceKind::Winget => WingetId::try_from(id.clone()).map(|_| ()),
             SourceKind::Choco => ChocoId::try_from(id.clone()).map(|_| ()),
+            SourceKind::Msstore => StoreId::try_from(id.clone()).map(|_| ()),
         }?;
         Ok(Self { source, id })
     }
@@ -144,6 +162,36 @@ impl TryFrom<String> for SearchQuery {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn store_ids() {
+        for ok in [
+            "9NKSQGP7F2NH",
+            "9NBLGGH5R558",
+            "XP8C9QZMS2PC1T",
+            "XPDC2RH70K22MN",
+        ] {
+            assert!(StoreId::try_from(ok.to_string()).is_ok(), "{ok}");
+            assert!(SourceRef::new(SourceKind::Msstore, ok).is_ok(), "{ok}");
+        }
+        for bad in [
+            "9nksqgp7f2nh",
+            "-9NKSQGP7F2NH",
+            "9NKSQGP7F2N",
+            "9NKSQGP7F2NHX",
+            "XP8C9QZMS2PC1",
+            "Mozilla.Firefox",
+            "9NKSQGP7F2N!",
+            "",
+        ] {
+            assert!(StoreId::try_from(bad.to_string()).is_err(), "{bad}");
+            assert!(SourceRef::new(SourceKind::Msstore, bad).is_err(), "{bad}");
+        }
+        assert_eq!(
+            serde_json::to_string(&SourceKind::Msstore).unwrap(),
+            "\"msstore\""
+        );
+    }
 
     #[test]
     fn winget_id_accepts_real_ids() {

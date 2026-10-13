@@ -68,6 +68,9 @@ impl SettingsStore {
         if let Some(v) = patch.choco_bootstrap_prompted {
             next.choco.bootstrap_prompted = v;
         }
+        if let Some(v) = patch.store_enabled {
+            next.store.enabled = v;
+        }
         write_atomic(&self.path, &next)?;
         self.current = next;
         Ok(self.get())

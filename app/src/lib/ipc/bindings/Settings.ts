@@ -2,6 +2,11 @@
 import type { ChocoSettings } from "./ChocoSettings";
 import type { Motion } from "./Motion";
 import type { SelfUpdate } from "./SelfUpdate";
+import type { StoreSettings } from "./StoreSettings";
 import type { Theme } from "./Theme";
 
-export type Settings = { schemaVersion: number, theme: Theme, motion: Motion, checkIntervalHours: number, notifyUpdates: boolean, startAtLogin: boolean, startInTray: boolean, closeToTray: boolean, showUnknownVersions: boolean, selfUpdate: SelfUpdate, choco: ChocoSettings, lastCheckAt: string | null, };
+export type Settings = { schemaVersion: number, theme: Theme, motion: Motion, checkIntervalHours: number, notifyUpdates: boolean, startAtLogin: boolean, startInTray: boolean, closeToTray: boolean, showUnknownVersions: boolean, selfUpdate: SelfUpdate, choco: ChocoSettings, 
+/**
+ * Microsoft Store apps (through winget's Store source).
+ */
+store: StoreSettings, lastCheckAt: string | null, };
