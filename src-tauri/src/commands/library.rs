@@ -157,8 +157,13 @@ pub fn current_updates(state: &AppState) -> UpdatesListing {
 }
 
 #[tauri::command]
-pub async fn list_updates(state: State<'_, AppState>) -> Result<UpdatesListing, AppError> {
-    Ok(collect_updates(&state).await)
+pub async fn list_updates(
+    app: tauri::AppHandle,
+    state: State<'_, AppState>,
+) -> Result<UpdatesListing, AppError> {
+    let listing = collect_updates(&state).await;
+    crate::background::shell::set_count(&app, listing.items.len());
+    Ok(listing)
 }
 
 /// Checks again and applies rules. "Update all" uses exactly `items` of this.

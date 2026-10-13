@@ -313,6 +313,10 @@ impl Queue {
         self.lock().paused
     }
 
+    pub fn is_paused(&self) -> bool {
+        self.lock().paused
+    }
+
     pub fn pause(&self) {
         self.lock().paused = true;
         self.emit_queue();

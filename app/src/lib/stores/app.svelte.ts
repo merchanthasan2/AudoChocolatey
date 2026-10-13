@@ -109,10 +109,11 @@ class Section<T, L extends Listing<T> = Listing<T>> {
   error = $state<string | null>(null);
   constructor(private fetcher: () => Promise<L>) {}
   /** Take a fresh response from another command (e.g. after changing a rule). */
-  accept(l: L) {
+  accept(l: L, freshCheck = false) {
     this.items = l.items;
     this.sourceErrors = l.sourceErrors;
     this.last = l;
+    if (freshCheck) { this.loadedAt = Date.now(); this.loaded = true; this.error = null; }
   }
   async refresh() {
     if (this.loading) return;

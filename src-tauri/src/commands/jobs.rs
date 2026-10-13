@@ -166,7 +166,7 @@ pub struct Gates {
     pub same_user: Option<bool>,
 }
 
-fn gates(state: &AppState) -> Gates {
+pub fn gates(state: &AppState) -> Gates {
     let s = state.settings();
     Gates {
         choco: s.choco.enabled,
@@ -202,13 +202,15 @@ pub fn get_queue(state: State<'_, AppState>) -> QueueSnapshot {
 }
 
 #[tauri::command]
-pub fn pause_queue(state: State<'_, AppState>) {
-    state.queue.pause()
+pub fn pause_queue(app: AppHandle, state: State<'_, AppState>) {
+    state.queue.pause();
+    crate::background::shell::set_paused(&app, true);
 }
 
 #[tauri::command]
-pub fn resume_queue(state: State<'_, AppState>) {
-    state.queue.resume()
+pub fn resume_queue(app: AppHandle, state: State<'_, AppState>) {
+    state.queue.resume();
+    crate::background::shell::set_paused(&app, false);
 }
 
 #[tauri::command]

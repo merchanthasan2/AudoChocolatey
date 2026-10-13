@@ -1,3 +1,4 @@
+mod background;
 mod catalog;
 mod commands;
 mod error;
@@ -68,14 +69,36 @@ pub fn run(launch: launch::Launch) {
                 data_dir,
                 app.handle().clone(),
             ));
+            // The window starts hidden (tauri.conf.json); showing it never depends on the tray.
+            let start_in_tray = app.state::<state::AppState>().settings().start_in_tray;
+            if background::window::show_at_start(launch.mode, start_in_tray) {
+                background::shell::show_main(app.handle());
+            }
+            if let Err(e) = background::shell::install(app.handle()) {
+                // No tray (e.g. Explorer not ready at sign-in): make sure the app is visible.
+                eprintln!("tray unavailable: {e}");
+                background::shell::show_main(app.handle());
+            }
             Ok(())
         })
         .on_window_event(|window, event| {
             if let tauri::WindowEvent::CloseRequested { api, .. } = event {
                 let state = window.state::<state::AppState>();
-                if commands::jobs::close_blocked(&state.queue.snapshot()) {
-                    api.prevent_close();
-                    let _ = window.emit("app://close-blocked", ());
+                let running = commands::jobs::close_blocked(&state.queue.snapshot());
+                let has_tray = window.app_handle().tray_by_id("main").is_some();
+                match background::window::close_action(
+                    state.settings().close_to_tray && has_tray,
+                    running,
+                ) {
+                    background::window::CloseAction::Hide => {
+                        api.prevent_close();
+                        let _ = window.hide();
+                    }
+                    background::window::CloseAction::Guard => {
+                        api.prevent_close();
+                        let _ = window.emit("app://close-blocked", ());
+                    }
+                    background::window::CloseAction::Close => {}
                 }
             }
         })

@@ -2,6 +2,7 @@
   import { onMount } from 'svelte';
   import { router, overview, settings, installed, updates, queue, toasts } from './lib/stores/app.svelte';
   import { relaunchAsAdmin } from './lib/ipc/commands';
+  import { onUpdatesChanged } from './lib/ipc/events';
   import Banner from './lib/components/Banner.svelte';
   import Sidebar from './lib/components/Sidebar.svelte';
   import Toasts from './lib/components/Toasts.svelte';
@@ -30,6 +31,7 @@
     queue.init();
     installed.refresh();
     updates.refresh();
+    onUpdatesChanged((l) => updates.accept(l, true));
   });
 
   // Each view starts at the top; switching is a quick fade, never a slide (it happens often).
