@@ -185,3 +185,24 @@ describe('latestOnly.invalidate', () => {
     expect(await p).toBe(STALE);
   });
 });
+
+import { installedSet, isInstalled, missingFrom } from './entries';
+describe('entries', () => {
+  const installed = [
+    { id: 'Mozilla.Firefox', source: 'winget' as const },
+    { id: 'vcredist140', source: 'choco' as const },
+    { id: 'ARP\Machine\X64\Thing', source: null },
+  ];
+  const e = (winget: string | null, choco: string | null) => ({ winget, choco });
+  it('an app counts as installed through either source, case-insensitively', () => {
+    const set = installedSet(installed);
+    expect(isInstalled(e('mozilla.firefox', 'firefox'), set)).toBe(true);
+    expect(isInstalled(e(null, 'VCREDIST140'), set)).toBe(true);
+    expect(isInstalled(e('Git.Git', 'git'), set)).toBe(false);
+  });
+  it('bundles only queue what is missing', () => {
+    const set = installedSet(installed);
+    const bundle = [e('Mozilla.Firefox', 'firefox'), e('Git.Git', 'git'), e(null, 'vcredist140')];
+    expect(missingFrom(bundle, set)).toEqual([e('Git.Git', 'git')]);
+  });
+});

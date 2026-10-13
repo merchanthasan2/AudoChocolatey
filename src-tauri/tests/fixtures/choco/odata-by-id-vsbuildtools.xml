@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<feed xml:base="https://community.chocolatey.org/api/v2/" xmlns:d="http://schemas.microsoft.com/ado/2007/08/dataservices" xmlns:m="http://schemas.microsoft.com/ado/2007/08/dataservices/metadata" xmlns="http://www.w3.org/2005/Atom">
+  <title type="text">Packages</title>
+  <id>https://community.chocolatey.org/api/v2/Packages</id>
+  <updated>2026-10-13T12:30:23Z</updated>
+  <link rel="self" title="Packages" href="Packages" />
+  <entry>
+    <id>https://community.chocolatey.org/api/v2/Packages(Id='visualstudio2022buildtools',Version='117.14.41')</id>
+    <title type="text">visualstudio2022buildtools</title>
+    <summary type="text">Build Tools allow you to build native and managed MSBuild-based applications without requiring the Visual Studio IDE.</summary>
+    <updated>2026-09-20T12:15:28Z</updated>
+    <author>
+      <name>Microsoft</name>
+    </author>
+    <link rel="edit-media" title="V2FeedPackage" href="Packages(Id='visualstudio2022buildtools',Version='117.14.41')/$value" />
+    <link rel="edit" title="V2FeedPackage" href="Packages(Id='visualstudio2022buildtools',Version='117.14.41')" />
+    <category term="CCR.Website.V2FeedPackage" scheme="http://schemas.microsoft.com/ado/2007/08/dataservices/scheme" />
+    <content type="application/zip" src="https://community.chocolatey.org/api/v2/package/visualstudio2022buildtools/117.14.41" />
+    <m:properties xmlns:m="http://schemas.microsoft.com/ado/2007/08/dataservices/metadata" xmlns:d="http://schemas.microsoft.com/ado/2007/08/dataservices">
+      <d:Version>117.14.41</d:Version>
+      <d:Title>Visual Studio 2022 Build Tools</d:Title>
+      <d:Description>### Overview
+The Visual Studio Build Tools allows you to build native and managed MSBuild-based applications without requiring the Visual Studio IDE. There are options to install the Visual C++ compilers and libraries, MFC, ATL, and C++/CLI support.
+
+To find out what's new or to see the known issues, see the [Visual Studio 2022 release notes](https://docs.microsoft.com/en-us/visualstudio/releases/2022/release-notes).  
+[System requirements](https://docs.microsoft.com/en-us/visualstudio/releases/2022/system-requirements)
+
+### Customizations and Optional features
+By default, the package installs only the bare minimum required (the MSBuild Tools workload). The easiest way to add more development features is to use the workload packages listed in the Release Notes section.
+
+All package parameters are passed to the Visual Studio installer, enabling full customization of the installation. The possible parameters are [described here](https://docs.microsoft.com/en-us/visualstudio/install/use-command-line-parameters-to-install-visual-studio?view=vs-2022). The package passes `--norestart --wait` by default, and `--quiet`, unless `--passive` is specified in the package parameters.
+
+After installing the package, more features can also be added by launching the Visual Studio Installer application from the Start Menu.
+
+The language of the installed software can be controlled using the package parameter `--locale language`.
+The list of languages is [presented here](https://docs.microsoft.com/en-us/visualstudio/install/use-command-line-parameters-to-install-visual-studio?view=vs-2022#list-of-language-locales). By default, the operating system display language is used.
+
+#### Full installation
+This command will install Visual Studio Build Tools with all available workloads and optional components, display progress during the installation and specify the English language regardless of operating system settings:
+
+    choco install visualstudio2022buildtools --package-parameters "--allWorkloads --includeRecommended --includeOptional --passive --locale en-US"
+
+[More package parameter examples](https://github.com/jberezanski/ChocolateyPackages/blob/master/chocolatey-visualstudio.extension/EXAMPLES.md)
+
+### Notes
+
+A reboot may be required after (or even _before_) installing/uninstalling this package.
+If control over reboots is required, it is advisable to install the dependencies (esp. dotnetfx 4.8.0) first, perform a reboot if necessary, and then install this package.
+
+Some parameters, including `--allWorkloads`, `--includeRecommended` and `--includeOptional`, are only valid during the initial installation of Visual Studio and may cause failures if used during upgrade. For reliability, it is recommended to avoid using these parameters and install workloads using the workload packages listed in the Release Notes section.</d:Description>
+      <d:Tags>microsoft visual studio visualstudio vs vs17 2022 build tools admin</d:Tags>
+      <d:Copyright>https://www.microsoft.com/en-us/legal/intellectualproperty/permissions</d:Copyright>
+      <d:Created m:type="Edm.DateTime">2026-09-20T02:14:55.167</d:Created>
+      <d:Dependencies>chocolatey-visualstudio.extension:1.11.1:|dotnetfx:4.8.0:|visualstudio-installer:2.0.2:</d:Dependencies>
+      <d:DownloadCount m:type="Edm.Int32">3247719</d:DownloadCount>
+      <d:VersionDownloadCount m:type="Edm.Int32">40</d:VersionDownloadCount>
+      <d:GalleryDetailsUrl>https://community.chocolatey.org/packages/visualstudio2022buildtools/117.14.41</d:GalleryDetailsUrl>
+      <d:ReportAbuseUrl>https://community.chocolatey.org/package/ReportAbuse/visualstudio2022buildtools/117.14.41</d:ReportAbuseUrl>
+      <d:IconUrl>https://rawcdn.githack.com/jberezanski/ChocolateyPackages/7e32702d4d99f08b5b73ae9c6622b0be61a2066e/icons/vs2022.png</d:IconUrl>
+      <d:IsLatestVersion m:type="Edm.Boolean">true</d:IsLatestVersion>
+      <d:IsAbsoluteLatestVersion m:type="Edm.Boolean">true</d:IsAbsoluteLatestVersion>
+      <d:IsPrerelease m:type="Edm.Boolean">false</d:IsPrerelease>
+      <d:Language></d:Language>
+      <d:Published m:type="Edm.DateTime">2026-09-20T02:14:55.167</d:Published>
+      <d:LicenseUrl>https://visualstudio.microsoft.com/license-terms/vs2022-prerelease/</d:LicenseUrl>
+      <d:RequireLicenseAcceptance m:type="Edm.Boolean">false</d:RequireLicenseAcceptance>
+      <d:PackageHash>yowja3KapA8CuzBvL8RECGcD7llGDj5zwMxOav2VqtrVEVXvx2NfIZ1obBb3LZWZgY5GEyUFAcSY8XIZrp0QNg==</d:PackageHash>
+      <d:PackageHashAlgorithm>SHA512</d:PackageHashAlgorithm>
+      <d:PackageSize m:type="Edm.Int64">5697</d:PackageSize>
+      <d:ProjectUrl>https://visualstudio.microsoft.com/</d:ProjectUrl>
+      <d:ReleaseNotes>##### Software
+[Visual Studio 2022 release notes](https://docs.microsoft.com/en-us/visualstudio/releases/2022/release-notes)
+##### Package
+117.14.41.0:
+- Package metadata updated for Visual Studio 2022 version 17.14.41 (September 2026) (July 2026) (June 2026) (May 2026) (April 2026) (March 2026) (February 2026) (January 2026) (December 2025) (November 2025) (October 2025) (June 2025) (the native installer always installs the latest released Visual Studio 2022 build).
+- Updated bootstrapper url.
+
+#### Available workload packages
+- [Azure development build tools](https://chocolatey.org/packages/visualstudio2022-workload-azurebuildtools)
+- [Data storage and processing build tools](https://chocolatey.org/packages/visualstudio2022-workload-databuildtools)
+- [.NET desktop build tools](https://chocolatey.org/packages/visualstudio2022-workload-manageddesktopbuildtools)
+- [Node.js build tools](https://chocolatey.org/packages/visualstudio2022-workload-nodebuildtools)
+- [Office/SharePoint build tools](https://chocolatey.org/packages/visualstudio2022-workload-officebuildtools)
+- [Universal Windows Platform build tools](https://chocolatey.org/packages/visualstudio2022-workload-universalbuildtools)
+- [Visual C++ build tools](https://chocolatey.org/packages/visualstudio2022-workload-vctools)
+- [Visual Studio extension development build tools](https://chocolatey.org/packages/visualstudio2022-workload-visualstudioextensionbuildtools)
+- [Web development build tools](https://chocolatey.org/packages/visualstudio2022-workload-webbuildtools)
+- [Mobile Development with .NET](https://chocolatey.org/packages/visualstudio2022-workload-xamarinbuildtools)</d:ReleaseNotes>
+      <d:ProjectSourceUrl></d:ProjectSourceUrl>
+      <d:PackageSourceUrl>https://github.com/jberezanski/ChocolateyPackages/tree/master/visualstudio2022buildtools</d:PackageSourceUrl>
+      <d:DocsUrl>https://docs.microsoft.com/en-us/visualstudio/ide/</d:DocsUrl>
+      <d:MailingListUrl></d:MailingListUrl>
+      <d:BugTrackerUrl>https://developercommunity.visualstudio.com/</d:BugTrackerUrl>
+      <d:IsApproved m:type="Edm.Boolean">true</d:IsApproved>
+      <d:PackageStatus>Approved</d:PackageStatus>
+      <d:PackageSubmittedStatus>Ready</d:PackageSubmittedStatus>
+      <d:PackageTestResultUrl></d:PackageTestResultUrl>
+      <d:PackageTestResultStatus>Exempted</d:PackageTestResultStatus>
+      <d:PackageTestResultStatusDate m:type="Edm.DateTime" m:null="true"></d:PackageTestResultStatusDate>
+      <d:PackageValidationResultStatus>Passing</d:PackageValidationResultStatus>
+      <d:PackageValidationResultDate m:type="Edm.DateTime">2026-09-20T02:46:36.257</d:PackageValidationResultDate>
+      <d:PackageCleanupResultDate m:type="Edm.DateTime" m:null="true"></d:PackageCleanupResultDate>
+      <d:PackageReviewedDate m:type="Edm.DateTime">2026-09-20T11:22:36.777</d:PackageReviewedDate>
+      <d:PackageApprovedDate m:type="Edm.DateTime">2026-09-20T11:22:36.777</d:PackageApprovedDate>
+      <d:PackageReviewer></d:PackageReviewer>
+      <d:IsDownloadCacheAvailable m:type="Edm.Boolean">false</d:IsDownloadCacheAvailable>
+      <d:DownloadCacheStatus>Checked</d:DownloadCacheStatus>
+      <d:DownloadCacheDate m:type="Edm.DateTime">2026-09-20T12:26:46.683</d:DownloadCacheDate>
+      <d:DownloadCache></d:DownloadCache>
+      <d:PackageScanStatus>NotFlagged</d:PackageScanStatus>
+      <d:PackageScanResultDate m:type="Edm.DateTime">2026-09-20T11:22:36.777</d:PackageScanResultDate>
+      <d:PackageScanFlagResult>None</d:PackageScanFlagResult>
+    </m:properties>
+  </entry>
+  <link rel="next" href="https://community.chocolatey.org/api/v2/Packages?$filter=tolower(Id)%20eq%20'visualstudio2022buildtools'%20and%20IsLatestVersion&amp;$top=1&amp;$skiptoken='8604.518','visualstudio2022buildtools'" />
+</feed>

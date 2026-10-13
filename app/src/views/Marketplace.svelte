@@ -1,38 +1,40 @@
 <script lang="ts">
-  import { search, queue, installed, overview } from '../lib/stores/app.svelte';
-  import { POPULAR } from '../lib/catalog/popular';
+  import { onMount } from 'svelte';
+  import { search, queue, installed, overview, market } from '../lib/stores/app.svelte';
   import SearchField from '../lib/components/SearchField.svelte';
   import AppRow from '../lib/components/AppRow.svelte';
-  import AppIcon from '../lib/components/AppIcon.svelte';
+  import AppCard from '../lib/components/AppCard.svelte';
+  import BundleCard from '../lib/components/BundleCard.svelte';
   import JobButton from '../lib/components/JobButton.svelte';
   import Skeleton from '../lib/components/Skeleton.svelte';
   import EmptyState from '../lib/components/EmptyState.svelte';
   import Banner from '../lib/components/Banner.svelte';
+  import Icon from '../lib/components/Icon.svelte';
   import { rise } from '../lib/motion';
   import { uniqueKeys } from '../lib/logic/uniqueKeys';
+  import { installedSet, isInstalled } from '../lib/logic/entries';
 
   let { input = $bindable() }: { input?: HTMLInputElement } = $props();
+  onMount(() => market.load());
 
-  const installedIds = $derived(new Set(installed.items.filter((p) => p.source).map((p) => `${p.source}:${p.id.toLowerCase()}`)));
-  const isInstalled = (source: string, id: string) => installedIds.has(`${source}:${id.toLowerCase()}`);
-  // The name Windows uses for an installed app, so its tile shows the exact local icon.
-  const installedName = (source: string, id: string) =>
-    installed.items.find((p) => p.source === source && p.id.toLowerCase() === id.toLowerCase())?.name;
-  const keys = $derived(uniqueKeys(search.results, (p) => `${p.source}:${p.id}`));
+  const set = $derived(installedSet(installed.items));
+  const keys = $derived(uniqueKeys(search.results, (e) => e.key));
   const searching = $derived(search.query.trim().length >= 2);
-  const sourceText = (s: string) => (s === 'winget' ? 'winget' : 'Chocolatey');
+  const sourcesText = (e: { winget: string | null; choco: string | null }) =>
+    [e.winget ? 'winget' : '', e.choco ? 'Chocolatey' : ''].filter(Boolean).join(' · ');
+  const categoryName = $derived(market.home?.categories.find((c) => c.id === market.category)?.name ?? '');
 </script>
 
 <header class="head">
   <h1>Find apps</h1>
-  <p class="muted">Search winget and Chocolatey together. Everything installs quietly in the background.</p>
+  <p class="muted">One place for winget and Chocolatey. Everything installs quietly in the background.</p>
   <div class="search"><SearchField value={search.query} oninput={(v) => search.set(v)} bind:input /></div>
 </header>
 
 {#if searching}
   {#each search.sourceErrors as e (e.source)}
     <div class="banner-gap">
-      <Banner text={e.code === 'network' ? "Couldn't reach the Chocolatey catalog. Showing winget results." : `${sourceText(e.source)} search didn't finish: ${e.message}`} icon={e.code === 'network' ? 'offline' : 'alert'} />
+      <Banner text={e.code === 'network' ? "Couldn't reach the Chocolatey catalog. Showing winget results." : `${e.source === 'winget' ? 'winget' : 'Chocolatey'} search didn't finish: ${e.message}`} icon={e.code === 'network' ? 'offline' : 'alert'} />
     </div>
   {/each}
   {#if search.loading && search.results.length === 0}
@@ -43,67 +45,90 @@
     <EmptyState icon="search" title="No matches" body={`Nothing found for "${search.searched}". Try a shorter name.`} />
   {:else}
     <div class="card list" class:dim={search.loading}>
-      {#each search.results as p, i (keys[i])}
-        {@const done = isInstalled(p.source, p.id)}
-        {@const needsChoco = p.source === 'choco' && !overview.chocoReady}
-        <div in:rise={{ delay: Math.min(i, 8) * 50 }}>
-          <AppRow name={p.name} meta={[p.version, sourceText(p.source), needsChoco ? 'Requires Chocolatey' : '', p.description ?? ''].filter(Boolean).join(' · ')}
-            job={queue.jobFor(p.source, p.id, 'install')} mode="install" iconKey="{p.source}:{p.id}">
+      {#each search.results as e, i (keys[i])}
+        {@const bestId = e.best === 'winget' ? e.winget : e.choco}
+        {@const job = bestId ? queue.jobFor(e.best, bestId, 'install') : undefined}
+        {@const needsChoco = e.best === 'choco' && !overview.chocoReady}
+        <div class="row-wrap" in:rise={{ delay: Math.min(i, 8) * 50 }}>
+          <button class="row-hit" aria-label="About {e.name}" onclick={() => (market.detail = e)}></button>
+          <AppRow name={e.name} meta={[e.version, sourcesText(e), needsChoco ? 'Requires Chocolatey' : '', e.blurb ?? ''].filter(Boolean).join(' · ')}
+            {job} mode="install" iconKey={e.iconKey}>
             {#snippet action()}
-              {#if done}
-                <span class="badge">Installed</span>
-              {:else if needsChoco}
-                <span class="badge" title="Install Chocolatey from Settings to use these apps">Needs Chocolatey</span>
-              {:else}
-                <JobButton job={queue.jobFor(p.source, p.id, 'install')} mode="install" name={p.name}
-                  onstart={() => queue.install({ source: p.source, id: p.id, name: p.name })}
-                  oncancel={(id) => queue.cancel(id)} onretry={(id) => queue.retry(id)} />
-              {/if}
+              <span class="row-action">
+                {#if isInstalled(e, set)}
+                  <span class="badge">Installed</span>
+                {:else if needsChoco}
+                  <span class="badge" title="Turn on Chocolatey in Settings to use these apps">Needs Chocolatey</span>
+                {:else}
+                  <JobButton {job} mode="install" name={e.name}
+                    onstart={() => queue.installEntry(e)} oncancel={(id) => queue.cancel(id)} onretry={(id) => queue.retry(id)} />
+                {/if}
+              </span>
             {/snippet}
           </AppRow>
         </div>
       {/each}
     </div>
   {/if}
-{:else}
+{:else if market.category}
+  <div class="section-head">
+    <button class="back" onclick={() => market.openCategory(null)}><span class="flip"><Icon name="chevron" size={16} /></span> All apps</button>
+    <h2>{categoryName}</h2>
+  </div>
+  <div class="grid">
+    {#each market.categoryApps as app, i (app.key)}
+      <div in:rise={{ delay: Math.min(i, 12) * 30, y: 8 }}><AppCard {app} /></div>
+    {/each}
+  </div>
+{:else if market.home}
+  <nav class="chips" aria-label="Categories">
+    {#each market.home.categories as c (c.id)}
+      <button class="chip" onclick={() => market.openCategory(c.id)}>{c.name}<span class="n">{c.count}</span></button>
+    {/each}
+  </nav>
+
   <section>
-    <div class="section-head"><h2>Popular apps</h2><span class="muted">{POPULAR.length} picks</span></div>
+    <div class="section-head"><h2>Featured</h2></div>
     <div class="grid">
-      {#each POPULAR as app, i (app.id)}
-        {@const job = queue.jobFor('winget', app.id, 'install')}
-        <article class="tile card" in:rise={{ delay: Math.min(i, 12) * 30, y: 8 }}>
-          <div class="tile-top">
-            <AppIcon name={app.name} size={48} iconKey="winget:{app.id}" lookup={installedName('winget', app.id)} />
-            {#if isInstalled('winget', app.id)}
-              <span class="badge">Installed</span>
-            {:else}
-              <JobButton {job} mode="install" name={app.name}
-                onstart={() => queue.install({ source: 'winget', id: app.id, name: app.name })}
-                oncancel={(id) => queue.cancel(id)} onretry={(id) => queue.retry(id)} />
-            {/if}
-          </div>
-          <h3 class="truncate">{app.name}</h3>
-          <p class="pub truncate">{app.publisher} · {app.category}</p>
-          <p class="blurb">{app.blurb}</p>
-        </article>
+      {#each market.home.featured as app, i (app.key)}
+        <div in:rise={{ delay: Math.min(i, 12) * 30, y: 8 }}><AppCard {app} /></div>
       {/each}
     </div>
   </section>
+
+  <section>
+    <div class="section-head"><h2>Bundles</h2><span class="muted">Set up a PC in one go</span></div>
+    <div class="bundles">
+      {#each market.home.bundles as b (b.id)}<BundleCard bundle={b} />{/each}
+    </div>
+  </section>
+{:else}
+  <Skeleton rows={4} />
 {/if}
 
 <style>
-  .head { display: grid; gap: 6px; margin-bottom: 26px; }
+  .head { display: grid; gap: 6px; margin-bottom: 22px; }
   .search { margin-top: 12px; max-width: 640px; }
   .banner-gap { margin-bottom: 12px; }
   .list.dim { opacity: 0.6; transition: opacity var(--dur-quick) ease; }
-  .section-head { display: flex; align-items: baseline; gap: 10px; margin-bottom: 14px; }
-  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 14px; }
-  .tile { padding: 16px; display: grid; gap: 4px; align-content: start; transition: transform var(--dur-quick) var(--ease-out), box-shadow var(--dur-quick) ease; }
-  @media (hover: hover) and (pointer: fine) {
-    .tile:hover { box-shadow: var(--shadow-raised); transform: translateY(-1px); }
+  .row-wrap { position: relative; }
+  .row-hit { position: absolute; inset: 0; z-index: 0; }
+  .row-wrap :global(.row) { position: relative; pointer-events: none; }
+  .row-action { pointer-events: auto; position: relative; z-index: 1; }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 26px; }
+  .chip {
+    display: inline-flex; align-items: center; gap: 8px; height: 34px; padding: 0 14px; border-radius: 999px;
+    background: var(--card); box-shadow: var(--shadow-card); font-weight: 600; font-size: 13px; color: var(--ink-2);
+    transition: transform var(--dur-press) var(--ease-out), background-color var(--dur-quick) ease;
   }
-  .tile-top { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 10px; }
-  h3 { font-family: var(--font-display); font-size: 15px; font-weight: 650; letter-spacing: -0.02em; margin: 0; }
-  .pub { font-size: 12px; color: var(--muted); }
-  .blurb { font-size: 12.5px; color: var(--ink-2); margin-top: 4px; }
+  .chip:active { transform: scale(0.97); }
+  .chip:hover { background: var(--card-hover); color: var(--ink); }
+  .n { font-size: 11px; color: var(--faint); }
+  section { margin-bottom: 32px; }
+  .section-head { display: flex; align-items: baseline; gap: 10px; margin-bottom: 14px; }
+  .back { display: inline-flex; align-items: center; gap: 4px; font-weight: 600; color: var(--muted); margin-right: 8px; }
+  .back:hover { color: var(--ink); }
+  .flip { display: inline-grid; transform: rotate(180deg); }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 14px; margin-bottom: 32px; }
+  .bundles { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 14px; }
 </style>

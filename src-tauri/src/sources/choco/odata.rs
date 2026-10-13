@@ -192,6 +192,14 @@ mod tests {
     const FEED: &str = include_str!("../../../tests/fixtures/choco/odata-search-firefox.xml");
 
     #[test]
+    fn by_id_feed_gives_the_package_title() {
+        let xml = include_str!("../../../tests/fixtures/choco/odata-by-id-vsbuildtools.xml");
+        let r = parse_feed(xml).unwrap();
+        assert_eq!(r.len(), 1, "{r:?}");
+        assert_eq!(r[0].name, "Visual Studio 2022 Build Tools");
+    }
+
+    #[test]
     fn parses_and_dedupes_feed() {
         let r = parse_feed(FEED).unwrap();
         assert_eq!(r.len(), 1, "{r:?}");

@@ -1,6 +1,7 @@
 //! Search results from winget and Chocolatey become one list of apps. A pair is merged only
 //! when it's certain: a catalog mapping, or identical normalized names plus the winget
-//! publisher appearing in the Chocolatey package. Installing the wrong thing as admin is worse
+//! publisher appearing in the Chocolatey package plus a Chocolatey id that names the same app
+//! (package titles alone can mislead: FirefoxESR is titled "Mozilla Firefox"). Installing the wrong thing as admin is worse
 //! than showing a duplicate.
 
 use super::{AppEntry, Catalog};
@@ -10,14 +11,13 @@ use regex::Regex;
 use std::collections::HashMap;
 use std::sync::LazyLock;
 
-static PARENS: LazyLock<Regex> = LazyLock::new(|| Regex::new(r"\([^)]*\)").unwrap());
 static NOISE: LazyLock<Regex> =
     LazyLock::new(|| Regex::new(r"(?i)\b(x64|x86|64-bit|32-bit|desktop)\b").unwrap());
 
-/// Comparable form of an app name: no parentheses, marks or architecture words; `+` -> `plus`.
+/// Comparable form of an app name: no marks or architecture words; `+` -> `plus`. Bracketed
+/// qualifiers stay, because "(MSIX)" or "(ESR)" make it a different package.
 pub fn normalize(name: &str) -> String {
-    let s = PARENS.replace_all(name, " ");
-    let s = NOISE.replace_all(&s, " ");
+    let s = NOISE.replace_all(name, " ");
     s.replace('+', "plus")
         .chars()
         .filter(|c| c.is_alphanumeric())
@@ -35,7 +35,9 @@ fn same_app(w: &SourcePackage, c: &SourcePackage) -> bool {
     if wn.is_empty() || wn != cn {
         return false;
     }
-    publisher_token(&w.id).is_some_and(|t| normalize(&c.id).contains(&t) || cn.contains(&t))
+    let cid = normalize(&c.id);
+    let id_names_app = !cid.is_empty() && (wn.contains(&cid) || cid.contains(&wn));
+    id_names_app && publisher_token(&w.id).is_some_and(|t| cid.contains(&t) || cn.contains(&t))
 }
 
 fn uncurated_winget(p: &SourcePackage) -> AppEntry {
@@ -175,7 +177,7 @@ mod tests {
 
     #[test]
     fn normalizes_names() {
-        assert_eq!(normalize("Mozilla Firefox (en-US)"), "mozillafirefox");
+        assert_eq!(normalize("Mozilla Firefox (MSIX)"), "mozillafirefoxmsix");
         assert_eq!(normalize("Notepad++ (64-bit x64)"), "notepadplusplus");
         assert_eq!(normalize("Contoso™ Widget Desktop"), "contosowidget");
         assert_eq!(normalize("Python 3.12"), "python312");
@@ -232,6 +234,15 @@ mod tests {
                 c("notepad2", "Notepad2"),
             ),
             (w("Acme.Tool", "Tool"), c("tool", "Tool")),
+            // Real case: the ESR package is titled plain "Mozilla Firefox".
+            (
+                w("Mozilla.Firefox.MSIX", "Mozilla Firefox (MSIX)"),
+                c("FirefoxESR", "Mozilla Firefox"),
+            ),
+            (
+                w("Mozilla.Firefox.ach", "Mozilla Firefox"),
+                c("FirefoxESR", "Mozilla Firefox"),
+            ),
         ];
         for (a, b) in cases {
             let out = merge(vec![a.clone()], vec![b.clone()], Catalog::embedded());
