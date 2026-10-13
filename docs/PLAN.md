@@ -142,6 +142,9 @@ Goal: one runtime, a fresh Svelte shell, admin manifest really embedded, locked-
 | 2026-10-13 | A live Store test uninstalled the owner's existing Microsoft To Do; reinstalled at once (same version) | Live tests now check the app isn't already installed first |
 | 2026-10-13 | Kaspersky flagged and removed an unsigned debug build | Store user check switched to session APIs (no other process opened); signing in P7 is the real fix |
 | 2026-10-13 | Scoop dropped by owner | Running it unelevated needs explorer's token (malware-like, antivirus alerts); owner chose to ask for admin via UAC instead (ADR 026) |
+| 2026-10-13 | P3 extras review (0 Critical, 3 Important fixed): Update all honours the source switches; closing asks while any job runs (phase text is English-only); restored jobs show the real package and drop pinned versions | Fresh whole-branch review |
+| 2026-10-13 | Deferred to P8: restrict app data/config folders to Administrators; skip rules across source changes; NSIS uninstall hand-off check; side-by-side version rows; offline "More apps" cache; minimized close dialog; RowMenu focus; Store refusal wording; invisible rules at the 500 cap | Review minors |
+| 2026-10-13 | Owner plans a payment and licensing phase; proposed between P7 (signing, auto-update) and P8 (final hardening) | Licensing needs a signed, self-updating app; P8's security review should include it |
 | 2026-10-13 | Icon cache remembers only definite misses | Temporary winget/network failures had hidden icons for 7 days |
 | 2026-10-13 | Debug builds use their own WebView2 profile | WebView2 refuses to share a profile between an elevated and a normal instance |
 | 2026-10-13 | P4/P5 review: misdirected clicks fixed (likely cause of the unexplained vcredist140 job); icon SSRF, path and DoS hardening | Review findings; tests added for each |
