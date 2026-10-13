@@ -33,14 +33,18 @@ export const getApp = (entry: AppEntry) => invoke<AppDetails>('get_app', { entry
 
 // Install queue
 import type { Job } from './bindings/Job';
+import type { QueueSnapshot } from './bindings/QueueSnapshot';
 import type { EnqueueItem } from './bindings/EnqueueItem';
 import type { OpRequest } from './bindings/OpRequest';
-export type { Job, EnqueueItem, OpRequest };
+export type { Job, EnqueueItem, OpRequest, QueueSnapshot };
 export type { JobPhase } from './bindings/JobPhase';
 
 export const enqueue = (ops: EnqueueItem[]) => invoke<string[]>('enqueue', { ops });
 export const updateAll = () => invoke<string[]>('update_all');
-export const getQueue = () => invoke<Job[]>('get_queue');
+export const getQueue = () => invoke<QueueSnapshot>('get_queue');
+export const pauseQueue = () => invoke<void>('pause_queue');
+export const resumeQueue = () => invoke<void>('resume_queue');
+export const quitAnyway = () => invoke<void>('quit_anyway');
 export const cancelJob = (id: string) => invoke<void>('cancel_job', { id });
 export const retryJob = (id: string) => invoke<string>('retry_job', { id });
 export const clearFinished = () => invoke<void>('clear_finished');

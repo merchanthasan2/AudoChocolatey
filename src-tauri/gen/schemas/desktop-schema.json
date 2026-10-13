@@ -255,6 +255,24 @@
           "markdownDescription": "Enables the marketplace_home command without any pre-configured scope."
         },
         {
+          "description": "Enables the pause_queue command without any pre-configured scope.",
+          "type": "string",
+          "const": "allow-pause-queue",
+          "markdownDescription": "Enables the pause_queue command without any pre-configured scope."
+        },
+        {
+          "description": "Enables the quit_anyway command without any pre-configured scope.",
+          "type": "string",
+          "const": "allow-quit-anyway",
+          "markdownDescription": "Enables the quit_anyway command without any pre-configured scope."
+        },
+        {
+          "description": "Enables the resume_queue command without any pre-configured scope.",
+          "type": "string",
+          "const": "allow-resume-queue",
+          "markdownDescription": "Enables the resume_queue command without any pre-configured scope."
+        },
+        {
           "description": "Enables the retry_job command without any pre-configured scope.",
           "type": "string",
           "const": "allow-retry-job",
@@ -355,6 +373,24 @@
           "type": "string",
           "const": "deny-marketplace-home",
           "markdownDescription": "Denies the marketplace_home command without any pre-configured scope."
+        },
+        {
+          "description": "Denies the pause_queue command without any pre-configured scope.",
+          "type": "string",
+          "const": "deny-pause-queue",
+          "markdownDescription": "Denies the pause_queue command without any pre-configured scope."
+        },
+        {
+          "description": "Denies the quit_anyway command without any pre-configured scope.",
+          "type": "string",
+          "const": "deny-quit-anyway",
+          "markdownDescription": "Denies the quit_anyway command without any pre-configured scope."
+        },
+        {
+          "description": "Denies the resume_queue command without any pre-configured scope.",
+          "type": "string",
+          "const": "deny-resume-queue",
+          "markdownDescription": "Denies the resume_queue command without any pre-configured scope."
         },
         {
           "description": "Denies the retry_job command without any pre-configured scope.",

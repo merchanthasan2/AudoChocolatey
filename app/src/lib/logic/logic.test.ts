@@ -224,3 +224,26 @@ describe('entries', () => {
     expect(needsChoco({ best: 'winget' }, false)).toBe(false);
   });
 });
+
+import { notStarted } from './queue';
+describe('queue after a restart', () => {
+  it('finds jobs that never started, newest app request once', () => {
+    const list = [
+      job('cancelled', { id: 'j1', detail: 'Not started' }),
+      job('cancelled', { id: 'j2', detail: 'Stopped when the app closed' }),
+      job('cancelled', { id: 'j3', detail: null }),
+      job('queued', { id: 'j4', op: { kind: 'upgrade', target: { source: 'choco', id: 'git' }, version: null } }),
+      job('cancelled', { id: 'j5', detail: 'Not started' }),
+    ];
+    expect(notStarted(list).map((j) => j.id)).toEqual(['j5']);
+  });
+  it('a job already retried no longer counts', () => {
+    const other = { kind: 'install' as const, target: { source: 'winget' as const, id: 'Git.Git' }, version: null };
+    const list = [
+      job('cancelled', { id: 'j1', detail: 'Not started' }),
+      job('cancelled', { id: 'j2', detail: 'Not started', op: other }),
+      job('queued', { id: 'j3' }),
+    ];
+    expect(notStarted(list).map((j) => j.id)).toEqual(['j2']);
+  });
+});

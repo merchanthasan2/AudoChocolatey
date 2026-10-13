@@ -1,6 +1,7 @@
 mod catalog;
 mod commands;
 mod error;
+mod fsutil;
 mod icons;
 mod ids;
 mod jobs;
@@ -9,7 +10,7 @@ mod sources;
 mod state;
 mod versions;
 
-use tauri::Manager;
+use tauri::{Emitter, Manager};
 
 pub fn run() {
     tauri::Builder::default()
@@ -22,6 +23,15 @@ pub fn run() {
                 app.handle().clone(),
             ));
             Ok(())
+        })
+        .on_window_event(|window, event| {
+            if let tauri::WindowEvent::CloseRequested { api, .. } = event {
+                let state = window.state::<state::AppState>();
+                if commands::jobs::close_blocked(&state.queue.snapshot()) {
+                    api.prevent_close();
+                    let _ = window.emit("app://close-blocked", ());
+                }
+            }
         })
         .register_asynchronous_uri_scheme_protocol("icon", |ctx, request, responder| {
             let app = ctx.app_handle().clone();
@@ -61,6 +71,9 @@ pub fn run() {
             commands::jobs::enqueue,
             commands::jobs::update_all,
             commands::jobs::get_queue,
+            commands::jobs::pause_queue,
+            commands::jobs::resume_queue,
+            commands::jobs::quit_anyway,
             commands::jobs::cancel_job,
             commands::jobs::retry_job,
             commands::jobs::clear_finished,

@@ -7,6 +7,7 @@ use crate::ids::SourceKind;
 use crate::jobs::exit_codes::{classify, Outcome};
 use crate::jobs::failure::FailureReason;
 use crate::jobs::model::{Job, JobPhase};
+use crate::jobs::persist;
 use crate::jobs::progress::{
     percent, ChocoLines, DownloadWatcher, LineParser, Signal, WingetLines,
 };
@@ -14,11 +15,13 @@ use crate::sources::model::{OpKind, OpRequest};
 use crate::sources::stream::{CancellationToken, CommandSpec, StreamRunner};
 use crate::sources::{choco, winget};
 use async_trait::async_trait;
+use serde::Serialize;
 use std::collections::{HashMap, VecDeque};
 use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
 use std::time::{Duration, Instant, SystemTime};
 use tokio::sync::Notify;
+use ts_rs::TS;
 
 /// Last-resort limit for a hung process. Installing is never interrupted by the download timeout.
 const SAFETY_TIMEOUT: Duration = Duration::from_secs(24 * 60 * 60);
@@ -28,7 +31,16 @@ const PROGRESS_EVERY: Duration = Duration::from_millis(100);
 pub trait JobSink: Send + Sync {
     fn changed(&self, job: &Job);
     fn progress(&self, job: &Job);
-    fn queue(&self, jobs: &[Job]);
+    fn queue(&self, snapshot: &QueueSnapshot);
+}
+
+/// The whole queue as the UI sees it.
+#[derive(Debug, Clone, Serialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export)]
+pub struct QueueSnapshot {
+    pub jobs: Vec<Job>,
+    pub paused: bool,
 }
 
 /// Is another Windows Installer session running?
@@ -139,6 +151,8 @@ pub struct WorkerDeps {
     pub download_timeout: Duration,
     /// Without admin rights nothing is run: every job fails with NotElevated.
     pub elevated: bool,
+    /// Where the queue and its history are kept between runs (`None` in tests).
+    pub jobs_file: Option<PathBuf>,
 }
 
 #[derive(Default)]
@@ -148,6 +162,8 @@ struct Inner {
     tokens: HashMap<String, CancellationToken>,
     last_progress: HashMap<String, Instant>,
     next: u64,
+    /// Nothing new starts while paused; the running job finishes.
+    paused: bool,
 }
 
 #[derive(Clone)]
@@ -155,6 +171,8 @@ pub struct Queue {
     inner: Arc<Mutex<Inner>>,
     wake: Arc<Notify>,
     sink: Arc<dyn JobSink>,
+    /// Bumped whenever the saved state should change; a writer task saves the latest.
+    save: Option<tokio::sync::watch::Sender<u64>>,
 }
 
 const ORDER: [JobPhase; 5] = [
@@ -171,22 +189,50 @@ fn rank(p: JobPhase) -> usize {
 
 impl Queue {
     pub fn start(deps: WorkerDeps, sink: Arc<dyn JobSink>) -> Queue {
+        let mut inner = Inner::default();
+        let mut save = None;
+        if let Some(path) = deps.jobs_file.clone() {
+            let loaded = persist::load(&path);
+            inner.next = persist::next_id(&loaded.jobs);
+            inner.jobs = loaded.jobs;
+            if loaded.writable {
+                let (tx, rx) = tokio::sync::watch::channel(0u64);
+                save = Some((tx, rx, path));
+            }
+        }
         let q = Queue {
-            inner: Arc::default(),
+            inner: Arc::new(Mutex::new(inner)),
             wake: Arc::new(Notify::new()),
             sink,
+            save: save.as_ref().map(|(tx, _, _)| tx.clone()),
         };
+        if let Some((_tx, mut rx, path)) = save {
+            let inner = q.inner.clone();
+            tauri::async_runtime::spawn(async move {
+                while rx.changed().await.is_ok() {
+                    let jobs = inner.lock().unwrap_or_else(|p| p.into_inner()).jobs.clone();
+                    let path = path.clone();
+                    let _ = tokio::task::spawn_blocking(move || persist::save(&path, &jobs)).await;
+                }
+            });
+        }
         let worker = q.clone();
         let deps = Arc::new(deps);
         tauri::async_runtime::spawn(async move {
             loop {
                 let notified = worker.wake.notified();
-                let next = worker
-                    .lock()
-                    .jobs
-                    .iter()
-                    .find(|j| j.phase == JobPhase::Queued)
-                    .map(|j| j.id.clone());
+                let next = {
+                    let inner = worker.lock();
+                    (!inner.paused)
+                        .then(|| {
+                            inner
+                                .jobs
+                                .iter()
+                                .find(|j| j.phase == JobPhase::Queued)
+                                .map(|j| j.id.clone())
+                        })
+                        .flatten()
+                };
                 match next {
                     Some(id) => {
                         let (w, d, jid) = (worker.clone(), deps.clone(), id.clone());
@@ -224,9 +270,46 @@ impl Queue {
             .unwrap_or_default()
     }
 
+    pub fn queue_snapshot(&self) -> QueueSnapshot {
+        let inner = self.lock();
+        QueueSnapshot {
+            jobs: inner.jobs.clone(),
+            paused: inner.paused,
+        }
+    }
+
+    #[cfg(test)]
+    pub fn paused(&self) -> bool {
+        self.lock().paused
+    }
+
+    pub fn pause(&self) {
+        self.lock().paused = true;
+        self.emit_queue();
+    }
+
+    pub fn resume(&self) {
+        self.lock().paused = false;
+        self.emit_queue();
+        self.wake.notify_one();
+    }
+
+    /// Tells the UI and saves. Finished jobs beyond the history cap are dropped here.
     fn emit_queue(&self) {
-        let jobs = self.snapshot();
-        self.sink.queue(&jobs);
+        {
+            let mut inner = self.lock();
+            if inner.jobs.iter().filter(|j| j.phase.is_finished()).count() > persist::HISTORY {
+                let kept = persist::trim(std::mem::take(&mut inner.jobs));
+                let live: std::collections::HashSet<String> =
+                    kept.iter().map(|j| j.id.clone()).collect();
+                inner.logs.retain(|k, _| live.contains(k));
+                inner.jobs = kept;
+            }
+        }
+        self.sink.queue(&self.queue_snapshot());
+        if let Some(tx) = &self.save {
+            tx.send_modify(|n| *n = n.wrapping_add(1));
+        }
     }
 
     /// Adds operations; an identical operation already waiting or running returns its id.
@@ -649,7 +732,7 @@ mod tests {
                 self.bytes.lock().unwrap().push(b);
             }
         }
-        fn queue(&self, _jobs: &[Job]) {}
+        fn queue(&self, _snapshot: &QueueSnapshot) {}
     }
 
     impl Rec {
@@ -695,6 +778,7 @@ mod tests {
             gate_poll: Duration::from_millis(20),
             download_timeout: Duration::from_secs(60),
             elevated: true,
+            jobs_file: None,
         };
         (Queue::start(deps, rec.clone()), rec)
     }
@@ -929,6 +1013,7 @@ mod tests {
             gate_poll: Duration::from_millis(20),
             download_timeout: timeout,
             elevated: true,
+            jobs_file: None,
         }
     }
 
@@ -1060,6 +1145,92 @@ mod tests {
         assert_eq!(until_finished(&q, &ids[1]).await.phase, JobPhase::Succeeded);
     }
 
+    fn deps_with_file(stream: Arc<FakeStream>, file: Option<PathBuf>) -> WorkerDeps {
+        WorkerDeps {
+            stream,
+            winget: Some(r"C:ake\winget.exe".into()),
+            choco: Some(r"C:ake\choco.exe".into()),
+            gate: Arc::new(NoGate),
+            sizer: None,
+            winget_temp: std::env::temp_dir().join("qu-test-none"),
+            sample_every: Duration::from_millis(20),
+            gate_poll: Duration::from_millis(20),
+            download_timeout: Duration::from_secs(60),
+            elevated: true,
+            jobs_file: file,
+        }
+    }
+
+    #[tokio::test]
+    async fn paused_queue_finishes_the_current_job_but_starts_nothing_new() {
+        let stream = FakeStream::new(vec![
+            (vec![(200, "Successfully installed")], Some(0)),
+            (vec![], Some(0)),
+        ]);
+        let q = Queue::start(
+            deps_with_file(stream.clone(), None),
+            Arc::new(Rec::default()),
+        );
+        let ids = q.enqueue(vec![
+            op(SourceKind::Winget, "A.A", OpKind::Install),
+            op(SourceKind::Winget, "B.B", OpKind::Install),
+        ]);
+        for _ in 0..200 {
+            if stream.runs.load(AO::SeqCst) == 1 {
+                break;
+            }
+            tokio::time::sleep(Duration::from_millis(5)).await;
+        }
+        q.pause();
+        assert!(q.paused());
+        assert_eq!(until_finished(&q, &ids[0]).await.phase, JobPhase::Succeeded);
+        tokio::time::sleep(Duration::from_millis(150)).await;
+        let b = q.snapshot().into_iter().find(|j| j.id == ids[1]).unwrap();
+        assert_eq!(b.phase, JobPhase::Queued);
+        assert_eq!(stream.runs.load(AO::SeqCst), 1);
+        q.resume();
+        assert_eq!(until_finished(&q, &ids[1]).await.phase, JobPhase::Succeeded);
+    }
+
+    #[tokio::test]
+    async fn history_survives_a_restart_and_ids_continue() {
+        let dir = tempfile::tempdir().unwrap();
+        let file = dir.path().join("jobs.json");
+        let q = Queue::start(
+            deps_with_file(FakeStream::new(vec![]), Some(file.clone())),
+            Arc::new(Rec::default()),
+        );
+        let id = q
+            .enqueue(vec![op(SourceKind::Winget, "A.A", OpKind::Install)])
+            .remove(0);
+        until_finished(&q, &id).await;
+        let mut saved = false;
+        for _ in 0..200 {
+            if crate::jobs::persist::load(&file)
+                .jobs
+                .iter()
+                .any(|j| j.id == id && j.phase == JobPhase::Succeeded)
+            {
+                saved = true;
+                break;
+            }
+            tokio::time::sleep(Duration::from_millis(10)).await;
+        }
+        assert!(saved, "finished job was written to jobs.json");
+        let q2 = Queue::start(
+            deps_with_file(FakeStream::new(vec![]), Some(file.clone())),
+            Arc::new(Rec::default()),
+        );
+        assert!(q2
+            .snapshot()
+            .iter()
+            .any(|j| j.id == id && j.phase == JobPhase::Succeeded));
+        let id2 = q2
+            .enqueue(vec![op(SourceKind::Winget, "B.B", OpKind::Install)])
+            .remove(0);
+        assert_ne!(id2, id);
+    }
+
     #[tokio::test]
     async fn a_non_elevated_queue_never_runs_anything() {
         let rec = Arc::new(Rec::default());
@@ -1075,6 +1246,7 @@ mod tests {
             gate_poll: Duration::from_millis(20),
             download_timeout: Duration::from_secs(60),
             elevated: false,
+            jobs_file: None,
         };
         let q = Queue::start(deps, rec);
         let id = q
@@ -1103,6 +1275,7 @@ mod tests {
             gate_poll: Duration::from_millis(20),
             download_timeout: Duration::from_secs(60),
             elevated: true,
+            jobs_file: None,
         };
         let q = Queue::start(deps, rec);
         let id = q

@@ -6,7 +6,6 @@ pub mod schema;
 
 use crate::error::{AppError, AppResult};
 use schema::{Settings, SettingsPatch, SCHEMA_VERSION};
-use std::io::Write;
 use std::path::PathBuf;
 
 pub struct SettingsStore {
@@ -123,19 +122,9 @@ fn backup_and_default(path: &PathBuf) -> (Settings, bool) {
 }
 
 fn write_atomic(path: &PathBuf, settings: &Settings) -> AppResult<()> {
-    let map =
-        |e: std::io::Error| AppError::new("settings", format!("could not save settings: {e}"));
-    if let Some(dir) = path.parent() {
-        std::fs::create_dir_all(dir).map_err(map)?;
-    }
-    let tmp = path.with_extension("json.tmp");
     let json = serde_json::to_vec_pretty(settings).expect("settings serialize");
-    {
-        let mut f = std::fs::File::create(&tmp).map_err(map)?;
-        f.write_all(&json).map_err(map)?;
-        f.sync_all().map_err(map)?;
-    }
-    std::fs::rename(&tmp, path).map_err(map)
+    crate::fsutil::write_atomic(path, &json)
+        .map_err(|e| AppError::new("settings", format!("could not save settings: {e}")))
 }
 
 #[cfg(test)]

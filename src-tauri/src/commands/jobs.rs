@@ -3,7 +3,7 @@
 use crate::error::AppError;
 use crate::ids::{SourceKind, SourceRef};
 use crate::jobs::model::Job;
-use crate::jobs::worker::JobSink;
+use crate::jobs::worker::{JobSink, QueueSnapshot};
 use crate::sources::model::{OpKind, OpRequest, UpgradeCandidate};
 use crate::state::AppState;
 use serde::Deserialize;
@@ -28,8 +28,8 @@ impl JobSink for TauriSink {
     fn progress(&self, job: &Job) {
         let _ = self.0.emit("job://progress", job);
     }
-    fn queue(&self, jobs: &[Job]) {
-        let _ = self.0.emit("queue://changed", jobs);
+    fn queue(&self, snapshot: &QueueSnapshot) {
+        let _ = self.0.emit("queue://changed", snapshot);
     }
 }
 
@@ -67,6 +67,22 @@ pub fn refuse_disabled_choco(
         ));
     }
     Ok(())
+}
+
+/// Closing the app kills its child processes (Job Object), so closing mid-install asks first.
+pub fn close_blocked(jobs: &[Job]) -> bool {
+    jobs.iter().any(|j| {
+        matches!(
+            j.phase,
+            crate::jobs::model::JobPhase::Installing | crate::jobs::model::JobPhase::Verifying
+        )
+    })
+}
+
+/// The user chose to close while an installer runs.
+#[tauri::command]
+pub fn quit_anyway(app: AppHandle) {
+    app.exit(0);
 }
 
 /// Installing, updating or removing apps needs admin rights; dev builds run without them.
@@ -108,8 +124,18 @@ pub async fn update_all(state: State<'_, AppState>) -> Result<Vec<String>, AppEr
 }
 
 #[tauri::command]
-pub fn get_queue(state: State<'_, AppState>) -> Vec<Job> {
-    state.queue.snapshot()
+pub fn get_queue(state: State<'_, AppState>) -> QueueSnapshot {
+    state.queue.queue_snapshot()
+}
+
+#[tauri::command]
+pub fn pause_queue(state: State<'_, AppState>) {
+    state.queue.pause()
+}
+
+#[tauri::command]
+pub fn resume_queue(state: State<'_, AppState>) {
+    state.queue.resume()
 }
 
 #[tauri::command]
@@ -146,6 +172,29 @@ mod tests {
             available_version: "2".into(),
             source,
         }
+    }
+
+    #[test]
+    fn closing_is_held_only_while_an_installer_runs() {
+        use crate::jobs::model::JobPhase;
+        let mk = |p: JobPhase| {
+            let mut j = Job::new(
+                "j1".into(),
+                upgrades_to_ops(vec![cand(SourceKind::Winget, "A.A")])
+                    .remove(0)
+                    .0,
+                "A".into(),
+            );
+            j.phase = p;
+            j
+        };
+        assert!(!close_blocked(&[
+            mk(JobPhase::Downloading),
+            mk(JobPhase::Queued)
+        ]));
+        assert!(close_blocked(&[mk(JobPhase::Installing)]));
+        assert!(close_blocked(&[mk(JobPhase::Verifying)]));
+        assert!(!close_blocked(&[]));
     }
 
     #[test]

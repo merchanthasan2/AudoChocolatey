@@ -5,6 +5,7 @@
   import Toasts from './lib/components/Toasts.svelte';
   import QueueDrawer from './lib/components/QueueDrawer.svelte';
   import AppDetail from './lib/components/AppDetail.svelte';
+  import CloseGuard from './lib/components/CloseGuard.svelte';
   import Marketplace from './views/Marketplace.svelte';
   import Updates from './views/Updates.svelte';
   import Installed from './views/Installed.svelte';
@@ -63,6 +64,7 @@
 
 <QueueDrawer bind:open={drawer} />
 <AppDetail />
+<CloseGuard />
 <Toasts />
 
 <style>

@@ -8,6 +8,7 @@ import { latestOnly, STALE } from '../logic/latestOnly';
 import { jobFor } from '../logic/jobFor';
 import { tidyResults } from '../logic/tidyResults';
 import { missingFrom, installedSet, withJobs, needsChoco } from '../logic/entries';
+import { notStarted } from '../logic/queue';
 import { resolveMotion, resolveTheme } from '../logic/theme';
 import type { SourceKind } from '../ipc/bindings/SourceKind';
 import type { OpKind } from '../ipc/bindings/OpKind';
@@ -125,6 +126,8 @@ export const updates = new Section<UpgradeCandidate>(api.listUpdates);
 const FINISHED = new Set(['succeeded', 'failed', 'cancelled', 'skipped']);
 class QueueStore {
   jobs = $state<Job[]>([]);
+  paused = $state(false);
+  notStarted = $derived(notStarted(this.jobs));
   active = $derived(this.jobs.filter((j) => !FINISHED.has(j.phase)));
   current = $derived(this.active.find((j) => j.phase !== 'queued'));
   #started = false;
@@ -135,8 +138,8 @@ class QueueStore {
     this.#started = true;
     await onJobChanged((j) => this.#upsert(j, true));
     await onJobProgress((j) => this.#upsert(j, false));
-    await onQueueChanged((all) => (this.jobs = all));
-    try { this.jobs = await api.getQueue(); } catch { /* empty queue */ }
+    await onQueueChanged((s) => { this.jobs = s.jobs; this.paused = s.paused; });
+    try { const s = await api.getQueue(); this.jobs = s.jobs; this.paused = s.paused; } catch { /* empty queue */ }
   }
 
   #upsert(job: Job, announce: boolean) {
@@ -223,6 +226,13 @@ class QueueStore {
     try { await api.retryJob(id); } catch (e) { toasts.push({ text: message(e), tone: 'error' }); }
   }
   async clearFinished() { await api.clearFinished(); }
+  async setPaused(on: boolean) {
+    try { await (on ? api.pauseQueue() : api.resumeQueue()); } catch (e) { toasts.push({ text: message(e), tone: 'error' }); }
+  }
+  /** Re-queue what an app restart stopped before it started. */
+  async retryNotStarted() {
+    for (const j of this.notStarted) await this.retry(j.id);
+  }
 }
 export const queue = new QueueStore();
 

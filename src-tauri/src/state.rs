@@ -48,6 +48,7 @@ impl AppState {
                 gate_poll: Duration::from_millis(500),
                 download_timeout: Duration::from_secs(60 * 60),
                 elevated: crate::commands::system::is_elevated(),
+                jobs_file: Some(data_dir.join("jobs.json")),
             },
             Arc::new(TauriSink(app)),
         );
