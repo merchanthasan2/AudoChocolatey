@@ -9,7 +9,7 @@ pub mod win;
 
 use crate::ids::{ChocoId, WingetId};
 use crate::sources::process::{CommandSpec, Runner};
-use cache::IconCache;
+use cache::{IconCache, Lookup};
 use std::collections::HashMap;
 use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
@@ -54,6 +54,23 @@ fn percent_decode(s: &str) -> Option<String> {
     String::from_utf8(out).ok()
 }
 
+/// Why a download didn't produce bytes.
+#[derive(Debug, PartialEq, Eq)]
+enum Fetch {
+    /// The server answered: there's nothing here (4xx) or it isn't usable.
+    Gone,
+    /// Network, DNS, timeout or server error: worth retrying later.
+    Retry,
+}
+
+/// Overflowing the cap either fails the download (images) or keeps the first part (HTML,
+/// where the icon links live in <head>).
+#[derive(Clone, Copy)]
+enum Overflow {
+    Fail,
+    Truncate,
+}
+
 pub struct IconService {
     cache: IconCache,
     http: reqwest::Client,
@@ -70,7 +87,7 @@ impl IconService {
     pub fn new(dir: PathBuf, runner: Arc<dyn Runner>, winget: Option<PathBuf>) -> Self {
         let http = reqwest::Client::builder()
             .https_only(true)
-            .timeout(Duration::from_secs(6))
+            .timeout(Duration::from_secs(8))
             .redirect(reqwest::redirect::Policy::limited(3))
             .user_agent(concat!(
                 "Mozilla/5.0 (Windows NT 10.0; Win64; x64) QuantumUpdater/",
@@ -107,15 +124,17 @@ impl IconService {
             .await
     }
 
-    async fn compute(&self, key: &str, name: Option<&str>) -> Option<Vec<u8>> {
-        let (source, id) = key.split_once(':')?;
+    async fn compute(&self, key: &str, name: Option<&str>) -> Lookup {
+        let Some((source, id)) = key.split_once(':') else {
+            return Lookup::Missing;
+        };
         if let Some(png) = self.installed_icon(id, name).await {
-            return Some(png);
+            return Lookup::Found(png);
         }
         match source {
             "choco" => self.choco_icon(id).await,
             "winget" => self.homepage_icon(id).await,
-            _ => None,
+            _ => Lookup::Missing,
         }
     }
 
@@ -153,7 +172,7 @@ impl IconService {
             .ok()?
     }
 
-    async fn choco_icon(&self, id: &str) -> Option<Vec<u8>> {
+    async fn choco_icon(&self, id: &str) -> Lookup {
         let known = self
             .choco_urls
             .lock()
@@ -163,23 +182,41 @@ impl IconService {
         let url = match known {
             Some(u) => u,
             None => {
-                let cid = ChocoId::try_from(id.to_string()).ok()?;
-                let xml = self
-                    .fetch(&crate::sources::choco::odata::by_id_url(&cid), HTML_CAP)
-                    .await?;
-                let pkgs = crate::sources::choco::odata::parse_feed(&String::from_utf8_lossy(&xml))
-                    .ok()?;
-                pkgs.into_iter().find_map(|p| p.icon_url)?
+                let Ok(cid) = ChocoId::try_from(id.to_string()) else {
+                    return Lookup::Missing;
+                };
+                let feed = crate::sources::choco::odata::by_id_url(&cid);
+                let xml = match self.fetch(&feed, HTML_CAP, Overflow::Fail).await {
+                    Ok(x) => x,
+                    Err(Fetch::Gone) => return Lookup::Missing,
+                    Err(Fetch::Retry) => return Lookup::Unavailable,
+                };
+                let Ok(pkgs) =
+                    crate::sources::choco::odata::parse_feed(&String::from_utf8_lossy(&xml))
+                else {
+                    return Lookup::Unavailable;
+                };
+                match pkgs.into_iter().find_map(|p| p.icon_url) {
+                    Some(u) => u,
+                    None => return Lookup::Missing,
+                }
             }
         };
         self.fetch_icon(&url).await
     }
 
     /// Publisher homepage (from `winget show`), then its declared icon or /favicon.ico.
-    async fn homepage_icon(&self, id: &str) -> Option<Vec<u8>> {
-        let wid = WingetId::try_from(id.to_string()).ok()?;
+    async fn homepage_icon(&self, id: &str) -> Lookup {
+        let Ok(wid) = WingetId::try_from(id.to_string()) else {
+            return Lookup::Missing;
+        };
+        let Some(exe) = self.winget.clone() else {
+            return Lookup::Unavailable;
+        };
         let homepage = {
-            let _permit = self.shows.acquire().await.ok()?;
+            let Ok(_permit) = self.shows.acquire().await else {
+                return Lookup::Unavailable;
+            };
             let args = [
                 "show",
                 "--id",
@@ -193,59 +230,95 @@ impl IconService {
             .map(String::from)
             .to_vec();
             let spec = CommandSpec {
-                exe: self.winget.clone()?,
+                exe,
                 args,
-                timeout: Duration::from_secs(30),
+                timeout: Duration::from_secs(45),
             };
-            let out = self.runner.run(&spec).await.ok()?;
-            crate::sources::winget::details::parse_show(&out.stdout).homepage?
+            let Ok(out) = self.runner.run(&spec).await else {
+                return Lookup::Unavailable;
+            };
+            if out.code != Some(0) {
+                return Lookup::Unavailable;
+            }
+            match crate::sources::winget::details::parse_show(&out.stdout).homepage {
+                Some(h) => h,
+                None => return Lookup::Missing,
+            }
         };
-        if let Some(html) = self.fetch(&homepage, HTML_CAP).await {
-            if let Some(link) = sources::pick_icon_link(&String::from_utf8_lossy(&html), &homepage)
-            {
-                if let Some(png) = self.fetch_icon(&link).await {
-                    return Some(png);
+        let mut retry = false;
+        match self.fetch(&homepage, HTML_CAP, Overflow::Truncate).await {
+            Ok(html) => {
+                if let Some(link) =
+                    sources::pick_icon_link(&String::from_utf8_lossy(&html), &homepage)
+                {
+                    match self.fetch_icon(&link).await {
+                        Lookup::Found(png) => return Lookup::Found(png),
+                        Lookup::Unavailable => retry = true,
+                        Lookup::Missing => {}
+                    }
                 }
             }
+            Err(Fetch::Retry) => retry = true,
+            Err(Fetch::Gone) => {}
         }
-        let origin = reqwest::Url::parse(&homepage)
-            .ok()?
-            .join("/favicon.ico")
-            .ok()?;
-        self.fetch_icon(origin.as_str()).await
+        let favicon = reqwest::Url::parse(&homepage)
+            .ok()
+            .and_then(|u| u.join("/favicon.ico").ok());
+        let Some(favicon) = favicon else {
+            return Lookup::Missing;
+        };
+        match self.fetch_icon(favicon.as_str()).await {
+            Lookup::Missing if retry => Lookup::Unavailable,
+            other => other,
+        }
     }
 
-    async fn fetch_icon(&self, url: &str) -> Option<Vec<u8>> {
-        let bytes = self.fetch(url, ICON_CAP).await?;
-        tokio::task::spawn_blocking(move || image::to_png(&bytes, ICON_SIZE).ok())
-            .await
-            .ok()?
+    async fn fetch_icon(&self, url: &str) -> Lookup {
+        match self.fetch(url, ICON_CAP, Overflow::Fail).await {
+            Ok(bytes) => {
+                match tokio::task::spawn_blocking(move || image::to_png(&bytes, ICON_SIZE)).await {
+                    Ok(Ok(png)) => Lookup::Found(png),
+                    _ => Lookup::Missing,
+                }
+            }
+            Err(Fetch::Gone) => Lookup::Missing,
+            Err(Fetch::Retry) => Lookup::Unavailable,
+        }
     }
 
     /// HTTPS GET to a host that resolves only to public addresses, with a size cap.
-    async fn fetch(&self, url: &str, cap: usize) -> Option<Vec<u8>> {
-        let u = reqwest::Url::parse(url).ok()?;
+    async fn fetch(&self, url: &str, cap: usize, overflow: Overflow) -> Result<Vec<u8>, Fetch> {
+        let u = reqwest::Url::parse(url).map_err(|_| Fetch::Gone)?;
         if u.scheme() != "https" {
-            return None;
+            return Err(Fetch::Gone);
         }
-        let host = u.host_str()?.to_string();
+        let host = u.host_str().ok_or(Fetch::Gone)?.to_string();
         let addrs: Vec<_> = tokio::net::lookup_host((host.as_str(), 443))
             .await
-            .ok()?
+            .map_err(|_| Fetch::Retry)?
             .collect();
         if addrs.is_empty() || !addrs.iter().all(|a| image::is_public_ip(a.ip())) {
-            return None;
+            return Err(Fetch::Gone);
         }
-        let _permit = self.remote.acquire().await.ok()?;
-        let mut resp = self.http.get(u).send().await.ok()?;
-        if !resp.status().is_success() {
-            return None;
+        let _permit = self.remote.acquire().await.map_err(|_| Fetch::Retry)?;
+        let mut resp = self.http.get(u).send().await.map_err(|_| Fetch::Retry)?;
+        let status = resp.status();
+        if status.is_client_error() {
+            return Err(Fetch::Gone);
+        }
+        if !status.is_success() {
+            return Err(Fetch::Retry);
         }
         let mut buf = image::CappedBuf::new(cap);
-        while let Some(chunk) = resp.chunk().await.ok()? {
-            buf.push(&chunk).ok()?;
+        while let Some(chunk) = resp.chunk().await.map_err(|_| Fetch::Retry)? {
+            if buf.push(&chunk).is_err() {
+                return match overflow {
+                    Overflow::Truncate => Ok(buf.data),
+                    Overflow::Fail => Err(Fetch::Gone),
+                };
+            }
         }
-        Some(buf.data)
+        Ok(buf.data)
     }
 }
 
@@ -276,5 +349,41 @@ mod tests {
         assert_eq!(parse_request("/nocolon", None), None);
         assert_eq!(parse_request("/bad%zz", None), None);
         assert_eq!(parse_request("/", None), None);
+    }
+}
+
+#[cfg(test)]
+mod live {
+    use super::*;
+    /// Manual: `cargo test icons::live -- --ignored --nocapture` resolves real icons with a fresh cache.
+    #[tokio::test]
+    #[ignore]
+    async fn resolve_real_icons() {
+        let dir = tempfile::tempdir().unwrap();
+        let paths = crate::sources::process::ExePaths::detect();
+        let svc = IconService::new(
+            dir.path().to_path_buf(),
+            Arc::new(crate::sources::process::SystemRunner),
+            paths.winget,
+        );
+        for (key, name) in [
+            ("winget:Mozilla.Firefox", "Firefox"),
+            ("winget:Brave.Brave", "Brave"),
+            ("winget:Spotify.Spotify", "Spotify"),
+            ("winget:OpenJS.NodeJS.LTS", "Node.js LTS"),
+            (
+                "winget:Microsoft.VisualStudioCode",
+                "Microsoft Visual Studio Code (User)",
+            ),
+            ("choco:vcredist140", "vcredist140"),
+        ] {
+            let t = std::time::Instant::now();
+            let r = svc.resolve(key, Some(name)).await;
+            println!(
+                "{key:45} {:>6} bytes  {:?}",
+                r.map(|b| b.len()).unwrap_or(0),
+                t.elapsed()
+            );
+        }
     }
 }

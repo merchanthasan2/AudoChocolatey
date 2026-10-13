@@ -1,13 +1,14 @@
 <script lang="ts">
   import { monogram } from '../logic/monogram';
-  let { name, size = 40, iconKey }: { name: string; size?: number; iconKey?: string } = $props();
+  // `lookup` is the name Windows knows the app by (helps find its installed icon); defaults to `name`.
+  let { name, size = 40, iconKey, lookup }: { name: string; size?: number; iconKey?: string; lookup?: string } = $props();
   const m = $derived(monogram(name));
   // Real icon from the app itself (served by the Rust icon cache); the tile shows until it loads
   // and stays if no original icon exists.
   let failed = $state(false);
   let loaded = $state(false);
   $effect(() => { void iconKey; failed = false; loaded = false; });
-  const src = $derived(iconKey ? `http://icon.localhost/${encodeURIComponent(iconKey)}?name=${encodeURIComponent(name)}` : null);
+  const src = $derived(iconKey ? `http://icon.localhost/${encodeURIComponent(iconKey)}?name=${encodeURIComponent(lookup ?? name)}` : null);
 </script>
 
 <div class="tile" class:has-img={loaded} style="--h:{m.hue};--s:{size}px" aria-hidden="true">

@@ -15,6 +15,9 @@
 
   const installedIds = $derived(new Set(installed.items.filter((p) => p.source).map((p) => `${p.source}:${p.id.toLowerCase()}`)));
   const isInstalled = (source: string, id: string) => installedIds.has(`${source}:${id.toLowerCase()}`);
+  // The name Windows uses for an installed app, so its tile shows the exact local icon.
+  const installedName = (source: string, id: string) =>
+    installed.items.find((p) => p.source === source && p.id.toLowerCase() === id.toLowerCase())?.name;
   const keys = $derived(uniqueKeys(search.results, (p) => `${p.source}:${p.id}`));
   const searching = $derived(search.query.trim().length >= 2);
   const sourceText = (s: string) => (s === 'winget' ? 'winget' : 'Chocolatey');
@@ -70,7 +73,7 @@
         {@const job = queue.jobFor('winget', app.id, 'install')}
         <article class="tile card" in:rise={{ delay: Math.min(i, 12) * 30, y: 8 }}>
           <div class="tile-top">
-            <AppIcon name={app.name} size={48} iconKey="winget:{app.id}" />
+            <AppIcon name={app.name} size={48} iconKey="winget:{app.id}" lookup={installedName('winget', app.id)} />
             {#if isInstalled('winget', app.id)}
               <span class="badge">Installed</span>
             {:else}
