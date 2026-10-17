@@ -381,6 +381,12 @@
           "markdownDescription": "Enables the remove_rule command without any pre-configured scope."
         },
         {
+          "description": "Enables the restart_now command without any pre-configured scope.",
+          "type": "string",
+          "const": "allow-restart-now",
+          "markdownDescription": "Enables the restart_now command without any pre-configured scope."
+        },
+        {
           "description": "Enables the resume_queue command without any pre-configured scope.",
           "type": "string",
           "const": "allow-resume-queue",
@@ -631,6 +637,12 @@
           "type": "string",
           "const": "deny-remove-rule",
           "markdownDescription": "Denies the remove_rule command without any pre-configured scope."
+        },
+        {
+          "description": "Denies the restart_now command without any pre-configured scope.",
+          "type": "string",
+          "const": "deny-restart-now",
+          "markdownDescription": "Denies the restart_now command without any pre-configured scope."
         },
         {
           "description": "Denies the resume_queue command without any pre-configured scope.",

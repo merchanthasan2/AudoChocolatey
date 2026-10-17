@@ -231,6 +231,46 @@ pub async fn get_diagnostics(
     })
 }
 
+/// Restarts Windows in 30 seconds (the page asks first). Refused while an installer runs.
+#[tauri::command]
+pub fn restart_now(state: tauri::State<'_, AppState>) -> Result<(), AppError> {
+    if crate::commands::jobs::close_blocked(&state.queue.snapshot()) {
+        return Err(AppError::new(
+            "busy",
+            "An app is still being changed. Restart when it's done.",
+        ));
+    }
+    let shutdown = system_dir()
+        .ok_or_else(|| AppError::new("restart", "Couldn't restart the PC."))?
+        .join("shutdown.exe");
+    std::process::Command::new(shutdown)
+        .args([
+            "/r",
+            "/t",
+            "30",
+            "/d",
+            "p:2:17",
+            "/c",
+            "Quantum Updater is restarting your PC to finish updates. Save your work.",
+        ])
+        .spawn()
+        .map(|_| ())
+        .map_err(|e| AppError::new("restart", format!("Couldn't restart the PC: {e}")))
+}
+
+/// `C:\Windows\System32`, from Windows itself (never from PATH).
+fn system_dir() -> Option<std::path::PathBuf> {
+    let mut buf = [0u16; 260];
+    // SAFETY: valid buffer and length.
+    let n = unsafe {
+        windows_sys::Win32::System::SystemInformation::GetSystemDirectoryW(
+            buf.as_mut_ptr(),
+            buf.len() as u32,
+        )
+    } as usize;
+    (n > 0 && n < buf.len()).then(|| std::path::PathBuf::from(String::from_utf16_lossy(&buf[..n])))
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

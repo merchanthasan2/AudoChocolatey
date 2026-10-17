@@ -69,6 +69,8 @@ pub struct QueueSnapshot {
     pub paused: bool,
     /// A note about the current run of changes (the restore point).
     pub note: Option<String>,
+    /// Apps that finished but need Windows to restart, since its last start.
+    pub restart_needed: Vec<String>,
 }
 
 /// Is another Windows Installer session running?
@@ -355,6 +357,10 @@ impl Queue {
             jobs: inner.jobs.clone(),
             paused: inner.paused,
             note: inner.note.clone(),
+            restart_needed: crate::jobs::model::restarts_needed(
+                &inner.jobs,
+                crate::jobs::model::boot_ms(),
+            ),
         }
     }
 

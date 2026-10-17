@@ -43,6 +43,7 @@ impl JobSink for TauriSink {
     }
     fn queue(&self, snapshot: &QueueSnapshot) {
         let _ = self.app.emit("queue://changed", snapshot);
+        crate::background::shell::set_restarts(&self.app, snapshot.restart_needed.len());
         let Some(done) = self
             .batch
             .lock()

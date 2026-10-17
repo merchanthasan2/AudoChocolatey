@@ -259,6 +259,8 @@ class QueueStore {
   paused = $state(false);
   /** About the current run of changes (the restore point). */
   note = $state<string | null>(null);
+  /** Apps that need Windows to restart to finish. */
+  restartNeeded = $state<string[]>([]);
   notStarted = $derived(notStarted(this.jobs));
   active = $derived(this.jobs.filter((j) => !FINISHED.has(j.phase)));
   current = $derived(this.active.find((j) => j.phase !== 'queued'));
@@ -279,6 +281,7 @@ class QueueStore {
     this.jobs = s.jobs.filter((j) => !j.dismissed);
     this.paused = s.paused;
     this.note = s.note;
+    this.restartNeeded = s.restartNeeded ?? [];
   }
 
   #upsert(job: Job, announce: boolean) {

@@ -14,6 +14,7 @@ const TRAY_ID: &str = "main";
 pub struct TrayItems {
     pause: MenuItem<Wry>,
     update_all: MenuItem<Wry>,
+    restart: MenuItem<Wry>,
 }
 
 pub fn install(app: &AppHandle) -> tauri::Result<()> {
@@ -26,10 +27,27 @@ pub fn install(app: &AppHandle) -> tauri::Result<()> {
         item(TrayAction::UpdateAll)?,
         item(TrayAction::Quit)?,
     );
+    // Shown greyed out until a finished update needs a restart.
+    let restart = MenuItem::with_id(
+        app,
+        TrayAction::Restart.id(),
+        TrayAction::Restart.label(false, 0),
+        false,
+        None::<&str>,
+    )?;
     let sep = || PredefinedMenuItem::separator(app);
     let menu = Menu::with_items(
         app,
-        &[&open, &sep()?, &check, &update_all, &pause, &sep()?, &quit],
+        &[
+            &open,
+            &sep()?,
+            &check,
+            &update_all,
+            &pause,
+            &restart,
+            &sep()?,
+            &quit,
+        ],
     )?;
     let mut builder = TrayIconBuilder::with_id(TRAY_ID)
         .tooltip(tooltip(None))
@@ -54,7 +72,11 @@ pub fn install(app: &AppHandle) -> tauri::Result<()> {
         builder = builder.icon(icon.clone());
     }
     builder.build(app)?;
-    app.manage(TrayItems { pause, update_all });
+    app.manage(TrayItems {
+        pause,
+        update_all,
+        restart,
+    });
     Ok(())
 }
 
@@ -85,6 +107,16 @@ pub fn set_count(app: &AppHandle, updates: usize) {
         let _ = items
             .update_all
             .set_text(TrayAction::UpdateAll.label(false, updates));
+    }
+}
+
+/// "Restart to finish N updates" in the tray: enabled only when something needs it.
+pub fn set_restarts(app: &AppHandle, n: usize) {
+    if let Some(items) = app.try_state::<TrayItems>() {
+        let _ = items
+            .restart
+            .set_text(TrayAction::Restart.label(false, n.max(1)));
+        let _ = items.restart.set_enabled(n > 0);
     }
 }
 
@@ -140,6 +172,11 @@ fn on_action(app: &AppHandle, action: TrayAction) {
             let listing = crate::commands::library::current_updates(&state);
             let ops = permitted(upgrades_to_ops(listing.items), gates(&state));
             state.queue.enqueue(ops);
+        }
+        // Restarting always asks first, in the window.
+        TrayAction::Restart => {
+            show_main(app);
+            let _ = app.emit("app://restart-requested", ());
         }
         TrayAction::Quit => quit_requested(app),
     }

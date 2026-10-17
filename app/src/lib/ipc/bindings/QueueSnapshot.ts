@@ -8,4 +8,8 @@ export type QueueSnapshot = { jobs: Array<Job>, paused: boolean,
 /**
  * A note about the current run of changes (the restore point).
  */
-note: string | null, };
+note: string | null, 
+/**
+ * Apps that finished but need Windows to restart, since its last start.
+ */
+restartNeeded: Array<string>, };

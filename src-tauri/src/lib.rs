@@ -180,6 +180,7 @@ pub fn run(launch: launch::Launch) {
             commands::jobs::resume_queue,
             commands::jobs::quit_anyway,
             commands::system::relaunch_as_admin,
+            commands::system::restart_now,
             commands::jobs::cancel_job,
             commands::jobs::retry_job,
             commands::jobs::clear_finished,

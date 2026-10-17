@@ -34,6 +34,7 @@
     "allow-resume-queue",
     "allow-quit-anyway",
     "allow-relaunch-as-admin",
+    "allow-restart-now",
     "allow-cancel-job",
     "allow-retry-job",
     "allow-clear-finished",

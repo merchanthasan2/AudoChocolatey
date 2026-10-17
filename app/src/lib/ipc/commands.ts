@@ -110,3 +110,5 @@ import type { LinkedUpdate } from './bindings/LinkedUpdate';
 export type { LinkedUpdate };
 /** Updates for apps installed directly that are linked to a catalog app. */
 export const listLinkedUpdates = () => invoke<LinkedUpdate[]>('list_linked_updates');
+/** Restarts Windows in 30 seconds. Only after the person confirmed. */
+export const restartNow = () => invoke<void>('restart_now');

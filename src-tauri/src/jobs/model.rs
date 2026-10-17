@@ -74,6 +74,28 @@ pub struct Job {
     pub signer: Option<crate::jobs::signer::Signer>,
 }
 
+/// Apps whose finished change asked for a restart that hasn't happened yet (it finished after
+/// Windows last started). Each name once, in order.
+pub fn restarts_needed(jobs: &[Job], boot_ms: u64) -> Vec<String> {
+    let mut names: Vec<String> = Vec::new();
+    for j in jobs {
+        let pending = j.phase == JobPhase::Succeeded
+            && j.reboot_required
+            && j.ended_at.is_some_and(|t| t >= boot_ms);
+        if pending && !names.contains(&j.display_name) {
+            names.push(j.display_name.clone());
+        }
+    }
+    names
+}
+
+/// When Windows last started (ms since the epoch).
+pub fn boot_ms() -> u64 {
+    // SAFETY: no arguments; returns milliseconds since boot.
+    let up = unsafe { windows_sys::Win32::System::SystemInformation::GetTickCount64() };
+    now_ms().saturating_sub(up)
+}
+
 pub fn now_ms() -> u64 {
     std::time::SystemTime::now()
         .duration_since(std::time::UNIX_EPOCH)
@@ -175,6 +197,27 @@ mod tests {
             },
             "Firefox".into(),
         )
+    }
+
+    #[test]
+    fn restarts_are_needed_only_since_the_last_start() {
+        let mut a = job();
+        a.set_phase(JobPhase::Succeeded);
+        a.reboot_required = true;
+        a.ended_at = Some(2_000);
+        let mut b = a.clone();
+        b.id = "j2".into();
+        b.display_name = "VLC".into();
+        b.ended_at = Some(500); // before the last start
+        let mut c = a.clone();
+        c.id = "j3".into();
+        c.reboot_required = false;
+        let mut d = a.clone();
+        d.id = "j4".into(); // same app again
+        assert_eq!(
+            restarts_needed(&[a, b, c, d], 1_000),
+            vec!["Firefox".to_string()]
+        );
     }
 
     #[test]

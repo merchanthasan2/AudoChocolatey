@@ -3,6 +3,7 @@
   import { router, overview, settings, installed, updates, queue, myBundles } from './lib/stores/app.svelte';
   import { onUpdatesChanged, onUpdateInfo } from './lib/ipc/events';
   import AdminBanner from './lib/components/AdminBanner.svelte';
+  import RestartBanner from './lib/components/RestartBanner.svelte';
   import BackgroundPrompt from './lib/components/BackgroundPrompt.svelte';
   import Sidebar from './lib/components/Sidebar.svelte';
   import Toasts from './lib/components/Toasts.svelte';
@@ -57,6 +58,7 @@
   <main bind:this={scroller}>
     <div class="content">
       <AdminBanner />
+      <RestartBanner />
       <BackgroundPrompt />
       {#key router.view}
         <div in:viewFade>

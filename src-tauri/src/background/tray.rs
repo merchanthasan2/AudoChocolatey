@@ -6,15 +6,17 @@ pub enum TrayAction {
     CheckNow,
     PauseResume,
     UpdateAll,
+    Restart,
     Quit,
 }
 
 impl TrayAction {
-    pub const ALL: [TrayAction; 5] = [
+    pub const ALL: [TrayAction; 6] = [
         Self::Open,
         Self::CheckNow,
         Self::PauseResume,
         Self::UpdateAll,
+        Self::Restart,
         Self::Quit,
     ];
 
@@ -24,6 +26,7 @@ impl TrayAction {
             Self::CheckNow => "check",
             Self::PauseResume => "pause",
             Self::UpdateAll => "update-all",
+            Self::Restart => "restart",
             Self::Quit => "quit",
         }
     }
@@ -40,6 +43,8 @@ impl TrayAction {
             Self::PauseResume => "Pause".into(),
             Self::UpdateAll if updates > 0 => format!("Update all ({updates})"),
             Self::UpdateAll => "Update all".into(),
+            Self::Restart if updates == 1 => "Restart to finish 1 update".into(),
+            Self::Restart => format!("Restart to finish {updates} updates"),
             Self::Quit => "Quit".into(),
         }
     }
