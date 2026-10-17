@@ -183,6 +183,9 @@ impl AppState {
                     },
                     timeout: crate::jobs::restore::TIMEOUT,
                 }),
+                signer: Some(Arc::new(crate::jobs::signer::SystemSigner {
+                    temp: std::env::temp_dir(),
+                })),
             },
             Arc::new(TauriSink::new(app)),
         );

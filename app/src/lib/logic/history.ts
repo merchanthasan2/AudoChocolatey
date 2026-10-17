@@ -19,6 +19,15 @@ export function historyLine(j: Job): string {
   return '';
 }
 
+/** Who signed the installer. A note only: it never says the app is safe. */
+export function signerNote(j: Job): string | null {
+  const s = j.signer;
+  if (!s) return null;
+  if (s.kind === 'signed') return `Installer signed by ${s.name}`;
+  if (s.kind === 'unsigned') return "Installer wasn't signed";
+  return "Installer's signature isn't valid";
+}
+
 export function historyTone(j: Job): 'ok' | 'bad' | 'quiet' {
   return j.phase === 'succeeded' ? 'ok' : j.phase === 'failed' ? 'bad' : 'quiet';
 }

@@ -69,6 +69,9 @@ pub struct Job {
     /// "Clear finished" hides it from the activity panel; it stays in History.
     #[serde(default)]
     pub dismissed: bool,
+    /// Who signed the installer it ran (a note only).
+    #[serde(default)]
+    pub signer: Option<crate::jobs::signer::Signer>,
 }
 
 pub fn now_ms() -> u64 {
@@ -101,6 +104,7 @@ impl Job {
             started_at: None,
             ended_at: None,
             dismissed: false,
+            signer: None,
         }
     }
 
@@ -116,6 +120,7 @@ impl Job {
     pub fn restart_attempt(&mut self, via: SourceRef) {
         self.attempt += 1;
         self.via = Some(via);
+        self.signer = None;
         self.phase = JobPhase::Preparing;
         self.cancellable = true;
         self.detail = Some("Trying another source".into());

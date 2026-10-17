@@ -2,6 +2,7 @@
 import type { FailureReason } from "./FailureReason";
 import type { JobPhase } from "./JobPhase";
 import type { OpRequest } from "./OpRequest";
+import type { Signer } from "./Signer";
 import type { SourceRef } from "./SourceRef";
 import type { Verify } from "./Verify";
 
@@ -33,4 +34,8 @@ startedAt: number | null, endedAt: number | null,
 /**
  * "Clear finished" hides it from the activity panel; it stays in History.
  */
-dismissed: boolean, };
+dismissed: boolean, 
+/**
+ * Who signed the installer it ran (a note only).
+ */
+signer: Signer | null, };

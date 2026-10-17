@@ -5,7 +5,7 @@
   import AppIcon from '../lib/components/AppIcon.svelte';
   import EmptyState from '../lib/components/EmptyState.svelte';
   import Skeleton from '../lib/components/Skeleton.svelte';
-  import { historyLine, historyTone } from '../lib/logic/history';
+  import { historyLine, historyTone, signerNote } from '../lib/logic/history';
   import { relativeTime } from '../lib/logic/format';
 
   let list = $state<HistoryEntry[] | null>(null);
@@ -58,6 +58,7 @@
           <div class="meta">
             <span class={historyTone(j)}>{historyLine(j)}</span>
             {#if j.endedAt} · {relativeTime(j.endedAt, now)}{/if}
+            {#if signerNote(j)} · <span class:warn={j.signer?.kind !== 'signed'}>{signerNote(j)}</span>{/if}
             {#if j.phase === 'failed' && j.error}<div class="err">{j.error}</div>{/if}
           </div>
         </div>
@@ -82,5 +83,6 @@
   .ok { color: var(--ink-2); }
   .bad { color: var(--danger); font-weight: 600; }
   .err { margin-top: 2px; }
+  .warn { color: var(--warn-ink); }
   .row .btn { gap: 6px; flex-shrink: 0; }
 </style>

@@ -5,5 +5,6 @@ pub mod model;
 pub mod persist;
 pub mod progress;
 pub mod restore;
+pub mod signer;
 pub mod verify;
 pub mod worker;

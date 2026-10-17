@@ -187,6 +187,8 @@ pub struct WorkerDeps {
     pub fallback: Option<Arc<dyn Fallback>>,
     /// A restore point before each run of changes.
     pub restore: Option<RestoreDeps>,
+    /// "Installer signed by …" once a job reaches Installing.
+    pub signer: Option<Arc<dyn crate::jobs::signer::SignerCheck>>,
 }
 
 pub struct RestoreDeps {
@@ -712,6 +714,35 @@ impl Queue {
         inner.last_progress.remove(id);
     }
 
+    /// Looks up the installer's signer in the background (60 s at most); never holds the job.
+    fn ask_signer(&self, deps: &WorkerDeps, id: &str, target: &SourceRef, since: SystemTime) {
+        let Some(check) = deps.signer.clone() else {
+            return;
+        };
+        let attempt = self
+            .lock()
+            .jobs
+            .iter()
+            .find(|j| j.id == id)
+            .map(|j| j.attempt);
+        let (q, id, target) = (self.clone(), id.to_string(), target.clone());
+        tauri::async_runtime::spawn(async move {
+            let found = tokio::time::timeout(
+                Duration::from_secs(60),
+                tokio::task::spawn_blocking(move || check.check(&target, since)),
+            )
+            .await;
+            if let Ok(Ok(Some(s))) = found {
+                // A late answer about an earlier attempt is dropped.
+                q.update(&id, |j| {
+                    if Some(j.attempt) == attempt {
+                        j.signer = Some(s);
+                    }
+                });
+            }
+        });
+    }
+
     async fn execute(
         &self,
         deps: &WorkerDeps,
@@ -796,6 +827,7 @@ impl Queue {
         let mut tick = tokio::time::interval(deps.sample_every);
         let began = Instant::now();
         let mut timed_out = false;
+        let mut signer_asked = false;
         let result = loop {
             tokio::select! {
                 r = &mut run => break r,
@@ -804,6 +836,10 @@ impl Queue {
                     if !timed_out && phase.is_some_and(Job::cancellable_in) && began.elapsed() > deps.download_timeout {
                         timed_out = true;
                         token.cancel();
+                    }
+                    if !signer_asked && phase == Some(JobPhase::Installing) {
+                        signer_asked = true;
+                        self.ask_signer(deps, id, &op.target, watcher.since);
                     }
                     let downloading = phase == Some(JobPhase::Downloading);
                     if downloading && source == SourceKind::Winget {
@@ -989,6 +1025,7 @@ mod tests {
             verifier: None,
             fallback: None,
             restore: None,
+            signer: None,
         };
         (Queue::start(deps, rec.clone()), rec)
     }
@@ -1057,6 +1094,7 @@ mod tests {
                 wanted: Arc::new(move || wanted),
                 timeout: Duration::from_millis(80),
             }),
+            signer: None,
         };
         (Queue::start(deps, rec.clone()), rec)
     }
@@ -1349,6 +1387,7 @@ mod tests {
             verifier: None,
             fallback: None,
             restore: None,
+            signer: None,
         }
     }
 
@@ -1496,6 +1535,7 @@ mod tests {
             verifier: None,
             fallback: None,
             restore: None,
+            signer: None,
         }
     }
 
@@ -1781,6 +1821,7 @@ mod tests {
             verifier: None,
             fallback: None,
             restore: None,
+            signer: None,
         };
         let q = Queue::start(deps, rec);
         let id = q
@@ -1813,6 +1854,7 @@ mod tests {
             verifier: None,
             fallback: None,
             restore: None,
+            signer: None,
         };
         let q = Queue::start(deps, rec);
         let id = q

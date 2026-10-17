@@ -30,6 +30,7 @@ function job(phase: JobPhase, extra: Partial<Job> = {}): Job {
     startedAt: null,
     endedAt: null,
     dismissed: false,
+    signer: null,
     ...extra,
   };
 }
@@ -361,7 +362,7 @@ describe('import preview', () => {
   });
 });
 
-import { historyLine } from './history';
+import { historyLine, signerNote } from './history';
 describe('history lines', () => {
   it('says what each change did', () => {
     expect(historyLine(job('succeeded', { op: { kind: 'upgrade', target: { source: 'winget', id: 'A' }, version: null }, fromVersion: '1.0', toVersion: '1.1' }))).toBe('Updated from 1.0 to 1.1');
@@ -369,5 +370,11 @@ describe('history lines', () => {
     expect(historyLine(job('succeeded', { op: { kind: 'uninstall', target: { source: 'winget', id: 'A' }, version: null } }))).toBe('Removed');
     expect(historyLine(job('failed', { op: { kind: 'upgrade', target: { source: 'winget', id: 'A' }, version: null } }))).toBe("Couldn't update");
     expect(historyLine(job('cancelled'))).toBe('Stopped');
+  });
+  it('notes the installer signer without calling it safe', () => {
+    expect(signerNote(job('succeeded', { signer: { kind: 'signed', name: 'Mozilla Corporation' } }))).toBe('Installer signed by Mozilla Corporation');
+    expect(signerNote(job('succeeded', { signer: { kind: 'unsigned' } }))).toBe("Installer wasn't signed");
+    expect(signerNote(job('succeeded', { signer: { kind: 'invalid' } }))).toMatch(/isn't valid/);
+    expect(signerNote(job('succeeded'))).toBeNull();
   });
 });
