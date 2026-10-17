@@ -11,4 +11,8 @@ key: string,
 /**
  * An app attackers often target ("Important to keep current"); these sort first.
  */
-important: boolean, };
+important: boolean, 
+/**
+ * Its installer now downloads from a different site than this app's usual one.
+ */
+siteChanged: boolean, };

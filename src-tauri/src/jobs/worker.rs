@@ -116,10 +116,22 @@ impl MsiGate for SystemMsiGate {
     }
 }
 
-/// Installer size for winget jobs (winget prints no progress when piped).
+/// What a job's installer is: its size (winget prints no progress when piped) and address.
+#[derive(Debug, Clone, Default)]
+pub struct Sized {
+    pub total: Option<u64>,
+    pub url: Option<String>,
+}
+
 #[async_trait]
 pub trait DownloadSizer: Send + Sync {
-    async fn total(&self, op: &OpRequest) -> Option<u64>;
+    async fn size(&self, op: &OpRequest) -> Sized;
+}
+
+/// Told where an app's installer came from after it installed or updated through its own
+/// source (the "usual site" for the download-site note).
+pub trait HostRecorder: Send + Sync {
+    fn installed_from(&self, target: &SourceRef, url: &str);
 }
 
 /// `winget show` for the installer URL, then an HTTPS HEAD for Content-Length.
@@ -131,9 +143,9 @@ pub struct WingetSizer {
 
 #[async_trait]
 impl DownloadSizer for WingetSizer {
-    async fn total(&self, op: &OpRequest) -> Option<u64> {
+    async fn size(&self, op: &OpRequest) -> Sized {
         if op.target.source() != SourceKind::Winget || op.kind == OpKind::Uninstall {
-            return None;
+            return Sized::default();
         }
         let mut args = vec![
             "show",
@@ -154,14 +166,25 @@ impl DownloadSizer for WingetSizer {
             args,
             timeout: Duration::from_secs(30),
         };
-        let out = self.runner.run(&spec).await.ok()?;
-        let url = winget::details::parse_show(&out.stdout).installer_url?;
-        let resp = self.http.head(url).send().await.ok()?;
-        resp.status()
-            .is_success()
-            .then(|| resp.content_length())
-            .flatten()
-            .filter(|n| *n > 0)
+        let Ok(out) = self.runner.run(&spec).await else {
+            return Sized::default();
+        };
+        let Some(url) = winget::details::parse_show(&out.stdout).installer_url else {
+            return Sized::default();
+        };
+        let total = match self.http.head(&url).send().await {
+            Ok(resp) => resp
+                .status()
+                .is_success()
+                .then(|| resp.content_length())
+                .flatten()
+                .filter(|n| *n > 0),
+            Err(_) => None,
+        };
+        Sized {
+            total,
+            url: Some(url),
+        }
     }
 }
 
@@ -189,6 +212,8 @@ pub struct WorkerDeps {
     pub restore: Option<RestoreDeps>,
     /// "Installer signed by …" once a job reaches Installing.
     pub signer: Option<Arc<dyn crate::jobs::signer::SignerCheck>>,
+    /// Remembers the site an app's installer came from after a successful job.
+    pub hosts: Option<Arc<dyn HostRecorder>>,
 }
 
 pub struct RestoreDeps {
@@ -208,6 +233,8 @@ struct Inner {
     /// Nothing new starts while paused; the running job finishes.
     paused: bool,
     note: Option<String>,
+    /// The installer address each running job's source reported (not saved).
+    urls: HashMap<String, String>,
 }
 
 #[derive(Clone)]
@@ -678,6 +705,7 @@ impl Queue {
             }
             _ => None,
         };
+        let succeeded = matches!(outcome, Ok(Outcome::Succeeded { .. }));
         self.update(id, |j| match outcome {
             // Going back counts only when the earlier version is really there now.
             Ok(Outcome::Succeeded { .. })
@@ -709,6 +737,17 @@ impl Queue {
                 FailureReason::Unknown
             }),
         });
+        let url = self.lock().urls.remove(id);
+        // Only an install or update through the app's own source sets its usual site.
+        if let (true, Some(url), Some(h)) = (succeeded, url, &deps.hosts) {
+            let own = run_op.target == op.target;
+            if own
+                && op.target.source() == SourceKind::Winget
+                && matches!(op.kind, OpKind::Install | OpKind::Upgrade)
+            {
+                h.installed_from(&op.target, &url);
+            }
+        }
         let mut inner = self.lock();
         inner.tokens.remove(id);
         inner.last_progress.remove(id);
@@ -770,13 +809,17 @@ impl Queue {
             .sizer
             .as_ref()
             .filter(|_| source != SourceKind::Msstore);
-        let total = match sizer {
+        let sized = match sizer {
             Some(s) => tokio::select! {
-                t = s.total(op) => t,
+                t = s.size(op) => t,
                 _ = token.cancelled() => return Err(AppError::new("cancelled", "Stopped")),
             },
-            None => None,
+            None => Sized::default(),
         };
+        if let Some(url) = sized.url {
+            self.lock().urls.insert(id.to_string(), url);
+        }
+        let total = sized.total;
         while deps.gate.busy() {
             if token.is_cancelled() {
                 return Err(AppError::new("cancelled", "Stopped"));
@@ -1026,6 +1069,7 @@ mod tests {
             fallback: None,
             restore: None,
             signer: None,
+            hosts: None,
         };
         (Queue::start(deps, rec.clone()), rec)
     }
@@ -1095,6 +1139,7 @@ mod tests {
                 timeout: Duration::from_millis(80),
             }),
             signer: None,
+            hosts: None,
         };
         (Queue::start(deps, rec.clone()), rec)
     }
@@ -1388,6 +1433,7 @@ mod tests {
             fallback: None,
             restore: None,
             signer: None,
+            hosts: None,
         }
     }
 
@@ -1424,9 +1470,9 @@ mod tests {
     struct SlowSizer;
     #[async_trait::async_trait]
     impl DownloadSizer for SlowSizer {
-        async fn total(&self, _op: &OpRequest) -> Option<u64> {
+        async fn size(&self, _op: &OpRequest) -> Sized {
             tokio::time::sleep(Duration::from_secs(10)).await;
-            None
+            Sized::default()
         }
     }
 
@@ -1536,6 +1582,7 @@ mod tests {
             fallback: None,
             restore: None,
             signer: None,
+            hosts: None,
         }
     }
 
@@ -1613,6 +1660,63 @@ mod tests {
                 assert_eq!(j.reason, Some(FailureReason::NotRolledBack));
             }
         }
+    }
+
+    struct UrlSizer;
+    #[async_trait::async_trait]
+    impl DownloadSizer for UrlSizer {
+        async fn size(&self, _op: &OpRequest) -> Sized {
+            Sized {
+                total: None,
+                url: Some("https://dl.example.com/x.exe".into()),
+            }
+        }
+    }
+    #[derive(Default)]
+    struct Hosts(StdMutex<Vec<(String, String)>>);
+    impl HostRecorder for Hosts {
+        fn installed_from(&self, t: &SourceRef, url: &str) {
+            self.0
+                .lock()
+                .unwrap()
+                .push((t.id().to_string(), url.to_string()));
+        }
+    }
+
+    #[tokio::test]
+    async fn only_a_success_through_the_apps_own_source_sets_its_usual_site() {
+        let stream = FakeStream::new(vec![
+            (vec![], Some(0)),
+            (vec![], Some(HASH_MISMATCH)),
+            (vec![], Some(0)),
+        ]);
+        let mut deps = deps_with_file(stream, None);
+        let hosts = Arc::new(Hosts::default());
+        deps.sizer = Some(Arc::new(UrlSizer));
+        deps.hosts = Some(hosts.clone());
+        let alt = SourceRef::new(SourceKind::Choco, "spotify").unwrap();
+        deps.fallback = Some(Arc::new(FixedFallback(alt, StdMutex::new(vec![]))));
+        let q = Queue::start(deps, Arc::new(Rec::default()));
+        let ok = q
+            .enqueue(vec![op(SourceKind::Winget, "A.A", OpKind::Upgrade)])
+            .remove(0);
+        until_finished(&q, &ok).await;
+        // Fails, then succeeds through the backup source: no site recorded.
+        let via = q
+            .enqueue(vec![op(
+                SourceKind::Winget,
+                "Spotify.Spotify",
+                OpKind::Upgrade,
+            )])
+            .remove(0);
+        assert_eq!(until_finished(&q, &via).await.phase, JobPhase::Succeeded);
+        assert_eq!(
+            *hosts.0.lock().unwrap(),
+            vec![(
+                "A.A".to_string(),
+                "https://dl.example.com/x.exe".to_string()
+            )]
+        );
     }
 
     struct PanicFallback;
@@ -1822,6 +1926,7 @@ mod tests {
             fallback: None,
             restore: None,
             signer: None,
+            hosts: None,
         };
         let q = Queue::start(deps, rec);
         let id = q
@@ -1855,6 +1960,7 @@ mod tests {
             fallback: None,
             restore: None,
             signer: None,
+            hosts: None,
         };
         let q = Queue::start(deps, rec);
         let id = q

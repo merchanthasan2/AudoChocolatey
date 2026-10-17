@@ -70,6 +70,7 @@ pub fn start(app: AppHandle, data_dir: PathBuf) {
                 remember_seen(&mut saved.first_seen, &keys, now);
                 saved.auto_tried.retain(|k| keys.contains(k));
                 saved.last_check_at = Some(now);
+                check_sites(&state, &listing.items, &keys).await;
                 ready = Some((current, keys));
             }
 
@@ -137,6 +138,12 @@ async fn start_automatic(
         .unwrap_or_else(|p| p.into_inner())
         .rules()
         .to_vec();
+    let sites = state
+        .sites
+        .lock()
+        .unwrap_or_else(|p| p.into_inner())
+        .all_checked()
+        .clone();
     let picked = pick(
         items,
         &PickInput {
@@ -145,6 +152,7 @@ async fn start_automatic(
             min_age_days: settings.auto_rules.min_age_days,
             first_seen: &saved.first_seen,
             tried: &saved.auto_tried,
+            sites: &sites,
             now,
         },
         cat,
@@ -170,4 +178,79 @@ async fn start_automatic(
     }
     state.queue.enqueue(ops);
     keys
+}
+
+/// Looks at which site new Microsoft catalog updates download from (at most 50 per check,
+/// three at a time). An app with no usual site yet takes the one its installed version used,
+/// so the first look isn't simply trusted.
+async fn check_sites(state: &AppState, items: &[UpgradeCandidate], live: &BTreeSet<String>) {
+    use crate::ids::{PkgVersion, SourceKind, WingetId};
+    use crate::sites::{judge, site_of, Check};
+    let cat = Catalog::embedded();
+    type Todo = (
+        String,
+        String,
+        WingetId,
+        Option<PkgVersion>,
+        Option<PkgVersion>,
+    );
+    let todo: Vec<Todo> = {
+        let s = state.sites.lock().unwrap_or_else(|p| p.into_inner());
+        items
+            .iter()
+            .filter(|c| c.source == SourceKind::Winget)
+            .filter_map(|c| {
+                let uk = update_key(c, cat)?;
+                if !matches!(s.checked(&uk), None | Some(Check::Error)) {
+                    return None;
+                }
+                let rk = uk.rsplit_once('@')?.0.to_string();
+                Some((
+                    rk,
+                    uk,
+                    WingetId::try_from(c.id.clone()).ok()?,
+                    PkgVersion::try_from(c.installed_version.clone()).ok(),
+                    PkgVersion::try_from(c.available_version.clone()).ok(),
+                ))
+            })
+            .take(50)
+            .collect()
+    };
+    let lane = |n: usize| {
+        let mine: Vec<&Todo> = todo.iter().skip(n).step_by(3).collect();
+        async move {
+            for (rk, uk, id, installed, available) in mine {
+                let usual = state
+                    .sites
+                    .lock()
+                    .unwrap_or_else(|p| p.into_inner())
+                    .baseline(rk)
+                    .map(String::from);
+                let from_installed = match (&usual, installed) {
+                    (None, Some(v)) => state
+                        .winget
+                        .installer_url(id, Some(v))
+                        .await
+                        .ok()
+                        .flatten()
+                        .and_then(|u| site_of(&u)),
+                    _ => None,
+                };
+                let base = usual.or_else(|| from_installed.clone());
+                let (found, seed) = match state.winget.installer_url(id, available.as_ref()).await {
+                    Err(_) => (Check::Error, None),
+                    Ok(url) => judge(base.as_deref(), url.as_deref().and_then(site_of).as_deref()),
+                };
+                state
+                    .sites
+                    .lock()
+                    .unwrap_or_else(|p| p.into_inner())
+                    .record(rk, uk, found, from_installed.or(seed));
+            }
+        }
+    };
+    tokio::join!(lane(0), lane(1), lane(2));
+    let mut s = state.sites.lock().unwrap_or_else(|p| p.into_inner());
+    s.prune(live);
+    s.save();
 }

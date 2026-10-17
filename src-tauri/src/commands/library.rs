@@ -135,6 +135,8 @@ pub struct ItemInfo {
     pub key: String,
     /// An app attackers often target ("Important to keep current"); these sort first.
     pub important: bool,
+    /// Its installer now downloads from a different site than this app's usual one.
+    pub site_changed: bool,
 }
 
 /// Security-relevant apps first, otherwise the order the sources gave.
@@ -150,7 +152,14 @@ pub fn important_first(
                 .map(|t| rule_key(&t, cat))
                 .unwrap_or_default();
             let important = app.is_some_and(|a| a.security);
-            (c, ItemInfo { key, important })
+            (
+                c,
+                ItemInfo {
+                    key,
+                    important,
+                    site_changed: false,
+                },
+            )
         })
         .collect();
     out.sort_by_key(|(_, i)| !i.important);
@@ -189,9 +198,16 @@ pub fn current_updates(state: &AppState) -> UpdatesListing {
             source_errors: Vec::new(),
         });
     let mut store = state.rules.lock().unwrap_or_else(|p| p.into_inner());
-    let (listing, changed) = updates_listing(raw, store.rules_mut(), Catalog::embedded());
+    let cat = Catalog::embedded();
+    let (mut listing, changed) = updates_listing(raw, store.rules_mut(), cat);
     if changed {
         let _ = store.save();
+    }
+    let sites = state.sites.lock().unwrap_or_else(|p| p.into_inner());
+    for (c, info) in listing.items.iter().zip(listing.info.iter_mut()) {
+        info.site_changed = crate::background::auto::update_key(c, cat).is_some_and(|k| {
+            matches!(sites.checked(&k), Some(crate::sites::Check::Changed { .. }))
+        });
     }
     listing
 }

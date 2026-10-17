@@ -106,6 +106,21 @@ impl Fallback for SystemFallback {
     }
 }
 
+/// Feeds successful installs into the download-site store.
+struct SiteRecorder(Arc<Mutex<crate::sites::SiteStore>>);
+
+impl crate::jobs::worker::HostRecorder for SiteRecorder {
+    fn installed_from(&self, target: &SourceRef, url: &str) {
+        let Some(site) = crate::sites::site_of(url) else {
+            return;
+        };
+        let key = crate::rules::rule_key(target, Catalog::embedded());
+        let mut s = self.0.lock().unwrap_or_else(|p| p.into_inner());
+        s.installed_from(&key, &site);
+        s.save();
+    }
+}
+
 pub struct AppState {
     pub winget: WingetSource<SystemRunner>,
     pub choco: ChocoSource<SystemRunner>,
@@ -114,6 +129,8 @@ pub struct AppState {
     pub icons: IconService,
     pub config_dir: PathBuf,
     pub rules: Mutex<RuleStore>,
+    /// Which site each app's installers usually come from (download-site note).
+    pub sites: Arc<Mutex<crate::sites::SiteStore>>,
     pub bundles: Mutex<crate::bundles::BundleStore>,
     /// The last imported app list, waiting for "Install selected" (see commands::bundles).
     pub pending_import: Mutex<Option<crate::commands::bundles::PendingImport>>,
@@ -146,6 +163,9 @@ impl AppState {
         });
         let settings = Arc::new(Mutex::new(SettingsStore::open(
             config_dir.join("settings.json"),
+        )));
+        let sites = Arc::new(Mutex::new(crate::sites::SiteStore::open(
+            data_dir.join("hosts.json"),
         )));
         let queue = Queue::start(
             WorkerDeps {
@@ -186,6 +206,7 @@ impl AppState {
                 signer: Some(Arc::new(crate::jobs::signer::SystemSigner {
                     temp: std::env::temp_dir(),
                 })),
+                hosts: Some(Arc::new(SiteRecorder(sites.clone()))),
             },
             Arc::new(TauriSink::new(app)),
         );
@@ -201,6 +222,7 @@ impl AppState {
             queue,
             icons,
             rules: Mutex::new(RuleStore::open(config_dir.join("rules.json"))),
+            sites,
             bundles: Mutex::new(crate::bundles::BundleStore::open(
                 config_dir.join("my-bundles.json"),
             )),

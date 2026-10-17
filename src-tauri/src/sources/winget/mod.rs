@@ -135,6 +135,38 @@ impl<R: Runner> WingetSource<R> {
         self.show_in("winget", id.as_str()).await
     }
 
+    /// The installer address winget would use for one version (latest when `None`). `None`
+    /// when it doesn't say (other display languages, or no address in the manifest).
+    pub async fn installer_url(
+        &self,
+        id: &WingetId,
+        version: Option<&crate::ids::PkgVersion>,
+    ) -> AppResult<Option<String>> {
+        let mut args: Vec<String> = [
+            "show",
+            "--id",
+            id.as_str(),
+            "--exact",
+            "--source",
+            "winget",
+            "--accept-source-agreements",
+            "--disable-interactivity",
+        ]
+        .map(String::from)
+        .to_vec();
+        if let Some(v) = version {
+            args.extend(["--version".into(), v.as_str().to_string()]);
+        }
+        let out = self.run(args, 30).await?;
+        if out.code != Some(0) {
+            return Err(AppError::new(
+                "process_failed",
+                format!("winget show failed: {}", tail(&out)),
+            ));
+        }
+        Ok(details::parse_show(&out.stdout).installer_url)
+    }
+
     /// Versions the winget catalog still lists for a package.
     pub async fn versions(&self, id: &WingetId) -> AppResult<Vec<String>> {
         let args = [

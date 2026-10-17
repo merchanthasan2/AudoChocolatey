@@ -12,6 +12,7 @@ pub mod launch;
 mod rollback;
 mod rules;
 mod settings;
+mod sites;
 mod sources;
 mod state;
 mod versions;

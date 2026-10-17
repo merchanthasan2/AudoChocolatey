@@ -131,11 +131,14 @@ pub struct PickInput<'a> {
     pub first_seen: &'a BTreeMap<String, u64>,
     /// Updates already started automatically once; a failure isn't retried by itself.
     pub tried: &'a BTreeSet<String>,
+    /// What the download-site look found, by update key.
+    pub sites: &'a BTreeMap<String, crate::sites::Check>,
     pub now: u64,
 }
 
 /// Shown updates that may install by themselves: the app's choice is Automatic, both versions
-/// are known, the version has waited long enough, and it wasn't tried before.
+/// are known, the version has waited long enough, it wasn't tried before, and (for the
+/// Microsoft catalog) its download site was looked at and hasn't changed.
 pub fn pick(items: &[UpgradeCandidate], i: &PickInput, cat: &Catalog) -> Vec<UpgradeCandidate> {
     items
         .iter()
@@ -148,7 +151,10 @@ pub fn pick(items: &[UpgradeCandidate], i: &PickInput, cat: &Catalog) -> Vec<Upg
                 return false;
             };
             let rule = i.rules.iter().find(|r| r.key == rule_k).map(|r| &r.kind);
+            let site_ok = c.source != crate::ids::SourceKind::Winget
+                || crate::sites::Check::lets_auto_run(i.sites.get(&key));
             effective(i.mode, rule) == Policy::Auto
+                && site_ok
                 && !i.tried.contains(&key)
                 && i.first_seen
                     .get(&key)
@@ -454,12 +460,17 @@ mod tests {
             .collect();
         first_seen.insert("winget:e.new@2.0".into(), now - DAY_MS);
         let tried = BTreeSet::from(["winget:f.tried@2.0".to_string()]);
+        let sites: BTreeMap<String, crate::sites::Check> = items
+            .iter()
+            .map(|c| (update_key(c, cat).unwrap(), crate::sites::Check::Same))
+            .collect();
         let input = PickInput {
             rules: &rules,
             mode: AutoUpdate::Notify,
             min_age_days: 2,
             first_seen: &first_seen,
             tried: &tried,
+            sites: &sites,
             now,
         };
         let ids: Vec<String> = pick(&items, &input, cat)
@@ -481,6 +492,49 @@ mod tests {
     }
 
     #[test]
+    fn a_changed_or_unchecked_download_site_holds_automatic_updates() {
+        use crate::sites::Check;
+        let cat = Catalog::embedded();
+        let now = 100 * DAY_MS;
+        let items = vec![
+            cand("A.Same", "1.0", "2.0"),
+            cand("B.NoUrl", "1.0", "2.0"),
+            cand("C.Changed", "1.0", "2.0"),
+            cand("D.Error", "1.0", "2.0"),
+            cand("E.Pending", "1.0", "2.0"),
+        ];
+        let first_seen: BTreeMap<String, u64> = items
+            .iter()
+            .map(|c| (update_key(c, cat).unwrap(), 0))
+            .collect();
+        let sites = BTreeMap::from([
+            ("winget:a.same@2.0".to_string(), Check::Same),
+            ("winget:b.nourl@2.0".to_string(), Check::NoUrl),
+            (
+                "winget:c.changed@2.0".to_string(),
+                Check::Changed {
+                    site: "evil.com".into(),
+                },
+            ),
+            ("winget:d.error@2.0".to_string(), Check::Error),
+        ]);
+        let input = PickInput {
+            rules: &[],
+            mode: AutoUpdate::Automatic,
+            min_age_days: 0,
+            first_seen: &first_seen,
+            tried: &BTreeSet::new(),
+            sites: &sites,
+            now,
+        };
+        let ids: Vec<String> = pick(&items, &input, cat)
+            .into_iter()
+            .map(|c| c.id)
+            .collect();
+        assert_eq!(ids, vec!["A.Same", "B.NoUrl"]);
+    }
+
+    #[test]
     fn a_skipped_or_never_app_is_never_picked_even_if_it_slips_through() {
         let cat = Catalog::embedded();
         let now = 100 * DAY_MS;
@@ -493,6 +547,7 @@ mod tests {
             min_age_days: 0,
             first_seen: &first_seen,
             tried: &BTreeSet::new(),
+            sites: &BTreeMap::new(),
             now,
         };
         assert!(pick(&items, &input, cat).is_empty());
