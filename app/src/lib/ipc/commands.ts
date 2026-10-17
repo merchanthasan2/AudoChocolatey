@@ -96,3 +96,13 @@ import type { CsvRow } from './bindings/CsvRow';
 import type { ListPage } from './bindings/ListPage';
 /** Resolves to the number of rows saved, or null if the person cancelled. */
 export const exportCsv = (page: ListPage, rows: CsvRow[]) => invoke<number | null>('export_csv', { page, rows });
+
+// Updates page extras
+import type { UpdateInfo } from './bindings/UpdateInfo';
+import type { RuleRequest } from './bindings/RuleRequest';
+import type { OpMode } from './bindings/OpMode';
+export type { UpdateInfo, RuleRequest, OpMode };
+export const setRules = (items: RuleRequest[]) => invoke<UpdatesListing>('set_rules', { items });
+export const getUpdateInfo = () => invoke<UpdateInfo[]>('get_update_info');
+/** Opens the release notes Rust has for this exact update, in the person's own browser. */
+export const openReleaseNotes = (target: SourceRef, version: string) => invoke<void>('open_release_notes', { target, version });

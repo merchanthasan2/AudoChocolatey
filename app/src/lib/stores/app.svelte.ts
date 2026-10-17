@@ -175,6 +175,26 @@ class UpdatesSection extends Section<UpgradeCandidate, UpdatesListing> {
     try { this.accept(await api.removeRule(key)); }
     catch (e) { toasts.push({ text: message(e), tone: 'error' }); }
   }
+  /** Skips the shown version of several apps at once. */
+  async skipMany(list: UpgradeCandidate[]) {
+    if (list.length === 0) return;
+    try {
+      this.accept(await api.setRules(list.map((c) => ({ target: { source: c.source, id: c.id }, name: c.name, kind: { kind: 'skipVersion', version: c.availableVersion } }))));
+      toasts.push({ text: `Skipping ${list.length === 1 ? 'that version' : `${list.length} updates`}. They're under Hidden updates.`, tone: 'ok' });
+    } catch (e) { toasts.push({ text: message(e), tone: 'error' }); }
+  }
+  /** "What's new" and release dates, by `source:id`, for the exact shown version. */
+  info = $state<Record<string, api.UpdateInfo>>({});
+  takeInfo(list: api.UpdateInfo[]) {
+    this.info = Object.fromEntries(list.map((i) => [`${i.source}:${i.id.toLowerCase()}`, i]));
+  }
+  infoFor(c: UpgradeCandidate): api.UpdateInfo | undefined {
+    const i = this.info[`${c.source}:${c.id.toLowerCase()}`];
+    return i && i.version === c.availableVersion ? i : undefined;
+  }
+  async loadInfo() {
+    try { this.takeInfo(await api.getUpdateInfo()); } catch { /* none yet */ }
+  }
 }
 export const updates = new UpdatesSection(api.listUpdates);
 
@@ -330,11 +350,12 @@ class QueueStore {
   async updateAll() {
     try { this.batch = await api.updateAll(); } catch (e) { toasts.push({ text: message(e), tone: 'error' }); }
   }
-  async updateMany(list: UpgradeCandidate[]) {
+  /** `mode`: silent (normal), with the installer's own window, or reinstall the same version. */
+  async updateMany(list: UpgradeCandidate[], mode: api.OpMode = 'normal') {
     if (list.length === 0) return;
     try {
       this.batch = await api.enqueue(
-        list.map((c) => ({ op: { kind: 'upgrade', target: { source: c.source, id: c.id }, version: null }, displayName: c.name })),
+        list.map((c) => ({ op: { kind: 'upgrade', target: { source: c.source, id: c.id }, version: null, mode }, displayName: c.name })),
       );
     } catch (e) {
       toasts.push({ text: message(e), tone: 'error' });

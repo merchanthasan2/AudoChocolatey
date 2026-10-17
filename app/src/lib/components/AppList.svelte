@@ -65,4 +65,5 @@
   .applist :global(.list-header .c-app) { padding-left: 0; }
   @container (max-width: 760px) { .applist :global(.c-date) { display: none; } }
   @container (max-width: 640px) { .applist :global(.c-src) { display: none; } }
+  @container (max-width: 600px) { .applist :global(.c-ver) { display: none; } }
 </style>

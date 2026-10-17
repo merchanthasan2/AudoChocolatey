@@ -1,7 +1,7 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import { router, overview, settings, installed, updates, queue, myBundles } from './lib/stores/app.svelte';
-  import { onUpdatesChanged } from './lib/ipc/events';
+  import { onUpdatesChanged, onUpdateInfo } from './lib/ipc/events';
   import AdminBanner from './lib/components/AdminBanner.svelte';
   import BackgroundPrompt from './lib/components/BackgroundPrompt.svelte';
   import Sidebar from './lib/components/Sidebar.svelte';
@@ -31,6 +31,8 @@
     updates.refresh();
     myBundles.load();
     onUpdatesChanged((l) => updates.accept(l, true));
+    onUpdateInfo((i) => updates.takeInfo(i));
+    updates.loadInfo();
   });
 
   // Each view starts at the top; switching is a quick fade, never a slide (it happens often).

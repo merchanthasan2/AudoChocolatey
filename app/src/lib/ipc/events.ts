@@ -19,3 +19,8 @@ export const onUpdatesChanged = (cb: (l: UpdatesListing) => void): Promise<Unlis
 
 /** Closing was held because an installer is running; the UI asks the user. */
 export const onCloseBlocked = (cb: () => void): Promise<UnlistenFn> => listen('app://close-blocked', () => cb());
+
+/** "What's new" links and release dates arrived for the shown updates. */
+export const onUpdateInfo = (cb: (info: UpdateInfo[]) => void): Promise<UnlistenFn> =>
+  listen<UpdateInfo[]>('updates://info', (e) => cb(e.payload));
+import type { UpdateInfo } from './bindings/UpdateInfo';
