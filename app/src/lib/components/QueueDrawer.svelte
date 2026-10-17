@@ -3,14 +3,44 @@
   import AppRow from './AppRow.svelte';
   import JobButton from './JobButton.svelte';
   import Icon from './Icon.svelte';
+  import RowMenu from './RowMenu.svelte';
   import { fade } from 'svelte/transition';
   import type { ButtonMode } from '../logic/jobButton';
+  import type { Job } from '../ipc/commands';
+  import { getJobLog } from '../ipc/commands';
   let { open = $bindable(false) }: { open?: boolean } = $props();
 
   const verb: Record<string, ButtonMode> = { install: 'install', upgrade: 'update', uninstall: 'uninstall', rollback: 'update' };
   const kindText: Record<string, string> = { install: 'Install', upgrade: 'Update', uninstall: 'Uninstall', rollback: 'Go back to the earlier version' };
   const jobs = $derived([...queue.jobs].reverse());
   const hasFinished = $derived(queue.jobs.length > queue.active.length);
+
+  // Other ways to try a failed change; the backend checks each is allowed.
+  function retryItems(j: Job) {
+    const items = [{ text: 'Try again', run: () => queue.retry(j.id) }];
+    const tool = j.op.target.source !== 'msstore';
+    if (tool && (j.op.kind === 'install' || j.op.kind === 'upgrade')) items.push({ text: 'Try with the installer window', run: () => queue.retry(j.id, 'interactive') });
+    if (tool && j.op.kind === 'upgrade') items.push({ text: 'Reinstall', run: () => queue.retry(j.id, 'reinstall') });
+    return items;
+  }
+
+  // The live output of one job (technical view: the tools' own words are shown as they are).
+  let logFor = $state<string | null>(null);
+  let lines = $state<string[]>([]);
+  let logBox = $state<HTMLElement>();
+  $effect(() => {
+    const id = logFor;
+    if (!id) return;
+    let stop = false;
+    const tick = async () => {
+      try { lines = await getJobLog(id); } catch { lines = []; }
+      queueMicrotask(() => logBox?.scrollTo({ top: logBox.scrollHeight }));
+      const running = queue.jobs.some((j) => j.id === id && !['succeeded', 'failed', 'cancelled', 'skipped'].includes(j.phase));
+      if (!stop && running) setTimeout(tick, 1000);
+    };
+    tick();
+    return () => { stop = true; };
+  });
 
   function slide(_node: Element) {
     const reduced = document.documentElement.dataset.motion === 'reduced';
@@ -55,10 +85,20 @@
           {#each jobs as j (j.id)}
             <AppRow name={j.displayName} meta={j.detail ?? kindText[j.op.kind]} job={j} mode={verb[j.op.kind]} iconKey="{j.op.target.source}:{j.op.target.id}">
               {#snippet action()}
-                <JobButton job={j} mode={verb[j.op.kind]} name={j.displayName}
-                  onstart={() => queue.retry(j.id)} oncancel={(id) => queue.cancel(id)} onretry={(id) => queue.retry(id)} />
+                <span class="acts">
+                  <JobButton job={j} mode={verb[j.op.kind]} name={j.displayName}
+                    onstart={() => queue.retry(j.id)} oncancel={(id) => queue.cancel(id)} onretry={(id) => queue.retry(id)} />
+                  {#if j.phase === 'failed' || j.phase === 'cancelled'}
+                    <RowMenu label="Other ways to try {j.displayName}" items={retryItems(j)} />
+                  {/if}
+                  <button class="log-btn" aria-expanded={logFor === j.id} title="Show what's happening"
+                    onclick={() => (logFor = logFor === j.id ? null : j.id)}>Details</button>
+                </span>
               {/snippet}
             </AppRow>
+            {#if logFor === j.id}
+              <pre class="log" bind:this={logBox} aria-label="Live output for {j.displayName}">{lines.length ? lines.join('\n') : 'Nothing yet.'}</pre>
+            {/if}
           {/each}
         </div>
       {/if}
@@ -80,5 +120,10 @@
   .body { overflow: auto; padding: 0 20px 24px; }
   .empty { padding: 24px 4px; }
   .note { margin: 0 0 12px; padding: 10px 14px; border-radius: 12px; background: var(--card); box-shadow: var(--shadow-card); font-size: 13px; color: var(--ink-2); }
+  .acts { display: inline-flex; align-items: center; gap: 4px; }
+  .log-btn { font-size: 12px; font-weight: 600; color: var(--muted); padding: 4px 6px; border-radius: 6px; }
+  .log-btn:hover, .log-btn[aria-expanded='true'] { color: var(--ink); background: var(--pill); }
+  .log { margin: 0; padding: 10px 14px; max-height: 220px; overflow: auto; background: var(--canvas-2); border-top: 1px solid var(--hairline);
+    font: 11.5px/1.45 ui-monospace, 'Cascadia Mono', Consolas, monospace; color: var(--ink-2); white-space: pre-wrap; word-break: break-word; }
   .note.row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 </style>

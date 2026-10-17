@@ -316,11 +316,18 @@ pub fn cancel_job(state: State<'_, AppState>, id: String) -> Result<(), AppError
 }
 
 #[tauri::command]
-pub fn retry_job(state: State<'_, AppState>, id: String) -> Result<String, AppError> {
-    if let Some(j) = state.queue.snapshot().into_iter().find(|j| j.id == id) {
+pub fn retry_job(
+    state: State<'_, AppState>,
+    id: String,
+    mode: Option<crate::sources::model::OpMode>,
+) -> Result<String, AppError> {
+    if let Some(mut j) = state.queue.snapshot().into_iter().find(|j| j.id == id) {
+        if let Some(m) = mode {
+            j.op.mode = m;
+        }
         allowed(&state, &[(j.op, j.display_name)])?;
     }
-    state.queue.retry(&id)
+    state.queue.retry_as(&id, mode)
 }
 
 #[tauri::command]

@@ -2,6 +2,7 @@
   import { settings, overview, myBundles, toasts } from '../lib/stores/app.svelte';
   import { getDiagnostics, getAutoStatus, pickBackupFolder, backupNow, type Diagnostics, type AutoStatus } from '../lib/ipc/commands';
   import Icon from '../lib/components/Icon.svelte';
+  import SearchField from '../lib/components/SearchField.svelte';
   import QuantumStepLogo from '../lib/components/QuantumStepLogo.svelte';
   import type { AutoRules } from '../lib/ipc/bindings/AutoRules';
   import { clock } from '../lib/logic/rules';
@@ -13,6 +14,30 @@
   let diag = $state<Diagnostics | null>(null);
   onMount(() => { getDiagnostics().then((d) => (diag = d)).catch(() => {}); });
   const s = $derived(settings.value);
+
+  // Search: a matching section shows whole; otherwise only its matching rows show.
+  let q = $state('');
+  let root = $state<HTMLElement>();
+  let none = $state(false);
+  $effect(() => {
+    void s;
+    const t = q.trim().toLowerCase();
+    if (!root) return;
+    let anyShown = false;
+    for (const sec of root.querySelectorAll<HTMLElement>('section.group')) {
+      const title = (sec.querySelector('h2')?.textContent ?? '').toLowerCase();
+      const whole = !t || title.includes(t);
+      let shown = whole;
+      for (const el of sec.querySelectorAll<HTMLElement>(':scope > .row, :scope > dl, :scope > p, :scope > .about')) {
+        const hit = whole || (el.textContent ?? '').toLowerCase().includes(t);
+        el.style.display = hit ? '' : 'none';
+        shown ||= hit;
+      }
+      sec.style.display = shown ? '' : 'none';
+      anyShown ||= shown;
+    }
+    none = !anyShown;
+  });
   const sourceLabel = (k: string) => (k === 'winget' ? 'winget' : 'Chocolatey');
 
   // Re-read whenever the automatic choices change, so the "Waiting: …" line stays true.
@@ -40,9 +65,14 @@
   }
 </script>
 
-<header class="head"><h1>Settings</h1></header>
+<header class="head">
+  <h1>Settings</h1>
+  <div class="find"><SearchField value={q} oninput={(v) => (q = v)} placeholder="Search settings" hint={false} /></div>
+</header>
 
 {#if s}
+<div bind:this={root}>
+  {#if none}<p class="muted none">No settings match "{q}".</p>{/if}
   {#if diag?.settingsReadOnly}
     <div class="gap"><Banner text="Your settings were saved by a newer version, so changes can't be saved here." /></div>
   {/if}
@@ -245,10 +275,13 @@
     </div>
     <p class="hint small">Quantum Updater by Quantum Step Creation. Free to use; all rights reserved.</p>
   </section>
+</div>
 {/if}
 
 <style>
-  .head { margin-bottom: 22px; }
+  .head { margin-bottom: 22px; display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; max-width: 760px; }
+  .find { width: min(300px, 50%); }
+  .none { padding: 12px 2px; }
   .gap { margin-bottom: 12px; }
   .group { padding: 18px 20px; margin-bottom: 14px; display: grid; gap: 2px; max-width: 760px; }
   .group h2 { margin-bottom: 8px; }

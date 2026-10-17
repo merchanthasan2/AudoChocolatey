@@ -198,7 +198,7 @@ class UpdatesSection extends Section<UpgradeCandidate, UpdatesListing> {
   /** Apps installed directly that this app can update (never part of Update all). */
   linked = $state<api.LinkedUpdate[]>([]);
   async loadLinked() {
-    try { this.linked = await api.listLinkedUpdates(); } catch { this.linked = []; }
+    try { this.linked = (await api.listLinkedUpdates()) ?? []; } catch { this.linked = []; }
   }
 }
 export const updates = new UpdatesSection(api.listUpdates);
@@ -369,8 +369,8 @@ class QueueStore {
   async cancel(id: string) {
     try { await api.cancelJob(id); } catch (e) { toasts.push({ text: message(e), tone: 'error' }); }
   }
-  async retry(id: string) {
-    try { await api.retryJob(id); } catch (e) { toasts.push({ text: message(e), tone: 'error' }); }
+  async retry(id: string, mode?: api.OpMode) {
+    try { await api.retryJob(id, mode); } catch (e) { toasts.push({ text: message(e), tone: 'error' }); }
   }
   async clearFinished() { await api.clearFinished(); }
   async setPaused(on: boolean) {

@@ -61,7 +61,7 @@ export const quitAnyway = () => invoke<void>('quit_anyway');
 /** Restarts through the Windows admin prompt; rejects if the person says no. */
 export const relaunchAsAdmin = () => invoke<void>('relaunch_as_admin');
 export const cancelJob = (id: string) => invoke<void>('cancel_job', { id });
-export const retryJob = (id: string) => invoke<string>('retry_job', { id });
+export const retryJob = (id: string, mode?: import('./bindings/OpMode').OpMode) => invoke<string>('retry_job', { id, mode: mode ?? null });
 export const clearFinished = () => invoke<void>('clear_finished');
 export const getJobLog = (id: string) => invoke<string[]>('get_job_log', { id });
 import type { HistoryEntry } from './bindings/HistoryEntry';

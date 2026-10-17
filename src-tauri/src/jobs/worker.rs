@@ -533,7 +533,13 @@ impl Queue {
     }
 
     pub fn retry(&self, id: &str) -> AppResult<String> {
-        let job = self
+        self.retry_as(id, None)
+    }
+
+    /// Runs a failed or stopped job again, optionally another way (installer window,
+    /// reinstall). The caller checks the mode is allowed.
+    pub fn retry_as(&self, id: &str, mode: Option<OpMode>) -> AppResult<String> {
+        let mut job = self
             .snapshot()
             .into_iter()
             .find(|j| j.id == id)
@@ -544,6 +550,9 @@ impl Queue {
                     "only failed or cancelled jobs can be retried",
                 )
             })?;
+        if let Some(m) = mode {
+            job.op.mode = m;
+        }
         Ok(self.enqueue(vec![(job.op, job.display_name)]).remove(0))
     }
 
