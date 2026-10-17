@@ -16,7 +16,11 @@ notifyFinished: boolean,
 /**
  * Notify when a change fails (window closed).
  */
-notifyFailed: boolean, startAtLogin: boolean, startInTray: boolean, closeToTray: boolean, showUnknownVersions: boolean, selfUpdate: SelfUpdate, autoUpdate: AutoUpdate, autoRules: AutoRules, choco: ChocoSettings, 
+notifyFailed: boolean, startAtLogin: boolean, startInTray: boolean, closeToTray: boolean, showUnknownVersions: boolean, selfUpdate: SelfUpdate, autoUpdate: AutoUpdate, autoRules: AutoRules, 
+/**
+ * Ask Windows for a restore point before each run of changes.
+ */
+restorePoint: boolean, choco: ChocoSettings, 
 /**
  * Microsoft Store apps (through winget's Store source).
  */

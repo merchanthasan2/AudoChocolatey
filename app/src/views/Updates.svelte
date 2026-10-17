@@ -23,6 +23,7 @@
   // Each app's Automatic / Ask first choice (rows keep their listing index through `items`).
   const mode = $derived(settings.value?.autoUpdate ?? 'notify');
   const ruleOf = (u: UpgradeCandidate) => ruleAt(updates.last, updates.items.indexOf(u));
+  const important = (u: UpgradeCandidate) => !!updates.last?.info[updates.items.indexOf(u)]?.important;
   const isAuto = (u: UpgradeCandidate) => effectiveChoice(mode, ruleOf(u)?.kind) === 'auto';
   function menuFor(u: UpgradeCandidate) {
     const rule = ruleOf(u);
@@ -132,7 +133,7 @@
     {#each rows as u, i (keys[i])}
       {@const job = jobOf(u)}
       <div class="row-wrap" in:rise={{ delay: Math.min(i, 8) * 40 }} out:collapse>
-        <AppRow name={u.name} meta="{u.installedVersion} → {u.availableVersion}{isAuto(u) ? ' · Updates automatically' : ''}" {job} mode="update" bar
+        <AppRow name={u.name} meta="{u.installedVersion} → {u.availableVersion}{important(u) ? ' · Important to keep current' : ''}{isAuto(u) ? ' · Updates automatically' : ''}" {job} mode="update" bar
           iconKey="{u.source}:{u.id}">
           {#snippet lead()}
             <Checkbox label="Select {u.name}" checked={selected.has(keys[i])} disabled={isBusy(u)}

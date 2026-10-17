@@ -9,10 +9,26 @@ pub fn build_op(op: &OpRequest) -> AppResult<Vec<String>> {
     if op.target.source() != SourceKind::Choco {
         return Err(AppError::new("invalid_input", "not a Chocolatey package"));
     }
+    if op.kind == OpKind::Rollback {
+        // Chocolatey's documented downgrade: upgrade to an exact older version.
+        let Some(v) = &op.version else {
+            return Err(AppError::new("invalid_input", "rollback needs a version"));
+        };
+        return Ok(vec![
+            "upgrade".into(),
+            op.target.id().to_string(),
+            "-y".into(),
+            "--no-color".into(),
+            "--version".into(),
+            v.to_string(),
+            "--allow-downgrade".into(),
+        ]);
+    }
     let verb = match op.kind {
         OpKind::Install => "install",
         OpKind::Upgrade => "upgrade",
         OpKind::Uninstall => "uninstall",
+        OpKind::Rollback => unreachable!("handled above"),
     };
     let mut argv = vec![
         verb.to_string(),
@@ -86,6 +102,27 @@ mod tests {
             build_op(&op(OpKind::Uninstall, Some("9"))).unwrap(),
             ["uninstall", "chocolatey-core.extension", "-y", "--no-color"]
         );
+    }
+
+    #[test]
+    fn going_back_is_an_exact_downgrade() {
+        assert_eq!(
+            build_op(&op(OpKind::Rollback, Some("1.4.0"))).unwrap(),
+            [
+                "upgrade",
+                "chocolatey-core.extension",
+                "-y",
+                "--no-color",
+                "--version",
+                "1.4.0",
+                "--allow-downgrade"
+            ]
+        );
+        assert!(build_op(&op(OpKind::Rollback, None)).is_err());
+        for k in [OpKind::Install, OpKind::Upgrade] {
+            let a = build_op(&op(k, Some("1.0"))).unwrap();
+            assert!(!a.iter().any(|x| x == "--allow-downgrade"), "{a:?}");
+        }
     }
 
     #[test]

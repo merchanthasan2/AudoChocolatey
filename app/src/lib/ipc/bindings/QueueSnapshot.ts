@@ -4,4 +4,8 @@ import type { Job } from "./Job";
 /**
  * The whole queue as the UI sees it.
  */
-export type QueueSnapshot = { jobs: Array<Job>, paused: boolean, };
+export type QueueSnapshot = { jobs: Array<Job>, paused: boolean, 
+/**
+ * A note about the current run of changes (the restore point).
+ */
+note: string | null, };

@@ -18,7 +18,7 @@ import type { UpdatesListing, RuleKind } from '../ipc/commands';
 const message = (e: unknown) => (e as { message?: string })?.message ?? String(e);
 
 /* ---------------------------------------------------------------- router */
-export type View = 'marketplace' | 'updates' | 'installed' | 'settings';
+export type View = 'marketplace' | 'updates' | 'installed' | 'history' | 'settings';
 class Router {
   view = $state<View>('updates');
   go(v: View) { this.view = v; }
@@ -201,6 +201,8 @@ const FINISHED = new Set(['succeeded', 'failed', 'cancelled', 'skipped']);
 class QueueStore {
   jobs = $state<Job[]>([]);
   paused = $state(false);
+  /** About the current run of changes (the restore point). */
+  note = $state<string | null>(null);
   notStarted = $derived(notStarted(this.jobs));
   active = $derived(this.jobs.filter((j) => !FINISHED.has(j.phase)));
   current = $derived(this.active.find((j) => j.phase !== 'queued'));
@@ -212,8 +214,15 @@ class QueueStore {
     this.#started = true;
     await onJobChanged((j) => this.#upsert(j, true));
     await onJobProgress((j) => this.#upsert(j, false));
-    await onQueueChanged((s) => { this.jobs = s.jobs; this.paused = s.paused; });
-    try { const s = await api.getQueue(); this.jobs = s.jobs; this.paused = s.paused; } catch { /* empty queue */ }
+    await onQueueChanged((s) => this.#take(s));
+    try { this.#take(await api.getQueue()); } catch { /* empty queue */ }
+  }
+
+  /** Jobs cleared from the panel stay in History, not here. */
+  #take(s: api.QueueSnapshot) {
+    this.jobs = s.jobs.filter((j) => !j.dismissed);
+    this.paused = s.paused;
+    this.note = s.note;
   }
 
   #upsert(job: Job, announce: boolean) {

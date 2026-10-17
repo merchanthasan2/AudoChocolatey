@@ -62,7 +62,8 @@ pub fn candidate(
         return None;
     }
     match kind {
-        OpKind::Uninstall => None,
+        // A failed rollback must never turn into an install of the latest version.
+        OpKind::Uninstall | OpKind::Rollback => None,
         OpKind::Install => {
             let fixable = matches!(
                 reason,
@@ -109,6 +110,29 @@ mod tests {
         choco: true,
         store: true,
     };
+
+    #[test]
+    fn going_back_never_falls_back() {
+        let cat = Catalog::embedded();
+        for reason in [
+            R::HashMismatch,
+            R::DownloadFailed,
+            R::NotFound,
+            R::InstallerError,
+        ] {
+            assert_eq!(
+                candidate(
+                    OpKind::Rollback,
+                    &r(SourceKind::Winget, "Spotify.Spotify"),
+                    reason,
+                    false,
+                    cat,
+                    ALL_ON
+                ),
+                None
+            );
+        }
+    }
 
     #[test]
     fn alternates_come_from_the_catalog_only() {

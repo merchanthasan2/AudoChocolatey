@@ -7,8 +7,8 @@
   import type { ButtonMode } from '../logic/jobButton';
   let { open = $bindable(false) }: { open?: boolean } = $props();
 
-  const verb: Record<string, ButtonMode> = { install: 'install', upgrade: 'update', uninstall: 'uninstall' };
-  const kindText: Record<string, string> = { install: 'Install', upgrade: 'Update', uninstall: 'Uninstall' };
+  const verb: Record<string, ButtonMode> = { install: 'install', upgrade: 'update', uninstall: 'uninstall', rollback: 'update' };
+  const kindText: Record<string, string> = { install: 'Install', upgrade: 'Update', uninstall: 'Uninstall', rollback: 'Go back to the earlier version' };
   const jobs = $derived([...queue.jobs].reverse());
   const hasFinished = $derived(queue.jobs.length > queue.active.length);
 
@@ -36,6 +36,9 @@
       </div>
     </header>
     <div class="body">
+      {#if queue.note}
+        <p class="note" role="status">{queue.note}</p>
+      {/if}
       {#if queue.paused}
         <p class="note">Paused. What's running now will finish; nothing new starts until you resume.</p>
       {/if}

@@ -81,6 +81,7 @@ fn past(kind: OpKind) -> &'static str {
         OpKind::Install => "installed",
         OpKind::Upgrade => "updated",
         OpKind::Uninstall => "removed",
+        OpKind::Rollback => "rolled back",
     }
 }
 

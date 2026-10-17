@@ -1,6 +1,6 @@
 import type { Job } from '../ipc/commands';
 
-const VERB: Record<string, string> = { install: 'installed', upgrade: 'updated', uninstall: 'removed' };
+const VERB: Record<string, string> = { install: 'installed', upgrade: 'updated', uninstall: 'removed', rollback: 'is back on the earlier version' };
 
 /** What to say when a job succeeds; a version check that didn't move says so plainly. */
 export function doneToast(job: Job): { text: string; tone: 'ok' | 'warn' } {

@@ -8,7 +8,9 @@ use crate::icons::IconService;
 use crate::ids::{ChocoId, SourceKind, SourceRef, WingetId};
 use crate::jobs::failure::FailureReason;
 use crate::jobs::fallback;
-use crate::jobs::worker::{Fallback, Queue, SystemMsiGate, Verifier, WingetSizer, WorkerDeps};
+use crate::jobs::worker::{
+    Fallback, Queue, RestoreDeps, SystemMsiGate, Verifier, WingetSizer, WorkerDeps,
+};
 use crate::rules::RuleStore;
 use crate::settings::SettingsStore;
 use crate::sources::choco::ChocoSource;
@@ -167,6 +169,20 @@ impl AppState {
                     winget: WingetSource::new(SystemRunner, paths.winget.clone()),
                     choco: ChocoSource::new(SystemRunner, paths.choco.clone()),
                 })),
+                restore: Some(RestoreDeps {
+                    maker: Arc::new(crate::jobs::restore::SystemRestore),
+                    wanted: {
+                        let settings = settings.clone();
+                        Arc::new(move || {
+                            settings
+                                .lock()
+                                .unwrap_or_else(|p| p.into_inner())
+                                .get()
+                                .restore_point
+                        })
+                    },
+                    timeout: crate::jobs::restore::TIMEOUT,
+                }),
             },
             Arc::new(TauriSink::new(app)),
         );

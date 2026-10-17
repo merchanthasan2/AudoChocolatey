@@ -184,6 +184,8 @@ pub struct Settings {
     pub self_update: SelfUpdate,
     pub auto_update: AutoUpdate,
     pub auto_rules: AutoRules,
+    /// Ask Windows for a restore point before each run of changes.
+    pub restore_point: bool,
     pub choco: ChocoSettings,
     /// Microsoft Store apps (through winget's Store source).
     pub store: StoreSettings,
@@ -213,6 +215,7 @@ impl Default for Settings {
             self_update: SelfUpdate::Notify,
             auto_update: AutoUpdate::Notify,
             auto_rules: AutoRules::default(),
+            restore_point: true,
             choco: ChocoSettings::default(),
             store: StoreSettings::default(),
             backup: BackupSettings::default(),
@@ -241,6 +244,7 @@ pub struct SettingsPatch {
     pub self_update: Option<SelfUpdate>,
     pub auto_update: Option<AutoUpdate>,
     pub auto_rules: Option<AutoRules>,
+    pub restore_point: Option<bool>,
     pub choco_enabled: Option<bool>,
     pub choco_bootstrap_prompted: Option<bool>,
     pub store_enabled: Option<bool>,

@@ -67,6 +67,8 @@ pub trait Fallback: Send + Sync {
 pub struct QueueSnapshot {
     pub jobs: Vec<Job>,
     pub paused: bool,
+    /// A note about the current run of changes (the restore point).
+    pub note: Option<String>,
 }
 
 /// Is another Windows Installer session running?
@@ -183,6 +185,15 @@ pub struct WorkerDeps {
     pub verifier: Option<Arc<dyn Verifier>>,
     /// Backup sources for failed jobs.
     pub fallback: Option<Arc<dyn Fallback>>,
+    /// A restore point before each run of changes.
+    pub restore: Option<RestoreDeps>,
+}
+
+pub struct RestoreDeps {
+    pub maker: Arc<dyn crate::jobs::restore::RestorePoint>,
+    /// The setting, read when a run starts.
+    pub wanted: Arc<dyn Fn() -> bool + Send + Sync>,
+    pub timeout: Duration,
 }
 
 #[derive(Default)]
@@ -194,6 +205,7 @@ struct Inner {
     next: u64,
     /// Nothing new starts while paused; the running job finishes.
     paused: bool,
+    note: Option<String>,
 }
 
 #[derive(Clone)]
@@ -249,6 +261,8 @@ impl Queue {
         let worker = q.clone();
         let deps = Arc::new(deps);
         tauri::async_runtime::spawn(async move {
+            // A restore point is asked for when the queue goes from idle to busy.
+            let mut idle = true;
             loop {
                 let notified = worker.wake.notified();
                 let next = {
@@ -265,6 +279,9 @@ impl Queue {
                 };
                 match next {
                     Some(id) => {
+                        if std::mem::take(&mut idle) {
+                            worker.restore_point(&deps).await;
+                        }
                         let (w, d, jid) = (worker.clone(), deps.clone(), id.clone());
                         let handle =
                             tauri::async_runtime::spawn(async move { w.run_job(&d, &jid).await });
@@ -276,7 +293,10 @@ impl Queue {
                             });
                         }
                     }
-                    None => notified.await,
+                    None => {
+                        idle = true;
+                        notified.await
+                    }
                 }
             }
         });
@@ -305,7 +325,51 @@ impl Queue {
         QueueSnapshot {
             jobs: inner.jobs.clone(),
             paused: inner.paused,
+            note: inner.note.clone(),
         }
+    }
+
+    fn set_note(&self, note: Option<String>) {
+        self.lock().note = note;
+        self.emit_queue();
+    }
+
+    /// Asks Windows for a restore point if the setting is on. Never fails the run: a failure or
+    /// timeout only changes the note.
+    async fn restore_point(&self, deps: &WorkerDeps) {
+        use crate::jobs::restore::{Outcome, MAKING};
+        let Some(r) = deps.restore.as_ref().filter(|r| (r.wanted)()) else {
+            if self.lock().note.is_some() {
+                self.set_note(None);
+            }
+            return;
+        };
+        self.set_note(Some(MAKING.into()));
+        let maker = r.maker.clone();
+        let made = tokio::task::spawn_blocking(move || {
+            maker.create("Quantum Updater: before changing apps")
+        });
+        let out = match tokio::time::timeout(r.timeout, made).await {
+            Ok(Ok(o)) => o,
+            Ok(Err(_)) => Outcome::Failed,
+            Err(_) => Outcome::TimedOut,
+        };
+        self.set_note(Some(out.note().into()));
+    }
+
+    /// Finished jobs, newest first, including ones cleared from the activity panel.
+    pub fn history(&self) -> Vec<Job> {
+        let mut jobs: Vec<Job> = self
+            .lock()
+            .jobs
+            .iter()
+            .rev()
+            .filter(|j| j.phase.is_finished())
+            .cloned()
+            .collect();
+        // Stable: jobs that ended in the same moment keep "later added first".
+        jobs.sort_by_key(|j| std::cmp::Reverse(j.ended_at.unwrap_or(0)));
+        jobs
     }
 
     #[cfg(test)]
@@ -381,6 +445,37 @@ impl Queue {
         ids
     }
 
+    /// Adds one operation unless any change to the same app is waiting or running (checked
+    /// under the queue lock).
+    pub fn enqueue_exclusive(
+        &self,
+        op: OpRequest,
+        name: String,
+        same_app: impl Fn(&SourceRef) -> bool,
+    ) -> AppResult<String> {
+        let job = {
+            let mut inner = self.lock();
+            if inner
+                .jobs
+                .iter()
+                .any(|j| !j.phase.is_finished() && same_app(&j.op.target))
+            {
+                return Err(AppError::new(
+                    "busy",
+                    "This app is already being changed. Wait for that to finish.",
+                ));
+            }
+            inner.next += 1;
+            let job = Job::new(format!("j{}", inner.next), op, name);
+            inner.jobs.push(job.clone());
+            job
+        };
+        self.sink.changed(&job);
+        self.emit_queue();
+        self.wake.notify_one();
+        Ok(job.id)
+    }
+
     pub fn cancel(&self, id: &str) -> AppResult<()> {
         let mut inner = self.lock();
         let job = inner
@@ -423,19 +518,16 @@ impl Queue {
         Ok(self.enqueue(vec![(job.op, job.display_name)]).remove(0))
     }
 
+    /// Hides finished jobs from the activity panel; they stay in History.
     pub fn clear_finished(&self) {
         {
             let mut inner = self.lock();
-            let keep: Vec<Job> = inner
-                .jobs
-                .iter()
-                .filter(|j| !j.phase.is_finished())
-                .cloned()
-                .collect();
-            let live: std::collections::HashSet<String> =
-                keep.iter().map(|j| j.id.clone()).collect();
-            inner.jobs = keep;
-            inner.logs.retain(|k, _| live.contains(k));
+            for j in inner.jobs.iter_mut().filter(|j| j.phase.is_finished()) {
+                j.dismissed = true;
+            }
+            if inner.jobs.iter().all(|j| j.phase.is_finished()) {
+                inner.note = None;
+            }
         }
         self.emit_queue();
     }
@@ -524,15 +616,21 @@ impl Queue {
         self.sink.changed(&snapshot);
         self.emit_queue();
         let before = match (&deps.verifier, op.kind) {
-            (Some(v), OpKind::Upgrade | OpKind::Uninstall) => read_version(v.as_ref(), &op.target)
-                .await
-                .and_then(Result::ok)
-                .flatten(),
+            (Some(v), OpKind::Upgrade | OpKind::Uninstall | OpKind::Rollback) => {
+                read_version(v.as_ref(), &op.target)
+                    .await
+                    .and_then(Result::ok)
+                    .flatten()
+            }
             _ => None,
         };
         let mut run_op = op.clone();
         let mut outcome = self.execute(deps, id, &run_op, &token).await;
-        if let (Ok(Outcome::Failed(reason)), Some(fb)) = (&outcome, &deps.fallback) {
+        let fallback = deps
+            .fallback
+            .as_ref()
+            .filter(|_| op.kind != OpKind::Rollback);
+        if let (Ok(Outcome::Failed(reason)), Some(fb)) = (&outcome, fallback) {
             let reached = self
                 .lock()
                 .jobs
@@ -565,7 +663,12 @@ impl Queue {
                 let after = read_version(v.as_ref(), &run_op.target).await;
                 Some(match after {
                     Some(Ok(after)) => (
-                        verify::verdict(op.kind, before.as_deref(), after.as_deref()),
+                        verify::verdict(
+                            op.kind,
+                            op.version.as_ref().map(|v| v.as_str()),
+                            before.as_deref(),
+                            after.as_deref(),
+                        ),
                         after,
                     ),
                     _ => (verify::Verify::Unknown, None),
@@ -574,6 +677,15 @@ impl Queue {
             _ => None,
         };
         self.update(id, |j| match outcome {
+            // Going back counts only when the earlier version is really there now.
+            Ok(Outcome::Succeeded { .. })
+                if op.kind == OpKind::Rollback
+                    && check.as_ref().map(|c| c.0) != Some(verify::Verify::Confirmed) =>
+            {
+                j.from_version = before.clone();
+                j.to_version = check.and_then(|c| c.1);
+                j.fail(FailureReason::NotRolledBack)
+            }
             Ok(Outcome::Succeeded { reboot }) => {
                 j.reboot_required = reboot;
                 if let Some((verdict, after)) = check {
@@ -876,6 +988,7 @@ mod tests {
             jobs_file: None,
             verifier: None,
             fallback: None,
+            restore: None,
         };
         (Queue::start(deps, rec.clone()), rec)
     }
@@ -904,6 +1017,128 @@ mod tests {
 
     fn lines(text: &str, delay: u64) -> Vec<(u64, &str)> {
         text.lines().map(|l| (delay, l)).collect()
+    }
+
+    struct FakeRestore {
+        calls: AtomicUsize,
+        sleep: Duration,
+        out: crate::jobs::restore::Outcome,
+    }
+    impl crate::jobs::restore::RestorePoint for FakeRestore {
+        fn create(&self, _d: &str) -> crate::jobs::restore::Outcome {
+            self.calls.fetch_add(1, AO::SeqCst);
+            std::thread::sleep(self.sleep);
+            self.out.clone()
+        }
+    }
+
+    fn start_with_restore(
+        stream: Arc<FakeStream>,
+        maker: Arc<FakeRestore>,
+        wanted: bool,
+    ) -> (Queue, Arc<Rec>) {
+        let rec = Arc::new(Rec::default());
+        let deps = WorkerDeps {
+            stream,
+            winget: Some(r"C:ake\winget.exe".into()),
+            choco: Some(r"C:ake\choco.exe".into()),
+            gate: Arc::new(NoGate),
+            sizer: None,
+            winget_temp: std::env::temp_dir().join("qu-test-none"),
+            sample_every: Duration::from_millis(20),
+            gate_poll: Duration::from_millis(20),
+            download_timeout: Duration::from_secs(60),
+            elevated: true,
+            jobs_file: None,
+            verifier: None,
+            fallback: None,
+            restore: Some(RestoreDeps {
+                maker,
+                wanted: Arc::new(move || wanted),
+                timeout: Duration::from_millis(80),
+            }),
+        };
+        (Queue::start(deps, rec.clone()), rec)
+    }
+
+    #[tokio::test]
+    async fn a_restore_point_is_asked_once_per_run_and_never_blocks_it() {
+        use crate::jobs::restore::Outcome;
+        let maker = Arc::new(FakeRestore {
+            calls: AtomicUsize::new(0),
+            sleep: Duration::from_millis(400),
+            out: Outcome::Requested,
+        });
+        let (q, _) = start_with_restore(
+            FakeStream::new(vec![(vec![], Some(0)); 3]),
+            maker.clone(),
+            true,
+        );
+        let ids = q.enqueue(vec![
+            op(SourceKind::Winget, "A.A", OpKind::Install),
+            op(SourceKind::Winget, "B.B", OpKind::Install),
+        ]);
+        assert_eq!(until_finished(&q, &ids[0]).await.phase, JobPhase::Succeeded);
+        assert_eq!(until_finished(&q, &ids[1]).await.phase, JobPhase::Succeeded);
+        assert_eq!(maker.calls.load(AO::SeqCst), 1, "once for the run");
+        assert_eq!(
+            q.queue_snapshot().note.as_deref(),
+            Some(Outcome::TimedOut.note()),
+            "too slow: the jobs went ahead"
+        );
+        // Idle, then busy again: another one.
+        tokio::time::sleep(Duration::from_millis(50)).await;
+        let id = q
+            .enqueue(vec![op(SourceKind::Winget, "C.C", OpKind::Install)])
+            .remove(0);
+        until_finished(&q, &id).await;
+        assert_eq!(maker.calls.load(AO::SeqCst), 2);
+    }
+
+    #[tokio::test]
+    async fn a_failed_restore_point_still_runs_the_jobs() {
+        use crate::jobs::restore::Outcome;
+        for (out, wanted, calls) in [
+            (Outcome::Failed, true, 1),
+            (Outcome::Off, true, 1),
+            (Outcome::Requested, false, 0),
+        ] {
+            let maker = Arc::new(FakeRestore {
+                calls: AtomicUsize::new(0),
+                sleep: Duration::ZERO,
+                out: out.clone(),
+            });
+            let (q, _) = start_with_restore(
+                FakeStream::new(vec![(vec![], Some(0))]),
+                maker.clone(),
+                wanted,
+            );
+            let id = q
+                .enqueue(vec![op(SourceKind::Winget, "A.A", OpKind::Install)])
+                .remove(0);
+            assert_eq!(until_finished(&q, &id).await.phase, JobPhase::Succeeded);
+            assert_eq!(maker.calls.load(AO::SeqCst), calls);
+            let want = wanted.then(|| out.note().to_string());
+            assert_eq!(q.queue_snapshot().note, want);
+        }
+    }
+
+    #[tokio::test]
+    async fn clearing_finished_jobs_keeps_their_history() {
+        let (q, _) = start(
+            FakeStream::new(vec![(vec![], Some(0)), (vec![], Some(1))]),
+            Arc::new(NoGate),
+        );
+        let ids = q.enqueue(vec![
+            op(SourceKind::Winget, "A.A", OpKind::Install),
+            op(SourceKind::Winget, "B.B", OpKind::Install),
+        ]);
+        until_finished(&q, &ids[1]).await;
+        q.clear_finished();
+        assert!(q.snapshot().iter().all(|j| j.dismissed));
+        let h = q.history();
+        assert_eq!(h.len(), 2);
+        assert_eq!(h[0].id, ids[1], "newest first");
     }
 
     #[tokio::test]
@@ -1113,6 +1348,7 @@ mod tests {
             jobs_file: None,
             verifier: None,
             fallback: None,
+            restore: None,
         }
     }
 
@@ -1259,6 +1495,7 @@ mod tests {
             jobs_file: file,
             verifier: None,
             fallback: None,
+            restore: None,
         }
     }
 
@@ -1306,6 +1543,68 @@ mod tests {
         let j = until_finished(&q, &id).await;
         assert_eq!(j.phase, JobPhase::Succeeded);
         assert_eq!(j.verify, Some(crate::jobs::verify::Verify::Unknown));
+    }
+
+    fn rollback_op(v: &str) -> (OpRequest, String) {
+        (
+            OpRequest {
+                kind: OpKind::Rollback,
+                target: SourceRef::new(SourceKind::Winget, "A.A").unwrap(),
+                version: Some(crate::ids::PkgVersion::try_from(v.to_string()).unwrap()),
+            },
+            "A".into(),
+        )
+    }
+
+    #[tokio::test]
+    async fn going_back_counts_only_when_the_earlier_version_is_there() {
+        for (after, ok) in [("1.0.0", true), ("1.1", false), ("1.2", false)] {
+            let mut deps = deps_with_file(FakeStream::new(vec![]), None);
+            deps.verifier = Some(Arc::new(SeqVerifier(StdMutex::new(
+                [Ok(Some("1.1".into())), Ok(Some(after.into()))].into(),
+            ))));
+            let q = Queue::start(deps, Arc::new(Rec::default()));
+            let id = q.enqueue(vec![rollback_op("1.0")]).remove(0);
+            let j = until_finished(&q, &id).await;
+            if ok {
+                assert_eq!(j.phase, JobPhase::Succeeded, "{after}");
+            } else {
+                assert_eq!(j.phase, JobPhase::Failed, "{after}");
+                assert_eq!(j.reason, Some(FailureReason::NotRolledBack));
+            }
+        }
+    }
+
+    struct PanicFallback;
+    #[async_trait::async_trait]
+    impl Fallback for PanicFallback {
+        async fn alternate(&self, _: &OpRequest, _: FailureReason, _: bool) -> Option<SourceRef> {
+            panic!("a rollback must never fall back");
+        }
+    }
+
+    #[tokio::test]
+    async fn a_failed_rollback_never_tries_another_source() {
+        let mut deps = deps_with_file(FakeStream::new(vec![(vec![], Some(HASH_MISMATCH))]), None);
+        deps.fallback = Some(Arc::new(PanicFallback));
+        let q = Queue::start(deps, Arc::new(Rec::default()));
+        let id = q.enqueue(vec![rollback_op("1.0")]).remove(0);
+        assert_eq!(until_finished(&q, &id).await.phase, JobPhase::Failed);
+    }
+
+    #[tokio::test]
+    async fn one_change_per_app_when_going_back() {
+        let (q, _) = start(
+            FakeStream::new(vec![(vec![(300, "x")], Some(0))]),
+            Arc::new(NoGate),
+        );
+        q.enqueue(vec![op(SourceKind::Winget, "A.A", OpKind::Upgrade)]);
+        let (o, n) = rollback_op("1.0");
+        let err = q
+            .enqueue_exclusive(o.clone(), n.clone(), |t| t.id() == "A.A")
+            .unwrap_err();
+        assert_eq!(err.code, "busy");
+        assert!(q.enqueue_exclusive(o, n, |t| t.id() == "Other.App").is_ok());
     }
 
     /// Offers one fixed alternate; records what it was asked.
@@ -1481,6 +1780,7 @@ mod tests {
             jobs_file: None,
             verifier: None,
             fallback: None,
+            restore: None,
         };
         let q = Queue::start(deps, rec);
         let id = q
@@ -1512,6 +1812,7 @@ mod tests {
             jobs_file: None,
             verifier: None,
             fallback: None,
+            restore: None,
         };
         let q = Queue::start(deps, rec);
         let id = q

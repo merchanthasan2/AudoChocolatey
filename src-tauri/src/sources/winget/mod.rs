@@ -135,6 +135,31 @@ impl<R: Runner> WingetSource<R> {
         self.show_in("winget", id.as_str()).await
     }
 
+    /// Versions the winget catalog still lists for a package.
+    pub async fn versions(&self, id: &WingetId) -> AppResult<Vec<String>> {
+        let args = [
+            "show",
+            "--id",
+            id.as_str(),
+            "--exact",
+            "--source",
+            "winget",
+            "--versions",
+            "--accept-source-agreements",
+            "--disable-interactivity",
+        ]
+        .map(String::from)
+        .to_vec();
+        let out = self.run(args, 45).await?;
+        if out.code != Some(0) {
+            return Err(AppError::new(
+                "process_failed",
+                format!("winget show --versions failed: {}", tail(&out)),
+            ));
+        }
+        Ok(crate::rollback::parse_versions(&out.stdout))
+    }
+
     /// Store app details (publisher, licence, description).
     pub async fn show_store(&self, id: &StoreId) -> AppResult<details::ShowInfo> {
         self.show_in("msstore", id.as_str()).await

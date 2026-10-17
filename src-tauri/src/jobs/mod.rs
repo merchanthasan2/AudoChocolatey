@@ -4,5 +4,6 @@ pub mod fallback;
 pub mod model;
 pub mod persist;
 pub mod progress;
+pub mod restore;
 pub mod verify;
 pub mod worker;

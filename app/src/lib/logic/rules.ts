@@ -23,8 +23,8 @@ export function effectiveChoice(mode: AutoUpdate, kind: RuleKind | undefined): C
 }
 
 /** The rule behind the update at `index` in the listing, found by its key. */
-export function ruleAt(listing: { itemKeys: string[]; rules: Rule[] } | null, index: number): Rule | undefined {
-  const key = listing?.itemKeys[index];
+export function ruleAt(listing: { info: { key: string }[]; rules: Rule[] } | null, index: number): Rule | undefined {
+  const key = listing?.info[index]?.key;
   return key ? listing!.rules.find((r) => r.key === key) : undefined;
 }
 

@@ -216,8 +216,21 @@ pub fn enqueue(state: State<'_, AppState>, ops: Vec<EnqueueItem>) -> Result<Vec<
     Ok(state.queue.enqueue(ops))
 }
 
+/// The page asks for the latest version only, and can't ask to go back: a pinned version or a
+/// rollback comes only from Rust (`rollback`), after its own checks and a Windows dialog.
+pub fn refuse_from_page(ops: &[(OpRequest, String)]) -> Result<(), AppError> {
+    if ops
+        .iter()
+        .any(|(o, _)| o.version.is_some() || o.kind == OpKind::Rollback)
+    {
+        return Err(AppError::new("invalid_input", "not allowed from the page"));
+    }
+    Ok(())
+}
+
 /// Every check a change to the PC must pass, for new jobs and retries alike.
 fn allowed(state: &AppState, ops: &[(OpRequest, String)]) -> Result<(), AppError> {
+    refuse_from_page(ops)?;
     refuse_unelevated(crate::commands::system::is_elevated())?;
     refuse_protected_uninstall(ops)?;
     let g = gates(state);
@@ -481,6 +494,19 @@ mod tests {
             .collect();
         assert!(refuse_protected_uninstall(&ops).is_err());
         assert!(refuse_protected_uninstall(&ops[..50]).is_ok());
+    }
+
+    #[test]
+    fn the_page_cannot_pin_a_version_or_go_back() {
+        let mut pinned = remove(SourceKind::Winget, "A.B");
+        pinned.0.kind = OpKind::Upgrade;
+        pinned.0.version = Some(crate::ids::PkgVersion::try_from("1.0".to_string()).unwrap());
+        assert!(refuse_from_page(std::slice::from_ref(&pinned)).is_err());
+        let mut back = remove(SourceKind::Winget, "A.B");
+        back.0.kind = OpKind::Rollback;
+        assert!(refuse_from_page(&[back]).is_err());
+        let plain = upgrades_to_ops(vec![cand(SourceKind::Winget, "A.B")]);
+        assert!(refuse_from_page(&plain).is_ok());
     }
 
     #[test]

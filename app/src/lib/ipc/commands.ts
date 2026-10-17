@@ -64,6 +64,12 @@ export const cancelJob = (id: string) => invoke<void>('cancel_job', { id });
 export const retryJob = (id: string) => invoke<string>('retry_job', { id });
 export const clearFinished = () => invoke<void>('clear_finished');
 export const getJobLog = (id: string) => invoke<string[]>('get_job_log', { id });
+import type { HistoryEntry } from './bindings/HistoryEntry';
+export type { HistoryEntry };
+/** Finished changes, newest first. */
+export const getHistory = () => invoke<HistoryEntry[]>('get_history');
+/** Re-checks, then asks in a Windows dialog. Resolves to the job id, or null if they said no. */
+export const rollback = (jobId: string) => invoke<string | null>('rollback', { jobId });
 
 // My bundles, export and import (files are picked by Windows dialogs in Rust)
 import type { MyBundleView } from './bindings/MyBundleView';

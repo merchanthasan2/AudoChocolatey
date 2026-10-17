@@ -33,6 +33,15 @@ pub fn by_id_url(id: &ChocoId) -> String {
     )
 }
 
+/// Every published version of one package (for going back to an earlier one).
+pub fn versions_url(id: &ChocoId) -> String {
+    let filter = format!("tolower(Id) eq '{}'", id.as_str().to_ascii_lowercase());
+    format!(
+        "https://community.chocolatey.org/api/v2/Packages()?$filter={}&$top=200",
+        encode(&filter)
+    )
+}
+
 /// RFC 3986 percent-encoding of everything outside the unreserved set.
 fn encode(s: &str) -> String {
     s.bytes()

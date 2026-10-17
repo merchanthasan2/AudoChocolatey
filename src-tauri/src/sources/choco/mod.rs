@@ -184,6 +184,31 @@ impl<R: Runner> ChocoSource<R> {
         Ok(odata::parse_feed(&xml)?.into_iter().next())
     }
 
+    /// Versions the community feed still lists for a package.
+    pub async fn versions(&self, id: &ChocoId) -> AppResult<Vec<String>> {
+        let resp = self
+            .http
+            .get(odata::versions_url(id))
+            .send()
+            .await
+            .map_err(|e| AppError::new("network", format!("Chocolatey feed: {e}")))?;
+        if !resp.status().is_success() {
+            return Err(AppError::new(
+                "network",
+                format!("Chocolatey feed: HTTP {}", resp.status()),
+            ));
+        }
+        let xml = resp
+            .text()
+            .await
+            .map_err(|e| AppError::new("network", format!("Chocolatey feed: {e}")))?;
+        Ok(odata::parse_feed(&xml)?
+            .into_iter()
+            .filter(|p| p.id.eq_ignore_ascii_case(id.as_str()))
+            .filter_map(|p| p.version)
+            .collect())
+    }
+
     pub async fn search(&self, q: &SearchQuery) -> AppResult<Vec<SourcePackage>> {
         let resp = self
             .http

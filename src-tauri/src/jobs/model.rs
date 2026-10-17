@@ -66,6 +66,9 @@ pub struct Job {
     pub started_at: Option<u64>,
     #[ts(type = "number | null")]
     pub ended_at: Option<u64>,
+    /// "Clear finished" hides it from the activity panel; it stays in History.
+    #[serde(default)]
+    pub dismissed: bool,
 }
 
 pub fn now_ms() -> u64 {
@@ -97,6 +100,7 @@ impl Job {
             via: None,
             started_at: None,
             ended_at: None,
+            dismissed: false,
         }
     }
 

@@ -29,4 +29,8 @@ via: SourceRef | null,
 /**
  * Unix epoch milliseconds.
  */
-startedAt: number | null, endedAt: number | null, };
+startedAt: number | null, endedAt: number | null, 
+/**
+ * "Clear finished" hides it from the activity panel; it stays in History.
+ */
+dismissed: boolean, };

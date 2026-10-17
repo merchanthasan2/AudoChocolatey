@@ -9,6 +9,7 @@
     { view: 'updates', label: 'Updates', icon: 'updates' },
     { view: 'marketplace', label: 'Marketplace', icon: 'bag' },
     { view: 'installed', label: 'Installed', icon: 'grid' },
+    { view: 'history', label: 'History', icon: 'history' },
     { view: 'settings', label: 'Settings', icon: 'sliders' },
   ];
 </script>

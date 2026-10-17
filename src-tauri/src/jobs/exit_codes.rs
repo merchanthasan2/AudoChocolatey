@@ -92,6 +92,12 @@ pub fn classify(source: SourceKind, kind: OpKind, code: Option<i32>, tail: &[Str
     match source {
         SourceKind::Winget | SourceKind::Msstore => match code as u32 {
             0x8A150109 | 0x8A15010B => Outcome::Succeeded { reboot: true },
+            // Going back: "already installed / no applicable update" means it refused.
+            0x8A15002B | 0x8A15004F | 0x8A150061 | 0x8A15010D | 0x8A15010E
+                if kind == OpKind::Rollback =>
+            {
+                Outcome::Failed(FailureReason::NotRolledBack)
+            }
             0x8A15002B | 0x8A15004F => Outcome::Skipped("Already up to date".into()),
             0x8A150061 | 0x8A15010D if kind == OpKind::Install => {
                 Outcome::Skipped("Already installed".into())
@@ -133,6 +139,11 @@ mod tests {
         assert_eq!(
             classify(Winget, Upgrade, Some(-1978335189), &[]),
             Outcome::Skipped("Already up to date".into())
+        );
+        // Going back: a refusal is a failure, never "already up to date".
+        assert_eq!(
+            classify(Winget, OpKind::Rollback, hx(0x8A15002B), &[]),
+            Outcome::Failed(FailureReason::NotRolledBack)
         );
         // Measured live: installing a Store app that's already there.
         assert_eq!(

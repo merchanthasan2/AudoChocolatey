@@ -237,6 +237,12 @@
           "markdownDescription": "Enables the get_diagnostics command without any pre-configured scope."
         },
         {
+          "description": "Enables the get_history command without any pre-configured scope.",
+          "type": "string",
+          "const": "allow-get-history",
+          "markdownDescription": "Enables the get_history command without any pre-configured scope."
+        },
+        {
           "description": "Enables the get_job_log command without any pre-configured scope.",
           "type": "string",
           "const": "allow-get-job-log",
@@ -363,6 +369,12 @@
           "markdownDescription": "Enables the retry_job command without any pre-configured scope."
         },
         {
+          "description": "Enables the rollback command without any pre-configured scope.",
+          "type": "string",
+          "const": "allow-rollback",
+          "markdownDescription": "Enables the rollback command without any pre-configured scope."
+        },
+        {
           "description": "Enables the search command without any pre-configured scope.",
           "type": "string",
           "const": "allow-search",
@@ -445,6 +457,12 @@
           "type": "string",
           "const": "deny-get-diagnostics",
           "markdownDescription": "Denies the get_diagnostics command without any pre-configured scope."
+        },
+        {
+          "description": "Denies the get_history command without any pre-configured scope.",
+          "type": "string",
+          "const": "deny-get-history",
+          "markdownDescription": "Denies the get_history command without any pre-configured scope."
         },
         {
           "description": "Denies the get_job_log command without any pre-configured scope.",
@@ -571,6 +589,12 @@
           "type": "string",
           "const": "deny-retry-job",
           "markdownDescription": "Denies the retry_job command without any pre-configured scope."
+        },
+        {
+          "description": "Denies the rollback command without any pre-configured scope.",
+          "type": "string",
+          "const": "deny-rollback",
+          "markdownDescription": "Denies the rollback command without any pre-configured scope."
         },
         {
           "description": "Denies the search command without any pre-configured scope.",

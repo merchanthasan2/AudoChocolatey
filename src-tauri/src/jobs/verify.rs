@@ -1,5 +1,6 @@
 //! After a job reports success, check the app's installed version really moved. A mismatch is
-//! a note, never a failure: browsers and self-updaters often finish after a restart.
+//! a note, never a failure (browsers and self-updaters often finish after a restart), except
+//! for going back to an earlier version, which counts only when that version is there.
 
 use crate::sources::model::OpKind;
 use crate::versions::compare;
@@ -27,8 +28,21 @@ fn usable(v: Option<&str>) -> Option<&str> {
     })
 }
 
-pub fn verdict(kind: OpKind, before: Option<&str>, after: Option<&str>) -> Verify {
+/// `wanted` is the version a rollback asked for.
+pub fn verdict(
+    kind: OpKind,
+    wanted: Option<&str>,
+    before: Option<&str>,
+    after: Option<&str>,
+) -> Verify {
     match kind {
+        OpKind::Rollback => match (usable(wanted), usable(after)) {
+            (Some(w), Some(a)) if compare(a, w) == Ordering::Equal => Verify::Confirmed,
+            (_, Some(a)) if usable(before).is_some_and(|b| compare(a, b) == Ordering::Equal) => {
+                Verify::Unchanged
+            }
+            _ => Verify::Unknown,
+        },
         OpKind::Install => match after {
             Some(_) => Verify::Confirmed,
             None => Verify::Unknown,
@@ -51,21 +65,48 @@ pub fn verdict(kind: OpKind, before: Option<&str>, after: Option<&str>) -> Verif
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::sources::model::OpKind::{Install, Uninstall, Upgrade};
+    use crate::sources::model::OpKind::{Install, Rollback, Uninstall, Upgrade};
     use Verify::*;
 
     #[test]
     fn verdicts() {
-        assert_eq!(verdict(Upgrade, Some("1.0"), Some("1.1")), Confirmed);
-        assert_eq!(verdict(Upgrade, Some("1.2"), Some("1.2.0.0")), Unchanged);
-        assert_eq!(verdict(Upgrade, Some("1.1"), Some("1.0")), Unknown);
-        assert_eq!(verdict(Upgrade, None, Some("1.1")), Unknown);
-        assert_eq!(verdict(Upgrade, Some("1.0"), None), Unknown);
-        assert_eq!(verdict(Upgrade, Some("Unknown"), Some("Unknown")), Unknown);
-        assert_eq!(verdict(Upgrade, Some("< 2.0"), Some("2.1")), Unknown);
-        assert_eq!(verdict(Install, None, Some("3.0")), Confirmed);
-        assert_eq!(verdict(Install, None, None), Unknown);
-        assert_eq!(verdict(Uninstall, Some("3.0"), None), Confirmed);
-        assert_eq!(verdict(Uninstall, Some("3.0"), Some("3.0")), Unchanged);
+        assert_eq!(verdict(Upgrade, None, Some("1.0"), Some("1.1")), Confirmed);
+        assert_eq!(
+            verdict(Upgrade, None, Some("1.2"), Some("1.2.0.0")),
+            Unchanged
+        );
+        assert_eq!(verdict(Upgrade, None, Some("1.1"), Some("1.0")), Unknown);
+        assert_eq!(verdict(Upgrade, None, None, Some("1.1")), Unknown);
+        assert_eq!(verdict(Upgrade, None, Some("1.0"), None), Unknown);
+        assert_eq!(
+            verdict(Upgrade, None, Some("Unknown"), Some("Unknown")),
+            Unknown
+        );
+        assert_eq!(verdict(Upgrade, None, Some("< 2.0"), Some("2.1")), Unknown);
+        assert_eq!(verdict(Install, None, None, Some("3.0")), Confirmed);
+        assert_eq!(verdict(Install, None, None, None), Unknown);
+        assert_eq!(verdict(Uninstall, None, Some("3.0"), None), Confirmed);
+        assert_eq!(
+            verdict(Uninstall, None, Some("3.0"), Some("3.0")),
+            Unchanged
+        );
+    }
+
+    #[test]
+    fn going_back_is_confirmed_only_at_the_asked_version() {
+        assert_eq!(
+            verdict(Rollback, Some("1.0"), Some("1.1"), Some("1.0.0")),
+            Confirmed
+        );
+        assert_eq!(
+            verdict(Rollback, Some("1.0"), Some("1.1"), Some("1.1")),
+            Unchanged
+        );
+        assert_eq!(
+            verdict(Rollback, Some("1.0"), Some("1.1"), Some("1.2")),
+            Unknown
+        );
+        assert_eq!(verdict(Rollback, Some("1.0"), Some("1.1"), None), Unknown);
+        assert_eq!(verdict(Rollback, None, Some("1.1"), Some("1.0")), Unknown);
     }
 }

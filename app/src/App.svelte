@@ -15,6 +15,7 @@
   import Updates from './views/Updates.svelte';
   import Installed from './views/Installed.svelte';
   import Settings from './views/Settings.svelte';
+  import History from './views/History.svelte';
   import { viewFade } from './lib/motion';
 
   let drawer = $state(false);
@@ -63,6 +64,8 @@
             <Updates />
           {:else if router.view === 'installed'}
             <Installed />
+          {:else if router.view === 'history'}
+            <History />
           {:else}
             <Settings />
           {/if}

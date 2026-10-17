@@ -37,6 +37,9 @@ pub struct CatalogApp {
     pub msstore: Option<String>,
     #[serde(default)]
     pub featured: bool,
+    /// Often targeted by attackers: its updates sort first as "Important to keep current".
+    #[serde(default)]
+    pub security: bool,
     /// Set for apps whose Chocolatey package installs beside (not over) the winget one, so an
     /// update must never switch to Chocolatey.
     #[serde(default, rename = "noUpgradeFallback")]

@@ -47,6 +47,8 @@
     "allow-import-apply",
     "allow-import-keep",
     "allow-pick-backup-folder",
-    "allow-backup-now"
+    "allow-backup-now",
+    "allow-get-history",
+    "allow-rollback"
   ]
 }

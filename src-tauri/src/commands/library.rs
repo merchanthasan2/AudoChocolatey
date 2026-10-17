@@ -119,11 +119,42 @@ async fn choco_titles<'a>(
 #[ts(export)]
 pub struct UpdatesListing {
     pub items: Vec<UpgradeCandidate>,
-    /// The rule key of each item (same order), so a row can find its app's choice in `rules`.
-    pub item_keys: Vec<String>,
+    /// About each item, in the same order.
+    pub info: Vec<ItemInfo>,
     pub hidden: Vec<HiddenUpdate>,
     pub rules: Vec<Rule>,
     pub source_errors: Vec<SourceError>,
+}
+
+/// What the Updates page needs to know about one update besides the update itself.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export)]
+pub struct ItemInfo {
+    /// The app's rule key, to find its choice in `rules`.
+    pub key: String,
+    /// An app attackers often target ("Important to keep current"); these sort first.
+    pub important: bool,
+}
+
+/// Security-relevant apps first, otherwise the order the sources gave.
+pub fn important_first(
+    items: Vec<UpgradeCandidate>,
+    cat: &Catalog,
+) -> Vec<(UpgradeCandidate, ItemInfo)> {
+    let mut out: Vec<(UpgradeCandidate, ItemInfo)> = items
+        .into_iter()
+        .map(|c| {
+            let app = cat.by_source(c.source, &c.id);
+            let key = SourceRef::new(c.source, c.id.clone())
+                .map(|t| rule_key(&t, cat))
+                .unwrap_or_default();
+            let important = app.is_some_and(|a| a.security);
+            (c, ItemInfo { key, important })
+        })
+        .collect();
+    out.sort_by_key(|(_, i)| !i.important);
+    out
 }
 
 /// Applies rules to the raw list; the bool says whether an expired skip was removed.
@@ -133,18 +164,11 @@ pub fn updates_listing(
     cat: &Catalog,
 ) -> (UpdatesListing, bool) {
     let (items, hidden, changed) = apply_rules(raw.items, rules, cat);
-    let item_keys = items
-        .iter()
-        .map(|c| {
-            SourceRef::new(c.source, c.id.clone())
-                .map(|t| rule_key(&t, cat))
-                .unwrap_or_default()
-        })
-        .collect();
+    let (items, info) = important_first(items, cat).into_iter().unzip();
     (
         UpdatesListing {
             items,
-            item_keys,
+            info,
             hidden,
             rules: rules.clone(),
             source_errors: raw.source_errors,
@@ -189,6 +213,49 @@ pub async fn collect_updates(state: &AppState) -> UpdatesListing {
     state.mark_checked();
     *state.last_updates.lock().unwrap_or_else(|p| p.into_inner()) = Some(raw);
     current_updates(state)
+}
+
+#[cfg(test)]
+mod important_tests {
+    use super::*;
+
+    fn cand(source: SourceKind, id: &str) -> UpgradeCandidate {
+        UpgradeCandidate {
+            name: id.into(),
+            id: id.into(),
+            installed_version: "1".into(),
+            available_version: "2".into(),
+            source,
+        }
+    }
+
+    #[test]
+    fn security_apps_sort_first_from_any_source() {
+        let cat = Catalog::embedded();
+        let out = important_first(
+            vec![
+                cand(SourceKind::Winget, "Spotify.Spotify"),
+                cand(SourceKind::Choco, "vlc"),
+                cand(SourceKind::Winget, "Some.Tool"),
+                cand(SourceKind::Winget, "Mozilla.Firefox"),
+            ],
+            cat,
+        );
+        let ids: Vec<(&str, bool)> = out
+            .iter()
+            .map(|(c, i)| (c.id.as_str(), i.important))
+            .collect();
+        assert_eq!(
+            ids,
+            vec![
+                ("vlc", true),
+                ("Mozilla.Firefox", true),
+                ("Spotify.Spotify", false),
+                ("Some.Tool", false)
+            ]
+        );
+        assert_eq!(out[0].1.key, "app:vlc");
+    }
 }
 
 #[tauri::command]

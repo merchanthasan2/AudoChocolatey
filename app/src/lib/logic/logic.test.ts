@@ -29,6 +29,7 @@ function job(phase: JobPhase, extra: Partial<Job> = {}): Job {
     error: null,
     startedAt: null,
     endedAt: null,
+    dismissed: false,
     ...extra,
   };
 }
@@ -287,7 +288,7 @@ describe('automatic or ask first, per app', () => {
   });
   it('finds a row rule by its key', () => {
     const rule = { key: 'app:firefox', target: { source: 'winget' as const, id: 'Mozilla.Firefox' }, name: 'Firefox', kind: { kind: 'auto' as const }, createdAt: 1 };
-    const l = { itemKeys: ['app:vlc', 'app:firefox'], rules: [rule] };
+    const l = { info: [{ key: 'app:vlc' }, { key: 'app:firefox' }], rules: [rule] };
     expect(ruleAt(l, 1)).toBe(rule);
     expect(ruleAt(l, 0)).toBeUndefined();
     expect(ruleAt(l, 5)).toBeUndefined();
@@ -338,7 +339,6 @@ describe('admin banner', () => {
 });
 
 import { importRows } from './importRows';
-import { installedSet } from './entries';
 describe('import preview', () => {
   const entry = (over: object) => ({
     key: 'k', name: 'App', publisher: null, blurb: null, category: null, winget: 'A.B', choco: null, msstore: null,
@@ -358,5 +358,16 @@ describe('import preview', () => {
     expect(rows.map((r) => [r.state, r.ticked])).toEqual([
       ['ready', true], ['ready', false], ['installed', false], ['off', false],
     ]);
+  });
+});
+
+import { historyLine } from './history';
+describe('history lines', () => {
+  it('says what each change did', () => {
+    expect(historyLine(job('succeeded', { op: { kind: 'upgrade', target: { source: 'winget', id: 'A' }, version: null }, fromVersion: '1.0', toVersion: '1.1' }))).toBe('Updated from 1.0 to 1.1');
+    expect(historyLine(job('succeeded'))).toBe('Installed');
+    expect(historyLine(job('succeeded', { op: { kind: 'uninstall', target: { source: 'winget', id: 'A' }, version: null } }))).toBe('Removed');
+    expect(historyLine(job('failed', { op: { kind: 'upgrade', target: { source: 'winget', id: 'A' }, version: null } }))).toBe("Couldn't update");
+    expect(historyLine(job('cancelled'))).toBe('Stopped');
   });
 });

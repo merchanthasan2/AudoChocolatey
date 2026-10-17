@@ -114,7 +114,8 @@ impl SettingsStore {
             show_unknown_versions,
             self_update,
             auto_update,
-            auto_rules
+            auto_rules,
+            restore_point
         );
         if let Some(v) = patch.choco_enabled {
             next.choco.enabled = v;

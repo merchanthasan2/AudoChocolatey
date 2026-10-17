@@ -149,6 +149,14 @@
   </section>
 
   <section class="card group">
+    <h2>Safety</h2>
+    <div class="row">
+      <div><div class="label">Make a restore point first</div><div class="hint">Before a run of changes, ask Windows for a restore point, so you can undo them from System Restore. Windows makes at most one a day.</div></div>
+      <Toggle label="Make a restore point first" checked={s.restorePoint} onchange={(v) => settings.update({ restorePoint: v })} />
+    </div>
+  </section>
+
+  <section class="card group">
     <h2>Your apps</h2>
     <div class="row">
       <div><div class="label">Save or restore your app list</div><div class="hint">A small file naming your apps, to set up another PC or this one again. No settings or personal files are included.</div></div>

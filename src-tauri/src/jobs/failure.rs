@@ -26,6 +26,7 @@ pub enum FailureReason {
     NotSupported,
     NewerInstalled,
     CannotUpgrade,
+    NotRolledBack,
     Interrupted,
     TimedOut,
     Stopped,
@@ -38,7 +39,7 @@ pub enum FailureReason {
 
 impl FailureReason {
     #[cfg(test)]
-    pub const ALL: [FailureReason; 25] = [
+    pub const ALL: [FailureReason; 26] = [
         Self::NotElevated,
         Self::InstallerBusy,
         Self::RebootPending,
@@ -56,6 +57,7 @@ impl FailureReason {
         Self::NotSupported,
         Self::NewerInstalled,
         Self::CannotUpgrade,
+        Self::NotRolledBack,
         Self::Interrupted,
         Self::TimedOut,
         Self::Stopped,
@@ -85,6 +87,7 @@ impl FailureReason {
             Self::NotSupported => format!("{name} isn't supported on this PC."),
             Self::NewerInstalled => format!("A newer version of {name} is already installed."),
             Self::CannotUpgrade => format!("{name} can't be updated in place. Uninstall it, then install the new version."),
+            Self::NotRolledBack => format!("{name} is still on the newer version. Its installer wouldn't go back to the earlier one."),
             Self::Interrupted => format!("Quantum Updater closed while {name} was installing. Check that it works, or try again."),
             Self::TimedOut => format!("{name} took too long and was stopped. Try again later."),
             Self::Stopped => "Stopped.".into(),

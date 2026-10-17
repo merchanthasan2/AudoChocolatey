@@ -16,6 +16,28 @@ pub fn build_op(op: &OpRequest) -> AppResult<Vec<String>> {
         SourceKind::Choco => return Err(AppError::new("invalid_input", "not a winget package")),
     };
     let id = op.target.id();
+    if op.kind == OpKind::Rollback {
+        // An install of the exact earlier version, never with --force.
+        let (Some(v), "winget") = (&op.version, source) else {
+            return Err(AppError::new("invalid_input", "rollback needs a version"));
+        };
+        return Ok([
+            "install",
+            "--id",
+            id,
+            "--exact",
+            "--source",
+            "winget",
+            "--version",
+            v.as_str(),
+            "--silent",
+            NO_PROMPT,
+            "--accept-package-agreements",
+            AGREE_SOURCE,
+        ]
+        .map(String::from)
+        .to_vec());
+    }
     let mut argv: Vec<&str> = match op.kind {
         OpKind::Install | OpKind::Upgrade => vec![
             if op.kind == OpKind::Install {
@@ -33,6 +55,7 @@ pub fn build_op(op: &OpRequest) -> AppResult<Vec<String>> {
             "--accept-package-agreements",
             AGREE_SOURCE,
         ],
+        OpKind::Rollback => unreachable!("handled above"),
         OpKind::Uninstall => vec![
             "uninstall",
             "--id",
@@ -199,6 +222,38 @@ mod tests {
                 "8.7"
             ]
         );
+    }
+
+    #[test]
+    fn going_back_installs_the_exact_version_without_force() {
+        assert_eq!(
+            build_op(&op(OpKind::Rollback, "Mozilla.Firefox", Some("130.0"))).unwrap(),
+            [
+                "install",
+                "--id",
+                "Mozilla.Firefox",
+                "--exact",
+                "--source",
+                "winget",
+                "--version",
+                "130.0",
+                "--silent",
+                "--disable-interactivity",
+                "--accept-package-agreements",
+                "--accept-source-agreements",
+            ]
+        );
+        assert!(build_op(&op(OpKind::Rollback, "Mozilla.Firefox", None)).is_err());
+        let store = OpRequest {
+            kind: OpKind::Rollback,
+            target: SourceRef::new(SourceKind::Msstore, "9NBLGGH4NNS1").unwrap(),
+            version: Some(PkgVersion::try_from("1.0".to_string()).unwrap()),
+        };
+        assert!(build_op(&store).is_err());
+        for k in [OpKind::Install, OpKind::Upgrade, OpKind::Rollback] {
+            let a = build_op(&op(k, "A.B", Some("1.0"))).unwrap();
+            assert!(!a.iter().any(|x| x == "--force"), "{a:?}");
+        }
     }
 
     #[test]

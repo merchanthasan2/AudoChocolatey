@@ -37,6 +37,8 @@ const COMMANDS: &[&str] = &[
     "import_keep",
     "pick_backup_folder",
     "backup_now",
+    "get_history",
+    "rollback",
 ];
 
 fn git(args: &[&str]) -> Option<String> {

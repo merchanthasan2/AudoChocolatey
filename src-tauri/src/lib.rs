@@ -9,6 +9,7 @@ mod icons;
 mod ids;
 mod jobs;
 pub mod launch;
+mod rollback;
 mod rules;
 mod settings;
 mod sources;
@@ -187,6 +188,8 @@ pub fn run(launch: launch::Launch) {
             commands::bundles::import_keep,
             commands::bundles::pick_backup_folder,
             commands::bundles::backup_now,
+            commands::rollback::get_history,
+            commands::rollback::rollback,
         ])
         .run(tauri::generate_context!())
         .expect("error while running Quantum Updater");

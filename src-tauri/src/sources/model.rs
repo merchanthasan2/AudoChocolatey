@@ -66,6 +66,9 @@ pub enum OpKind {
     Install,
     Upgrade,
     Uninstall,
+    /// Back to an earlier version (`OpRequest.version`). Only Rust's `rollback` command makes
+    /// one; the page can't.
+    Rollback,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, TS)]
