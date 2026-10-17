@@ -3,6 +3,7 @@ import type { AutoRules } from "./AutoRules";
 import type { AutoUpdate } from "./AutoUpdate";
 import type { BackupSettings } from "./BackupSettings";
 import type { ChocoSettings } from "./ChocoSettings";
+import type { ListPrefs } from "./ListPrefs";
 import type { Motion } from "./Motion";
 import type { SelfUpdate } from "./SelfUpdate";
 import type { StoreSettings } from "./StoreSettings";
@@ -24,7 +25,11 @@ restorePoint: boolean, choco: ChocoSettings,
 /**
  * Microsoft Store apps (through winget's Store source).
  */
-store: StoreSettings, backup: BackupSettings, lastCheckAt: string | null, 
+store: StoreSettings, backup: BackupSettings, 
+/**
+ * A hand-edited bad value resets only these choices, not the whole file.
+ */
+lists: ListPrefs, lastCheckAt: string | null, 
 /**
  * The one-time "still running in the tray" note was shown.
  */

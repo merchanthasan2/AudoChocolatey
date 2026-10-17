@@ -115,7 +115,8 @@ impl SettingsStore {
             self_update,
             auto_update,
             auto_rules,
-            restore_point
+            restore_point,
+            lists
         );
         if let Some(v) = patch.choco_enabled {
             next.choco.enabled = v;
@@ -329,6 +330,27 @@ mod tests {
             .unwrap();
         assert_eq!(next.auto_update, AutoUpdate::Automatic);
         assert_eq!(next.auto_rules, good);
+    }
+
+    #[test]
+    fn list_choices_default_and_survive_old_files() {
+        use schema::{ListSort, ListView};
+        let dir = tempfile::tempdir().unwrap();
+        let path = dir.path().join("settings.json");
+        std::fs::write(&path, r#"{"schemaVersion":1,"theme":"dark"}"#).unwrap();
+        let s = SettingsStore::open(path.clone()).get();
+        assert_eq!(s.lists.updates.sort, ListSort::Suggested);
+        assert_eq!(s.lists.installed.sort, ListSort::Name);
+        assert!(s.lists.installed.hide_components);
+        std::fs::write(
+            &path,
+            r#"{"schemaVersion":1,"theme":"dark","lists":{"installed":{"view":"grid","sort":"bogus"}}}"#,
+        )
+        .unwrap();
+        // A bad value resets the list choices only; the rest of the file is kept.
+        let s = SettingsStore::open(path).get();
+        assert_eq!(s.lists.installed.view, ListView::List);
+        assert_eq!(s.theme, schema::Theme::Dark);
     }
 
     #[test]

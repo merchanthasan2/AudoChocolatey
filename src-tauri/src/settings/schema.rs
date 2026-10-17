@@ -100,6 +100,90 @@ impl AutoRules {
     }
 }
 
+fn lenient<'de, D, T>(d: D) -> Result<T, D::Error>
+where
+    D: serde::Deserializer<'de>,
+    T: serde::de::DeserializeOwned + Default,
+{
+    let v = serde_json::Value::deserialize(d)?;
+    Ok(serde_json::from_value(v).unwrap_or_default())
+}
+
+/// How a list is sorted. "Suggested" puts apps that matter for security first, then names.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, TS, Default)]
+#[serde(rename_all = "lowercase")]
+#[ts(export)]
+pub enum ListSort {
+    #[default]
+    Suggested,
+    Name,
+    Version,
+    Source,
+    Released,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, TS, Default)]
+#[serde(rename_all = "lowercase")]
+#[ts(export)]
+pub enum SortDir {
+    #[default]
+    Asc,
+    Desc,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, TS, Default)]
+#[serde(rename_all = "lowercase")]
+#[ts(export)]
+pub enum ListView {
+    #[default]
+    List,
+    Compact,
+    Grid,
+}
+
+/// One page's list choices (remembered per page).
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, TS)]
+#[serde(rename_all = "camelCase", default)]
+#[ts(export)]
+pub struct ListPref {
+    pub sort: ListSort,
+    pub dir: SortDir,
+    pub view: ListView,
+    /// Installed only: hide runtimes, codecs and other Windows components.
+    pub hide_components: bool,
+}
+
+impl Default for ListPref {
+    fn default() -> Self {
+        Self {
+            sort: ListSort::Suggested,
+            dir: SortDir::Asc,
+            view: ListView::List,
+            hide_components: true,
+        }
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, TS)]
+#[serde(rename_all = "camelCase", default)]
+#[ts(export)]
+pub struct ListPrefs {
+    pub updates: ListPref,
+    pub installed: ListPref,
+}
+
+impl Default for ListPrefs {
+    fn default() -> Self {
+        Self {
+            updates: ListPref::default(),
+            installed: ListPref {
+                sort: ListSort::Name,
+                ..ListPref::default()
+            },
+        }
+    }
+}
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, TS, Default)]
 #[serde(rename_all = "lowercase")]
 #[ts(export)]
@@ -190,6 +274,9 @@ pub struct Settings {
     /// Microsoft Store apps (through winget's Store source).
     pub store: StoreSettings,
     pub backup: BackupSettings,
+    /// A hand-edited bad value resets only these choices, not the whole file.
+    #[serde(deserialize_with = "lenient")]
+    pub lists: ListPrefs,
     pub last_check_at: Option<String>,
     /// The one-time "still running in the tray" note was shown.
     pub tray_hint_shown: bool,
@@ -219,6 +306,7 @@ impl Default for Settings {
             choco: ChocoSettings::default(),
             store: StoreSettings::default(),
             backup: BackupSettings::default(),
+            lists: ListPrefs::default(),
             last_check_at: None,
             tray_hint_shown: false,
             background_prompted: false,
@@ -252,4 +340,5 @@ pub struct SettingsPatch {
     pub backup_enabled: Option<bool>,
     pub backup_every: Option<BackupEvery>,
     pub backup_keep: Option<u32>,
+    pub lists: Option<ListPrefs>,
 }

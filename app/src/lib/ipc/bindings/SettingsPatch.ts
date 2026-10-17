@@ -2,6 +2,7 @@
 import type { AutoRules } from "./AutoRules";
 import type { AutoUpdate } from "./AutoUpdate";
 import type { BackupEvery } from "./BackupEvery";
+import type { ListPrefs } from "./ListPrefs";
 import type { Motion } from "./Motion";
 import type { SelfUpdate } from "./SelfUpdate";
 import type { Theme } from "./Theme";
@@ -9,4 +10,4 @@ import type { Theme } from "./Theme";
 /**
  * A partial update from the UI; only present fields change.
  */
-export type SettingsPatch = { theme?: Theme, motion?: Motion, checkIntervalHours?: number, notifyUpdates?: boolean, notifyFinished?: boolean, notifyFailed?: boolean, startAtLogin?: boolean, startInTray?: boolean, closeToTray?: boolean, showUnknownVersions?: boolean, selfUpdate?: SelfUpdate, autoUpdate?: AutoUpdate, autoRules?: AutoRules, restorePoint?: boolean, chocoEnabled?: boolean, chocoBootstrapPrompted?: boolean, storeEnabled?: boolean, backgroundPrompted?: boolean, backupEnabled?: boolean, backupEvery?: BackupEvery, backupKeep?: number, };
+export type SettingsPatch = { theme?: Theme, motion?: Motion, checkIntervalHours?: number, notifyUpdates?: boolean, notifyFinished?: boolean, notifyFailed?: boolean, startAtLogin?: boolean, startInTray?: boolean, closeToTray?: boolean, showUnknownVersions?: boolean, selfUpdate?: SelfUpdate, autoUpdate?: AutoUpdate, autoRules?: AutoRules, restorePoint?: boolean, chocoEnabled?: boolean, chocoBootstrapPrompted?: boolean, storeEnabled?: boolean, backgroundPrompted?: boolean, backupEnabled?: boolean, backupEvery?: BackupEvery, backupKeep?: number, lists?: ListPrefs, };
