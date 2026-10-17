@@ -92,7 +92,7 @@ Goal: one runtime, a fresh Svelte shell, admin manifest really embedded, locked-
 - [x] P6a 7 Notification choices (ready / finished / failed) (`f395925`)
 - [x] P6b Per-app policy, automatic mode with battery, metered, quiet hours and minimum update age (`bec1e88`), My bundles (add selection, export and import, scheduled backup), remove several, Settings (`bb13395`)
 - [x] P6c Restore point, history, rollback, signer note, security first, download site changed (`fe3c15f`, `cec51e5`, next commit); architect review 2026-10-17 applied (page can't pin versions or roll back; rollback never falls back; strict verify; site keys include the owner on shared hosts)
-- [ ] P6d Lists: toolbar, table, friendly sources and filter, hide Windows components, views, What's new and size and date, CSV, link "Installed directly" apps ([plan](superpowers/plans/2026-10-17-p6d-lists.md), approved 2026-10-17)
+- [x] P6d Lists: toolbar, table, friendly sources and filter, hide Windows components, views, What's new and date, CSV, installer window and reinstall, link "Installed directly" apps ([plan](superpowers/plans/2026-10-17-p6d-lists.md); `058e81c`…`afba5ba`; ADR 030–032). Download size deferred (no honest source). Live checks (browser opens unelevated, FileZilla/WinSCP link in Windows Sandbox, reinstall) are in UAT
 - [ ] P6e Polish: desktop shortcut cleanup, close the app first, restart needed, better retry, startup manager, live log, searchable Settings
 
 ## P7: Distribution

@@ -212,3 +212,24 @@
   - A helper tool (for example `cargo-binstall` or `cargo-update`) is installed only after the person says yes, never on its own.
   - Per-user tools run with the person's own rights through a vetted path, never by borrowing explorer's token (the reason for ADR 026).
 - **Consequences:** this is its own phase after P7, with its own plan and security review. Updating libraries can break the person's projects, so the screen says so.
+
+### ADR 030: Web Links Open Through Explorer, Never as Administrator (P6d)
+- **Status:** Accepted (architect design, owner-approved P6d plan, 2026-10-17)
+- **Context:** Quantum Updater always runs elevated. `ShellExecute` on a web address from an elevated process can start the browser as administrator.
+- **Decision:** "What's new" links open only through the desktop's own Explorer (`IShellWindows` → desktop view → `IShellDispatch2::ShellExecute`), so the browser runs as the signed-in person. If that fails, the link doesn't open and a plain message says so; there is no elevated fallback. Every link kept from package data passes `safe_url` (https, a real domain, default port, no user name, at most 2048 characters), and the page only ever sees the host: Rust opens its own cached link for the exact version.
+- **Consequences:** links can't open when Explorer isn't running (for example in some remote sessions). That's accepted.
+
+### ADR 031: Linking Apps Installed Directly (P6d)
+- **Status:** Accepted (architect design, owner-approved P6d plan, 2026-10-17)
+- **Context:** apps like FileZilla and WinSCP are often installed from their own websites, so no source manages them. Linking a Programs-list entry to the wrong catalog app would run a different program's installer as administrator.
+- **Decision:** a catalog app may carry a `localMatch` rule. A link needs all of these: a machine-wide entry (HKLM; per-user entries can be written without admin rights); the catalog's publisher; an allowed architecture; the catalog's registry key or an anchored name pattern; exactly one candidate app for the entry and one entry for the app; no copy already managed by a source; and the target source switched on. Linked apps are listed under "Also updatable here", each started by the person after a confirm, and are never part of "Update all", automatic updates or notifications. The first rules are FileZilla (Community catalog) and WinSCP (Microsoft catalog).
+- **Consequences:** each new rule needs a live check in Windows Sandbox before it ships. Node.js and other MSIs whose product code changes every release are deferred.
+
+### ADR 032: Reinstall Is the Only Use of `--force` (P6d)
+- **Status:** Accepted (owner-approved P6d plan, 2026-10-17)
+- **Decision:** `OpRequest.mode` is Normal, Interactive (the installer's own window) or Reinstall. Rust's `mode_allowed` table is the only authority and `build_op` enforces it again. `--force` appears if and only if the mode is Reinstall. The Store gets neither Interactive nor Reinstall. Non-normal jobs never fall back to another source and have no download time limit. The page can't pin a version or ask for a rollback (P6c review).
+
+### ADR 033: Quantum Step Creation Brand (2026-10-17)
+- **Status:** Accepted (owner decision 2026-10-17)
+- **Decision:** the Quantum Step Creation emblem (gradient ring with a "C" hook, crosshair, inner rings, atom, ring lettering) is the company logo and the source of the app icon. `brand/quantum-step-logo.svg` is a vector redraw of the owner's artwork. The app icon (`brand/quantum-updater-icon.svg`) drops the lettering and crosshair so it reads at 48 px and up, and a heavier version (`brand/quantum-updater-icon-small.svg`) is used at 16–32 px. `icon.ico` holds both.
+- **Consequences:** when the owner supplies the original high-resolution file, it replaces the redraw in `brand/` for print and the website; the app icons stay vector-built.
