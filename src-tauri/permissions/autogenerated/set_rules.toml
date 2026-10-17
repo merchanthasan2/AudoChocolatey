@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-set-rules"
+description = "Enables the set_rules command without any pre-configured scope."
+commands.allow = ["set_rules"]
+
+[[permission]]
+identifier = "deny-set-rules"
+description = "Denies the set_rules command without any pre-configured scope."
+commands.deny = ["set_rules"]

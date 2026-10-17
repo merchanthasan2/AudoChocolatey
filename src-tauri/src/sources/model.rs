@@ -82,11 +82,71 @@ pub struct OpRequest {
     pub kind: OpKind,
     pub target: SourceRef,
     pub version: Option<PkgVersion>,
+    /// Normal (silent), with the installer's own window, or reinstall. Older saved jobs load
+    /// as Normal.
+    #[serde(default)]
+    #[ts(optional, as = "Option<OpMode>")]
+    pub mode: OpMode,
+}
+
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize, TS)]
+#[serde(rename_all = "lowercase")]
+#[ts(export)]
+pub enum OpMode {
+    #[default]
+    Normal,
+    /// Shows the installer's own window, for apps that need choices made.
+    Interactive,
+    /// Installs the same version again over the current one.
+    Reinstall,
+}
+
+/// Which modes each kind of change may use, per source. Rust is the only authority.
+pub fn mode_allowed(kind: OpKind, mode: OpMode, source: SourceKind) -> bool {
+    let tool = matches!(source, SourceKind::Winget | SourceKind::Choco);
+    match (kind, mode) {
+        (_, OpMode::Normal) => true,
+        (OpKind::Install | OpKind::Upgrade, OpMode::Interactive) => tool,
+        (OpKind::Upgrade, OpMode::Reinstall) => tool,
+        _ => false,
+    }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn mode_table() {
+        use OpKind::*;
+        use OpMode::*;
+        use SourceKind::*;
+        for s in [Winget, Choco, Msstore] {
+            for k in [Install, Upgrade, Uninstall, Rollback] {
+                assert!(mode_allowed(k, Normal, s));
+            }
+        }
+        for s in [Winget, Choco] {
+            assert!(mode_allowed(Install, Interactive, s));
+            assert!(mode_allowed(Upgrade, Interactive, s));
+            assert!(mode_allowed(Upgrade, Reinstall, s));
+            assert!(!mode_allowed(Install, Reinstall, s));
+            assert!(!mode_allowed(Uninstall, Interactive, s));
+            assert!(!mode_allowed(Uninstall, Reinstall, s));
+            assert!(!mode_allowed(Rollback, Reinstall, s));
+        }
+        assert!(!mode_allowed(Install, Interactive, Msstore));
+        assert!(!mode_allowed(Upgrade, Reinstall, Msstore));
+    }
+
+    #[test]
+    fn saved_jobs_without_a_mode_load_as_normal() {
+        let op: OpRequest = serde_json::from_str(
+            r#"{"kind":"upgrade","target":{"source":"winget","id":"A.B"},"version":null}"#,
+        )
+        .unwrap();
+        assert_eq!(op.mode, OpMode::Normal);
+    }
 
     #[test]
     fn source_status_serializes_flat_and_tagged() {

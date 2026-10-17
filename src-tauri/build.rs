@@ -15,6 +15,7 @@ const COMMANDS: &[&str] = &[
     "marketplace_category_more",
     "set_rule",
     "remove_rule",
+    "set_rules",
     "pause_queue",
     "resume_queue",
     "quit_anyway",

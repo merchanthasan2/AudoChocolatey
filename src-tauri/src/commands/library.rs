@@ -301,6 +301,52 @@ pub fn set_rule(
     Ok(current_updates(&state))
 }
 
+/// One app's rule from the page ("Skip selected").
+#[derive(Debug, Clone, serde::Deserialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export)]
+pub struct RuleRequest {
+    pub target: SourceRef,
+    pub name: String,
+    pub kind: RuleKind,
+}
+
+/// Sets several apps' rules at once (at most 200), saved once.
+#[tauri::command]
+pub fn set_rules(
+    state: State<'_, AppState>,
+    items: Vec<RuleRequest>,
+) -> Result<UpdatesListing, AppError> {
+    if items.len() > 200 {
+        return Err(AppError::new(
+            "invalid_input",
+            "Choose at most 200 apps at a time.",
+        ));
+    }
+    let now = crate::jobs::model::now_ms();
+    let rules = items
+        .into_iter()
+        .map(|i| Rule {
+            key: rule_key(&i.target, Catalog::embedded()),
+            target: i.target,
+            name: i
+                .name
+                .chars()
+                .filter(|c| !c.is_control())
+                .take(120)
+                .collect(),
+            kind: i.kind,
+            created_at: now,
+        })
+        .collect();
+    state
+        .rules
+        .lock()
+        .unwrap_or_else(|p| p.into_inner())
+        .set_many(rules)?;
+    Ok(current_updates(&state))
+}
+
 #[tauri::command]
 pub fn remove_rule(state: State<'_, AppState>, key: String) -> Result<UpdatesListing, AppError> {
     if key.len() > 200 {

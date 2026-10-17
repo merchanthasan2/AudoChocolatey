@@ -58,7 +58,10 @@ mod tests {
 
     #[test]
     fn file_shape() {
-        let s = to_csv(&["App", "Version"], &[vec!["Firefox".into(), "131.0".into()]]);
+        let s = to_csv(
+            &["App", "Version"],
+            &[vec!["Firefox".into(), "131.0".into()]],
+        );
         assert!(s.starts_with('\u{FEFF}'));
         assert_eq!(
             s.trim_start_matches('\u{FEFF}'),

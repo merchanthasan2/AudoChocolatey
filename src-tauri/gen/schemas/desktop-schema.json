@@ -393,6 +393,12 @@
           "markdownDescription": "Enables the set_rule command without any pre-configured scope."
         },
         {
+          "description": "Enables the set_rules command without any pre-configured scope.",
+          "type": "string",
+          "const": "allow-set-rules",
+          "markdownDescription": "Enables the set_rules command without any pre-configured scope."
+        },
+        {
           "description": "Enables the update_all command without any pre-configured scope.",
           "type": "string",
           "const": "allow-update-all",
@@ -619,6 +625,12 @@
           "type": "string",
           "const": "deny-set-rule",
           "markdownDescription": "Denies the set_rule command without any pre-configured scope."
+        },
+        {
+          "description": "Denies the set_rules command without any pre-configured scope.",
+          "type": "string",
+          "const": "deny-set-rules",
+          "markdownDescription": "Denies the set_rules command without any pre-configured scope."
         },
         {
           "description": "Denies the update_all command without any pre-configured scope.",

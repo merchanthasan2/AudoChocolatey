@@ -171,6 +171,7 @@ mod tests {
                 kind: OpKind::Install,
                 target: SourceRef::new(SourceKind::Winget, "Mozilla.Firefox").unwrap(),
                 version: None,
+                mode: Default::default(),
             },
             "Firefox".into(),
         )

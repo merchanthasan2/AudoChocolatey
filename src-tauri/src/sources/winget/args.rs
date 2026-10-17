@@ -1,10 +1,10 @@
 //! winget argv construction. Pure functions so every flag is unit-tested.
-//! Package operations always target one exact id in the winget source; `--force` and `--all`
-//! are never emitted.
+//! Package operations always target one exact id in the winget source. `--force` appears only
+//! for a Reinstall (and nowhere else); `--all` is never emitted.
 
 use crate::error::{AppError, AppResult};
 use crate::ids::{SourceKind, WingetId};
-use crate::sources::model::{OpKind, OpRequest};
+use crate::sources::model::{mode_allowed, OpKind, OpMode, OpRequest};
 
 const AGREE_SOURCE: &str = "--accept-source-agreements";
 const NO_PROMPT: &str = "--disable-interactivity";
@@ -16,6 +16,30 @@ pub fn build_op(op: &OpRequest) -> AppResult<Vec<String>> {
         SourceKind::Choco => return Err(AppError::new("invalid_input", "not a winget package")),
     };
     let id = op.target.id();
+    if !mode_allowed(op.kind, op.mode, op.target.source()) {
+        return Err(AppError::new(
+            "invalid_input",
+            "that kind of change isn't available here",
+        ));
+    }
+    if op.mode == OpMode::Reinstall {
+        // The same version again, over the current install.
+        return Ok([
+            "install",
+            "--id",
+            id,
+            "--exact",
+            "--source",
+            "winget",
+            "--force",
+            "--silent",
+            NO_PROMPT,
+            "--accept-package-agreements",
+            AGREE_SOURCE,
+        ]
+        .map(String::from)
+        .to_vec());
+    }
     if op.kind == OpKind::Rollback {
         // An install of the exact earlier version, never with --force.
         let (Some(v), "winget") = (&op.version, source) else {
@@ -66,6 +90,12 @@ pub fn build_op(op: &OpRequest) -> AppResult<Vec<String>> {
             AGREE_SOURCE,
         ],
     };
+    if op.mode == OpMode::Interactive {
+        // The installer's own window instead of a silent install.
+        for a in argv.iter_mut().filter(|a| **a == "--silent") {
+            *a = "--interactive";
+        }
+    }
     // The Store always installs its current version.
     let version = op
         .version
@@ -181,6 +211,7 @@ mod tests {
             kind: OpKind::Install,
             target: SourceRef::new(SourceKind::Msstore, "9NKSQGP7F2NH").unwrap(),
             version: Some(PkgVersion::try_from("1.0".to_string()).unwrap()),
+            mode: Default::default(),
         };
         let a = build_op(&o).unwrap();
         assert_eq!(&a[..4], ["install", "--id", "9NKSQGP7F2NH", "--exact"]);
@@ -200,6 +231,7 @@ mod tests {
             kind,
             target: SourceRef::new(SourceKind::Winget, id).unwrap(),
             version: version.map(|v| PkgVersion::try_from(v.to_string()).unwrap()),
+            mode: Default::default(),
         }
     }
 
@@ -248,11 +280,53 @@ mod tests {
             kind: OpKind::Rollback,
             target: SourceRef::new(SourceKind::Msstore, "9NBLGGH4NNS1").unwrap(),
             version: Some(PkgVersion::try_from("1.0".to_string()).unwrap()),
+            mode: Default::default(),
         };
         assert!(build_op(&store).is_err());
         for k in [OpKind::Install, OpKind::Upgrade, OpKind::Rollback] {
             let a = build_op(&op(k, "A.B", Some("1.0"))).unwrap();
             assert!(!a.iter().any(|x| x == "--force"), "{a:?}");
+        }
+    }
+
+    fn with_mode(kind: OpKind, mode: crate::sources::model::OpMode) -> OpRequest {
+        OpRequest {
+            mode,
+            ..op(kind, "Mozilla.Firefox", None)
+        }
+    }
+
+    #[test]
+    fn installer_window_and_reinstall() {
+        use crate::sources::model::OpMode::*;
+        let a = build_op(&with_mode(OpKind::Upgrade, Interactive)).unwrap();
+        assert!(a.contains(&"--interactive".to_string()) && !a.contains(&"--silent".to_string()));
+        let a = build_op(&with_mode(OpKind::Upgrade, Reinstall)).unwrap();
+        assert_eq!(
+            a,
+            [
+                "install",
+                "--id",
+                "Mozilla.Firefox",
+                "--exact",
+                "--source",
+                "winget",
+                "--force",
+                "--silent",
+                "--disable-interactivity",
+                "--accept-package-agreements",
+                "--accept-source-agreements"
+            ]
+        );
+        assert!(build_op(&with_mode(OpKind::Uninstall, Interactive)).is_err());
+        assert!(build_op(&with_mode(OpKind::Install, Reinstall)).is_err());
+        // --force only and always with Reinstall.
+        for k in [OpKind::Install, OpKind::Upgrade, OpKind::Uninstall] {
+            for m in [Normal, Interactive] {
+                if let Ok(a) = build_op(&with_mode(k, m)) {
+                    assert!(!a.contains(&"--force".to_string()), "{k:?} {m:?}");
+                }
+            }
         }
     }
 

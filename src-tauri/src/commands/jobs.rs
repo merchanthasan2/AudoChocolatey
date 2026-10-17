@@ -73,6 +73,7 @@ pub fn upgrades_to_ops(items: Vec<UpgradeCandidate>) -> Vec<(OpRequest, String)>
                     kind: OpKind::Upgrade,
                     target,
                     version: None,
+                    mode: Default::default(),
                 },
                 c.name,
             ))
@@ -228,9 +229,24 @@ pub fn refuse_from_page(ops: &[(OpRequest, String)]) -> Result<(), AppError> {
     Ok(())
 }
 
+/// Interactive and Reinstall only where the table in `mode_allowed` says so.
+pub fn refuse_bad_mode(ops: &[(OpRequest, String)]) -> Result<(), AppError> {
+    if ops
+        .iter()
+        .any(|(o, _)| !crate::sources::model::mode_allowed(o.kind, o.mode, o.target.source()))
+    {
+        return Err(AppError::new(
+            "invalid_input",
+            "That kind of change isn't available for this app.",
+        ));
+    }
+    Ok(())
+}
+
 /// Every check a change to the PC must pass, for new jobs and retries alike.
 fn allowed(state: &AppState, ops: &[(OpRequest, String)]) -> Result<(), AppError> {
     refuse_from_page(ops)?;
+    refuse_bad_mode(ops)?;
     refuse_unelevated(crate::commands::system::is_elevated())?;
     refuse_protected_uninstall(ops)?;
     let g = gates(state);
@@ -339,6 +355,7 @@ mod tests {
                 kind: OpKind::Install,
                 target: SourceRef::new(SourceKind::Msstore, "9NKSQGP7F2NH").unwrap(),
                 version: None,
+                mode: Default::default(),
             },
             "WhatsApp".to_string(),
         )];
@@ -356,6 +373,7 @@ mod tests {
                 kind: OpKind::Install,
                 target: SourceRef::new(SourceKind::Msstore, "9NKSQGP7F2NH").unwrap(),
                 version: None,
+                mode: Default::default(),
             },
             "WhatsApp".to_string(),
         )];
@@ -379,6 +397,7 @@ mod tests {
                 kind: OpKind::Upgrade,
                 target: SourceRef::new(SourceKind::Msstore, "9NKSQGP7F2NH").unwrap(),
                 version: None,
+                mode: Default::default(),
             },
             "WhatsApp".to_string(),
         );
@@ -459,6 +478,7 @@ mod tests {
                 kind: OpKind::Uninstall,
                 target: SourceRef::new(source, id).unwrap(),
                 version: None,
+                mode: Default::default(),
             },
             id.to_string(),
         )

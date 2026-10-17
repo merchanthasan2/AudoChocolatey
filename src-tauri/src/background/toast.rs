@@ -239,6 +239,7 @@ mod tests {
             kind: OpKind::Upgrade,
             target: SourceRef::new(SourceKind::Winget, "Mozilla.Firefox").unwrap(),
             version: None,
+            mode: Default::default(),
         };
         Job {
             phase,

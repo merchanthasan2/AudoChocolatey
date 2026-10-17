@@ -2,8 +2,8 @@ mod apps_file;
 mod background;
 mod bundles;
 mod catalog;
-mod csv;
 mod commands;
+mod csv;
 mod error;
 mod fsutil;
 mod icons;
@@ -168,6 +168,7 @@ pub fn run(launch: launch::Launch) {
             commands::catalog::marketplace_category_more,
             commands::library::set_rule,
             commands::library::remove_rule,
+            commands::library::set_rules,
             commands::jobs::get_queue,
             commands::jobs::pause_queue,
             commands::jobs::resume_queue,

@@ -12,7 +12,7 @@ use crate::jobs::progress::{
     percent, ChocoLines, DownloadWatcher, LineParser, Signal, WingetLines,
 };
 use crate::jobs::verify;
-use crate::sources::model::{OpKind, OpRequest};
+use crate::sources::model::{OpKind, OpMode, OpRequest};
 use crate::sources::stream::{CancellationToken, CommandSpec, StreamRunner};
 use crate::sources::{choco, winget};
 use async_trait::async_trait;
@@ -655,10 +655,12 @@ impl Queue {
         };
         let mut run_op = op.clone();
         let mut outcome = self.execute(deps, id, &run_op, &token).await;
+        // Only a plain change tries another source; going back, an installer window or a
+        // reinstall are exactly what the person asked for.
         let fallback = deps
             .fallback
             .as_ref()
-            .filter(|_| op.kind != OpKind::Rollback);
+            .filter(|_| op.kind != OpKind::Rollback && op.mode == OpMode::Normal);
         if let (Ok(Outcome::Failed(reason)), Some(fb)) = (&outcome, fallback) {
             let reached = self
                 .lock()
@@ -682,6 +684,7 @@ impl Queue {
                     kind: OpKind::Install,
                     target: alt,
                     version: None,
+                    mode: Default::default(),
                 };
                 outcome = self.execute(deps, id, &run_op, &token).await;
             }
@@ -876,7 +879,8 @@ impl Queue {
                 r = &mut run => break r,
                 _ = tick.tick() => {
                     let phase = self.lock().jobs.iter().find(|j| j.id == id).map(|j| j.phase);
-                    if !timed_out && phase.is_some_and(Job::cancellable_in) && began.elapsed() > deps.download_timeout {
+                    // An installer window may wait on the person, so it has no download limit.
+                    if !timed_out && op.mode == OpMode::Normal && phase.is_some_and(Job::cancellable_in) && began.elapsed() > deps.download_timeout {
                         timed_out = true;
                         token.cancel();
                     }
@@ -1046,6 +1050,7 @@ mod tests {
                 kind,
                 target: SourceRef::new(source, id).unwrap(),
                 version: None,
+                mode: Default::default(),
             },
             id.to_string(),
         )
@@ -1638,6 +1643,7 @@ mod tests {
                 kind: OpKind::Rollback,
                 target: SourceRef::new(SourceKind::Winget, "A.A").unwrap(),
                 version: Some(crate::ids::PkgVersion::try_from(v.to_string()).unwrap()),
+                mode: Default::default(),
             },
             "A".into(),
         )
@@ -1724,6 +1730,22 @@ mod tests {
     impl Fallback for PanicFallback {
         async fn alternate(&self, _: &OpRequest, _: FailureReason, _: bool) -> Option<SourceRef> {
             panic!("a rollback must never fall back");
+        }
+    }
+
+    #[tokio::test]
+    async fn an_installer_window_or_reinstall_never_tries_another_source() {
+        for mode in [OpMode::Interactive, OpMode::Reinstall] {
+            let mut deps =
+                deps_with_file(FakeStream::new(vec![(vec![], Some(HASH_MISMATCH))]), None);
+            deps.fallback = Some(Arc::new(PanicFallback));
+            let q = Queue::start(deps, Arc::new(Rec::default()));
+            let (mut o, n) = op(SourceKind::Winget, "A.A", OpKind::Upgrade);
+            o.mode = mode;
+            let id = q.enqueue(vec![(o, n)]).remove(0);
+            let j = until_finished(&q, &id).await;
+            assert_eq!(j.phase, JobPhase::Failed);
+            assert_eq!(j.op.mode, mode, "a retry would keep the mode");
         }
     }
 

@@ -231,7 +231,28 @@ impl RuleStore {
 
     /// Adds or replaces the rule for that app. A new skip keeps the app's Automatic / Ask first
     /// choice for when the skip ends.
-    pub fn set(&mut self, mut rule: Rule) -> AppResult<()> {
+    pub fn set(&mut self, rule: Rule) -> AppResult<()> {
+        self.put(rule)?;
+        self.save()
+    }
+
+    /// Several rules, saved once; all or nothing.
+    pub fn set_many(&mut self, rules: Vec<Rule>) -> AppResult<()> {
+        let before = self.rules.clone();
+        for r in rules {
+            if let Err(e) = self.put(r) {
+                self.rules = before;
+                return Err(e);
+            }
+        }
+        if let Err(e) = self.save() {
+            self.rules = before;
+            return Err(e);
+        }
+        Ok(())
+    }
+
+    fn put(&mut self, mut rule: Rule) -> AppResult<()> {
         let existing = self.rules.iter().find(|r| r.key == rule.key);
         if existing.is_none() && self.rules.len() >= MAX_RULES {
             return Err(AppError::new(
@@ -242,7 +263,7 @@ impl RuleStore {
         rule.kind = carry_policy(rule.kind, existing.map(|r| &r.kind));
         self.rules.retain(|r| r.key != rule.key);
         self.rules.push(rule);
-        self.save()
+        Ok(())
     }
 
     /// "Show again": a skip goes back to the app's earlier Automatic / Ask first choice; any
@@ -432,6 +453,25 @@ mod tests {
             serde_json::from_str(&std::fs::read_to_string(&p).unwrap()).unwrap();
         assert_eq!(v["schemaVersion"], 2);
         assert!(v["rules"][0]["kind"].get("after").is_none());
+    }
+
+    #[test]
+    fn several_rules_are_saved_together_or_not_at_all() {
+        let dir = tempfile::tempdir().unwrap();
+        let p = dir.path().join("rules.json");
+        let mut s = RuleStore::open(p.clone());
+        s.set_many(vec![
+            rule(SourceKind::Winget, "A.A", skip("2.0")),
+            rule(SourceKind::Winget, "B.B", skip("3.0")),
+        ])
+        .unwrap();
+        assert_eq!(RuleStore::open(p.clone()).rules().len(), 2);
+        // Over the cap: nothing changes.
+        let many: Vec<Rule> = (0..MAX_RULES)
+            .map(|i| rule(SourceKind::Winget, &format!("App.N{i}"), RuleKind::Never))
+            .collect();
+        assert!(s.set_many(many).is_err());
+        assert_eq!(s.rules().len(), 2);
     }
 
     #[test]

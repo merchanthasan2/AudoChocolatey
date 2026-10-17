@@ -26,6 +26,7 @@
     "allow-marketplace-category-more",
     "allow-set-rule",
     "allow-remove-rule",
+    "allow-set-rules",
     "allow-pause-queue",
     "allow-resume-queue",
     "allow-quit-anyway",

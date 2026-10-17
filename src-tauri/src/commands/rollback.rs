@@ -109,6 +109,7 @@ async fn plan(state: &AppState, job_id: &str) -> Result<(RollbackPlan, OpRequest
         kind: OpKind::Rollback,
         target,
         version: Some(PkgVersion::try_from(version.clone())?),
+        mode: Default::default(),
     };
     Ok((
         RollbackPlan {

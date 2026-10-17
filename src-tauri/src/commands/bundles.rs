@@ -245,7 +245,14 @@ pub async fn export_csv(
     }
     let (header, cells): (&[&str], Vec<Vec<String>>) = match page {
         ListPage::Updates => (
-            &["App", "Package", "Installed", "New version", "Source", "Released"],
+            &[
+                "App",
+                "Package",
+                "Installed",
+                "New version",
+                "Source",
+                "Released",
+            ],
             rows.iter()
                 .map(|r| {
                     vec![
@@ -262,7 +269,14 @@ pub async fn export_csv(
         ListPage::Installed => (
             &["App", "Package", "Version", "Source"],
             rows.iter()
-                .map(|r| vec![r.name.clone(), r.id.clone(), r.version.clone(), r.source.clone()])
+                .map(|r| {
+                    vec![
+                        r.name.clone(),
+                        r.id.clone(),
+                        r.version.clone(),
+                        r.source.clone(),
+                    ]
+                })
                 .collect(),
         ),
     };
@@ -423,6 +437,7 @@ pub fn install_ops(apps: &[&FileApp], cat: &Catalog) -> Vec<(OpRequest, String)>
                     kind: OpKind::Install,
                     target: apps_file::install_target(a, cat)?,
                     version: None,
+                    mode: Default::default(),
                 },
                 a.name.clone(),
             ))

@@ -107,6 +107,7 @@ mod tests {
                 kind: OpKind::Upgrade,
                 target: SourceRef::new(source, id).unwrap(),
                 version: None,
+                mode: Default::default(),
             },
             id.into(),
         );

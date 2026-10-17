@@ -1,13 +1,28 @@
 //! Chocolatey argv construction. Progress output is kept (no `--no-progress`) so the job queue
-//! can show download percentages; `--force` is never emitted.
+//! can show download percentages. `--force` appears only for a Reinstall.
 
 use crate::error::{AppError, AppResult};
 use crate::ids::{ChocoId, SourceKind};
-use crate::sources::model::{OpKind, OpRequest};
+use crate::sources::model::{mode_allowed, OpKind, OpMode, OpRequest};
 
 pub fn build_op(op: &OpRequest) -> AppResult<Vec<String>> {
     if op.target.source() != SourceKind::Choco {
         return Err(AppError::new("invalid_input", "not a Chocolatey package"));
+    }
+    if !mode_allowed(op.kind, op.mode, SourceKind::Choco) {
+        return Err(AppError::new(
+            "invalid_input",
+            "that kind of change isn't available here",
+        ));
+    }
+    if op.mode == OpMode::Reinstall {
+        return Ok(vec![
+            "upgrade".into(),
+            op.target.id().to_string(),
+            "-y".into(),
+            "--force".into(),
+            "--no-color".into(),
+        ]);
     }
     if op.kind == OpKind::Rollback {
         // Chocolatey's documented downgrade: upgrade to an exact older version.
@@ -38,6 +53,9 @@ pub fn build_op(op: &OpRequest) -> AppResult<Vec<String>> {
     ];
     if let (Some(v), false) = (&op.version, op.kind == OpKind::Uninstall) {
         argv.extend(["--version".to_string(), v.to_string()]);
+    }
+    if op.mode == OpMode::Interactive {
+        argv.push("--not-silent".into());
     }
     Ok(argv)
 }
@@ -78,6 +96,7 @@ mod tests {
             kind,
             target: SourceRef::new(SourceKind::Choco, "chocolatey-core.extension").unwrap(),
             version: v.map(|v| PkgVersion::try_from(v.to_string()).unwrap()),
+            mode: Default::default(),
         }
     }
 
@@ -102,6 +121,29 @@ mod tests {
             build_op(&op(OpKind::Uninstall, Some("9"))).unwrap(),
             ["uninstall", "chocolatey-core.extension", "-y", "--no-color"]
         );
+    }
+
+    #[test]
+    fn installer_window_and_reinstall() {
+        use crate::sources::model::OpMode::*;
+        let m = |kind, mode| OpRequest {
+            mode,
+            ..op(kind, None)
+        };
+        let a = build_op(&m(OpKind::Install, Interactive)).unwrap();
+        assert_eq!(a.last().map(String::as_str), Some("--not-silent"));
+        assert_eq!(
+            build_op(&m(OpKind::Upgrade, Reinstall)).unwrap(),
+            [
+                "upgrade",
+                "chocolatey-core.extension",
+                "-y",
+                "--force",
+                "--no-color"
+            ]
+        );
+        assert!(build_op(&m(OpKind::Uninstall, Interactive)).is_err());
+        assert!(build_op(&m(OpKind::Install, Reinstall)).is_err());
     }
 
     #[test]
