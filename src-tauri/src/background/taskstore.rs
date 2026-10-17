@@ -3,7 +3,6 @@
 
 use super::autostart::{TaskInfo, TASK_FOLDER};
 use windows::core::{Interface, BSTR};
-use windows::Win32::System::Variant::{VARIANT, VARIANT_0, VARIANT_0_0, VARIANT_0_0_0, VT_I4};
 use windows::Win32::System::Com::{
     CoCreateInstance, CoInitializeEx, CoUninitialize, CLSCTX_INPROC_SERVER, COINIT_MULTITHREADED,
 };
@@ -11,6 +10,7 @@ use windows::Win32::System::TaskScheduler::{
     IExecAction, ITaskFolder, ITaskService, TaskScheduler, TASK_CREATE_OR_UPDATE,
     TASK_LOGON_INTERACTIVE_TOKEN,
 };
+use windows::Win32::System::Variant::{VARIANT, VARIANT_0, VARIANT_0_0, VARIANT_0_0_0, VT_I4};
 
 /// A 32-bit integer VARIANT (collection index).
 fn variant_i4(v: i32) -> VARIANT {

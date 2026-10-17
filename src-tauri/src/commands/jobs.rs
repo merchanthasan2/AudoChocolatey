@@ -1,5 +1,6 @@
 //! Queue commands: everything that changes software on the PC goes through here.
 
+use crate::background::toast::{batch_lines, BatchWatch};
 use crate::error::AppError;
 use crate::ids::{SourceKind, SourceRef};
 use crate::jobs::model::Job;
@@ -7,7 +8,6 @@ use crate::jobs::worker::{JobSink, QueueSnapshot};
 use crate::sources::model::{OpKind, OpRequest, UpgradeCandidate};
 use crate::state::AppState;
 use serde::Deserialize;
-use crate::background::toast::{batch_lines, BatchWatch};
 use tauri::{AppHandle, Emitter, Manager, State};
 use ts_rs::TS;
 
@@ -27,7 +27,10 @@ pub struct TauriSink {
 
 impl TauriSink {
     pub fn new(app: AppHandle) -> Self {
-        Self { app, batch: Default::default() }
+        Self {
+            app,
+            batch: Default::default(),
+        }
     }
 }
 
@@ -40,7 +43,12 @@ impl JobSink for TauriSink {
     }
     fn queue(&self, snapshot: &QueueSnapshot) {
         let _ = self.app.emit("queue://changed", snapshot);
-        let Some(done) = self.batch.lock().expect("batch lock").observe(&snapshot.jobs) else {
+        let Some(done) = self
+            .batch
+            .lock()
+            .expect("batch lock")
+            .observe(&snapshot.jobs)
+        else {
             return;
         };
         let Some(state) = self.app.try_state::<AppState>() else {

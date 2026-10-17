@@ -2,12 +2,12 @@
 
 use crate::fsutil::{read_json, write_atomic, Read};
 use serde::{Deserialize, Serialize};
-use std::collections::BTreeSet;
+use std::collections::{BTreeMap, BTreeSet};
 use std::path::Path;
 
 /// The first background check waits this long after start, so sign-in stays quick.
 pub const FIRST_CHECK_DELAY_MS: u64 = 2 * 60_000;
-const STATE_MAX_BYTES: u64 = 64 * 1024;
+const STATE_MAX_BYTES: u64 = 256 * 1024;
 
 pub fn due(now: u64, launched_at: u64, last_check: Option<u64>, interval_hours: u32) -> bool {
     if now < launched_at + FIRST_CHECK_DELAY_MS {
@@ -25,13 +25,17 @@ pub fn diff_new(prev: &BTreeSet<String>, next: &BTreeSet<String>) -> Vec<String>
     next.difference(prev).cloned().collect()
 }
 
-/// `background.json`: when we last checked and what we already told the person about.
-/// A forged file can only make a notification appear or not.
+/// `background.json`: when we last checked, what we already told the person about, when each
+/// update was first seen, and which updates were already started automatically. A forged file
+/// can only make a notification appear or not, or make an automatic update wait or start
+/// sooner (it still has to be a shown update the person set to Automatic).
 #[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", default)]
 pub struct BackgroundState {
     pub last_check_at: Option<u64>,
     pub notified: BTreeSet<String>,
+    pub first_seen: BTreeMap<String, u64>,
+    pub auto_tried: BTreeSet<String>,
 }
 
 impl BackgroundState {
@@ -105,10 +109,12 @@ mod tests {
         let s = BackgroundState {
             last_check_at: Some(42),
             notified: ["app:firefox@3".to_string()].into(),
+            first_seen: [("app:firefox@3".to_string(), 7)].into(),
+            auto_tried: ["app:firefox@3".to_string()].into(),
         };
         s.save(&p).unwrap();
         assert_eq!(BackgroundState::load(&p), s);
-        std::fs::write(&p, vec![b' '; 70 * 1024]).unwrap();
+        std::fs::write(&p, vec![b' '; 300 * 1024]).unwrap();
         assert_eq!(BackgroundState::load(&p), BackgroundState::default());
     }
 }

@@ -26,6 +26,7 @@ const COMMANDS: &[&str] = &[
     "marketplace_home",
     "marketplace_category",
     "get_app",
+    "get_auto_status",
 ];
 
 fn git(args: &[&str]) -> Option<String> {

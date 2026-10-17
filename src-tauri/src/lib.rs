@@ -155,6 +155,7 @@ pub fn run(launch: launch::Launch) {
             commands::library::search,
             commands::settings::get_settings,
             commands::settings::update_settings,
+            commands::settings::get_auto_status,
             commands::jobs::enqueue,
             commands::jobs::update_all,
             commands::catalog::marketplace_category_more,

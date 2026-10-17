@@ -201,6 +201,12 @@
           "markdownDescription": "Enables the get_app command without any pre-configured scope."
         },
         {
+          "description": "Enables the get_auto_status command without any pre-configured scope.",
+          "type": "string",
+          "const": "allow-get-auto-status",
+          "markdownDescription": "Enables the get_auto_status command without any pre-configured scope."
+        },
+        {
           "description": "Enables the get_diagnostics command without any pre-configured scope.",
           "type": "string",
           "const": "allow-get-diagnostics",
@@ -343,6 +349,12 @@
           "type": "string",
           "const": "deny-get-app",
           "markdownDescription": "Denies the get_app command without any pre-configured scope."
+        },
+        {
+          "description": "Denies the get_auto_status command without any pre-configured scope.",
+          "type": "string",
+          "const": "deny-get-auto-status",
+          "markdownDescription": "Denies the get_auto_status command without any pre-configured scope."
         },
         {
           "description": "Denies the get_diagnostics command without any pre-configured scope.",

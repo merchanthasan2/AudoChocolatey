@@ -195,13 +195,20 @@ impl Env {
 
 /// Turns start-at-sign-in on or off for the current user, checking every rule first.
 pub fn apply_with(store: &dyn TaskStore, env: &Env, want: bool) -> Result<(), String> {
-    let sid = env.sid.as_deref().ok_or("Couldn't identify your account.")?;
+    let sid = env
+        .sid
+        .as_deref()
+        .ok_or("Couldn't identify your account.")?;
     let name = task_name(sid);
     if !want {
         return store.delete(&name);
     }
-    let pf = env.program_files.as_deref().ok_or("Couldn't find Program Files.")?;
-    allowed(&env.exe, pf, env.elevated, env.same_user, env.debug).map_err(|b| b.message().to_string())?;
+    let pf = env
+        .program_files
+        .as_deref()
+        .ok_or("Couldn't find Program Files.")?;
+    allowed(&env.exe, pf, env.elevated, env.same_user, env.debug)
+        .map_err(|b| b.message().to_string())?;
     store.register(&name, &task_xml(&env.exe, sid))
 }
 
@@ -241,8 +248,16 @@ mod tests {
 
     #[test]
     fn task_definition() {
-        let xml = task_xml(Path::new(r"C:\Program Files\Quantum Updater & Co\quantum_updater.exe"), SID);
-        assert!(xml.contains(r"<Command>C:\Program Files\Quantum Updater &amp; Co\quantum_updater.exe</Command>"), "{xml}");
+        let xml = task_xml(
+            Path::new(r"C:\Program Files\Quantum Updater & Co\quantum_updater.exe"),
+            SID,
+        );
+        assert!(
+            xml.contains(
+                r"<Command>C:\Program Files\Quantum Updater &amp; Co\quantum_updater.exe</Command>"
+            ),
+            "{xml}"
+        );
         assert!(xml.contains("<Arguments>--background</Arguments>"));
         assert!(xml.contains(&format!("<UserId>{SID}</UserId>")));
         assert!(xml.contains("<LogonType>InteractiveToken</LogonType>"));
@@ -250,8 +265,14 @@ mod tests {
         assert!(xml.contains("<Delay>PT15S</Delay>"));
         assert!(xml.contains("<DisallowStartIfOnBatteries>false</DisallowStartIfOnBatteries>"));
         assert!(xml.contains("<StopIfGoingOnBatteries>false</StopIfGoingOnBatteries>"));
-        assert!(xml.contains("<ExecutionTimeLimit>PT0S</ExecutionTimeLimit>"), "never killed after 72 h");
-        assert!(xml.contains("<Priority>4</Priority>"), "installers inherit normal priority");
+        assert!(
+            xml.contains("<ExecutionTimeLimit>PT0S</ExecutionTimeLimit>"),
+            "never killed after 72 h"
+        );
+        assert!(
+            xml.contains("<Priority>4</Priority>"),
+            "installers inherit normal priority"
+        );
         assert!(xml.contains("<MultipleInstancesPolicy>IgnoreNew</MultipleInstancesPolicy>"));
         assert_eq!(task_name(SID), r"Quantum Updater S-1-5-21-1-2-3-1001");
     }
@@ -261,26 +282,51 @@ mod tests {
         let pf = Path::new(r"C:\Program Files");
         let installed = Path::new(r"C:\PROGRAM FILES\Quantum Updater\quantum_updater.exe");
         assert_eq!(allowed(installed, pf, true, Some(true), false), Ok(()));
-        assert_eq!(allowed(installed, pf, true, Some(true), true), Err(AutostartBlock::DevBuild));
-        assert_eq!(allowed(installed, pf, false, Some(true), false), Err(AutostartBlock::NeedsAdmin));
-        assert_eq!(allowed(installed, pf, true, Some(false), false), Err(AutostartBlock::OtherAccount));
-        assert_eq!(allowed(installed, pf, true, None, false), Err(AutostartBlock::OtherAccount));
+        assert_eq!(
+            allowed(installed, pf, true, Some(true), true),
+            Err(AutostartBlock::DevBuild)
+        );
+        assert_eq!(
+            allowed(installed, pf, false, Some(true), false),
+            Err(AutostartBlock::NeedsAdmin)
+        );
+        assert_eq!(
+            allowed(installed, pf, true, Some(false), false),
+            Err(AutostartBlock::OtherAccount)
+        );
+        assert_eq!(
+            allowed(installed, pf, true, None, false),
+            Err(AutostartBlock::OtherAccount)
+        );
         for elsewhere in [
             r"D:\Apps\quantum_updater.exe",
             r"C:\Users\me\AppData\Local\quantum_updater.exe",
             r"C:\Program Files (x86)\Quantum Updater\quantum_updater.exe",
             r"C:\Program Files\..\Users\me\quantum_updater.exe",
         ] {
-            assert_eq!(allowed(Path::new(elsewhere), pf, true, Some(true), false), Err(AutostartBlock::NotInstalled), "{elsewhere}");
+            assert_eq!(
+                allowed(Path::new(elsewhere), pf, true, Some(true), false),
+                Err(AutostartBlock::NotInstalled),
+                "{elsewhere}"
+            );
         }
     }
 
     #[test]
     fn reconcile_repairs_or_removes() {
         let exe = Path::new(r"C:\Program Files\Quantum Updater\quantum_updater.exe");
-        let same = TaskInfo { exe: exe.to_string_lossy().to_uppercase(), args: "--background".into() };
-        let moved = TaskInfo { exe: r"C:\Old\quantum_updater.exe".into(), args: "--background".into() };
-        let odd_args = TaskInfo { exe: exe.to_string_lossy().into(), args: "--something".into() };
+        let same = TaskInfo {
+            exe: exe.to_string_lossy().to_uppercase(),
+            args: "--background".into(),
+        };
+        let moved = TaskInfo {
+            exe: r"C:\Old\quantum_updater.exe".into(),
+            args: "--background".into(),
+        };
+        let odd_args = TaskInfo {
+            exe: exe.to_string_lossy().into(),
+            args: "--something".into(),
+        };
         assert_eq!(reconcile(true, None, exe), Reconcile::Register);
         assert_eq!(reconcile(true, Some(&same), exe), Reconcile::Noop);
         assert_eq!(reconcile(true, Some(&moved), exe), Reconcile::Register);
@@ -291,8 +337,14 @@ mod tests {
 
     #[test]
     fn block_messages_are_plain() {
-        let tool = regex::Regex::new(r"(?i)\b(winget|chocolatey|choco|scoop|msstore|schtasks)\b").unwrap();
-        for b in [AutostartBlock::DevBuild, AutostartBlock::NeedsAdmin, AutostartBlock::OtherAccount, AutostartBlock::NotInstalled] {
+        let tool =
+            regex::Regex::new(r"(?i)\b(winget|chocolatey|choco|scoop|msstore|schtasks)\b").unwrap();
+        for b in [
+            AutostartBlock::DevBuild,
+            AutostartBlock::NeedsAdmin,
+            AutostartBlock::OtherAccount,
+            AutostartBlock::NotInstalled,
+        ] {
             assert!(!tool.is_match(b.message()));
         }
     }
@@ -309,8 +361,18 @@ mod tests {
         }
         fn register(&self, name: &str, xml: &str) -> Result<(), String> {
             self.log.borrow_mut().push(format!("register {name}"));
-            let exe = xml.split("<Command>").nth(1).and_then(|r| r.split("</Command>").next()).unwrap_or("");
-            self.tasks.borrow_mut().insert(name.into(), TaskInfo { exe: exe.into(), args: LAUNCH_ARG.into() });
+            let exe = xml
+                .split("<Command>")
+                .nth(1)
+                .and_then(|r| r.split("</Command>").next())
+                .unwrap_or("");
+            self.tasks.borrow_mut().insert(
+                name.into(),
+                TaskInfo {
+                    exe: exe.into(),
+                    args: LAUNCH_ARG.into(),
+                },
+            );
             Ok(())
         }
         fn delete(&self, name: &str) -> Result<(), String> {
@@ -343,10 +405,22 @@ mod tests {
     #[test]
     fn a_blocked_setup_never_touches_task_scheduler() {
         let store = FakeTaskStore::default();
-        let env = Env { exe: r"C:\Users\me\Downloads\quantum_updater.exe".into(), ..installed() };
-        assert_eq!(apply_with(&store, &env, true), Err(AutostartBlock::NotInstalled.message().to_string()));
-        let env = Env { debug: true, ..installed() };
-        assert_eq!(apply_with(&store, &env, true), Err(AutostartBlock::DevBuild.message().to_string()));
+        let env = Env {
+            exe: r"C:\Users\me\Downloads\quantum_updater.exe".into(),
+            ..installed()
+        };
+        assert_eq!(
+            apply_with(&store, &env, true),
+            Err(AutostartBlock::NotInstalled.message().to_string())
+        );
+        let env = Env {
+            debug: true,
+            ..installed()
+        };
+        assert_eq!(
+            apply_with(&store, &env, true),
+            Err(AutostartBlock::DevBuild.message().to_string())
+        );
         assert!(store.log.borrow().is_empty());
     }
 
@@ -354,13 +428,26 @@ mod tests {
     fn reconcile_waits_for_the_first_run_answer() {
         let store = FakeTaskStore::default();
         reconcile_with(&store, &installed(), true, false);
-        assert!(store.log.borrow().is_empty(), "nothing before the person said yes");
+        assert!(
+            store.log.borrow().is_empty(),
+            "nothing before the person said yes"
+        );
         reconcile_with(&store, &installed(), true, true);
         reconcile_with(&store, &installed(), true, true);
-        assert_eq!(store.log.borrow().len(), 1, "an up-to-date task is left alone");
-        let moved = Env { exe: r"C:\Program Files\Quantum Updater 2\quantum_updater.exe".into(), ..installed() };
+        assert_eq!(
+            store.log.borrow().len(),
+            1,
+            "an up-to-date task is left alone"
+        );
+        let moved = Env {
+            exe: r"C:\Program Files\Quantum Updater 2\quantum_updater.exe".into(),
+            ..installed()
+        };
         reconcile_with(&store, &moved, true, true);
-        assert_eq!(store.get(&task_name(SID)).unwrap().unwrap().exe, moved.exe.to_string_lossy());
+        assert_eq!(
+            store.get(&task_name(SID)).unwrap().unwrap().exe,
+            moved.exe.to_string_lossy()
+        );
         reconcile_with(&store, &installed(), false, true);
         assert!(store.get(&task_name(SID)).unwrap().is_none());
     }

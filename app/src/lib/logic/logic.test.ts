@@ -261,11 +261,41 @@ describe('finished-job toast', () => {
   });
 });
 
-import { ruleLabel } from './rules';
+import { ruleLabel, ownChoice, effectiveChoice, ruleAt, clock } from './rules';
 describe('hidden update labels', () => {
   it('says why an update is hidden', () => {
     expect(ruleLabel({ kind: 'never' })).toBe('Never update');
     expect(ruleLabel({ kind: 'skipVersion', version: '2.0' })).toBe('Skipping version 2.0');
+  });
+});
+
+describe('automatic or ask first, per app', () => {
+  it('the app choice wins over Settings', () => {
+    expect(effectiveChoice('notify', undefined)).toBe('ask');
+    expect(effectiveChoice('automatic', undefined)).toBe('auto');
+    expect(effectiveChoice('notify', { kind: 'auto' })).toBe('auto');
+    expect(effectiveChoice('automatic', { kind: 'ask' })).toBe('ask');
+    expect(effectiveChoice('automatic', { kind: 'never' })).toBe('ask');
+    expect(effectiveChoice('notify', { kind: 'skipVersion', version: '2', after: 'auto' })).toBe('auto');
+    expect(effectiveChoice('automatic', { kind: 'skipVersion', version: '2' })).toBe('auto');
+  });
+  it('knows whether the app made its own choice', () => {
+    expect(ownChoice(undefined)).toBeNull();
+    expect(ownChoice({ kind: 'never' })).toBeNull();
+    expect(ownChoice({ kind: 'ask' })).toBe('ask');
+    expect(ownChoice({ kind: 'skipVersion', version: '2', after: 'ask' })).toBe('ask');
+  });
+  it('finds a row rule by its key', () => {
+    const rule = { key: 'app:firefox', target: { source: 'winget' as const, id: 'Mozilla.Firefox' }, name: 'Firefox', kind: { kind: 'auto' as const }, createdAt: 1 };
+    const l = { itemKeys: ['app:vlc', 'app:firefox'], rules: [rule] };
+    expect(ruleAt(l, 1)).toBe(rule);
+    expect(ruleAt(l, 0)).toBeUndefined();
+    expect(ruleAt(l, 5)).toBeUndefined();
+    expect(ruleAt(null, 0)).toBeUndefined();
+  });
+  it('shows quiet hours as a clock', () => {
+    expect(clock(0)).toBe('00:00');
+    expect(clock(22 * 60 + 30)).toBe('22:30');
   });
 });
 

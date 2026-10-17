@@ -1,8 +1,11 @@
+use crate::background::auto::{may_auto_install, read_probe, Hold};
 use crate::error::AppError;
 use crate::settings::schema::{Settings, SettingsPatch};
 use crate::settings::SettingsStore;
 use crate::state::AppState;
+use serde::Serialize;
 use tauri::State;
+use ts_rs::TS;
 
 #[tauri::command]
 pub fn get_settings(state: State<'_, AppState>) -> Settings {
@@ -16,6 +19,28 @@ pub fn update_settings(
 ) -> Result<Settings, AppError> {
     let mut store = state.settings.lock().expect("settings lock");
     update_with(&mut store, patch, crate::background::autostart::apply)
+}
+
+/// Whether automatic updates could start right now, and if not, why (shown in Settings).
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export)]
+pub struct AutoStatus {
+    pub hold: Option<Hold>,
+    pub message: Option<String>,
+}
+
+#[tauri::command]
+pub async fn get_auto_status(state: State<'_, AppState>) -> Result<AutoStatus, AppError> {
+    let rules = state.settings().auto_rules;
+    let probe = tauri::async_runtime::spawn_blocking(read_probe)
+        .await
+        .unwrap_or_default();
+    let hold = may_auto_install(&rules, &probe).err();
+    Ok(AutoStatus {
+        hold,
+        message: hold.map(|h| h.message().to_string()),
+    })
 }
 
 /// Start at sign-in changes Windows first; if that's refused, nothing is saved.
@@ -38,17 +63,25 @@ mod tests {
     use super::*;
 
     fn patch(on: bool) -> SettingsPatch {
-        SettingsPatch { start_at_login: Some(on), background_prompted: Some(true), ..Default::default() }
+        SettingsPatch {
+            start_at_login: Some(on),
+            background_prompted: Some(true),
+            ..Default::default()
+        }
     }
 
     #[test]
     fn a_refused_autostart_saves_nothing() {
         let dir = tempfile::tempdir().unwrap();
         let mut store = SettingsStore::open(dir.path().join("settings.json"));
-        let err = update_with(&mut store, patch(true), |_| Err("Access is denied.".into())).unwrap_err();
+        let err =
+            update_with(&mut store, patch(true), |_| Err("Access is denied.".into())).unwrap_err();
         assert_eq!(err.message, "Access is denied.");
         assert!(!store.get().start_at_login);
-        assert!(!store.get().background_prompted, "the whole patch is dropped");
+        assert!(
+            !store.get().background_prompted,
+            "the whole patch is dropped"
+        );
     }
 
     #[test]

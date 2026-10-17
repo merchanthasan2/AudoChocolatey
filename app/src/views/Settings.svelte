@@ -1,6 +1,8 @@
 <script lang="ts">
   import { settings, overview } from '../lib/stores/app.svelte';
-  import { getDiagnostics, type Diagnostics } from '../lib/ipc/commands';
+  import { getDiagnostics, getAutoStatus, type Diagnostics, type AutoStatus } from '../lib/ipc/commands';
+  import type { AutoRules } from '../lib/ipc/bindings/AutoRules';
+  import { clock } from '../lib/logic/rules';
   import Segmented from '../lib/components/Segmented.svelte';
   import Toggle from '../lib/components/Toggle.svelte';
   import Banner from '../lib/components/Banner.svelte';
@@ -10,6 +12,15 @@
   onMount(() => { getDiagnostics().then((d) => (diag = d)).catch(() => {}); });
   const s = $derived(settings.value);
   const sourceLabel = (k: string) => (k === 'winget' ? 'winget' : 'Chocolatey');
+
+  // Re-read whenever the automatic choices change, so the "Waiting: …" line stays true.
+  let auto = $state<AutoStatus | null>(null);
+  $effect(() => {
+    void settings.value?.autoRules;
+    getAutoStatus().then((a) => (auto = a)).catch(() => (auto = null));
+  });
+  const rulesPatch = (r: AutoRules, change: Partial<AutoRules>) => settings.update({ autoRules: { ...r, ...change } });
+  const hours = Array.from({ length: 24 }, (_, h) => h * 60);
 </script>
 
 <header class="head"><h1>Settings</h1></header>
@@ -63,6 +74,53 @@
       <div><div class="label">Check every</div><div class="hint">How often to look for updates in the background.</div></div>
       <Segmented label="Check every" value={String(s.checkIntervalHours)} onchange={(v) => settings.update({ checkIntervalHours: Number(v) })}
         options={[{ value: '3', label: '3 h' }, { value: '6', label: '6 h' }, { value: '12', label: '12 h' }, { value: '24', label: 'Daily' }]} />
+    </div>
+  </section>
+
+  <section class="card group">
+    <h2>Automatic updates</h2>
+    <div class="row">
+      <div>
+        <div class="label">When updates are ready</div>
+        <div class="hint">Automatic installs updates for you. Each app can choose for itself from its menu on the Updates page.</div>
+      </div>
+      <Segmented label="When updates are ready" value={s.autoUpdate} onchange={(v) => settings.update({ autoUpdate: v })}
+        options={[{ value: 'notify', label: 'Ask me first' }, { value: 'automatic', label: 'Automatic' }]} />
+    </div>
+    {#if auto?.message}<p class="hint wait">{auto.message} Updates you start yourself still run.</p>{/if}
+    <div class="row">
+      <div><div class="label">Wait after a new version comes out</div><div class="hint">Automatic updates wait a little, so early problems get fixed first. Updates you start yourself never wait.</div></div>
+      <Segmented label="Wait after a new version comes out" value={String(s.autoRules.minAgeDays)} onchange={(v) => rulesPatch(s.autoRules, { minAgeDays: Number(v) })}
+        options={[{ value: '0', label: 'No wait' }, { value: '1', label: '1 day' }, { value: '2', label: '2 days' }, { value: '7', label: '1 week' }]} />
+    </div>
+    <div class="row">
+      <div><div class="label">Not on battery</div><div class="hint">Wait until this PC is plugged in.</div></div>
+      <Toggle label="Not on battery" checked={s.autoRules.skipOnBattery} onchange={(v) => rulesPatch(s.autoRules, { skipOnBattery: v })} />
+    </div>
+    <div class="row">
+      <div><div class="label">Not on metered internet</div><div class="hint">Wait when the connection is a phone hotspot or has a data limit.</div></div>
+      <Toggle label="Not on metered internet" checked={s.autoRules.skipOnMetered} onchange={(v) => rulesPatch(s.autoRules, { skipOnMetered: v })} />
+    </div>
+    <div class="row">
+      <div>
+        <div class="label">Quiet hours</div>
+        <div class="hint">No automatic updates between these times.</div>
+        {#if s.autoRules.quietHours.enabled}
+          <div class="times">
+            <select aria-label="Quiet hours start" value={s.autoRules.quietHours.start}
+              onchange={(e) => rulesPatch(s.autoRules, { quietHours: { ...s.autoRules.quietHours, start: Number(e.currentTarget.value) } })}>
+              {#each hours as m (m)}<option value={m}>{clock(m)}</option>{/each}
+            </select>
+            <span class="muted">to</span>
+            <select aria-label="Quiet hours end" value={s.autoRules.quietHours.end}
+              onchange={(e) => rulesPatch(s.autoRules, { quietHours: { ...s.autoRules.quietHours, end: Number(e.currentTarget.value) } })}>
+              {#each hours as m (m)}<option value={m}>{clock(m)}</option>{/each}
+            </select>
+          </div>
+        {/if}
+      </div>
+      <Toggle label="Quiet hours" checked={s.autoRules.quietHours.enabled}
+        onchange={(v) => rulesPatch(s.autoRules, { quietHours: { ...s.autoRules.quietHours, enabled: v } })} />
     </div>
   </section>
 
@@ -123,5 +181,8 @@
   dl { display: grid; grid-template-columns: 160px 1fr; gap: 8px 16px; margin: 4px 0 0; }
   dt { color: var(--muted); }
   dd { margin: 0; font-weight: 550; min-width: 0; }
+  .wait { margin: 0 0 4px; padding: 8px 12px; border-radius: 10px; background: var(--pill); color: var(--ink-2); }
+  .times { display: flex; align-items: center; gap: 8px; margin-top: 8px; }
+  select { height: 30px; padding: 0 8px; border-radius: 8px; border: 1px solid var(--hairline-strong); background: var(--card); color: var(--ink); font: inherit; font-size: 13px; }
   .mono { font-family: ui-monospace, 'Cascadia Mono', Consolas, monospace; font-size: 12.5px; }
 </style>

@@ -155,7 +155,13 @@ pub fn current_user_sid() -> Option<String> {
     let mut len = 0u32;
     // SAFETY: buffer and length describe writable memory.
     let ok = unsafe {
-        GetTokenInformation(token, TokenUser, buf.as_mut_ptr().cast(), buf.len() as u32, &mut len)
+        GetTokenInformation(
+            token,
+            TokenUser,
+            buf.as_mut_ptr().cast(),
+            buf.len() as u32,
+            &mut len,
+        )
     };
     // SAFETY: token opened above.
     unsafe { CloseHandle(token) };

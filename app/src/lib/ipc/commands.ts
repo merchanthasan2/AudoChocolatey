@@ -22,6 +22,10 @@ export const removeRule = (key: string) => invoke<UpdatesListing>('remove_rule',
 export const search = (query: string) => invoke<Listing<AppEntry>>('search', { query });
 export const getSettings = () => invoke<Settings>('get_settings');
 export const updateSettings = (patch: SettingsPatch) => invoke<Settings>('update_settings', { patch });
+import type { AutoStatus } from './bindings/AutoStatus';
+export type { AutoStatus };
+/** Whether automatic updates could start right now, and why not. */
+export const getAutoStatus = () => invoke<AutoStatus>('get_auto_status');
 
 // Marketplace (curated catalog)
 import type { AppEntry } from './bindings/AppEntry';

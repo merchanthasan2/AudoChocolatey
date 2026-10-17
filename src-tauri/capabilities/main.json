@@ -36,6 +36,7 @@
     "allow-get-job-log",
     "allow-marketplace-home",
     "allow-marketplace-category",
-    "allow-get-app"
+    "allow-get-app",
+    "allow-get-auto-status"
   ]
 }

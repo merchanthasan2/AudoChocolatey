@@ -114,6 +114,8 @@ async fn choco_titles<'a>(
 #[ts(export)]
 pub struct UpdatesListing {
     pub items: Vec<UpgradeCandidate>,
+    /// The rule key of each item (same order), so a row can find its app's choice in `rules`.
+    pub item_keys: Vec<String>,
     pub hidden: Vec<HiddenUpdate>,
     pub rules: Vec<Rule>,
     pub source_errors: Vec<SourceError>,
@@ -126,9 +128,18 @@ pub fn updates_listing(
     cat: &Catalog,
 ) -> (UpdatesListing, bool) {
     let (items, hidden, changed) = apply_rules(raw.items, rules, cat);
+    let item_keys = items
+        .iter()
+        .map(|c| {
+            SourceRef::new(c.source, c.id.clone())
+                .map(|t| rule_key(&t, cat))
+                .unwrap_or_default()
+        })
+        .collect();
     (
         UpdatesListing {
             items,
+            item_keys,
             hidden,
             rules: rules.clone(),
             source_errors: raw.source_errors,

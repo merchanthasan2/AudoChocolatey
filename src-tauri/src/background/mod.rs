@@ -1,6 +1,7 @@
-//! Running in the background: tray, window behaviour, scheduled checks, notifications and
-//! start at sign-in.
+//! Running in the background: tray, window behaviour, scheduled checks, notifications,
+//! automatic updates and start at sign-in.
 
+pub mod auto;
 pub mod autostart;
 pub mod runner;
 pub mod schedule;

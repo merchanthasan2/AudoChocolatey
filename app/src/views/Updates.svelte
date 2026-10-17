@@ -1,6 +1,6 @@
 <script lang="ts">
   import { SvelteSet } from 'svelte/reactivity';
-  import { updates, queue } from '../lib/stores/app.svelte';
+  import { updates, queue, settings } from '../lib/stores/app.svelte';
   import type { UpgradeCandidate } from '../lib/ipc/commands';
   import AppRow from '../lib/components/AppRow.svelte';
   import JobButton from '../lib/components/JobButton.svelte';
@@ -15,10 +15,30 @@
   import { uniqueKeys } from '../lib/logic/uniqueKeys';
   import { visibleUpdates } from '../lib/logic/visibleUpdates';
   import { clickGuard } from '../lib/logic/clickGuard';
-  import { ruleLabel } from '../lib/logic/rules';
+  import { ruleLabel, ruleAt, ownChoice, effectiveChoice } from '../lib/logic/rules';
   import RowMenu from '../lib/components/RowMenu.svelte';
 
   let showHidden = $state(false);
+
+  // Each app's Automatic / Ask first choice (rows keep their listing index through `items`).
+  const mode = $derived(settings.value?.autoUpdate ?? 'notify');
+  const ruleOf = (u: UpgradeCandidate) => ruleAt(updates.last, updates.items.indexOf(u));
+  const isAuto = (u: UpgradeCandidate) => effectiveChoice(mode, ruleOf(u)?.kind) === 'auto';
+  function menuFor(u: UpgradeCandidate) {
+    const rule = ruleOf(u);
+    const own = ownChoice(rule?.kind);
+    const items = [
+      isAuto(u)
+        ? { text: 'Ask before updating this app', run: () => updates.setRule(u, { kind: 'ask' }) }
+        : { text: 'Update this app automatically', run: () => updates.setRule(u, { kind: 'auto' }) },
+    ];
+    if (own && rule) items.push({ text: 'Use my Settings choice', run: () => updates.restore(rule.key) });
+    items.push(
+      { text: `Skip version ${u.availableVersion}`, run: () => updates.setRule(u, { kind: 'skipVersion', version: u.availableVersion }) },
+      { text: 'Never update this app', run: () => updates.setRule(u, { kind: 'never' }) },
+    );
+    return items;
+  }
 
   const jobOf = (u: UpgradeCandidate) => queue.jobFor(u.source, u.id, 'upgrade');
   const isBusy = (u: UpgradeCandidate) => {
@@ -107,7 +127,7 @@
     {#each rows as u, i (keys[i])}
       {@const job = jobOf(u)}
       <div class="row-wrap" in:rise={{ delay: Math.min(i, 8) * 40 }} out:collapse>
-        <AppRow name={u.name} meta="{u.installedVersion} → {u.availableVersion}" {job} mode="update" bar
+        <AppRow name={u.name} meta="{u.installedVersion} → {u.availableVersion}{isAuto(u) ? ' · Updates automatically' : ''}" {job} mode="update" bar
           iconKey="{u.source}:{u.id}">
           {#snippet lead()}
             <Checkbox label="Select {u.name}" checked={selected.has(keys[i])} disabled={isBusy(u)}
@@ -118,10 +138,7 @@
               <JobButton {job} mode="update" name={u.name}
                 onstart={() => queue.update(u)} oncancel={(id) => queue.cancel(id)} onretry={(id) => queue.retry(id)} />
               {#if !isBusy(u)}
-                <RowMenu label="More options for {u.name}" items={[
-                  { text: `Skip version ${u.availableVersion}`, run: () => updates.setRule(u, { kind: 'skipVersion', version: u.availableVersion }) },
-                  { text: 'Never update this app', run: () => updates.setRule(u, { kind: 'never' }) },
-                ]} />
+                <RowMenu label="More options for {u.name}" items={menuFor(u)} />
               {/if}
             </span>
           {/snippet}

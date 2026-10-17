@@ -7,4 +7,8 @@ import type { UpgradeCandidate } from "./UpgradeCandidate";
 /**
  * The Updates screen: what can be updated, what the user hid, and the rules behind that.
  */
-export type UpdatesListing = { items: Array<UpgradeCandidate>, hidden: Array<HiddenUpdate>, rules: Array<Rule>, sourceErrors: Array<SourceError>, };
+export type UpdatesListing = { items: Array<UpgradeCandidate>, 
+/**
+ * The rule key of each item (same order), so a row can find its app's choice in `rules`.
+ */
+itemKeys: Array<string>, hidden: Array<HiddenUpdate>, rules: Array<Rule>, sourceErrors: Array<SourceError>, };

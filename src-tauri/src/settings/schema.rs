@@ -36,6 +36,70 @@ pub enum SelfUpdate {
     Off,
 }
 
+/// Whether shown updates install by themselves. Each app's own choice (rules) wins.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, TS, Default)]
+#[serde(rename_all = "lowercase")]
+#[ts(export)]
+pub enum AutoUpdate {
+    #[default]
+    Notify,
+    Automatic,
+}
+
+/// Times of day when automatic updates wait. Minutes after midnight; `start > end` spans
+/// midnight.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, TS)]
+#[serde(rename_all = "camelCase", default)]
+#[ts(export)]
+pub struct QuietHours {
+    pub enabled: bool,
+    pub start: u16,
+    pub end: u16,
+}
+
+impl Default for QuietHours {
+    fn default() -> Self {
+        Self {
+            enabled: false,
+            start: 9 * 60,
+            end: 18 * 60,
+        }
+    }
+}
+
+/// The allowed "wait this many days after a new version appears" choices.
+pub const MIN_AGE_CHOICES: [u32; 4] = [0, 1, 2, 7];
+
+/// When automatic updates hold back. Manual updates ignore all of these.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, TS)]
+#[serde(rename_all = "camelCase", default)]
+#[ts(export)]
+pub struct AutoRules {
+    pub skip_on_battery: bool,
+    pub skip_on_metered: bool,
+    pub quiet_hours: QuietHours,
+    pub min_age_days: u32,
+}
+
+impl Default for AutoRules {
+    fn default() -> Self {
+        Self {
+            skip_on_battery: true,
+            skip_on_metered: true,
+            quiet_hours: QuietHours::default(),
+            min_age_days: 2,
+        }
+    }
+}
+
+impl AutoRules {
+    pub fn is_valid(&self) -> bool {
+        self.quiet_hours.start < 1440
+            && self.quiet_hours.end < 1440
+            && MIN_AGE_CHOICES.contains(&self.min_age_days)
+    }
+}
+
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, TS)]
 #[serde(rename_all = "camelCase", default)]
 #[ts(export)]
@@ -84,6 +148,8 @@ pub struct Settings {
     pub close_to_tray: bool,
     pub show_unknown_versions: bool,
     pub self_update: SelfUpdate,
+    pub auto_update: AutoUpdate,
+    pub auto_rules: AutoRules,
     pub choco: ChocoSettings,
     /// Microsoft Store apps (through winget's Store source).
     pub store: StoreSettings,
@@ -110,6 +176,8 @@ impl Default for Settings {
             close_to_tray: true,
             show_unknown_versions: false,
             self_update: SelfUpdate::Notify,
+            auto_update: AutoUpdate::Notify,
+            auto_rules: AutoRules::default(),
             choco: ChocoSettings::default(),
             store: StoreSettings::default(),
             last_check_at: None,
@@ -135,6 +203,8 @@ pub struct SettingsPatch {
     pub close_to_tray: Option<bool>,
     pub show_unknown_versions: Option<bool>,
     pub self_update: Option<SelfUpdate>,
+    pub auto_update: Option<AutoUpdate>,
+    pub auto_rules: Option<AutoRules>,
     pub choco_enabled: Option<bool>,
     pub choco_bootstrap_prompted: Option<bool>,
     pub store_enabled: Option<bool>,

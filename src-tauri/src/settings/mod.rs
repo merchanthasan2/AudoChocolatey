@@ -59,6 +59,12 @@ impl SettingsStore {
                 ));
             }
         }
+        if patch.auto_rules.is_some_and(|r| !r.is_valid()) {
+            return Err(AppError::new(
+                "invalid_input",
+                "quiet hours or waiting days are out of range",
+            ));
+        }
         let mut next = self.current.clone();
         macro_rules! set {
             ($($field:ident),*) => { $(if let Some(v) = patch.$field { next.$field = v; })* };
@@ -74,7 +80,9 @@ impl SettingsStore {
             start_in_tray,
             close_to_tray,
             show_unknown_versions,
-            self_update
+            self_update,
+            auto_update,
+            auto_rules
         );
         if let Some(v) = patch.choco_enabled {
             next.choco.enabled = v;
@@ -131,6 +139,9 @@ fn sanitize(mut s: Settings) -> Settings {
     if !(1..=168).contains(&s.check_interval_hours) {
         s.check_interval_hours = Settings::default().check_interval_hours;
     }
+    if !s.auto_rules.is_valid() {
+        s.auto_rules = Default::default();
+    }
     // Start at sign-in is off until the person says yes (older files defaulted it on).
     if !s.background_prompted {
         s.start_at_login = false;
@@ -167,7 +178,11 @@ mod tests {
         let (_, path) = store_in(&dir);
         std::fs::write(&path, r#"{"schemaVersion":1,"startAtLogin":true}"#).unwrap();
         assert!(!SettingsStore::open(path.clone()).get().start_at_login);
-        std::fs::write(&path, r#"{"schemaVersion":1,"startAtLogin":true,"backgroundPrompted":true}"#).unwrap();
+        std::fs::write(
+            &path,
+            r#"{"schemaVersion":1,"startAtLogin":true,"backgroundPrompted":true}"#,
+        )
+        .unwrap();
         assert!(SettingsStore::open(path).get().start_at_login);
     }
 
@@ -209,6 +224,71 @@ mod tests {
         }
         assert_eq!(std::fs::read(&path).unwrap(), before);
         assert_eq!(s.get().check_interval_hours, 6);
+    }
+
+    #[test]
+    fn automatic_update_choices_are_checked() {
+        use schema::{AutoRules, AutoUpdate, QuietHours};
+        let dir = tempfile::tempdir().unwrap();
+        let (mut s, _) = store_in(&dir);
+        assert_eq!(s.get().auto_update, AutoUpdate::Notify, "off until chosen");
+        assert_eq!(s.get().auto_rules.min_age_days, 2);
+        assert!(s.get().auto_rules.skip_on_battery && s.get().auto_rules.skip_on_metered);
+        let bad = [
+            AutoRules {
+                min_age_days: 3,
+                ..Default::default()
+            },
+            AutoRules {
+                quiet_hours: QuietHours {
+                    enabled: true,
+                    start: 1440,
+                    end: 0,
+                },
+                ..Default::default()
+            },
+        ];
+        for r in bad {
+            let err = s
+                .apply(SettingsPatch {
+                    auto_rules: Some(r),
+                    ..Default::default()
+                })
+                .unwrap_err();
+            assert_eq!(err.code, "invalid_input");
+        }
+        let good = AutoRules {
+            min_age_days: 7,
+            quiet_hours: QuietHours {
+                enabled: true,
+                start: 22 * 60,
+                end: 7 * 60,
+            },
+            ..Default::default()
+        };
+        let next = s
+            .apply(SettingsPatch {
+                auto_update: Some(AutoUpdate::Automatic),
+                auto_rules: Some(good),
+                ..Default::default()
+            })
+            .unwrap();
+        assert_eq!(next.auto_update, AutoUpdate::Automatic);
+        assert_eq!(next.auto_rules, good);
+    }
+
+    #[test]
+    fn hand_edited_waiting_days_fall_back_to_the_default() {
+        let dir = tempfile::tempdir().unwrap();
+        let path = dir.path().join("settings.json");
+        std::fs::write(
+            &path,
+            r#"{"schemaVersion":1,"autoUpdate":"automatic","autoRules":{"minAgeDays":30}}"#,
+        )
+        .unwrap();
+        let s = SettingsStore::open(path);
+        assert_eq!(s.get().auto_update, schema::AutoUpdate::Automatic);
+        assert_eq!(s.get().auto_rules, schema::AutoRules::default());
     }
 
     #[test]
