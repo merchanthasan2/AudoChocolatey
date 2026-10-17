@@ -37,6 +37,16 @@
     "allow-marketplace-home",
     "allow-marketplace-category",
     "allow-get-app",
-    "allow-get-auto-status"
+    "allow-get-auto-status",
+    "allow-my-bundles",
+    "allow-add-to-bundle",
+    "allow-remove-from-bundle",
+    "allow-delete-bundle",
+    "allow-export-apps",
+    "allow-import-pick",
+    "allow-import-apply",
+    "allow-import-keep",
+    "allow-pick-backup-folder",
+    "allow-backup-now"
   ]
 }

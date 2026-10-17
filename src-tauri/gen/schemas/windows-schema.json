@@ -177,6 +177,18 @@
       "description": "Permission identifier",
       "oneOf": [
         {
+          "description": "Enables the add_to_bundle command without any pre-configured scope.",
+          "type": "string",
+          "const": "allow-add-to-bundle",
+          "markdownDescription": "Enables the add_to_bundle command without any pre-configured scope."
+        },
+        {
+          "description": "Enables the backup_now command without any pre-configured scope.",
+          "type": "string",
+          "const": "allow-backup-now",
+          "markdownDescription": "Enables the backup_now command without any pre-configured scope."
+        },
+        {
           "description": "Enables the cancel_job command without any pre-configured scope.",
           "type": "string",
           "const": "allow-cancel-job",
@@ -189,10 +201,22 @@
           "markdownDescription": "Enables the clear_finished command without any pre-configured scope."
         },
         {
+          "description": "Enables the delete_bundle command without any pre-configured scope.",
+          "type": "string",
+          "const": "allow-delete-bundle",
+          "markdownDescription": "Enables the delete_bundle command without any pre-configured scope."
+        },
+        {
           "description": "Enables the enqueue command without any pre-configured scope.",
           "type": "string",
           "const": "allow-enqueue",
           "markdownDescription": "Enables the enqueue command without any pre-configured scope."
+        },
+        {
+          "description": "Enables the export_apps command without any pre-configured scope.",
+          "type": "string",
+          "const": "allow-export-apps",
+          "markdownDescription": "Enables the export_apps command without any pre-configured scope."
         },
         {
           "description": "Enables the get_app command without any pre-configured scope.",
@@ -237,6 +261,24 @@
           "markdownDescription": "Enables the get_settings command without any pre-configured scope."
         },
         {
+          "description": "Enables the import_apply command without any pre-configured scope.",
+          "type": "string",
+          "const": "allow-import-apply",
+          "markdownDescription": "Enables the import_apply command without any pre-configured scope."
+        },
+        {
+          "description": "Enables the import_keep command without any pre-configured scope.",
+          "type": "string",
+          "const": "allow-import-keep",
+          "markdownDescription": "Enables the import_keep command without any pre-configured scope."
+        },
+        {
+          "description": "Enables the import_pick command without any pre-configured scope.",
+          "type": "string",
+          "const": "allow-import-pick",
+          "markdownDescription": "Enables the import_pick command without any pre-configured scope."
+        },
+        {
           "description": "Enables the list_installed command without any pre-configured scope.",
           "type": "string",
           "const": "allow-list-installed",
@@ -267,10 +309,22 @@
           "markdownDescription": "Enables the marketplace_home command without any pre-configured scope."
         },
         {
+          "description": "Enables the my_bundles command without any pre-configured scope.",
+          "type": "string",
+          "const": "allow-my-bundles",
+          "markdownDescription": "Enables the my_bundles command without any pre-configured scope."
+        },
+        {
           "description": "Enables the pause_queue command without any pre-configured scope.",
           "type": "string",
           "const": "allow-pause-queue",
           "markdownDescription": "Enables the pause_queue command without any pre-configured scope."
+        },
+        {
+          "description": "Enables the pick_backup_folder command without any pre-configured scope.",
+          "type": "string",
+          "const": "allow-pick-backup-folder",
+          "markdownDescription": "Enables the pick_backup_folder command without any pre-configured scope."
         },
         {
           "description": "Enables the quit_anyway command without any pre-configured scope.",
@@ -283,6 +337,12 @@
           "type": "string",
           "const": "allow-relaunch-as-admin",
           "markdownDescription": "Enables the relaunch_as_admin command without any pre-configured scope."
+        },
+        {
+          "description": "Enables the remove_from_bundle command without any pre-configured scope.",
+          "type": "string",
+          "const": "allow-remove-from-bundle",
+          "markdownDescription": "Enables the remove_from_bundle command without any pre-configured scope."
         },
         {
           "description": "Enables the remove_rule command without any pre-configured scope.",
@@ -327,6 +387,18 @@
           "markdownDescription": "Enables the update_settings command without any pre-configured scope."
         },
         {
+          "description": "Denies the add_to_bundle command without any pre-configured scope.",
+          "type": "string",
+          "const": "deny-add-to-bundle",
+          "markdownDescription": "Denies the add_to_bundle command without any pre-configured scope."
+        },
+        {
+          "description": "Denies the backup_now command without any pre-configured scope.",
+          "type": "string",
+          "const": "deny-backup-now",
+          "markdownDescription": "Denies the backup_now command without any pre-configured scope."
+        },
+        {
           "description": "Denies the cancel_job command without any pre-configured scope.",
           "type": "string",
           "const": "deny-cancel-job",
@@ -339,10 +411,22 @@
           "markdownDescription": "Denies the clear_finished command without any pre-configured scope."
         },
         {
+          "description": "Denies the delete_bundle command without any pre-configured scope.",
+          "type": "string",
+          "const": "deny-delete-bundle",
+          "markdownDescription": "Denies the delete_bundle command without any pre-configured scope."
+        },
+        {
           "description": "Denies the enqueue command without any pre-configured scope.",
           "type": "string",
           "const": "deny-enqueue",
           "markdownDescription": "Denies the enqueue command without any pre-configured scope."
+        },
+        {
+          "description": "Denies the export_apps command without any pre-configured scope.",
+          "type": "string",
+          "const": "deny-export-apps",
+          "markdownDescription": "Denies the export_apps command without any pre-configured scope."
         },
         {
           "description": "Denies the get_app command without any pre-configured scope.",
@@ -387,6 +471,24 @@
           "markdownDescription": "Denies the get_settings command without any pre-configured scope."
         },
         {
+          "description": "Denies the import_apply command without any pre-configured scope.",
+          "type": "string",
+          "const": "deny-import-apply",
+          "markdownDescription": "Denies the import_apply command without any pre-configured scope."
+        },
+        {
+          "description": "Denies the import_keep command without any pre-configured scope.",
+          "type": "string",
+          "const": "deny-import-keep",
+          "markdownDescription": "Denies the import_keep command without any pre-configured scope."
+        },
+        {
+          "description": "Denies the import_pick command without any pre-configured scope.",
+          "type": "string",
+          "const": "deny-import-pick",
+          "markdownDescription": "Denies the import_pick command without any pre-configured scope."
+        },
+        {
           "description": "Denies the list_installed command without any pre-configured scope.",
           "type": "string",
           "const": "deny-list-installed",
@@ -417,10 +519,22 @@
           "markdownDescription": "Denies the marketplace_home command without any pre-configured scope."
         },
         {
+          "description": "Denies the my_bundles command without any pre-configured scope.",
+          "type": "string",
+          "const": "deny-my-bundles",
+          "markdownDescription": "Denies the my_bundles command without any pre-configured scope."
+        },
+        {
           "description": "Denies the pause_queue command without any pre-configured scope.",
           "type": "string",
           "const": "deny-pause-queue",
           "markdownDescription": "Denies the pause_queue command without any pre-configured scope."
+        },
+        {
+          "description": "Denies the pick_backup_folder command without any pre-configured scope.",
+          "type": "string",
+          "const": "deny-pick-backup-folder",
+          "markdownDescription": "Denies the pick_backup_folder command without any pre-configured scope."
         },
         {
           "description": "Denies the quit_anyway command without any pre-configured scope.",
@@ -433,6 +547,12 @@
           "type": "string",
           "const": "deny-relaunch-as-admin",
           "markdownDescription": "Denies the relaunch_as_admin command without any pre-configured scope."
+        },
+        {
+          "description": "Denies the remove_from_bundle command without any pre-configured scope.",
+          "type": "string",
+          "const": "deny-remove-from-bundle",
+          "markdownDescription": "Denies the remove_from_bundle command without any pre-configured scope."
         },
         {
           "description": "Denies the remove_rule command without any pre-configured scope.",
@@ -2515,6 +2635,72 @@
           "type": "string",
           "const": "core:window:deny-unminimize",
           "markdownDescription": "Denies the unminimize command without any pre-configured scope."
+        },
+        {
+          "description": "This permission set configures the types of dialogs\navailable from the dialog plugin.\n\n#### Granted Permissions\n\nAll dialog types are enabled.\n\n\n\n#### This default permission set includes:\n\n- `allow-message`\n- `allow-save`\n- `allow-open`",
+          "type": "string",
+          "const": "dialog:default",
+          "markdownDescription": "This permission set configures the types of dialogs\navailable from the dialog plugin.\n\n#### Granted Permissions\n\nAll dialog types are enabled.\n\n\n\n#### This default permission set includes:\n\n- `allow-message`\n- `allow-save`\n- `allow-open`"
+        },
+        {
+          "description": "Enables the ask command without any pre-configured scope. (**DEPRECATED**: This is now an alias to `allow-message` and will be removed in v3)",
+          "type": "string",
+          "const": "dialog:allow-ask",
+          "markdownDescription": "Enables the ask command without any pre-configured scope. (**DEPRECATED**: This is now an alias to `allow-message` and will be removed in v3)"
+        },
+        {
+          "description": "Enables the confirm command without any pre-configured scope. (**DEPRECATED**: This is now an alias to `allow-message` and will be removed in v3)",
+          "type": "string",
+          "const": "dialog:allow-confirm",
+          "markdownDescription": "Enables the confirm command without any pre-configured scope. (**DEPRECATED**: This is now an alias to `allow-message` and will be removed in v3)"
+        },
+        {
+          "description": "Enables the message command without any pre-configured scope.",
+          "type": "string",
+          "const": "dialog:allow-message",
+          "markdownDescription": "Enables the message command without any pre-configured scope."
+        },
+        {
+          "description": "Enables the open command without any pre-configured scope.",
+          "type": "string",
+          "const": "dialog:allow-open",
+          "markdownDescription": "Enables the open command without any pre-configured scope."
+        },
+        {
+          "description": "Enables the save command without any pre-configured scope.",
+          "type": "string",
+          "const": "dialog:allow-save",
+          "markdownDescription": "Enables the save command without any pre-configured scope."
+        },
+        {
+          "description": "Denies the ask command without any pre-configured scope. (**DEPRECATED**: This is now an alias to `deny-message` and will be removed in v3)",
+          "type": "string",
+          "const": "dialog:deny-ask",
+          "markdownDescription": "Denies the ask command without any pre-configured scope. (**DEPRECATED**: This is now an alias to `deny-message` and will be removed in v3)"
+        },
+        {
+          "description": "Denies the confirm command without any pre-configured scope. (**DEPRECATED**: This is now an alias to `deny-message` and will be removed in v3)",
+          "type": "string",
+          "const": "dialog:deny-confirm",
+          "markdownDescription": "Denies the confirm command without any pre-configured scope. (**DEPRECATED**: This is now an alias to `deny-message` and will be removed in v3)"
+        },
+        {
+          "description": "Denies the message command without any pre-configured scope.",
+          "type": "string",
+          "const": "dialog:deny-message",
+          "markdownDescription": "Denies the message command without any pre-configured scope."
+        },
+        {
+          "description": "Denies the open command without any pre-configured scope.",
+          "type": "string",
+          "const": "dialog:deny-open",
+          "markdownDescription": "Denies the open command without any pre-configured scope."
+        },
+        {
+          "description": "Denies the save command without any pre-configured scope.",
+          "type": "string",
+          "const": "dialog:deny-save",
+          "markdownDescription": "Denies the save command without any pre-configured scope."
         }
       ]
     },

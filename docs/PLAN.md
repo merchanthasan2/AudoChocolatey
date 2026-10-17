@@ -90,7 +90,7 @@ Goal: one runtime, a fresh Svelte shell, admin manifest really embedded, locked-
 - [x] P6a 4–5 Scheduler and toasts only on change (`d6d3c00`)
 - [x] P6a 6 Scheduled Task start at sign-in, first-run card, NSIS uninstall hook (`9a6133f`); live check awaits owner approval
 - [x] P6a 7 Notification choices (ready / finished / failed) (`f395925`)
-- [ ] P6b Per-app policy, automatic mode with battery, metered, quiet hours and minimum update age, My bundles (add selection, export and import, scheduled backup), remove several, Settings
+- [x] P6b Per-app policy, automatic mode with battery, metered, quiet hours and minimum update age (`bec1e88`), My bundles (add selection, export and import, scheduled backup), remove several, Settings (see next commit)
 - [ ] P6c Restore point, history, rollback, signer note, security first, download site changed
 - [ ] P6d Lists: toolbar, table, friendly sources and filter, hide Windows components, views, What's new and size and date, CSV, link "Installed directly" apps ([plan](superpowers/plans/2026-10-17-p6d-lists.md), approved 2026-10-17)
 - [ ] P6e Polish: desktop shortcut cleanup, close the app first, restart needed, better retry, startup manager, live log, searchable Settings

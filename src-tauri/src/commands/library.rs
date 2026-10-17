@@ -59,6 +59,11 @@ fn disabled<T>() -> AppResult<Vec<T>> {
 pub async fn list_installed(
     state: State<'_, AppState>,
 ) -> Result<Listing<InstalledPackage>, AppError> {
+    Ok(collect_installed(&state).await)
+}
+
+/// Installed apps from every source that's on, with friendly names.
+pub async fn collect_installed(state: &AppState) -> Listing<InstalledPackage> {
     let choco_on = state.settings().choco.enabled;
     let (w, c) = tokio::join!(state.winget.list_installed(), async {
         if choco_on {
@@ -69,7 +74,7 @@ pub async fn list_installed(
     });
     let mut listing = collect(vec![(SourceKind::Winget, w), (SourceKind::Choco, c)]);
     let titles = choco_titles(
-        &state,
+        state,
         listing
             .items
             .iter()
@@ -91,7 +96,7 @@ pub async fn list_installed(
             None => names::strip_version_tail(&p.name, &p.version),
         };
     }
-    Ok(listing)
+    listing
 }
 
 async fn choco_titles<'a>(

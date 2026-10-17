@@ -147,6 +147,55 @@ class UpdatesSection extends Section<UpgradeCandidate, UpdatesListing> {
 }
 export const updates = new UpdatesSection(api.listUpdates);
 
+/* ---------------------------------------------------------------- my bundles */
+class MyBundlesStore {
+  list = $state<api.MyBundleView[]>([]);
+  /** The open import, waiting for "Install" or "Save as bundle". */
+  importing = $state<api.ImportPreview | null>(null);
+  /** Apps waiting for the "Add to bundle" dialog. */
+  adding = $state<api.BundleAppIn[] | null>(null);
+  async load() {
+    try { this.list = await api.myBundles(); } catch { /* none yet */ }
+  }
+  async #run(f: () => Promise<api.MyBundleView[]>, done?: string) {
+    try {
+      this.list = await f();
+      if (done) toasts.push({ text: done, tone: 'ok' });
+      return true;
+    } catch (e) { toasts.push({ text: message(e), tone: 'error' }); return false; }
+  }
+  add(bundle: string | null, name: string | null, apps: api.BundleAppIn[]) {
+    const n = apps.length;
+    const to = bundle ? this.list.find((b) => b.id === bundle)?.name : name;
+    return this.#run(() => api.addToBundle(bundle, name, apps), `Added ${n} ${n === 1 ? 'app' : 'apps'} to ${to ?? 'your bundle'}`);
+  }
+  removeApp(bundle: string, key: string) { return this.#run(() => api.removeFromBundle(bundle, key)); }
+  remove(bundle: string) { return this.#run(() => api.deleteBundle(bundle), 'Bundle deleted'); }
+  async export(what: api.ExportWhat) {
+    try {
+      const n = await api.exportApps(what);
+      if (n != null) toasts.push({ text: `Saved a list of ${n} ${n === 1 ? 'app' : 'apps'}`, tone: 'ok' });
+    } catch (e) { toasts.push({ text: message(e), tone: 'error' }); }
+  }
+  async pickImport() {
+    try { this.importing = await api.importPick(); } catch (e) { toasts.push({ text: message(e), tone: 'error' }); }
+  }
+  async installImport(indices: number[]) {
+    if (!this.importing) return;
+    try {
+      const ids = await api.importApply(this.importing.token, indices);
+      toasts.push({ text: `Installing ${ids.length} ${ids.length === 1 ? 'app' : 'apps'}`, tone: 'ok' });
+      this.importing = null;
+    } catch (e) { toasts.push({ text: message(e), tone: 'error' }); }
+  }
+  async keepImport(indices: number[], name: string) {
+    if (!this.importing) return;
+    const token = this.importing.token;
+    if (await this.#run(() => api.importKeep(token, indices, name), 'Saved to My bundles')) this.importing = null;
+  }
+}
+export const myBundles = new MyBundlesStore();
+
 /* ---------------------------------------------------------------- queue */
 const FINISHED = new Set(['succeeded', 'failed', 'cancelled', 'skipped']);
 class QueueStore {
@@ -224,6 +273,14 @@ class QueueStore {
   }
   update(c: UpgradeCandidate) { return this.#enqueue('upgrade', c.source, c.id, c.name); }
   uninstall(p: { source: SourceKind; id: string; name: string }) { return this.#enqueue('uninstall', p.source, p.id, p.name); }
+  /** Removes several apps in one go (the backend refuses more than 50, or a protected app). */
+  async uninstallMany(list: { source: SourceKind; id: string; name: string }[]) {
+    if (list.length === 0) return false;
+    try {
+      await api.enqueue(list.map((p) => ({ op: { kind: 'uninstall', target: { source: p.source, id: p.id }, version: null }, displayName: p.name })));
+      return true;
+    } catch (e) { toasts.push({ text: message(e), tone: 'error' }); return false; }
+  }
   /** Job ids of the last "Update all/selected" run, for the "Updating 2 of 5" header. */
   batch = $state<string[]>([]);
   batchJobs = $derived(this.batch.map((id) => this.jobs.find((j) => j.id === id)).filter((j): j is Job => !!j));

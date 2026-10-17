@@ -100,6 +100,40 @@ impl AutoRules {
     }
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, TS, Default)]
+#[serde(rename_all = "lowercase")]
+#[ts(export)]
+pub enum BackupEvery {
+    #[default]
+    Weekly,
+    Daily,
+}
+
+pub const BACKUP_KEEP_MAX: u32 = 30;
+
+/// Saving the app list to a folder now and then. The folder is picked through a Windows
+/// dialog in Rust; the UI can't set it.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, TS)]
+#[serde(rename_all = "camelCase", default)]
+#[ts(export)]
+pub struct BackupSettings {
+    pub enabled: bool,
+    pub folder: Option<String>,
+    pub every: BackupEvery,
+    pub keep: u32,
+}
+
+impl Default for BackupSettings {
+    fn default() -> Self {
+        Self {
+            enabled: false,
+            folder: None,
+            every: BackupEvery::Weekly,
+            keep: 5,
+        }
+    }
+}
+
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, TS)]
 #[serde(rename_all = "camelCase", default)]
 #[ts(export)]
@@ -153,6 +187,7 @@ pub struct Settings {
     pub choco: ChocoSettings,
     /// Microsoft Store apps (through winget's Store source).
     pub store: StoreSettings,
+    pub backup: BackupSettings,
     pub last_check_at: Option<String>,
     /// The one-time "still running in the tray" note was shown.
     pub tray_hint_shown: bool,
@@ -180,6 +215,7 @@ impl Default for Settings {
             auto_rules: AutoRules::default(),
             choco: ChocoSettings::default(),
             store: StoreSettings::default(),
+            backup: BackupSettings::default(),
             last_check_at: None,
             tray_hint_shown: false,
             background_prompted: false,
@@ -209,4 +245,7 @@ pub struct SettingsPatch {
     pub choco_bootstrap_prompted: Option<bool>,
     pub store_enabled: Option<bool>,
     pub background_prompted: Option<bool>,
+    pub backup_enabled: Option<bool>,
+    pub backup_every: Option<BackupEvery>,
+    pub backup_keep: Option<u32>,
 }

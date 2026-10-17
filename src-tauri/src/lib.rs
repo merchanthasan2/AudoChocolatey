@@ -1,4 +1,6 @@
+mod apps_file;
 mod background;
+mod bundles;
 mod catalog;
 mod commands;
 mod error;
@@ -62,6 +64,8 @@ pub fn run(launch: launch::Launch) {
                 }
             }
         }))
+        // Used from Rust only (no dialog permissions for the page): file paths never cross IPC.
+        .plugin(tauri_plugin_dialog::init())
         .setup(move |app| {
             app.manage(launch);
             let config_dir = app.path().app_config_dir()?;
@@ -173,6 +177,16 @@ pub fn run(launch: launch::Launch) {
             commands::catalog::marketplace_home,
             commands::catalog::marketplace_category,
             commands::catalog::get_app,
+            commands::bundles::my_bundles,
+            commands::bundles::add_to_bundle,
+            commands::bundles::remove_from_bundle,
+            commands::bundles::delete_bundle,
+            commands::bundles::export_apps,
+            commands::bundles::import_pick,
+            commands::bundles::import_apply,
+            commands::bundles::import_keep,
+            commands::bundles::pick_backup_folder,
+            commands::bundles::backup_now,
         ])
         .run(tauri::generate_context!())
         .expect("error while running Quantum Updater");

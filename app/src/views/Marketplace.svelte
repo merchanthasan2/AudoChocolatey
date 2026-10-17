@@ -1,6 +1,6 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import { search, market } from '../lib/stores/app.svelte';
+  import { search, market, myBundles } from '../lib/stores/app.svelte';
   import SearchField from '../lib/components/SearchField.svelte';
   import EntryRow from '../lib/components/EntryRow.svelte';
   import AppCard from '../lib/components/AppCard.svelte';
@@ -90,6 +90,20 @@
   </section>
 
   <section>
+    <div class="section-head">
+      <h2>My bundles</h2><span class="muted">Your own app lists, to set up a PC the way you like</span>
+      <button class="btn btn-quiet import" onclick={() => myBundles.pickImport()}><Icon name="upload" size={16} /> Import a list</button>
+    </div>
+    {#if myBundles.list.length === 0}
+      <p class="muted empty-mine">Select apps on the Installed or Updates page and choose "Add to bundle", or import a list you exported on another PC.</p>
+    {:else}
+      <div class="bundles">
+        {#each myBundles.list as b (b.id)}<BundleCard bundle={b} mine />{/each}
+      </div>
+    {/if}
+  </section>
+
+  <section>
     <div class="section-head"><h2>Bundles</h2><span class="muted">Set up a PC in one go</span></div>
     <div class="bundles">
       {#each market.home.bundles as b (b.id)}<BundleCard bundle={b} />{/each}
@@ -121,5 +135,7 @@
   .back:hover { color: var(--ink); }
   .flip { display: inline-grid; transform: rotate(180deg); }
   .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 14px; margin-bottom: 32px; }
+  .import { margin-left: auto; gap: 6px; }
+  .empty-mine { font-size: 13px; padding: 4px 2px 8px; }
   .bundles { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 14px; }
 </style>

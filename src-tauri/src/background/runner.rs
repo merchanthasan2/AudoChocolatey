@@ -1,6 +1,7 @@
 //! The background check loop: wakes every few minutes (so sleep and clock changes are handled),
 //! checks when due, updates the tray and the Updates page, starts updates the person set to
-//! Automatic, and notifies about new updates while the window is hidden.
+//! Automatic, notifies about new updates while the window is hidden, and saves scheduled
+//! backups of the app list.
 
 use super::auto::{may_auto_install, pick, read_probe, remember_seen, update_key, PickInput};
 use super::schedule::{diff_new, due, BackgroundState};
@@ -18,6 +19,8 @@ use tauri::{AppHandle, Emitter, Manager};
 const TICK: Duration = Duration::from_secs(5 * 60);
 /// A check waits while a job runs, but not forever.
 const MAX_DEFER_MS: u64 = 30 * 60_000;
+/// A failed backup (folder gone, list unreadable) tries again after this long.
+const BACKUP_RETRY_MS: u64 = 60 * 60_000;
 
 /// Wakes the loop early ("Check now", interval changed).
 pub struct Wake(pub tokio::sync::Notify);
@@ -40,51 +43,79 @@ pub fn start(app: AppHandle, data_dir: PathBuf) {
             }
             let settings = state.settings();
             let mut saved = BackgroundState::load(&path);
+            let before = saved.clone();
             let now = now_ms();
             let last = saved.last_check_at.max(state.last_check());
-            if !due(now, launched_at, last, settings.check_interval_hours) {
-                continue;
-            }
             let busy = state
                 .queue
                 .snapshot()
                 .iter()
                 .any(|j| !j.phase.is_finished());
-            if busy && now - *deferred_since.get_or_insert(now) < MAX_DEFER_MS {
-                continue;
-            }
-            deferred_since = None;
-            let listing = crate::commands::library::collect_updates(&state).await;
-            super::shell::set_count(&app, listing.items.len());
-            let _ = app.emit("updates://changed", &listing);
+            let check = due(now, launched_at, last, settings.check_interval_hours)
+                && !(busy && now - *deferred_since.get_or_insert(now) < MAX_DEFER_MS);
 
             let cat = Catalog::embedded();
-            let current: BTreeMap<String, String> = listing
-                .items
-                .iter()
-                .filter_map(|u| Some((update_key(u, cat)?, u.name.clone())))
-                .collect();
-            let keys: BTreeSet<String> = current.keys().cloned().collect();
-            remember_seen(&mut saved.first_seen, &keys, now);
-            saved.auto_tried.retain(|k| keys.contains(k));
+            let mut ready: Option<(BTreeMap<String, String>, BTreeSet<String>)> = None;
+            if check {
+                deferred_since = None;
+                let listing = crate::commands::library::collect_updates(&state).await;
+                super::shell::set_count(&app, listing.items.len());
+                let _ = app.emit("updates://changed", &listing);
+                let current: BTreeMap<String, String> = listing
+                    .items
+                    .iter()
+                    .filter_map(|u| Some((update_key(u, cat)?, u.name.clone())))
+                    .collect();
+                let keys: BTreeSet<String> = current.keys().cloned().collect();
+                remember_seen(&mut saved.first_seen, &keys, now);
+                saved.auto_tried.retain(|k| keys.contains(k));
+                saved.last_check_at = Some(now);
+                ready = Some((current, keys));
+            }
 
-            let started = start_automatic(&state, &listing.items, &settings, &saved, now).await;
+            // Every tick, not only after a check: a hold (battery, quiet hours) clears within
+            // minutes. Uses the last checked list; nothing runs before the first check.
+            let started = if state.has_checked() {
+                let items = crate::commands::library::current_updates(&state).items;
+                start_automatic(&state, &items, &settings, &saved, now).await
+            } else {
+                BTreeSet::new()
+            };
             saved.auto_tried.extend(started.iter().cloned());
 
-            // Updates that just started by themselves aren't announced as "ready".
-            let new: Vec<String> = diff_new(&saved.notified, &keys)
-                .into_iter()
-                .filter(|k| !started.contains(k))
-                .collect();
-            if !new.is_empty() && settings.notify_updates && super::shell::should_notify(&app) {
-                let names: Vec<String> =
-                    new.iter().filter_map(|k| current.get(k).cloned()).collect();
-                let (title, body) = super::toast::update_lines(&names);
-                super::toast::show(&title, &body);
+            if let Some((current, keys)) = ready {
+                // Updates that just started by themselves aren't announced as "ready".
+                let new: Vec<String> = diff_new(&saved.notified, &keys)
+                    .into_iter()
+                    .filter(|k| !started.contains(k))
+                    .collect();
+                if !new.is_empty() && settings.notify_updates && super::shell::should_notify(&app) {
+                    let names: Vec<String> =
+                        new.iter().filter_map(|k| current.get(k).cloned()).collect();
+                    let (title, body) = super::toast::update_lines(&names);
+                    super::toast::show(&title, &body);
+                }
+                saved.notified = keys;
             }
-            saved.last_check_at = Some(now);
-            saved.notified = keys;
-            let _ = saved.save(&path);
+
+            if settings.backup.enabled
+                && super::backup::due(now, saved.last_backup_at, settings.backup.every)
+                && saved
+                    .backup_failed_at
+                    .is_none_or(|f| now.saturating_sub(f) >= BACKUP_RETRY_MS || f > now)
+            {
+                match crate::commands::bundles::backup_now_inner(&state).await {
+                    Ok(_) => {
+                        saved.last_backup_at = Some(now);
+                        saved.backup_failed_at = None;
+                    }
+                    Err(_) => saved.backup_failed_at = Some(now),
+                }
+            }
+
+            if saved != before {
+                let _ = saved.save(&path);
+            }
         }
     });
 }

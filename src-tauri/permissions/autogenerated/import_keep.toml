@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-import-keep"
+description = "Enables the import_keep command without any pre-configured scope."
+commands.allow = ["import_keep"]
+
+[[permission]]
+identifier = "deny-import-keep"
+description = "Denies the import_keep command without any pre-configured scope."
+commands.deny = ["import_keep"]

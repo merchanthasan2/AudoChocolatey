@@ -36,6 +36,8 @@ pub struct BackgroundState {
     pub notified: BTreeSet<String>,
     pub first_seen: BTreeMap<String, u64>,
     pub auto_tried: BTreeSet<String>,
+    pub last_backup_at: Option<u64>,
+    pub backup_failed_at: Option<u64>,
 }
 
 impl BackgroundState {
@@ -111,6 +113,8 @@ mod tests {
             notified: ["app:firefox@3".to_string()].into(),
             first_seen: [("app:firefox@3".to_string(), 7)].into(),
             auto_tried: ["app:firefox@3".to_string()].into(),
+            last_backup_at: Some(9),
+            backup_failed_at: None,
         };
         s.save(&p).unwrap();
         assert_eq!(BackgroundState::load(&p), s);

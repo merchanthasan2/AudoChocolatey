@@ -112,6 +112,9 @@ pub struct AppState {
     pub icons: IconService,
     pub config_dir: PathBuf,
     pub rules: Mutex<RuleStore>,
+    pub bundles: Mutex<crate::bundles::BundleStore>,
+    /// The last imported app list, waiting for "Install selected" (see commands::bundles).
+    pub pending_import: Mutex<Option<crate::commands::bundles::PendingImport>>,
     /// The last checked update list before rules (so rule changes don't need a new check).
     pub last_updates: Mutex<Option<Listing<UpgradeCandidate>>>,
     /// Category "more apps" lists, by category id (see commands::catalog).
@@ -179,6 +182,10 @@ impl AppState {
             queue,
             icons,
             rules: Mutex::new(RuleStore::open(config_dir.join("rules.json"))),
+            bundles: Mutex::new(crate::bundles::BundleStore::open(
+                config_dir.join("my-bundles.json"),
+            )),
+            pending_import: Mutex::new(None),
             last_updates: Mutex::new(None),
             more_apps: tokio::sync::Mutex::new(Default::default()),
             check_lock: tokio::sync::Mutex::new(()),
@@ -195,6 +202,14 @@ impl AppState {
             0 => None,
             t => Some(t),
         }
+    }
+
+    /// An update check finished at least once since start (`last_updates` is filled).
+    pub fn has_checked(&self) -> bool {
+        self.last_updates
+            .lock()
+            .unwrap_or_else(|p| p.into_inner())
+            .is_some()
     }
 
     pub fn mark_checked(&self) {

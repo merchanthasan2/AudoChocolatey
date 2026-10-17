@@ -318,3 +318,45 @@ describe('Store apps', () => {
     expect(needsSetup({ best: 'winget' }, { choco: false, store: false })).toBe(false);
   });
 });
+
+import { bannerFor } from './adminBanner';
+describe('admin banner', () => {
+  const o = { appVersion: '3', buildSha: 'x', isElevated: true, sameUser: true as boolean | null, sources: [] };
+  it('asks for admin when not elevated', () => {
+    expect(bannerFor({ ...o, isElevated: false })?.askForAdmin).toBe(true);
+  });
+  it('explains another account, without asking for admin', () => {
+    const b = bannerFor({ ...o, sameUser: false });
+    expect(b?.askForAdmin).toBe(false);
+    expect(b?.text).toMatch(/different administrator/);
+  });
+  it('shows nothing when all is well or unknown', () => {
+    expect(bannerFor(o)).toBeNull();
+    expect(bannerFor({ ...o, sameUser: null })).toBeNull();
+    expect(bannerFor(null)).toBeNull();
+  });
+});
+
+import { importRows } from './importRows';
+import { installedSet } from './entries';
+describe('import preview', () => {
+  const entry = (over: object) => ({
+    key: 'k', name: 'App', publisher: null, blurb: null, category: null, winget: 'A.B', choco: null, msstore: null,
+    version: null, homepage: null, best: 'winget' as const, curated: true, iconKey: 'winget:A.B', ...over,
+  });
+  const p = {
+    token: 't', name: null, skipped: 0,
+    rows: [
+      { index: 0, entry: entry({}) },
+      { index: 1, entry: entry({ winget: 'Unknown.Tool', curated: false }) },
+      { index: 2, entry: entry({ winget: 'Have.It' }) },
+      { index: 3, entry: entry({ winget: null, choco: 'x', best: 'choco' }) },
+    ],
+  };
+  it('ticks only known apps that are not installed and can be installed', () => {
+    const rows = importRows(p, installedSet([{ id: 'have.it', source: 'winget' }]), { choco: false, store: true });
+    expect(rows.map((r) => [r.state, r.ticked])).toEqual([
+      ['ready', true], ['ready', false], ['installed', false], ['off', false],
+    ]);
+  });
+});

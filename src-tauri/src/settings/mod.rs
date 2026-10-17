@@ -44,6 +44,26 @@ impl SettingsStore {
         }
     }
 
+    /// The backup folder, from a Windows folder dialog (never from the UI). Picking one turns
+    /// backups on.
+    pub fn set_backup_folder(&mut self, folder: &std::path::Path) -> AppResult<Settings> {
+        if self.read_only {
+            return Err(AppError::new(
+                "settings",
+                "settings were saved by a newer version of Quantum Updater and are read-only",
+            ));
+        }
+        let Some(f) = folder.to_str().filter(|_| folder.is_absolute()) else {
+            return Err(AppError::new("invalid_input", "That folder can't be used."));
+        };
+        let mut next = self.current.clone();
+        next.backup.folder = Some(f.to_string());
+        next.backup.enabled = true;
+        write_atomic(&self.path, &next)?;
+        self.current = next;
+        Ok(self.get())
+    }
+
     pub fn apply(&mut self, patch: SettingsPatch) -> AppResult<Settings> {
         if self.read_only {
             return Err(AppError::new(
@@ -63,6 +83,18 @@ impl SettingsStore {
             return Err(AppError::new(
                 "invalid_input",
                 "quiet hours or waiting days are out of range",
+            ));
+        }
+        if patch
+            .backup_keep
+            .is_some_and(|k| !(1..=schema::BACKUP_KEEP_MAX).contains(&k))
+        {
+            return Err(AppError::new("invalid_input", "keep 1 to 30 backups"));
+        }
+        if patch.backup_enabled == Some(true) && self.current.backup.folder.is_none() {
+            return Err(AppError::new(
+                "invalid_input",
+                "Pick a folder for the backups first.",
             ));
         }
         let mut next = self.current.clone();
@@ -95,6 +127,15 @@ impl SettingsStore {
         }
         if let Some(v) = patch.background_prompted {
             next.background_prompted = v;
+        }
+        if let Some(v) = patch.backup_enabled {
+            next.backup.enabled = v;
+        }
+        if let Some(v) = patch.backup_every {
+            next.backup.every = v;
+        }
+        if let Some(v) = patch.backup_keep {
+            next.backup.keep = v;
         }
         write_atomic(&self.path, &next)?;
         self.current = next;
@@ -138,6 +179,18 @@ fn load(path: &PathBuf) -> (Settings, bool) {
 fn sanitize(mut s: Settings) -> Settings {
     if !(1..=168).contains(&s.check_interval_hours) {
         s.check_interval_hours = Settings::default().check_interval_hours;
+    }
+    if !(1..=schema::BACKUP_KEEP_MAX).contains(&s.backup.keep) {
+        s.backup.keep = schema::BackupSettings::default().keep;
+    }
+    if !s
+        .backup
+        .folder
+        .as_deref()
+        .is_some_and(|f| std::path::Path::new(f).is_absolute())
+    {
+        s.backup.folder = None;
+        s.backup.enabled = false;
     }
     if !s.auto_rules.is_valid() {
         s.auto_rules = Default::default();
@@ -275,6 +328,38 @@ mod tests {
             .unwrap();
         assert_eq!(next.auto_update, AutoUpdate::Automatic);
         assert_eq!(next.auto_rules, good);
+    }
+
+    #[test]
+    fn backups_need_a_folder_picked_in_rust() {
+        let dir = tempfile::tempdir().unwrap();
+        let (mut s, path) = store_in(&dir);
+        let on = SettingsPatch {
+            backup_enabled: Some(true),
+            ..Default::default()
+        };
+        assert_eq!(s.apply(on.clone()).unwrap_err().code, "invalid_input");
+        assert!(s
+            .set_backup_folder(std::path::Path::new("relative"))
+            .is_err());
+        let next = s.set_backup_folder(dir.path()).unwrap();
+        assert!(next.backup.enabled);
+        assert!(s.apply(on).is_ok());
+        for bad in [0, 31] {
+            let p = SettingsPatch {
+                backup_keep: Some(bad),
+                ..Default::default()
+            };
+            assert!(s.apply(p).is_err());
+        }
+        // A hand-edited relative folder is dropped and backups switch off.
+        std::fs::write(
+            &path,
+            r#"{"schemaVersion":1,"backup":{"enabled":true,"folder":"x/y","keep":99}}"#,
+        )
+        .unwrap();
+        let b = SettingsStore::open(path).get().backup;
+        assert!(!b.enabled && b.folder.is_none() && b.keep == 5);
     }
 
     #[test]

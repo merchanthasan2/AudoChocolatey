@@ -12,6 +12,9 @@ pub struct Overview {
     pub app_version: String,
     pub build_sha: String,
     pub is_elevated: bool,
+    /// False when someone else's admin account runs the app (over-the-shoulder); `None` when
+    /// that can't be told.
+    pub same_user: Option<bool>,
     pub sources: Vec<SourceStatus>,
 }
 
@@ -29,11 +32,16 @@ pub struct Diagnostics {
     pub sources: Vec<SourceStatus>,
 }
 
-pub fn build_overview(is_elevated: bool, sources: Vec<SourceStatus>) -> Overview {
+pub fn build_overview(
+    is_elevated: bool,
+    same_user: Option<bool>,
+    sources: Vec<SourceStatus>,
+) -> Overview {
     Overview {
         app_version: env!("CARGO_PKG_VERSION").to_string(),
         build_sha: env!("BUILD_SHA").to_string(),
         is_elevated,
+        same_user,
         sources,
     }
 }
@@ -197,7 +205,11 @@ async fn statuses(state: &AppState) -> Vec<SourceStatus> {
 
 #[tauri::command]
 pub async fn get_overview(state: State<'_, AppState>) -> Result<Overview, crate::error::AppError> {
-    Ok(build_overview(is_elevated(), statuses(&state).await))
+    Ok(build_overview(
+        is_elevated(),
+        shell_user_matches(),
+        statuses(&state).await,
+    ))
 }
 
 #[tauri::command]
@@ -257,7 +269,7 @@ mod tests {
 
     #[test]
     fn overview_reports_package_version_and_sha() {
-        let o = build_overview(true, sources());
+        let o = build_overview(true, Some(true), sources());
         assert_eq!(o.app_version, env!("CARGO_PKG_VERSION"));
         assert!(!o.build_sha.is_empty());
         assert!(o.is_elevated);
@@ -265,7 +277,7 @@ mod tests {
 
     #[test]
     fn overview_serializes_camel_case_with_sources() {
-        let json = serde_json::to_value(build_overview(false, sources())).unwrap();
+        let json = serde_json::to_value(build_overview(false, Some(true), sources())).unwrap();
         assert!(json.get("appVersion").is_some());
         assert!(json.get("buildSha").is_some());
         assert_eq!(json["isElevated"], false);

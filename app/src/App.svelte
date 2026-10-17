@@ -1,15 +1,16 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import { router, overview, settings, installed, updates, queue, toasts } from './lib/stores/app.svelte';
-  import { relaunchAsAdmin } from './lib/ipc/commands';
+  import { router, overview, settings, installed, updates, queue, myBundles } from './lib/stores/app.svelte';
   import { onUpdatesChanged } from './lib/ipc/events';
-  import Banner from './lib/components/Banner.svelte';
+  import AdminBanner from './lib/components/AdminBanner.svelte';
   import BackgroundPrompt from './lib/components/BackgroundPrompt.svelte';
   import Sidebar from './lib/components/Sidebar.svelte';
   import Toasts from './lib/components/Toasts.svelte';
   import QueueDrawer from './lib/components/QueueDrawer.svelte';
   import AppDetail from './lib/components/AppDetail.svelte';
   import CloseGuard from './lib/components/CloseGuard.svelte';
+  import ImportDialog from './lib/components/ImportDialog.svelte';
+  import AddToBundle from './lib/components/AddToBundle.svelte';
   import Marketplace from './views/Marketplace.svelte';
   import Updates from './views/Updates.svelte';
   import Installed from './views/Installed.svelte';
@@ -18,11 +19,6 @@
 
   let drawer = $state(false);
 
-  // Admin rights come only from the person, through the normal Windows prompt.
-  async function askForAdmin() {
-    try { await relaunchAsAdmin(); }
-    catch { toasts.push({ text: "Admin access wasn't granted, so nothing changed.", tone: 'warn' }); }
-  }
   let searchInput = $state<HTMLInputElement>();
   let scroller = $state<HTMLElement>();
 
@@ -32,6 +28,7 @@
     queue.init();
     installed.refresh();
     updates.refresh();
+    myBundles.load();
     onUpdatesChanged((l) => updates.accept(l, true));
   });
 
@@ -56,12 +53,7 @@
   <Sidebar onqueue={() => (drawer = true)} />
   <main bind:this={scroller}>
     <div class="content">
-      {#if overview.value && !overview.value.isElevated}
-        <div class="admin-banner">
-          <Banner icon="shield" text="Quantum Updater needs administrator access to install and update apps. Windows will ask you to confirm."
-            action={{ label: 'Allow admin access', run: askForAdmin }} />
-        </div>
-      {/if}
+      <AdminBanner />
       <BackgroundPrompt />
       {#key router.view}
         <div in:viewFade>
@@ -83,6 +75,8 @@
 <QueueDrawer bind:open={drawer} />
 <AppDetail />
 <CloseGuard />
+<ImportDialog />
+<AddToBundle />
 <Toasts />
 
 <style>
@@ -94,5 +88,4 @@
     box-shadow: inset 1px 1px 0 var(--hairline);
   }
   .content { max-width: 1040px; margin: 0 auto; padding: 34px 40px 64px; }
-  .admin-banner { margin-bottom: 16px; }
 </style>

@@ -135,6 +135,43 @@ pub fn refuse_store_other_user(
     Ok(())
 }
 
+/// Apps Quantum Updater itself, its window or its sources need. Removing them would break the
+/// app (or Windows features), so it's refused for single and batch removals alike.
+const PROTECTED: &[(SourceKind, &str)] = &[
+    (SourceKind::Winget, "QuantumStep.QuantumUpdater"),
+    (SourceKind::Winget, "Microsoft.EdgeWebView2Runtime"),
+    (SourceKind::Winget, "Microsoft.AppInstaller"),
+    (SourceKind::Winget, "Chocolatey.Chocolatey"),
+    (SourceKind::Msstore, "9NBLGGH4NNS1"),
+    (SourceKind::Choco, "chocolatey"),
+    (SourceKind::Choco, "webview2-runtime"),
+];
+
+/// At most this many removals in one go.
+pub const MAX_REMOVE_BATCH: usize = 50;
+
+pub fn refuse_protected_uninstall(ops: &[(OpRequest, String)]) -> Result<(), AppError> {
+    let removals = ops.iter().filter(|(o, _)| o.kind == OpKind::Uninstall);
+    if removals.clone().count() > MAX_REMOVE_BATCH {
+        return Err(AppError::new(
+            "invalid_input",
+            "Remove at most 50 apps at a time.",
+        ));
+    }
+    for (o, name) in removals {
+        let hit = PROTECTED
+            .iter()
+            .any(|(src, id)| *src == o.target.source() && id.eq_ignore_ascii_case(o.target.id()));
+        if hit {
+            return Err(AppError::new(
+                "protected",
+                format!("{name} is needed by Quantum Updater or Windows, so it can't be removed here. Nothing was removed."),
+            ));
+        }
+    }
+    Ok(())
+}
+
 /// Closing the app kills its child processes (Job Object), so closing while a job runs asks first.
 pub fn close_blocked(jobs: &[Job]) -> bool {
     // Any running job: phase lines are only recognised in English, so "Installing" can't be
@@ -182,6 +219,7 @@ pub fn enqueue(state: State<'_, AppState>, ops: Vec<EnqueueItem>) -> Result<Vec<
 /// Every check a change to the PC must pass, for new jobs and retries alike.
 fn allowed(state: &AppState, ops: &[(OpRequest, String)]) -> Result<(), AppError> {
     refuse_unelevated(crate::commands::system::is_elevated())?;
+    refuse_protected_uninstall(ops)?;
     let g = gates(state);
     refuse_disabled_choco(ops, g.choco)?;
     refuse_disabled_store(ops, g.store)?;
@@ -400,6 +438,49 @@ mod tests {
         assert!(close_blocked(&[mk(JobPhase::Installing)]));
         assert!(close_blocked(&[mk(JobPhase::Verifying)]));
         assert!(!close_blocked(&[]));
+    }
+
+    fn remove(source: SourceKind, id: &str) -> (OpRequest, String) {
+        (
+            OpRequest {
+                kind: OpKind::Uninstall,
+                target: SourceRef::new(source, id).unwrap(),
+                version: None,
+            },
+            id.to_string(),
+        )
+    }
+
+    #[test]
+    fn apps_the_updater_needs_cannot_be_removed() {
+        for (src, id) in [
+            (SourceKind::Winget, "QuantumStep.QuantumUpdater"),
+            (SourceKind::Winget, "microsoft.edgewebview2runtime"),
+            (SourceKind::Winget, "Microsoft.AppInstaller"),
+            (SourceKind::Msstore, "9NBLGGH4NNS1"),
+            (SourceKind::Choco, "Chocolatey"),
+        ] {
+            let ops = [remove(SourceKind::Winget, "VideoLAN.VLC"), remove(src, id)];
+            let err = refuse_protected_uninstall(&ops).unwrap_err();
+            assert_eq!(err.code, "protected", "{id}");
+            assert!(err.message.contains("Nothing was removed"));
+        }
+        assert!(refuse_protected_uninstall(&[remove(SourceKind::Winget, "VideoLAN.VLC")]).is_ok());
+        // Updating them is fine.
+        let upd = upgrades_to_ops(vec![cand(
+            SourceKind::Winget,
+            "Microsoft.EdgeWebView2Runtime",
+        )]);
+        assert!(refuse_protected_uninstall(&upd).is_ok());
+    }
+
+    #[test]
+    fn at_most_50_removals_at_once() {
+        let ops: Vec<_> = (0..51)
+            .map(|i| remove(SourceKind::Winget, &format!("App.N{i}")))
+            .collect();
+        assert!(refuse_protected_uninstall(&ops).is_err());
+        assert!(refuse_protected_uninstall(&ops[..50]).is_ok());
     }
 
     #[test]

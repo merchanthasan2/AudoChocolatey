@@ -30,6 +30,7 @@ sha2 = "0.10"
 url = "2"
 ts-rs = { version = "12", features = ["no-serde-warnings"] }
 tauri-plugin-single-instance = "2"
+tauri-plugin-dialog = "2"
 windows = { version = "0.62", features = ["Foundation", "Data_Xml_Dom", "Networking_Connectivity", "UI_Notifications", "Win32_System_Com", "Win32_System_TaskScheduler", "Win32_System_Variant", "Win32_Foundation"] }
 
 [dev-dependencies]

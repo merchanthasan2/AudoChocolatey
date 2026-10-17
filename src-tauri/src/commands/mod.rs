@@ -1,3 +1,4 @@
+pub mod bundles;
 pub mod catalog;
 pub mod jobs;
 pub mod library;

@@ -3,6 +3,7 @@
 
 pub mod auto;
 pub mod autostart;
+pub mod backup;
 pub mod runner;
 pub mod schedule;
 pub mod shell;

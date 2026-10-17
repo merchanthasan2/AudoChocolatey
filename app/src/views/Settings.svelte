@@ -1,6 +1,7 @@
 <script lang="ts">
-  import { settings, overview } from '../lib/stores/app.svelte';
-  import { getDiagnostics, getAutoStatus, type Diagnostics, type AutoStatus } from '../lib/ipc/commands';
+  import { settings, overview, myBundles, toasts } from '../lib/stores/app.svelte';
+  import { getDiagnostics, getAutoStatus, pickBackupFolder, backupNow, type Diagnostics, type AutoStatus } from '../lib/ipc/commands';
+  import Icon from '../lib/components/Icon.svelte';
   import type { AutoRules } from '../lib/ipc/bindings/AutoRules';
   import { clock } from '../lib/logic/rules';
   import Segmented from '../lib/components/Segmented.svelte';
@@ -21,6 +22,21 @@
   });
   const rulesPatch = (r: AutoRules, change: Partial<AutoRules>) => settings.update({ autoRules: { ...r, ...change } });
   const hours = Array.from({ length: 24 }, (_, h) => h * 60);
+
+  const err = (e: unknown) => (e as { message?: string })?.message ?? String(e);
+  async function chooseFolder() {
+    try {
+      const next = await pickBackupFolder();
+      if (next) settings.value = next;
+    } catch (e) { toasts.push({ text: err(e), tone: 'error' }); }
+  }
+  let backingUp = $state(false);
+  async function backup() {
+    backingUp = true;
+    try { toasts.push({ text: `Saved ${await backupNow()}`, tone: 'ok' }); }
+    catch (e) { toasts.push({ text: err(e), tone: 'error' }); }
+    finally { backingUp = false; }
+  }
 </script>
 
 <header class="head"><h1>Settings</h1></header>
@@ -133,6 +149,57 @@
   </section>
 
   <section class="card group">
+    <h2>Your apps</h2>
+    <div class="row">
+      <div><div class="label">Save or restore your app list</div><div class="hint">A small file naming your apps, to set up another PC or this one again. No settings or personal files are included.</div></div>
+      <div class="pair">
+        <button class="btn btn-quiet" onclick={() => myBundles.export({ kind: 'installed' })}><Icon name="download" size={16} /> Export</button>
+        <button class="btn btn-quiet" onclick={() => myBundles.pickImport()}><Icon name="upload" size={16} /> Import</button>
+      </div>
+    </div>
+    <div class="row">
+      <div>
+        <div class="label">Back up the list automatically</div>
+        <div class="hint">
+          {#if s.backup.folder}Saves to <span class="mono">{s.backup.folder}</span>{:else}Pick a folder, for example one that OneDrive keeps in sync.{/if}
+        </div>
+      </div>
+      {#if s.backup.folder}
+        <Toggle label="Back up the list automatically" checked={s.backup.enabled} onchange={(v) => settings.update({ backupEnabled: v })} />
+      {:else}
+        <button class="btn btn-quiet" onclick={chooseFolder}><Icon name="folder" size={16} /> Choose folder</button>
+      {/if}
+    </div>
+    {#if s.backup.folder}
+      <div class="row">
+        <div><div class="label">How often</div><div class="hint">Keeps the newest {s.backup.keep} backups and removes older ones it made.</div></div>
+        <div class="pair">
+          <Segmented label="How often" value={s.backup.every} onchange={(v) => settings.update({ backupEvery: v })}
+            options={[{ value: 'daily', label: 'Daily' }, { value: 'weekly', label: 'Weekly' }]} />
+          <select aria-label="Backups to keep" value={s.backup.keep} onchange={(e) => settings.update({ backupKeep: Number(e.currentTarget.value) })}>
+            {#each [3, 5, 10, 30] as k (k)}<option value={k}>Keep {k}</option>{/each}
+          </select>
+        </div>
+      </div>
+      <div class="row">
+        <div><div class="label">Backup folder</div><div class="hint">Change where backups go, or save one now.</div></div>
+        <div class="pair">
+          <button class="btn btn-quiet" onclick={chooseFolder}><Icon name="folder" size={16} /> Change</button>
+          <button class="btn btn-quiet" disabled={!s.backup.enabled || backingUp} onclick={backup}>{backingUp ? 'Saving…' : 'Back up now'}</button>
+        </div>
+      </div>
+    {/if}
+  </section>
+
+  <section class="card group">
+    <h2>App updates</h2>
+    <div class="row">
+      <div><div class="label">Updates to Quantum Updater</div><div class="hint">Quantum Updater will update itself once its releases are signed. Until then, install new versions from the website.</div></div>
+      <span class="badge">Coming soon</span>
+    </div>
+  </section>
+
+  <section class="card group">
     <h2>Advanced: app sources</h2>
     <p class="hint">Where Quantum Updater finds and installs apps. Most people never need to change these.</p>
     {#each overview.value?.sources ?? [] as src (src.kind)}
@@ -181,6 +248,8 @@
   dl { display: grid; grid-template-columns: 160px 1fr; gap: 8px 16px; margin: 4px 0 0; }
   dt { color: var(--muted); }
   dd { margin: 0; font-weight: 550; min-width: 0; }
+  .pair { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+  .pair .btn { gap: 6px; }
   .wait { margin: 0 0 4px; padding: 8px 12px; border-radius: 10px; background: var(--pill); color: var(--ink-2); }
   .times { display: flex; align-items: center; gap: 8px; margin-top: 8px; }
   select { height: 30px; padding: 0 8px; border-radius: 8px; border: 1px solid var(--hairline-strong); background: var(--card); color: var(--ink); font: inherit; font-size: 13px; }

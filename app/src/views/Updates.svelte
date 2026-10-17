@@ -1,6 +1,6 @@
 <script lang="ts">
   import { SvelteSet } from 'svelte/reactivity';
-  import { updates, queue, settings } from '../lib/stores/app.svelte';
+  import { updates, queue, settings, myBundles } from '../lib/stores/app.svelte';
   import type { UpgradeCandidate } from '../lib/ipc/commands';
   import AppRow from '../lib/components/AppRow.svelte';
   import JobButton from '../lib/components/JobButton.svelte';
@@ -95,6 +95,11 @@
     </p>
   </div>
   <div class="actions">
+    {#if selectedRows.length > 0}
+      <button class="btn btn-quiet" onclick={() => (myBundles.adding = selectedRows.map((u) => ({ source: u.source, id: u.id, name: u.name })))}>
+        <Icon name="plus" size={16} /> Add to bundle
+      </button>
+    {/if}
     <button class="btn btn-quiet" onclick={() => updates.refresh()} disabled={updates.loading}>
       <span class:spinning={updates.loading}><Icon name="refresh" size={16} /></span> Check again
     </button>

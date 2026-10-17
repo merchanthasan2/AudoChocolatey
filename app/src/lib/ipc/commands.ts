@@ -64,3 +64,23 @@ export const cancelJob = (id: string) => invoke<void>('cancel_job', { id });
 export const retryJob = (id: string) => invoke<string>('retry_job', { id });
 export const clearFinished = () => invoke<void>('clear_finished');
 export const getJobLog = (id: string) => invoke<string[]>('get_job_log', { id });
+
+// My bundles, export and import (files are picked by Windows dialogs in Rust)
+import type { MyBundleView } from './bindings/MyBundleView';
+import type { BundleAppIn } from './bindings/BundleAppIn';
+import type { ExportWhat } from './bindings/ExportWhat';
+import type { ImportPreview } from './bindings/ImportPreview';
+export type { MyBundleView, BundleAppIn, ExportWhat, ImportPreview };
+export const myBundles = () => invoke<MyBundleView[]>('my_bundles');
+export const addToBundle = (bundle: string | null, name: string | null, apps: BundleAppIn[]) =>
+  invoke<MyBundleView[]>('add_to_bundle', { bundle, name, apps });
+export const removeFromBundle = (bundle: string, key: string) => invoke<MyBundleView[]>('remove_from_bundle', { bundle, key });
+export const deleteBundle = (bundle: string) => invoke<MyBundleView[]>('delete_bundle', { bundle });
+/** Resolves to the number of apps saved, or null if the person cancelled. */
+export const exportApps = (what: ExportWhat) => invoke<number | null>('export_apps', { what });
+/** Resolves to null if the person cancelled. */
+export const importPick = () => invoke<ImportPreview | null>('import_pick');
+export const importApply = (token: string, indices: number[]) => invoke<string[]>('import_apply', { token, indices });
+export const importKeep = (token: string, indices: number[], name: string) => invoke<MyBundleView[]>('import_keep', { token, indices, name });
+export const pickBackupFolder = () => invoke<Settings | null>('pick_backup_folder');
+export const backupNow = () => invoke<string>('backup_now');

@@ -27,6 +27,16 @@ const COMMANDS: &[&str] = &[
     "marketplace_category",
     "get_app",
     "get_auto_status",
+    "my_bundles",
+    "add_to_bundle",
+    "remove_from_bundle",
+    "delete_bundle",
+    "export_apps",
+    "import_pick",
+    "import_apply",
+    "import_keep",
+    "pick_backup_folder",
+    "backup_now",
 ];
 
 fn git(args: &[&str]) -> Option<String> {
