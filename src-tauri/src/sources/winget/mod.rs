@@ -88,6 +88,8 @@ impl<R: Runner> WingetSource<R> {
             .map(|r| {
                 let source = row_source(r.source.as_deref(), &r.id);
                 InstalledPackage {
+                    label: super::label::classify(source, &r.id),
+                    component: false,
                     name: r.name,
                     id: r.id,
                     version: r.version,
@@ -336,7 +338,7 @@ fn valid(id: &str) -> bool {
 
 /// Which source manages a `list`/`upgrade` row: winget and Store rows with valid ids only;
 /// anything else (MSIX\..., ARP\...) is handled by Windows.
-fn row_source(source: Option<&str>, id: &str) -> Option<SourceKind> {
+pub(crate) fn row_source(source: Option<&str>, id: &str) -> Option<SourceKind> {
     match source {
         Some("winget") if valid(id) => Some(SourceKind::Winget),
         Some("msstore") if StoreId::try_from(id.to_string()).is_ok() => Some(SourceKind::Msstore),

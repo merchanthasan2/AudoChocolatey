@@ -1,4 +1,6 @@
 pub mod choco;
+pub mod components;
+pub mod label;
 pub mod model;
 pub mod process;
 pub mod stream;

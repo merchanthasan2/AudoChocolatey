@@ -14,6 +14,10 @@ pub struct InstalledPackage {
     pub available: Option<String>,
     /// `None` for rows winget only knows locally (ARP/MSIX entries): display-only, not updatable.
     pub source: Option<SourceKind>,
+    /// Where it comes from, as people see it.
+    pub label: crate::sources::label::SourceLabel,
+    /// A runtime, codec or other Windows component (Installed hides these by default).
+    pub component: bool,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, TS)]

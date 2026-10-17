@@ -42,5 +42,13 @@ test('allows tool names used as code, comments, Settings and the Advanced block'
   const v = findViolations(adv, 'app/src/lib/components/AppDetail.svelte');
   assert.equal(v.length, 1);
   assert.equal(v[0].line, 4);
-  assert.deepEqual(findViolations("const label = 'Chocolatey';", 'app/src/lib/logic/x.ts'), []);
+  assert.deepEqual(findViolations("const label = 'Chocolatey';", 'app/src/lib/logic/sources.ts'), []);
+});
+
+test('UI logic files are checked too, except tests, IPC and the source-name map', () => {
+  assert.equal(findViolations("const t = 'Chocolatey failed';", 'app/src/lib/logic/x.ts').length, 1);
+  assert.deepEqual(findViolations("type S = 'winget';\nconst y = x.choco;\ntype I = { msstore?: string };", 'app/src/lib/logic/x.ts'), []);
+  assert.deepEqual(findViolations("const t = 'Chocolatey failed';", 'app/src/lib/logic/sources.ts'), []);
+  assert.deepEqual(findViolations("const t = 'Chocolatey failed';", 'app/src/lib/logic/x.test.ts'), []);
+  assert.deepEqual(findViolations("const t = 'Chocolatey failed';", 'app/src/lib/ipc/commands.ts'), []);
 });

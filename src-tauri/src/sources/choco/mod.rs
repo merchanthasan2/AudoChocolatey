@@ -117,6 +117,8 @@ impl<R: Runner> ChocoSource<R> {
                 version: r[1].clone(),
                 available: None,
                 source: Some(SourceKind::Choco),
+                label: super::label::SourceLabel::CommunityCatalog,
+                component: false,
             })
             .collect())
     }

@@ -83,7 +83,11 @@ pub async fn collect_installed(state: &AppState) -> Listing<InstalledPackage> {
     )
     .await;
     let cat = Catalog::embedded();
+    listing.items = crate::sources::components::fold_local_duplicates(listing.items);
     for p in &mut listing.items {
+        // Catalog apps are never components.
+        let known = p.source.is_some_and(|s| cat.by_source(s, &p.id).is_some());
+        p.component = !known && crate::sources::components::is_component(&p.name, &p.id);
         p.name = match p.source {
             Some(src) => names::display_name(
                 src,
