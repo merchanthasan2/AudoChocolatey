@@ -4,6 +4,7 @@
   import { relaunchAsAdmin } from './lib/ipc/commands';
   import { onUpdatesChanged } from './lib/ipc/events';
   import Banner from './lib/components/Banner.svelte';
+  import BackgroundPrompt from './lib/components/BackgroundPrompt.svelte';
   import Sidebar from './lib/components/Sidebar.svelte';
   import Toasts from './lib/components/Toasts.svelte';
   import QueueDrawer from './lib/components/QueueDrawer.svelte';
@@ -61,6 +62,7 @@
             action={{ label: 'Allow admin access', run: askForAdmin }} />
         </div>
       {/if}
+      <BackgroundPrompt />
       {#key router.view}
         <div in:viewFade>
           {#if router.view === 'marketplace'}

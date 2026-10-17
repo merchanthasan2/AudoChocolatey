@@ -140,6 +140,45 @@ pub fn relaunch_as_admin(app: tauri::AppHandle) -> Result<(), AppError> {
     Ok(())
 }
 
+/// This process's user as a SID string ("S-1-5-21-…").
+pub fn current_user_sid() -> Option<String> {
+    use windows_sys::Win32::Foundation::{CloseHandle, LocalFree, HANDLE};
+    use windows_sys::Win32::Security::Authorization::ConvertSidToStringSidW;
+    use windows_sys::Win32::Security::{GetTokenInformation, TokenUser, TOKEN_QUERY, TOKEN_USER};
+    use windows_sys::Win32::System::Threading::{GetCurrentProcess, OpenProcessToken};
+    let mut token: HANDLE = std::ptr::null_mut();
+    // SAFETY: our own process's pseudo-handle; the token is closed below.
+    if unsafe { OpenProcessToken(GetCurrentProcess(), TOKEN_QUERY, &mut token) } == 0 {
+        return None;
+    }
+    let mut buf = vec![0u8; 256];
+    let mut len = 0u32;
+    // SAFETY: buffer and length describe writable memory.
+    let ok = unsafe {
+        GetTokenInformation(token, TokenUser, buf.as_mut_ptr().cast(), buf.len() as u32, &mut len)
+    };
+    // SAFETY: token opened above.
+    unsafe { CloseHandle(token) };
+    if ok == 0 {
+        return None;
+    }
+    // SAFETY: the buffer holds a TOKEN_USER written by the system.
+    let sid = unsafe { (*(buf.as_ptr() as *const TOKEN_USER)).User.Sid };
+    let mut text: *mut u16 = std::ptr::null_mut();
+    // SAFETY: valid SID; the string is freed with LocalFree.
+    if unsafe { ConvertSidToStringSidW(sid, &mut text) } == 0 || text.is_null() {
+        return None;
+    }
+    // SAFETY: NUL-terminated string from the system.
+    let s = unsafe {
+        let n = (0..).take_while(|&i| *text.add(i) != 0).count();
+        String::from_utf16_lossy(std::slice::from_raw_parts(text, n))
+    };
+    // SAFETY: allocated by ConvertSidToStringSidW.
+    unsafe { LocalFree(text.cast()) };
+    Some(s)
+}
+
 pub fn is_elevated() -> bool {
     // SAFETY: IsUserAnAdmin takes no arguments and has no preconditions.
     unsafe { windows_sys::Win32::UI::Shell::IsUserAnAdmin() != 0 }
@@ -177,6 +216,12 @@ pub async fn get_diagnostics(
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn reads_this_users_sid() {
+        let sid = current_user_sid().expect("a SID");
+        assert!(sid.starts_with("S-1-5-"), "{sid}");
+    }
 
     #[test]
     fn this_test_runs_as_the_signed_in_user() {

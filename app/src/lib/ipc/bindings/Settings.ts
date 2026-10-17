@@ -13,4 +13,9 @@ store: StoreSettings, lastCheckAt: string | null,
 /**
  * The one-time "still running in the tray" note was shown.
  */
-trayHintShown: boolean, };
+trayHintShown: boolean, 
+/**
+ * The person answered "Keep apps updated in the background?" (start at sign-in is never
+ * set up before that).
+ */
+backgroundPrompted: boolean, };

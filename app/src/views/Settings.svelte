@@ -34,6 +34,31 @@
   </section>
 
   <section class="card group">
+    <h2>Background</h2>
+    <div class="row">
+      <div><div class="label">Start at sign-in</div><div class="hint">Starts quietly in the tray when you sign in, so checks keep running.</div></div>
+      <Toggle label="Start at sign-in" checked={s.startAtLogin} onchange={(v) => settings.update({ startAtLogin: v, backgroundPrompted: true })} />
+    </div>
+    <div class="row">
+      <div><div class="label">Start in the tray</div><div class="hint">At sign-in, stay in the tray instead of opening the window.</div></div>
+      <Toggle label="Start in the tray" checked={s.startInTray} onchange={(v) => settings.update({ startInTray: v })} />
+    </div>
+    <div class="row">
+      <div><div class="label">Closing keeps it running</div><div class="hint">Closing the window leaves Quantum Updater in the tray. Quit from the tray icon.</div></div>
+      <Toggle label="Closing keeps it running" checked={s.closeToTray} onchange={(v) => settings.update({ closeToTray: v })} />
+    </div>
+    <div class="row">
+      <div><div class="label">Notify me about new updates</div><div class="hint">A Windows notification when new updates appear while the window is closed.</div></div>
+      <Toggle label="Notify me about new updates" checked={s.notifyUpdates} onchange={(v) => settings.update({ notifyUpdates: v })} />
+    </div>
+    <div class="row">
+      <div><div class="label">Check every</div><div class="hint">How often to look for updates in the background.</div></div>
+      <Segmented label="Check every" value={String(s.checkIntervalHours)} onchange={(v) => settings.update({ checkIntervalHours: Number(v) })}
+        options={[{ value: '3', label: '3 h' }, { value: '6', label: '6 h' }, { value: '12', label: '12 h' }, { value: '24', label: 'Daily' }]} />
+    </div>
+  </section>
+
+  <section class="card group">
     <h2>Updates</h2>
     <div class="row">
       <div><div class="label">Show apps with unknown versions</div><div class="hint">Some apps don't report a version, so updates can't be confirmed.</div></div>

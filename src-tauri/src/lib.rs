@@ -15,8 +15,10 @@ mod versions;
 
 use tauri::{Emitter, Manager};
 
-/// Removes this user's start-at-login task (called by the uninstaller). Filled in by P6a T6.
-pub fn unregister_autostart() {}
+/// Removes every start-at-sign-in task this app created (run by the uninstaller).
+pub fn unregister_autostart() {
+    let _ = background::taskstore::delete_all();
+}
 
 /// The id Windows uses for this app's notifications and taskbar grouping; matches the bundle
 /// identifier the installer puts on the Start menu shortcut.
@@ -75,6 +77,12 @@ pub fn run(launch: launch::Launch) {
                 background::shell::show_main(app.handle());
             }
             background::runner::start(app.handle().clone(), app.path().app_local_data_dir()?);
+            {
+                let s = app.state::<state::AppState>().settings();
+                std::thread::spawn(move || {
+                    background::autostart::reconcile_now(s.start_at_login, s.background_prompted)
+                });
+            }
             if let Err(e) = background::shell::install(app.handle()) {
                 // No tray (e.g. Explorer not ready at sign-in): make sure the app is visible.
                 eprintln!("tray unavailable: {e}");

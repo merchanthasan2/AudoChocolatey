@@ -83,6 +83,9 @@ impl SettingsStore {
         if let Some(v) = patch.store_enabled {
             next.store.enabled = v;
         }
+        if let Some(v) = patch.background_prompted {
+            next.background_prompted = v;
+        }
         write_atomic(&self.path, &next)?;
         self.current = next;
         Ok(self.get())
@@ -126,6 +129,10 @@ fn sanitize(mut s: Settings) -> Settings {
     if !(1..=168).contains(&s.check_interval_hours) {
         s.check_interval_hours = Settings::default().check_interval_hours;
     }
+    // Start at sign-in is off until the person says yes (older files defaulted it on).
+    if !s.background_prompted {
+        s.start_at_login = false;
+    }
     s
 }
 
@@ -150,6 +157,16 @@ mod tests {
     fn store_in(dir: &tempfile::TempDir) -> (SettingsStore, std::path::PathBuf) {
         let path = dir.path().join("settings.json");
         (SettingsStore::open(path.clone()), path)
+    }
+
+    #[test]
+    fn start_at_sign_in_stays_off_until_the_person_said_yes() {
+        let dir = tempfile::tempdir().unwrap();
+        let (_, path) = store_in(&dir);
+        std::fs::write(&path, r#"{"schemaVersion":1,"startAtLogin":true}"#).unwrap();
+        assert!(!SettingsStore::open(path.clone()).get().start_at_login);
+        std::fs::write(&path, r#"{"schemaVersion":1,"startAtLogin":true,"backgroundPrompted":true}"#).unwrap();
+        assert!(SettingsStore::open(path).get().start_at_login);
     }
 
     #[test]

@@ -86,6 +86,9 @@ pub struct Settings {
     pub last_check_at: Option<String>,
     /// The one-time "still running in the tray" note was shown.
     pub tray_hint_shown: bool,
+    /// The person answered "Keep apps updated in the background?" (start at sign-in is never
+    /// set up before that).
+    pub background_prompted: bool,
 }
 
 impl Default for Settings {
@@ -96,7 +99,7 @@ impl Default for Settings {
             motion: Motion::System,
             check_interval_hours: 6,
             notify_updates: true,
-            start_at_login: true,
+            start_at_login: false,
             start_in_tray: true,
             close_to_tray: true,
             show_unknown_versions: false,
@@ -105,6 +108,7 @@ impl Default for Settings {
             store: StoreSettings::default(),
             last_check_at: None,
             tray_hint_shown: false,
+            background_prompted: false,
         }
     }
 }
@@ -126,4 +130,5 @@ pub struct SettingsPatch {
     pub choco_enabled: Option<bool>,
     pub choco_bootstrap_prompted: Option<bool>,
     pub store_enabled: Option<bool>,
+    pub background_prompted: Option<bool>,
 }
