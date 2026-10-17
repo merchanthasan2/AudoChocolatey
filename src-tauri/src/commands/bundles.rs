@@ -210,6 +210,85 @@ async fn dialog<T: Send + 'static>(
         .flatten()
 }
 
+#[derive(Debug, Clone, Copy, Deserialize, TS)]
+#[serde(rename_all = "lowercase")]
+#[ts(export)]
+pub enum ListPage {
+    Updates,
+    Installed,
+}
+
+/// One shown row, with the friendly source name the page shows.
+#[derive(Debug, Clone, Deserialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export)]
+pub struct CsvRow {
+    pub name: String,
+    pub id: String,
+    pub version: String,
+    #[ts(optional)]
+    pub new_version: Option<String>,
+    pub source: String,
+    #[ts(optional)]
+    pub released: Option<String>,
+}
+
+/// Saves the shown list as a spreadsheet (CSV). `None` when they cancelled.
+#[tauri::command]
+pub async fn export_csv(
+    app: AppHandle,
+    page: ListPage,
+    rows: Vec<CsvRow>,
+) -> Result<Option<u32>, AppError> {
+    if rows.len() > crate::csv::MAX_ROWS {
+        return Err(AppError::new("invalid_input", "too many rows"));
+    }
+    let (header, cells): (&[&str], Vec<Vec<String>>) = match page {
+        ListPage::Updates => (
+            &["App", "Package", "Installed", "New version", "Source", "Released"],
+            rows.iter()
+                .map(|r| {
+                    vec![
+                        r.name.clone(),
+                        r.id.clone(),
+                        r.version.clone(),
+                        r.new_version.clone().unwrap_or_default(),
+                        r.source.clone(),
+                        r.released.clone().unwrap_or_default(),
+                    ]
+                })
+                .collect(),
+        ),
+        ListPage::Installed => (
+            &["App", "Package", "Version", "Source"],
+            rows.iter()
+                .map(|r| vec![r.name.clone(), r.id.clone(), r.version.clone(), r.source.clone()])
+                .collect(),
+        ),
+    };
+    let text = crate::csv::to_csv(header, &cells);
+    let (y, m, d) = crate::background::backup::local_date();
+    let what = match page {
+        ListPage::Updates => "Updates",
+        ListPage::Installed => "Installed",
+    };
+    let file = format!("Quantum Updater - {what} {y:04}-{m:02}-{d:02}.csv");
+    let Some(path) = dialog(&app, move |b| {
+        b.add_filter("Spreadsheet (CSV)", &["csv"])
+            .set_file_name(file)
+            .blocking_save_file()?
+            .into_path()
+            .ok()
+    })
+    .await
+    else {
+        return Ok(None);
+    };
+    crate::fsutil::write_atomic(&path, text.as_bytes())
+        .map_err(|e| AppError::new("io", format!("Couldn't save the spreadsheet: {e}")))?;
+    Ok(Some(rows.len() as u32))
+}
+
 /// Saves an app list where the person chooses. `None` when they cancelled.
 #[tauri::command]
 pub async fn export_apps(

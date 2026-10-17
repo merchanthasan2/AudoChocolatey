@@ -14,6 +14,9 @@ import { resolveMotion, resolveTheme } from '../logic/theme';
 import type { SourceKind } from '../ipc/bindings/SourceKind';
 import type { OpKind } from '../ipc/bindings/OpKind';
 import type { UpdatesListing, RuleKind } from '../ipc/commands';
+import type { ListPref } from '../ipc/bindings/ListPref';
+import type { ListSort } from '../ipc/bindings/ListSort';
+import type { SourceLabel } from '../ipc/bindings/SourceLabel';
 
 const message = (e: unknown) => (e as { message?: string })?.message ?? String(e);
 
@@ -96,6 +99,34 @@ class SettingsStore {
   }
 }
 export const settings = new SettingsStore();
+
+/* ---------------------------------------------------------------- lists */
+const DEFAULT_PREF: ListPref = { sort: 'suggested', dir: 'asc', view: 'list', hideComponents: true };
+/** One page's list: what's typed and the source filter (this session only), and the sort,
+ *  view and components switch (kept in Settings, saved shortly after a change). */
+export class ListState {
+  text = $state('');
+  label = $state<SourceLabel | 'all'>('all');
+  #local = $state<ListPref | null>(null);
+  #timer: ReturnType<typeof setTimeout> | undefined;
+  constructor(private page: 'updates' | 'installed') {}
+  get pref(): ListPref { return this.#local ?? settings.value?.lists?.[this.page] ?? DEFAULT_PREF; }
+  get filtered() { return this.text.trim() !== '' || this.label !== 'all'; }
+  set(change: Partial<ListPref>) {
+    this.#local = { ...this.pref, ...change };
+    clearTimeout(this.#timer);
+    this.#timer = setTimeout(() => {
+      const lists = settings.value?.lists;
+      if (lists && this.#local) settings.update({ lists: { ...lists, [this.page]: this.#local } });
+    }, 400);
+  }
+  /** Click a column: the same one flips direction, a new one starts ascending. */
+  sortBy(sort: ListSort) {
+    this.set(sort === this.pref.sort ? { dir: this.pref.dir === 'asc' ? 'desc' : 'asc' } : { sort, dir: 'asc' });
+  }
+  clear() { this.text = ''; this.label = 'all'; }
+}
+export const lists = { updates: new ListState('updates'), installed: new ListState('installed') };
 
 /* ---------------------------------------------------------------- library */
 class Section<T, L extends Listing<T> = Listing<T>> {

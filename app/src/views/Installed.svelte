@@ -1,28 +1,34 @@
 <script lang="ts">
   import { SvelteSet } from 'svelte/reactivity';
-  import { installed, queue, myBundles } from '../lib/stores/app.svelte';
+  import { installed, queue, myBundles, lists } from '../lib/stores/app.svelte';
   import type { InstalledPackage } from '../lib/ipc/commands';
   import AppRow from '../lib/components/AppRow.svelte';
+  import AppTile from '../lib/components/AppTile.svelte';
+  import AppList from '../lib/components/AppList.svelte';
+  import ListHeader, { type Column } from '../lib/components/ListHeader.svelte';
+  import ListControls from '../lib/components/ListControls.svelte';
+  import ListToolbar, { type ToolAction } from '../lib/components/ListToolbar.svelte';
   import JobButton from '../lib/components/JobButton.svelte';
   import Checkbox from '../lib/components/Checkbox.svelte';
-  import Skeleton from '../lib/components/Skeleton.svelte';
-  import EmptyState from '../lib/components/EmptyState.svelte';
   import Banner from '../lib/components/Banner.svelte';
-  import SearchField from '../lib/components/SearchField.svelte';
   import Dialog from '../lib/components/Dialog.svelte';
-  import Icon from '../lib/components/Icon.svelte';
   import { uniqueKeys } from '../lib/logic/uniqueKeys';
+  import { applyQuery, labelCounts, type ListItem } from '../lib/logic/listView';
+  import { keepSelected, headerState, rangeKeys } from '../lib/logic/selection';
+  import { SOURCE_LABELS } from '../lib/logic/sources';
+  import { exportListCsv } from '../lib/logic/csvRows';
 
   const MAX_REMOVE = 50;
-  let filter = $state('');
-  const shown = $derived.by(() => {
-    const f = filter.trim().toLowerCase();
-    const list = f ? installed.items.filter((p) => p.name.toLowerCase().includes(f) || p.id.toLowerCase().includes(f)) : installed.items;
-    return [...list].sort((a, b) => a.name.localeCompare(b.name));
+  const list = lists.installed;
+  const view = (p: InstalledPackage): ListItem => ({
+    key: `${p.source ?? 'local'}:${p.id}`, name: p.name, id: p.id, label: p.label, component: p.component, version: p.version,
   });
+  const counts = $derived(labelCounts(installed.items.map(view), { text: list.text, hideComponents: list.pref.hideComponents }));
+  const componentCount = $derived(installed.items.filter((p) => p.component).length);
+  const shown = $derived(applyQuery(installed.items, view, { text: list.text, label: list.label, hideComponents: list.pref.hideComponents, sort: list.pref.sort === 'suggested' ? 'name' : list.pref.sort, dir: list.pref.dir }));
   const keys = $derived(uniqueKeys(shown, (p) => `${p.source ?? 'local'}:${p.id}`));
   const managed = $derived(installed.items.filter((p) => p.source).length);
-  const sourceText = (s: string | null) => (s ? 'Kept up to date here' : 'Updates handled by Windows');
+  const note = (p: InstalledPackage) => (p.component ? 'Windows component' : p.source ? 'Kept up to date here' : 'Updates handled by Windows');
 
   const jobOf = (p: InstalledPackage) => (p.source ? queue.jobFor(p.source, p.id, 'uninstall') : undefined);
   const busy = (p: InstalledPackage) => {
@@ -33,28 +39,54 @@
   const selectable = (p: InstalledPackage) => !!p.source && !busy(p);
 
   const selected = new SvelteSet<string>();
+  const selectableKeys = $derived(new Set(shown.flatMap((p, i) => (selectable(p) ? [keys[i]] : []))));
+  // Never act on rows that are filtered away or busy.
   $effect(() => {
-    const live = new Set(shown.map((p, i) => (selectable(p) ? keys[i] : '')));
-    for (const k of [...selected]) if (!live.has(k)) selected.delete(k);
+    const keep = new Set(keepSelected(selected, selectableKeys));
+    for (const k of [...selected]) if (!keep.has(k)) selected.delete(k);
   });
   const picked = $derived(shown.filter((_, i) => selected.has(keys[i])));
-  const pickable = $derived(shown.filter(selectable));
-  const allPicked = $derived(pickable.length > 0 && picked.length === pickable.length);
+  const head = $derived(headerState(picked.length, selectableKeys.size));
   function toggleAll(on: boolean) {
     selected.clear();
-    if (on) shown.forEach((p, i) => { if (selectable(p)) selected.add(keys[i]); });
+    if (on) for (const k of selectableKeys) selected.add(k);
+  }
+  let anchor: string | null = null;
+  let shift = false;
+  function pick(key: string, on: boolean) {
+    const range = shift && anchor ? rangeKeys(keys, anchor, key).filter((k) => selectableKeys.has(k)) : [key];
+    for (const k of range) (on ? selected.add(k) : selected.delete(k));
+    anchor = key;
   }
 
   let confirming = $state(false);
   async function removeSelected() {
-    const list = picked.map((p) => ({ source: p.source!, id: p.id, name: p.name }));
+    const items = picked.map((p) => ({ source: p.source!, id: p.id, name: p.name }));
     confirming = false;
-    if (await queue.uninstallMany(list)) selected.clear();
+    if (await queue.uninstallMany(items)) selected.clear();
   }
-  function addSelected() {
-    myBundles.adding = picked.map((p) => ({ source: p.source!, id: p.id, name: p.name }));
-  }
+
+  const columns: Column[] = [
+    { label: 'App', sort: 'name', cls: 'c-app' },
+    { label: 'Version', sort: 'version', cls: 'c-ver' },
+    { label: 'Source', sort: 'source', cls: 'c-src' },
+    { label: '', cls: 'c-act' },
+  ];
+  const actions = $derived<ToolAction[]>([
+    ...(picked.length > 0
+      ? [
+          { key: 'remove', label: `Remove ${picked.length}`, icon: 'trash', danger: true, disabled: picked.length > MAX_REMOVE, run: () => (confirming = true) },
+          { key: 'bundle', label: 'Add to bundle', icon: 'plus', run: () => (myBundles.adding = picked.map((p) => ({ source: p.source!, id: p.id, name: p.name }))) },
+        ]
+      : []),
+    { key: 'check', label: 'Check again', icon: 'refresh', disabled: installed.loading, run: () => installed.refresh() },
+    { key: 'export', label: 'Export list', icon: 'download', disabled: !installed.loaded, run: () => myBundles.export({ kind: 'installed' }) },
+    { key: 'import', label: 'Import list', icon: 'upload', run: () => myBundles.pickImport() },
+    { key: 'csv', label: 'Save as spreadsheet', icon: 'download', disabled: shown.length === 0, run: () => exportListCsv('installed', shown.map((p) => ({ name: p.name, id: p.id, version: p.version, label: p.label }))) },
+  ]);
 </script>
+
+<svelte:window onkeydown={(e) => (shift = e.shiftKey)} onkeyup={(e) => (shift = e.shiftKey)} />
 
 <header class="head">
   <div>
@@ -63,55 +95,61 @@
       {#if installed.loaded}{installed.items.length} apps · {managed} can be managed here{:else}Looking at your PC…{/if}
     </p>
   </div>
-  <div class="filter"><SearchField value={filter} oninput={(v) => (filter = v)} placeholder="Filter installed apps" hint={false} /></div>
 </header>
 
-<div class="toolbar">
-  {#if picked.length > 0}
-    <span class="count">{picked.length} selected</span>
-    <button class="btn btn-quiet danger" disabled={picked.length > MAX_REMOVE} title={picked.length > MAX_REMOVE ? 'Remove at most 50 apps at a time' : undefined}
-      onclick={() => (confirming = true)}><Icon name="trash" size={16} /> Remove selected</button>
-    <button class="btn btn-quiet" onclick={addSelected}><Icon name="plus" size={16} /> Add to bundle</button>
-  {/if}
-  <span class="spacer"></span>
-  <button class="btn btn-quiet" onclick={() => installed.refresh()} disabled={installed.loading}><Icon name="refresh" size={16} /> Check again</button>
-  <button class="btn btn-quiet" onclick={() => myBundles.export({ kind: 'installed' })} disabled={!installed.loaded}><Icon name="download" size={16} /> Export list</button>
-  <button class="btn btn-quiet" onclick={() => myBundles.pickImport()}><Icon name="upload" size={16} /> Import list</button>
-</div>
+<ListControls {list} {counts} components={componentCount} placeholder="Search installed apps" />
+
+<div class="gap"><ListToolbar {actions} /></div>
 
 {#each installed.sourceErrors as e (e.source)}
   <div class="gap"><Banner text="Some installed apps couldn't be read. The list may be incomplete." action={{ label: 'Try again', run: () => installed.refresh() }} /></div>
 {/each}
 
-{#if !installed.loaded}
-  <Skeleton rows={7} />
-{:else if shown.length === 0}
-  <EmptyState icon="search" title="No apps match" body={filter ? `Nothing installed matches "${filter}".` : 'No apps found.'} />
-{:else}
-  <div class="card list">
-    <div class="list-head">
-      <Checkbox label="Select all apps" checked={allPicked} indeterminate={picked.length > 0 && !allPicked}
-        disabled={pickable.length === 0} onchange={(v) => toggleAll(v)} />
-      <span class="muted">{picked.length > 0 ? `${picked.length} selected` : 'Select apps to remove them or save them to a bundle'}</span>
-    </div>
-    {#each shown as p, i (keys[i])}
-      {@const job = jobOf(p)}
-      <AppRow name={p.name} meta="{p.version} · {sourceText(p.source)}" {job} mode="uninstall" iconKey="{p.source ?? 'local'}:{p.id}">
-        {#snippet lead()}
-          <Checkbox label="Select {p.name}" checked={selected.has(keys[i])} disabled={!selectable(p)}
-            onchange={(v) => (v ? selected.add(keys[i]) : selected.delete(keys[i]))} />
-        {/snippet}
-        {#snippet action()}
-          {#if p.source}
-            <JobButton {job} mode="uninstall" name={p.name}
-              onstart={() => queue.uninstall({ source: p.source!, id: p.id, name: p.name })}
-              oncancel={(id) => queue.cancel(id)} onretry={(id) => queue.retry(id)} />
-          {/if}
-        {/snippet}
-      </AppRow>
-    {/each}
-  </div>
-{/if}
+<AppList items={shown} keyOf={(_, i) => keys[i]} view={list.pref.view} loaded={installed.loaded} error={installed.error}
+  filtered={list.filtered} onclear={() => list.clear()} actW={110}
+  empty={{ icon: 'search', title: 'No apps found', body: 'Nothing installed could be read.' }}>
+  {#snippet header()}
+    <ListHeader {columns} sort={list.pref.sort} dir={list.pref.dir} onsort={(s) => list.sortBy(s)}>
+      {#snippet lead()}
+        <Checkbox label="Select all apps shown" checked={head.checked} indeterminate={head.indeterminate} disabled={head.disabled} onchange={toggleAll} />
+      {/snippet}
+    </ListHeader>
+  {/snippet}
+  {#snippet row(p, i)}
+    {@const job = jobOf(p)}
+    <AppRow name={p.name} meta={note(p)} {job} mode="uninstall" iconKey="{p.source ?? 'local'}:{p.id}" density={list.pref.view === 'compact' ? 'compact' : 'list'}>
+      {#snippet lead()}
+        <Checkbox label="Select {p.name}" checked={selected.has(keys[i])} disabled={!selectable(p)} onchange={(v) => pick(keys[i], v)} />
+      {/snippet}
+      {#snippet cells()}
+        <span class="cell c-ver truncate" title={p.version}>{p.version}</span>
+        <span class="cell c-src">{SOURCE_LABELS[p.label]}</span>
+      {/snippet}
+      {#snippet action()}
+        {#if p.source}
+          <JobButton {job} mode="uninstall" name={p.name}
+            onstart={() => queue.uninstall({ source: p.source!, id: p.id, name: p.name })}
+            oncancel={(id) => queue.cancel(id)} onretry={(id) => queue.retry(id)} />
+        {/if}
+      {/snippet}
+    </AppRow>
+  {/snippet}
+  {#snippet tile(p, i)}
+    {@const job = jobOf(p)}
+    <AppTile name={p.name} meta="{p.version} · {SOURCE_LABELS[p.label]}" note={note(p)} {job} mode="uninstall" iconKey="{p.source ?? 'local'}:{p.id}">
+      {#snippet lead()}
+        <Checkbox label="Select {p.name}" checked={selected.has(keys[i])} disabled={!selectable(p)} onchange={(v) => pick(keys[i], v)} />
+      {/snippet}
+      {#snippet action()}
+        {#if p.source}
+          <JobButton {job} mode="uninstall" name={p.name}
+            onstart={() => queue.uninstall({ source: p.source!, id: p.id, name: p.name })}
+            oncancel={(id) => queue.cancel(id)} onretry={(id) => queue.retry(id)} />
+        {/if}
+      {/snippet}
+    </AppTile>
+  {/snippet}
+</AppList>
 
 {#if confirming}
   <Dialog title="Remove {picked.length} {picked.length === 1 ? 'app' : 'apps'}?" onclose={() => (confirming = false)}>
@@ -127,16 +165,10 @@
 {/if}
 
 <style>
-  .head { display: flex; align-items: flex-end; justify-content: space-between; gap: 24px; margin-bottom: 14px; }
+  .head { margin-bottom: 16px; }
   .head p { margin-top: 4px; }
-  .filter { width: min(320px, 40%); }
   .gap { margin-bottom: 12px; }
-  .toolbar { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-bottom: 12px; min-height: 36px; }
-  .toolbar .btn { gap: 6px; }
-  .count { font-weight: 600; font-size: 13px; margin-right: 6px; }
-  .spacer { flex: 1; }
   .danger { color: var(--danger); }
-  .list-head { display: flex; align-items: center; gap: 14px; padding: 10px 16px; border-bottom: 1px solid var(--hairline); font-size: 12.5px; }
   .names { margin: 12px 0 0; padding: 10px 14px 10px 30px; max-height: 40vh; overflow-y: auto; background: var(--pill); border-radius: 10px; font-size: 13px; }
   .names li + li { margin-top: 3px; }
 </style>

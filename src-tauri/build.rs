@@ -37,6 +37,7 @@ const COMMANDS: &[&str] = &[
     "import_keep",
     "pick_backup_folder",
     "backup_now",
+    "export_csv",
     "get_history",
     "rollback",
 ];

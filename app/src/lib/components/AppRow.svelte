@@ -13,7 +13,9 @@
     iconKey,
     lead,
     action,
+    cells,
     bar = false,
+    density = 'list',
   }: {
     name: string;
     meta: string;
@@ -22,7 +24,10 @@
     iconKey?: string;
     lead?: Snippet;
     action?: Snippet;
+    /** Table cells between the name and the action (list views with columns). */
+    cells?: Snippet;
     bar?: boolean;
+    density?: 'list' | 'compact';
   } = $props();
 
   const ui = $derived(job && mode ? jobButtonState(job, mode) : null);
@@ -40,19 +45,22 @@
   });
 </script>
 
-<div class="row" class:active={running}>
+<div class="row" class:active={running} class:compact={density === 'compact'}>
   {#if lead}{@render lead()}{/if}
-  <AppIcon {name} {iconKey} />
+  <AppIcon {name} {iconKey} size={density === 'compact' ? 26 : 40} />
   <div class="text">
     <div class="name truncate" title={name}>{name}</div>
-    <div class="meta truncate" class:live={status && ui?.kind !== 'failed'} class:bad={ui?.kind === 'failed'}>{status ?? meta}</div>
+    {#if density === 'list' || status}
+      <div class="meta truncate" class:live={status && ui?.kind !== 'failed'} class:bad={ui?.kind === 'failed'}>{status ?? meta}</div>
+    {/if}
     {#if bar && running}
       <div class="bar" class:indeterminate={ui?.percent == null} role="presentation">
         <i style="width:{ui?.percent ?? 30}%"></i>
       </div>
     {/if}
   </div>
-  {#if action}{@render action()}{/if}
+  {#if cells}{@render cells()}{/if}
+  {#if action}<div class="action">{@render action()}</div>{/if}
 </div>
 
 <style>
@@ -62,6 +70,10 @@
     content-visibility: auto; contain-intrinsic-size: auto 64px;
     transition: background-color 200ms ease;
   }
+  .row.compact { min-height: 44px; padding: 6px 16px; gap: 12px; contain-intrinsic-size: auto 44px; position: relative; }
+  .row.compact .name { font-size: 13.5px; }
+  .row.compact .bar { position: absolute; left: 0; right: 0; bottom: 0; margin: 0; max-width: none; height: 3px; border-radius: 0; }
+  .action { display: flex; justify-content: flex-end; flex-shrink: 0; }
   .row.active { background: color-mix(in srgb, var(--accent-soft) 45%, transparent); }
   :global(.row-wrap + .row-wrap) .row, .row + :global(.row) { border-top: 1px solid var(--hairline); }
   .text { flex: 1; min-width: 0; }

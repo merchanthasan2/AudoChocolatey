@@ -1,0 +1,56 @@
+<script lang="ts">
+  let { size = 120 }: { size?: number } = $props();
+</script>
+
+<!-- Quantum Step Creation emblem (brand/quantum-step-logo.svg). -->
+<svg width={size} height={size} viewBox="0 0 1000 1000" role="img" aria-label="Quantum Step Creation">
+  
+    <defs>
+      <linearGradient id="qs-ring" x1="60" y1="0" x2="940" y2="0" gradientUnits="userSpaceOnUse">
+        <stop offset="0" stop-color="#00E5FF"/>
+        <stop offset="0.28" stop-color="#3D8BFF"/>
+        <stop offset="0.5" stop-color="#B14BFF"/>
+        <stop offset="0.7" stop-color="#FF2BD6"/>
+        <stop offset="0.86" stop-color="#FF7A45"/>
+        <stop offset="1" stop-color="#FFD000"/>
+      </linearGradient>
+      <linearGradient id="qs-inner" x1="238" y1="0" x2="762" y2="0" gradientUnits="userSpaceOnUse">
+        <stop offset="0" stop-color="#2F9BFF"/>
+        <stop offset="0.5" stop-color="#8B5CF6"/>
+        <stop offset="1" stop-color="#FF2BD6"/>
+      </linearGradient>
+      <linearGradient id="qs-line" x1="150" y1="0" x2="900" y2="0" gradientUnits="userSpaceOnUse">
+        <stop offset="0" stop-color="#00E5FF"/>
+        <stop offset="0.55" stop-color="#B14BFF"/>
+        <stop offset="1" stop-color="#FF2BD6"/>
+      </linearGradient>
+      <linearGradient id="qs-hook" x1="890" y1="0" x2="965" y2="0" gradientUnits="userSpaceOnUse">
+        <stop offset="0" stop-color="#FF2BD6"/>
+        <stop offset="1" stop-color="#FF8A3D"/>
+      </linearGradient>
+      <path id="qs-top" d="M 170,500 A 330,330 0 0 1 830,500"/>
+      <path id="qs-bottom" d="M 140,500 A 360,360 0 0 0 860,500"/>
+    </defs>
+    <circle cx="500" cy="500" r="472" fill="#0B0614"/>
+    <path d="M935.7,561.2 A440,440 0 1 1 935.7,438.8" fill="none" stroke="url(#qs-ring)" stroke-width="24" stroke-linecap="round"/>
+    <path d="M190,500 H894" stroke="url(#qs-line)" stroke-width="9"/>
+    <circle cx="172" cy="500" r="18" fill="none" stroke="#00E5FF" stroke-width="9"/>
+    <path d="M500,232 V768" stroke="#9B5CFF" stroke-width="9"/>
+    <circle cx="500" cy="500" r="262" fill="none" stroke="url(#qs-inner)" stroke-width="22"/>
+    <circle cx="500" cy="500" r="222" fill="none" stroke="url(#qs-inner)" stroke-width="9"/>
+    <circle cx="500" cy="282" r="15" fill="#0B0614" stroke="#9B5CFF" stroke-width="9"/>
+    <circle cx="500" cy="718" r="15" fill="#0B0614" stroke="#9B5CFF" stroke-width="9"/>
+    <path d="M954,521.9 A34,34 0 1 1 954,478.1" fill="none" stroke="url(#qs-hook)" stroke-width="26" stroke-linecap="round"/>
+    <circle cx="928" cy="500" r="12" fill="#FF3DB8"/>
+    <g fill="none" stroke="#7DF9FF" stroke-width="15">
+      <ellipse cx="500" cy="500" rx="72" ry="180"/>
+      <ellipse cx="500" cy="500" rx="72" ry="180" transform="rotate(60 500 500)"/>
+      <ellipse cx="500" cy="500" rx="72" ry="180" transform="rotate(-60 500 500)"/>
+    </g>
+    <circle cx="500" cy="500" r="78" fill="#0B0614" stroke="#7DF9FF" stroke-width="14"/>
+    <circle cx="500" cy="500" r="24" fill="#0B0614" stroke="#2F9BFF" stroke-width="13"/>
+    <g fill="#FF2BD6" font-family="Montserrat, 'Inter Tight', 'Segoe UI', Arial, sans-serif" font-weight="700" font-size="74" letter-spacing="10" text-anchor="middle">
+      <text><textPath href="#qs-top" startOffset="50%">QUANTUM STEP</textPath></text>
+      <text><textPath href="#qs-bottom" startOffset="50%" dominant-baseline="hanging">CREATION</textPath></text>
+    </g>
+</svg>

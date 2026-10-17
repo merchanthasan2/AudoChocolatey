@@ -90,3 +90,9 @@ export const importApply = (token: string, indices: number[]) => invoke<string[]
 export const importKeep = (token: string, indices: number[], name: string) => invoke<MyBundleView[]>('import_keep', { token, indices, name });
 export const pickBackupFolder = () => invoke<Settings | null>('pick_backup_folder');
 export const backupNow = () => invoke<string>('backup_now');
+
+// Spreadsheet export of the shown list (save dialog in Rust)
+import type { CsvRow } from './bindings/CsvRow';
+import type { ListPage } from './bindings/ListPage';
+/** Resolves to the number of rows saved, or null if the person cancelled. */
+export const exportCsv = (page: ListPage, rows: CsvRow[]) => invoke<number | null>('export_csv', { page, rows });

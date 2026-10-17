@@ -2,6 +2,7 @@
   import { settings, overview, myBundles, toasts } from '../lib/stores/app.svelte';
   import { getDiagnostics, getAutoStatus, pickBackupFolder, backupNow, type Diagnostics, type AutoStatus } from '../lib/ipc/commands';
   import Icon from '../lib/components/Icon.svelte';
+  import QuantumStepLogo from '../lib/components/QuantumStepLogo.svelte';
   import type { AutoRules } from '../lib/ipc/bindings/AutoRules';
   import { clock } from '../lib/logic/rules';
   import Segmented from '../lib/components/Segmented.svelte';
@@ -233,13 +234,16 @@
 
   <section class="card group">
     <h2>About</h2>
-    <dl>
-      <dt>Version</dt><dd>{diag?.appVersion ?? overview.value?.appVersion ?? '…'}</dd>
-      <dt>Build</dt><dd class="mono">{overview.value?.buildSha ?? '…'}</dd>
-      <dt>Running as admin</dt><dd>{overview.value ? (overview.value.isElevated ? 'Yes' : 'No (development build)') : '…'}</dd>
-      <dt>Settings folder</dt><dd class="mono truncate" title={diag?.configDir}>{diag?.configDir ?? '…'}</dd>
-    </dl>
-    <p class="hint small">Quantum Updater by Quantum Step. Free to use; all rights reserved.</p>
+    <div class="about">
+      <dl>
+        <dt>Version</dt><dd>{diag?.appVersion ?? overview.value?.appVersion ?? '…'}</dd>
+        <dt>Build</dt><dd class="mono">{overview.value?.buildSha ?? '…'}</dd>
+        <dt>Running as admin</dt><dd>{overview.value ? (overview.value.isElevated ? 'Yes' : 'No (development build)') : '…'}</dd>
+        <dt>Settings folder</dt><dd class="mono truncate" title={diag?.configDir}>{diag?.configDir ?? '…'}</dd>
+      </dl>
+      <QuantumStepLogo size={112} />
+    </div>
+    <p class="hint small">Quantum Updater by Quantum Step Creation. Free to use; all rights reserved.</p>
   </section>
 {/if}
 
@@ -256,6 +260,9 @@
   dl { display: grid; grid-template-columns: 160px 1fr; gap: 8px 16px; margin: 4px 0 0; }
   dt { color: var(--muted); }
   dd { margin: 0; font-weight: 550; min-width: 0; }
+  .about { display: flex; align-items: center; gap: 24px; }
+  .about dl { flex: 1; min-width: 0; }
+  .about :global(svg) { flex-shrink: 0; }
   .pair { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
   .pair .btn { gap: 6px; }
   .wait { margin: 0 0 4px; padding: 8px 12px; border-radius: 10px; background: var(--pill); color: var(--ink-2); }

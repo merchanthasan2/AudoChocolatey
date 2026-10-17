@@ -48,6 +48,7 @@
     "allow-import-keep",
     "allow-pick-backup-folder",
     "allow-backup-now",
+    "allow-export-csv",
     "allow-get-history",
     "allow-rollback"
   ]

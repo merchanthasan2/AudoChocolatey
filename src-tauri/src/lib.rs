@@ -2,6 +2,7 @@ mod apps_file;
 mod background;
 mod bundles;
 mod catalog;
+mod csv;
 mod commands;
 mod error;
 mod fsutil;
@@ -189,6 +190,7 @@ pub fn run(launch: launch::Launch) {
             commands::bundles::import_keep,
             commands::bundles::pick_backup_folder,
             commands::bundles::backup_now,
+            commands::bundles::export_csv,
             commands::rollback::get_history,
             commands::rollback::rollback,
         ])
