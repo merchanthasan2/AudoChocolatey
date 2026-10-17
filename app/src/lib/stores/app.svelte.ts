@@ -195,6 +195,11 @@ class UpdatesSection extends Section<UpgradeCandidate, UpdatesListing> {
   async loadInfo() {
     try { this.takeInfo(await api.getUpdateInfo()); } catch { /* none yet */ }
   }
+  /** Apps installed directly that this app can update (never part of Update all). */
+  linked = $state<api.LinkedUpdate[]>([]);
+  async loadLinked() {
+    try { this.linked = await api.listLinkedUpdates(); } catch { this.linked = []; }
+  }
 }
 export const updates = new UpdatesSection(api.listUpdates);
 
@@ -294,7 +299,7 @@ class QueueStore {
   /** Installed and update lists change after any successful job; refresh once things settle. */
   #scheduleRefresh() {
     clearTimeout(this.#refreshTimer);
-    this.#refreshTimer = setTimeout(() => { installed.refresh(); updates.refresh(); }, 1200);
+    this.#refreshTimer = setTimeout(() => { installed.refresh().then(() => updates.loadLinked()); updates.refresh(); }, 1200);
   }
 
   jobFor(source: SourceKind, id: string, kind?: OpKind) { return jobFor(this.jobs, source, id, kind); }

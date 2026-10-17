@@ -131,6 +131,11 @@ pub struct AppState {
     pub rules: Mutex<RuleStore>,
     /// Which site each app's installers usually come from (download-site note).
     pub sites: Arc<Mutex<crate::sites::SiteStore>>,
+    /// Apps installed directly that are linked to a catalog app, from the last Installed list:
+    /// row id -> (link, name, installed version).
+    pub links: Mutex<
+        std::collections::HashMap<String, (crate::catalog::local_match::LocalLink, String, String)>,
+    >,
     /// "What's new" links and release dates (memory only).
     pub update_info: Mutex<crate::update_info::InfoCache>,
     pub bundles: Mutex<crate::bundles::BundleStore>,
@@ -226,6 +231,7 @@ impl AppState {
             rules: Mutex::new(RuleStore::open(config_dir.join("rules.json"))),
             sites,
             update_info: Mutex::new(Default::default()),
+            links: Mutex::new(Default::default()),
             bundles: Mutex::new(crate::bundles::BundleStore::open(
                 config_dir.join("my-bundles.json"),
             )),

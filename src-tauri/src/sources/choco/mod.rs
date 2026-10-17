@@ -119,6 +119,7 @@ impl<R: Runner> ChocoSource<R> {
                 source: Some(SourceKind::Choco),
                 label: super::label::SourceLabel::CommunityCatalog,
                 component: false,
+                linked: false,
             })
             .collect())
     }

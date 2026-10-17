@@ -3,6 +3,7 @@
 //! `scripts/validate-catalog.mjs`.
 
 pub mod browse;
+pub mod local_match;
 pub mod merge;
 pub mod names;
 
@@ -40,10 +41,33 @@ pub struct CatalogApp {
     /// Often targeted by attackers: its updates sort first as "Important to keep current".
     #[serde(default)]
     pub security: bool,
+    /// How to recognise a copy installed directly (not by a source), so it can be updated here.
+    #[serde(default, rename = "localMatch")]
+    pub local_match: Option<LocalMatch>,
     /// Set for apps whose Chocolatey package installs beside (not over) the winget one, so an
     /// update must never switch to Chocolatey.
     #[serde(default, rename = "noUpgradeFallback")]
     pub no_upgrade_fallback: bool,
+}
+
+/// See `local_match`: every field must agree before a Programs-list entry is linked.
+#[derive(Debug, Clone, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct LocalMatch {
+    /// The source the app is updated through (one of the app's own ids; never the Store).
+    pub via: SourceKind,
+    pub publisher: String,
+    /// "x86" and/or "x64".
+    pub arch: Vec<String>,
+    /// Registry key names of the app's Programs-list entry.
+    #[serde(default)]
+    pub keys: Vec<String>,
+    /// An anchored pattern for the entry's display name.
+    #[serde(default)]
+    pub name_pattern: Option<String>,
+    /// Only offer versions with the same major number.
+    #[serde(default)]
+    pub same_major: bool,
 }
 
 #[derive(Debug, Clone, Deserialize, Serialize, TS)]

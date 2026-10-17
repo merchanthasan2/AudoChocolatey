@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-list-linked-updates"
+description = "Enables the list_linked_updates command without any pre-configured scope."
+commands.allow = ["list_linked_updates"]
+
+[[permission]]
+identifier = "deny-list-linked-updates"
+description = "Denies the list_linked_updates command without any pre-configured scope."
+commands.deny = ["list_linked_updates"]

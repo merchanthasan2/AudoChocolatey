@@ -106,3 +106,7 @@ export const setRules = (items: RuleRequest[]) => invoke<UpdatesListing>('set_ru
 export const getUpdateInfo = () => invoke<UpdateInfo[]>('get_update_info');
 /** Opens the release notes Rust has for this exact update, in the person's own browser. */
 export const openReleaseNotes = (target: SourceRef, version: string) => invoke<void>('open_release_notes', { target, version });
+import type { LinkedUpdate } from './bindings/LinkedUpdate';
+export type { LinkedUpdate };
+/** Updates for apps installed directly that are linked to a catalog app. */
+export const listLinkedUpdates = () => invoke<LinkedUpdate[]>('list_linked_updates');

@@ -97,6 +97,9 @@
   }
   const hasStore = $derived(picked.some((u) => u.source === 'msstore'));
   let reinstalling = $state(false);
+  // An app installed directly: its own installer runs over it, after a confirm each time.
+  let linking = $state<import('../lib/ipc/commands').LinkedUpdate | null>(null);
+  const linkedJob = (l: import('../lib/ipc/commands').LinkedUpdate) => queue.jobFor(l.target.source, l.target.id, 'install');
 
   function menuFor(u: UpgradeCandidate) {
     const rule = ruleOf(u);
@@ -251,6 +254,24 @@
   {/snippet}
 </AppList>
 
+{#if updates.linked.length > 0}
+  <section class="linked">
+    <h2>Also updatable here</h2>
+    <p class="muted">These apps were installed directly, not through an app source. Quantum Updater can update them by running their installer over the copy you have. They're never part of Update all.</p>
+    <div class="card list">
+      {#each updates.linked as l (l.target.source + l.target.id)}
+        {@const job = linkedJob(l)}
+        <AppRow name={l.name} meta="{l.installedVersion} → {l.availableVersion} · Installed directly" {job} mode="update" bar iconKey="{l.target.source}:{l.target.id}">
+          {#snippet action()}
+            <JobButton {job} mode="update" name={l.name} onstart={() => (linking = l)}
+              oncancel={(id) => queue.cancel(id)} onretry={(id) => queue.retry(id)} />
+          {/snippet}
+        </AppRow>
+      {/each}
+    </div>
+  </section>
+{/if}
+
 {#if updates.hidden.length > 0}
   <section class="hidden-section" bind:this={hiddenBox}>
     <button class="hidden-toggle" aria-expanded={showHidden} onclick={() => (showHidden = !showHidden)}>
@@ -270,6 +291,17 @@
       </div>
     {/if}
   </section>
+{/if}
+
+{#if linking}
+  {@const l = linking}
+  <Dialog title="Update {l.name}?" onclose={() => (linking = null)}>
+    <p class="muted">Quantum Updater will run {l.name}'s installer over the copy you have, taking it from {l.installedVersion} to {l.availableVersion}. Close {l.name} first.</p>
+    {#snippet buttons()}
+      <button class="btn btn-quiet" onclick={() => (linking = null)}>Cancel</button>
+      <button class="btn btn-primary" onclick={() => { linking = null; queue.install({ source: l.target.source, id: l.target.id, name: l.name }); }}>Update {l.name}</button>
+    {/snippet}
+  </Dialog>
 {/if}
 
 {#if reinstalling}
@@ -299,6 +331,9 @@
   :global(.btn.split) { width: 34px; padding: 0; justify-content: center; }
   .chev { display: inline-grid; transform: rotate(90deg); }
   .hidden-section { margin-top: 18px; }
+  .linked { margin-top: 22px; }
+  .linked h2 { margin-bottom: 4px; }
+  .linked p { font-size: 13px; margin-bottom: 10px; max-width: 70ch; }
   .hidden-toggle { display: inline-flex; align-items: center; gap: 8px; font-weight: 600; font-size: 13px; color: var(--muted); padding: 6px 4px; margin-bottom: 8px; }
   .hidden-toggle:hover { color: var(--ink); }
   .chev-h { display: inline-grid; transform: rotate(90deg); transition: transform var(--dur-quick) var(--ease-out); }

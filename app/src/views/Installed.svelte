@@ -28,7 +28,8 @@
   const shown = $derived(applyQuery(installed.items, view, { text: list.text, label: list.label, hideComponents: list.pref.hideComponents, sort: list.pref.sort === 'suggested' ? 'name' : list.pref.sort, dir: list.pref.dir }));
   const keys = $derived(uniqueKeys(shown, (p) => `${p.source ?? 'local'}:${p.id}`));
   const managed = $derived(installed.items.filter((p) => p.source).length);
-  const note = (p: InstalledPackage) => (p.component ? 'Windows component' : p.source ? 'Kept up to date here' : 'Updates handled by Windows');
+  const note = (p: InstalledPackage) =>
+    p.component ? 'Windows component' : p.source || p.linked ? 'Kept up to date here' : 'Updates handled by Windows';
 
   const jobOf = (p: InstalledPackage) => (p.source ? queue.jobFor(p.source, p.id, 'uninstall') : undefined);
   const busy = (p: InstalledPackage) => {

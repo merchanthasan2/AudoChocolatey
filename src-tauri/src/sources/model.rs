@@ -18,6 +18,8 @@ pub struct InstalledPackage {
     pub label: crate::sources::label::SourceLabel,
     /// A runtime, codec or other Windows component (Installed hides these by default).
     pub component: bool,
+    /// Installed directly, but linked to a catalog app this app can update.
+    pub linked: bool,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, TS)]

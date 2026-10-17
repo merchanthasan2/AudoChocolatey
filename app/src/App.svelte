@@ -27,7 +27,7 @@
     settings.load();
     overview.load();
     queue.init();
-    installed.refresh();
+    installed.refresh().then(() => updates.loadLinked());
     updates.refresh();
     myBundles.load();
     onUpdatesChanged((l) => updates.accept(l, true));

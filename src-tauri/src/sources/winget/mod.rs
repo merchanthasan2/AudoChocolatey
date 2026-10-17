@@ -90,6 +90,7 @@ impl<R: Runner> WingetSource<R> {
                 InstalledPackage {
                     label: super::label::classify(source, &r.id),
                     component: false,
+                    linked: false,
                     name: r.name,
                     id: r.id,
                     version: r.version,

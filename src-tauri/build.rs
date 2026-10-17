@@ -18,6 +18,7 @@ const COMMANDS: &[&str] = &[
     "set_rules",
     "get_update_info",
     "open_release_notes",
+    "list_linked_updates",
     "pause_queue",
     "resume_queue",
     "quit_anyway",

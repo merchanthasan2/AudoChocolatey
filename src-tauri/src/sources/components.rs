@@ -262,6 +262,7 @@ mod tests {
             available: None,
             label: classify(source, id),
             component: false,
+            linked: false,
             source,
         }
     }

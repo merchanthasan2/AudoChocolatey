@@ -84,6 +84,7 @@ pub async fn collect_installed(state: &AppState) -> Listing<InstalledPackage> {
     .await;
     let cat = Catalog::embedded();
     listing.items = crate::sources::components::fold_local_duplicates(listing.items);
+    link_local(state, &mut listing.items, choco_on).await;
     for p in &mut listing.items {
         // Catalog apps are never components.
         let known = p.source.is_some_and(|s| cat.by_source(s, &p.id).is_some());
@@ -101,6 +102,138 @@ pub async fn collect_installed(state: &AppState) -> Listing<InstalledPackage> {
         };
     }
     listing
+}
+
+/// Marks apps installed directly that can be kept up to date here, and remembers them for
+/// "Also updatable here" (see `catalog::local_match`).
+async fn link_local(state: &AppState, items: &mut [InstalledPackage], choco_on: bool) {
+    use crate::catalog::local_match::link_all;
+    use crate::sources::label::parse_arp_id;
+    let cat = Catalog::embedded();
+    let ids: Vec<String> = items
+        .iter()
+        .filter(|p| p.source.is_none())
+        .map(|p| p.id.clone())
+        .collect();
+    let entries = tauri::async_runtime::spawn_blocking(move || {
+        ids.into_iter()
+            .filter_map(|id| {
+                let e = crate::sources::arp::read_entry(&parse_arp_id(&id)?)?;
+                Some((id, e))
+            })
+            .collect::<Vec<_>>()
+    })
+    .await
+    .unwrap_or_default();
+    let managed: std::collections::HashSet<String> = items
+        .iter()
+        .filter_map(|p| Some(cat.by_source(p.source?, &p.id)?.key.clone()))
+        .collect();
+    let links = link_all(&entries, &managed, cat, |s| match s {
+        SourceKind::Winget => true,
+        SourceKind::Choco => choco_on,
+        SourceKind::Msstore => false,
+    });
+    let mut kept = std::collections::HashMap::new();
+    for p in items.iter_mut() {
+        if let Some(l) = links.get(&p.id) {
+            p.linked = true;
+            let name = cat
+                .by_key(&l.app_key)
+                .map(|a| a.name.clone())
+                .unwrap_or_else(|| p.name.clone());
+            kept.insert(p.id.clone(), (l.clone(), name, p.version.clone()));
+        }
+    }
+    *state.links.lock().unwrap_or_else(|p| p.into_inner()) = kept;
+}
+
+/// An update for an app installed directly ("Also updatable here"). Never part of "Update all",
+/// automatic updates or notifications: each one is started by the person, after a confirm.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export)]
+pub struct LinkedUpdate {
+    pub name: String,
+    pub installed_version: String,
+    pub available_version: String,
+    /// What an update installs over the copy on this PC.
+    pub target: SourceRef,
+}
+
+#[tauri::command]
+pub async fn list_linked_updates(
+    state: State<'_, AppState>,
+) -> Result<Vec<LinkedUpdate>, AppError> {
+    let links: Vec<_> = state
+        .links
+        .lock()
+        .unwrap_or_else(|p| p.into_inner())
+        .values()
+        .cloned()
+        .collect();
+    let cat = Catalog::embedded();
+    let mut out = Vec::new();
+    for (link, name, installed) in links {
+        let latest = match link.target.source() {
+            SourceKind::Winget => {
+                let Ok(id) = crate::ids::WingetId::try_from(link.target.id().to_string()) else {
+                    continue;
+                };
+                state.winget.show(&id).await.ok().and_then(|s| s.version)
+            }
+            SourceKind::Choco => {
+                let Ok(id) = crate::ids::ChocoId::try_from(link.target.id().to_string()) else {
+                    continue;
+                };
+                state
+                    .choco
+                    .package(&id)
+                    .await
+                    .ok()
+                    .flatten()
+                    .and_then(|p| p.version)
+            }
+            SourceKind::Msstore => None,
+        };
+        let Some(latest) = latest else { continue };
+        let same_major = cat
+            .by_key(&link.app_key)
+            .and_then(|a| a.local_match.as_ref())
+            .is_some_and(|r| r.same_major);
+        if !crate::catalog::local_match::offers(&installed, &latest, same_major) {
+            continue;
+        }
+        // Skip and Never apply here too.
+        let key = rule_key(&link.target, cat);
+        let ruled = state
+            .rules
+            .lock()
+            .unwrap_or_else(|p| p.into_inner())
+            .rules()
+            .iter()
+            .any(|r| {
+                r.key == key
+                    && match &r.kind {
+                        RuleKind::Never => true,
+                        RuleKind::SkipVersion { version, .. } => {
+                            crate::versions::compare(version.as_str(), &latest)
+                                == std::cmp::Ordering::Equal
+                        }
+                        _ => false,
+                    }
+            });
+        if ruled {
+            continue;
+        }
+        out.push(LinkedUpdate {
+            name,
+            installed_version: installed,
+            available_version: latest,
+            target: link.target,
+        });
+    }
+    Ok(out)
 }
 
 async fn choco_titles<'a>(

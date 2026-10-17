@@ -29,6 +29,7 @@
     "allow-set-rules",
     "allow-get-update-info",
     "allow-open-release-notes",
+    "allow-list-linked-updates",
     "allow-pause-queue",
     "allow-resume-queue",
     "allow-quit-anyway",

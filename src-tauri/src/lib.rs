@@ -174,6 +174,7 @@ pub fn run(launch: launch::Launch) {
             commands::library::set_rules,
             commands::library::get_update_info,
             commands::library::open_release_notes,
+            commands::library::list_linked_updates,
             commands::jobs::get_queue,
             commands::jobs::pause_queue,
             commands::jobs::resume_queue,

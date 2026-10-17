@@ -14,4 +14,8 @@ label: SourceLabel,
 /**
  * A runtime, codec or other Windows component (Installed hides these by default).
  */
-component: boolean, };
+component: boolean, 
+/**
+ * Installed directly, but linked to a catalog app this app can update.
+ */
+linked: boolean, };

@@ -36,8 +36,8 @@
     { "key": "rustup", "name": "Rust (rustup)", "publisher": "The Rust Project", "category": "developer", "blurb": "Install and manage Rust toolchains.", "winget": "Rustlang.Rustup", "choco": "rustup.install" },
     { "key": "temurin-jdk", "name": "Temurin JDK 21", "publisher": "Eclipse Adoptium", "category": "developer", "blurb": "Free, production-ready Java.", "winget": "EclipseAdoptium.Temurin.21.JDK", "choco": "temurin21", "security": true },
     { "key": "putty", "name": "PuTTY", "publisher": "Simon Tatham", "category": "developer", "blurb": "SSH and serial terminal.", "winget": "PuTTY.PuTTY", "choco": "putty", "security": true },
-    { "key": "winscp", "name": "WinSCP", "publisher": "Martin Prikryl", "category": "developer", "blurb": "Move files over SFTP, SCP and FTP.", "winget": "WinSCP.WinSCP", "choco": "winscp", "security": true },
-    { "key": "filezilla", "name": "FileZilla", "publisher": "Tim Kosse", "category": "developer", "blurb": "The classic FTP client.", "winget": null, "choco": "filezilla" },
+    { "key": "winscp", "name": "WinSCP", "publisher": "Martin Prikryl", "category": "developer", "blurb": "Move files over SFTP, SCP and FTP.", "winget": "WinSCP.WinSCP", "choco": "winscp", "security": true, "localMatch": { "via": "winget", "publisher": "Martin Prikryl", "arch": ["x86", "x64"], "keys": ["winscp3_is1"], "namePattern": "^WinSCP \\d+(\\.\\d+){1,3}$" } },
+    { "key": "filezilla", "name": "FileZilla", "publisher": "Tim Kosse", "category": "developer", "blurb": "The classic FTP client.", "winget": null, "choco": "filezilla", "localMatch": { "via": "choco", "publisher": "Tim Kosse", "arch": ["x64", "x86"], "keys": ["FileZilla Client"], "namePattern": "^FileZilla \\d+(\\.\\d+){1,3}$" } },
     { "key": "dbeaver", "name": "DBeaver", "publisher": "DBeaver", "category": "developer", "blurb": "One database tool for almost every database.", "winget": "DBeaver.DBeaver.Community", "choco": "dbeaver" },
     { "key": "android-studio", "name": "Android Studio", "publisher": "Google", "category": "developer", "blurb": "Build apps for Android.", "winget": "Google.AndroidStudio", "choco": "androidstudio" },
 
