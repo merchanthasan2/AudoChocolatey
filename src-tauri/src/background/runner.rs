@@ -61,6 +61,7 @@ pub fn start(app: AppHandle, data_dir: PathBuf) {
                 let listing = crate::commands::library::collect_updates(&state).await;
                 super::shell::set_count(&app, listing.items.len());
                 let _ = app.emit("updates://changed", &listing);
+                crate::commands::library::refresh_update_info(app.clone(), listing.items.clone());
                 let current: BTreeMap<String, String> = listing
                     .items
                     .iter()

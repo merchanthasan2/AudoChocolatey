@@ -131,6 +131,8 @@ pub struct AppState {
     pub rules: Mutex<RuleStore>,
     /// Which site each app's installers usually come from (download-site note).
     pub sites: Arc<Mutex<crate::sites::SiteStore>>,
+    /// "What's new" links and release dates (memory only).
+    pub update_info: Mutex<crate::update_info::InfoCache>,
     pub bundles: Mutex<crate::bundles::BundleStore>,
     /// The last imported app list, waiting for "Install selected" (see commands::bundles).
     pub pending_import: Mutex<Option<crate::commands::bundles::PendingImport>>,
@@ -223,6 +225,7 @@ impl AppState {
             icons,
             rules: Mutex::new(RuleStore::open(config_dir.join("rules.json"))),
             sites,
+            update_info: Mutex::new(Default::default()),
             bundles: Mutex::new(crate::bundles::BundleStore::open(
                 config_dir.join("my-bundles.json"),
             )),

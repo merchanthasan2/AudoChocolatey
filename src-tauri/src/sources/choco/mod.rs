@@ -186,6 +186,21 @@ impl<R: Runner> ChocoSource<R> {
         Ok(odata::parse_feed(&xml)?.into_iter().next())
     }
 
+    /// Release notes and date of the package's latest version (community feed).
+    pub async fn feed_meta(&self, id: &ChocoId) -> AppResult<Vec<odata::FeedMeta>> {
+        let resp = self
+            .http
+            .get(odata::by_id_url(id))
+            .send()
+            .await
+            .map_err(|e| AppError::new("network", format!("Chocolatey feed: {e}")))?;
+        let xml = resp
+            .text()
+            .await
+            .map_err(|e| AppError::new("network", format!("Chocolatey feed: {e}")))?;
+        odata::feed_meta(&xml)
+    }
+
     /// Versions the community feed still lists for a package.
     pub async fn versions(&self, id: &ChocoId) -> AppResult<Vec<String>> {
         let resp = self

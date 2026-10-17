@@ -223,7 +223,54 @@ pub async fn list_updates(
 ) -> Result<UpdatesListing, AppError> {
     let listing = collect_updates(&state).await;
     crate::background::shell::set_count(&app, listing.items.len());
+    refresh_update_info(app, listing.items.clone());
     Ok(listing)
+}
+
+/// Looks up "What's new" and release dates in the background, then tells the page.
+pub fn refresh_update_info(app: tauri::AppHandle, items: Vec<UpgradeCandidate>) {
+    use tauri::{Emitter, Manager};
+    tauri::async_runtime::spawn(async move {
+        let state = app.state::<AppState>();
+        if crate::update_info::refresh(&state, &items).await {
+            let info = crate::update_info::infos(
+                &state.update_info.lock().unwrap_or_else(|p| p.into_inner()),
+                &items,
+            );
+            let _ = app.emit("updates://info", info);
+        }
+    });
+}
+
+/// "What's new" and release dates known so far for the shown updates.
+#[tauri::command]
+pub fn get_update_info(state: State<'_, AppState>) -> Vec<crate::update_info::UpdateInfo> {
+    let items = current_updates(&state).items;
+    crate::update_info::infos(
+        &state.update_info.lock().unwrap_or_else(|p| p.into_inner()),
+        &items,
+    )
+}
+
+/// Opens an update's release notes in the person's own browser (never as administrator).
+#[tauri::command]
+pub fn open_release_notes(
+    state: State<'_, AppState>,
+    target: SourceRef,
+    version: String,
+) -> Result<(), AppError> {
+    let url = crate::update_info::notes_url(
+        &state.update_info.lock().unwrap_or_else(|p| p.into_inner()),
+        &target,
+        &version,
+    )
+    .ok_or_else(|| {
+        AppError::new(
+            "invalid_input",
+            "There's no release notes link for that update.",
+        )
+    })?;
+    crate::shell_open::open_unelevated(&url).map_err(|m| AppError::new("open", m))
 }
 
 /// Checks again and applies rules. "Update all" uses exactly `items` of this.

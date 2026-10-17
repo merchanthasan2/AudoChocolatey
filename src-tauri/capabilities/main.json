@@ -27,6 +27,8 @@
     "allow-set-rule",
     "allow-remove-rule",
     "allow-set-rules",
+    "allow-get-update-info",
+    "allow-open-release-notes",
     "allow-pause-queue",
     "allow-resume-queue",
     "allow-quit-anyway",

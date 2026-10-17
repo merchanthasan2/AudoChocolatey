@@ -12,10 +12,13 @@ mod jobs;
 pub mod launch;
 mod rollback;
 mod rules;
+mod safe_url;
 mod settings;
+mod shell_open;
 mod sites;
 mod sources;
 mod state;
+mod update_info;
 mod versions;
 
 use tauri::{Emitter, Manager};
@@ -169,6 +172,8 @@ pub fn run(launch: launch::Launch) {
             commands::library::set_rule,
             commands::library::remove_rule,
             commands::library::set_rules,
+            commands::library::get_update_info,
+            commands::library::open_release_notes,
             commands::jobs::get_queue,
             commands::jobs::pause_queue,
             commands::jobs::resume_queue,

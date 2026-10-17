@@ -94,12 +94,13 @@ fn named_entity(name: &str) -> Option<char> {
     })
 }
 
-pub fn parse_feed(xml: &str) -> AppResult<Vec<SourcePackage>> {
+/// Each `<entry>`'s fields by local name.
+fn entries(xml: &str) -> AppResult<Vec<HashMap<String, String>>> {
     let mut reader = Reader::from_str(xml);
     let mut in_entry = false;
     let mut current: Option<String> = None;
     let mut fields: HashMap<String, String> = HashMap::new();
-    let mut found: Vec<(SourcePackage, bool)> = Vec::new();
+    let mut out = Vec::new();
     loop {
         let event = reader
             .read_event()
@@ -136,9 +137,7 @@ pub fn parse_feed(xml: &str) -> AppResult<Vec<SourcePackage>> {
             Event::End(e) => {
                 if e.local_name().as_ref() == "entry" {
                     in_entry = false;
-                    if let Some(entry) = to_package(&fields) {
-                        found.push(entry);
-                    }
+                    out.push(std::mem::take(&mut fields));
                 }
                 current = None;
             }
@@ -146,6 +145,46 @@ pub fn parse_feed(xml: &str) -> AppResult<Vec<SourcePackage>> {
             _ => {}
         }
     }
+    Ok(out)
+}
+
+/// What an update's "What's new" and release date come from.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct FeedMeta {
+    pub id: String,
+    pub version: String,
+    pub notes_url: Option<String>,
+    pub released: Option<String>,
+}
+
+/// Every entry (callers match the exact version they need): release notes only when the whole field is one safe web
+/// address, and the published date (`YYYY-MM-DD`).
+pub fn feed_meta(xml: &str) -> AppResult<Vec<FeedMeta>> {
+    Ok(entries(xml)?
+        .iter()
+        .filter_map(|f| {
+            let id = f.get("title")?.trim().to_string();
+            ChocoId::try_from(id.clone()).ok()?;
+            let released = f
+                .get("Published")
+                .and_then(|p| p.trim().get(..10))
+                .filter(|d| crate::sources::winget::details::valid_date(d))
+                .map(String::from);
+            Some(FeedMeta {
+                id,
+                version: f.get("Version")?.trim().to_string(),
+                notes_url: f
+                    .get("ReleaseNotes")
+                    .and_then(|n| crate::safe_url::safe_url(n.trim()))
+                    .map(|u| u.to_string()),
+                released,
+            })
+        })
+        .collect())
+}
+
+pub fn parse_feed(xml: &str) -> AppResult<Vec<SourcePackage>> {
+    let found: Vec<(SourcePackage, bool)> = entries(xml)?.iter().filter_map(to_package).collect();
     let mut out: Vec<SourcePackage> = Vec::new();
     let mut latest: HashMap<String, bool> = HashMap::new();
     for (pkg, is_latest) in found {
@@ -191,6 +230,29 @@ fn to_package(f: &HashMap<String, String>) -> Option<(SourcePackage, bool)> {
     };
     let is_latest = f.get("IsLatestVersion").is_some_and(|v| v.trim() == "true");
     Some((pkg, is_latest))
+}
+
+#[cfg(test)]
+mod meta_tests {
+    use super::*;
+
+    #[test]
+    fn release_notes_and_dates_from_the_feed() {
+        let xml = include_str!("../../../tests/fixtures/choco/odata-search-firefox.xml");
+        let m = feed_meta(xml).unwrap();
+        let ff = m
+            .iter()
+            .find(|m| m.id.eq_ignore_ascii_case("firefox") && m.version == "141.0.0")
+            .expect("firefox 141");
+        assert_eq!(
+            ff.notes_url.as_deref(),
+            Some("https://www.mozilla.org/en-US/firefox/141.0/releasenotes/")
+        );
+        assert_eq!(ff.released.as_deref(), Some("2025-07-22"));
+        // Release notes written as text (not a single link) give no link.
+        let vs = include_str!("../../../tests/fixtures/choco/odata-by-id-vsbuildtools.xml");
+        assert!(feed_meta(vs).unwrap().iter().all(|m| m.notes_url.is_none()));
+    }
 }
 
 #[cfg(test)]
