@@ -538,6 +538,7 @@ impl Queue {
         Ok(())
     }
 
+    #[cfg(test)]
     pub fn retry(&self, id: &str) -> AppResult<String> {
         self.retry_as(id, None)
     }
