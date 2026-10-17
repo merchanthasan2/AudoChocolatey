@@ -68,6 +68,8 @@ impl SettingsStore {
             motion,
             check_interval_hours,
             notify_updates,
+            notify_finished,
+            notify_failed,
             start_at_login,
             start_in_tray,
             close_to_tray,

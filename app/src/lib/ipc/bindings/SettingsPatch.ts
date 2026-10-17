@@ -6,4 +6,4 @@ import type { Theme } from "./Theme";
 /**
  * A partial update from the UI; only present fields change.
  */
-export type SettingsPatch = { theme?: Theme, motion?: Motion, checkIntervalHours?: number, notifyUpdates?: boolean, startAtLogin?: boolean, startInTray?: boolean, closeToTray?: boolean, showUnknownVersions?: boolean, selfUpdate?: SelfUpdate, chocoEnabled?: boolean, chocoBootstrapPrompted?: boolean, storeEnabled?: boolean, backgroundPrompted?: boolean, };
+export type SettingsPatch = { theme?: Theme, motion?: Motion, checkIntervalHours?: number, notifyUpdates?: boolean, notifyFinished?: boolean, notifyFailed?: boolean, startAtLogin?: boolean, startInTray?: boolean, closeToTray?: boolean, showUnknownVersions?: boolean, selfUpdate?: SelfUpdate, chocoEnabled?: boolean, chocoBootstrapPrompted?: boolean, storeEnabled?: boolean, backgroundPrompted?: boolean, };

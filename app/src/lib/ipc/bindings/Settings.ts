@@ -5,7 +5,15 @@ import type { SelfUpdate } from "./SelfUpdate";
 import type { StoreSettings } from "./StoreSettings";
 import type { Theme } from "./Theme";
 
-export type Settings = { schemaVersion: number, theme: Theme, motion: Motion, checkIntervalHours: number, notifyUpdates: boolean, startAtLogin: boolean, startInTray: boolean, closeToTray: boolean, showUnknownVersions: boolean, selfUpdate: SelfUpdate, choco: ChocoSettings, 
+export type Settings = { schemaVersion: number, theme: Theme, motion: Motion, checkIntervalHours: number, notifyUpdates: boolean, 
+/**
+ * Notify when a batch of changes finishes (window closed).
+ */
+notifyFinished: boolean, 
+/**
+ * Notify when a change fails (window closed).
+ */
+notifyFailed: boolean, startAtLogin: boolean, startInTray: boolean, closeToTray: boolean, showUnknownVersions: boolean, selfUpdate: SelfUpdate, choco: ChocoSettings, 
 /**
  * Microsoft Store apps (through winget's Store source).
  */

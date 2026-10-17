@@ -70,15 +70,7 @@ pub fn start(app: AppHandle, data_dir: PathBuf) {
                 .collect();
             let keys: BTreeSet<String> = current.keys().cloned().collect();
             let new = diff_new(&saved.notified, &keys);
-            let window_hidden = app
-                .get_webview_window("main")
-                .and_then(|w| w.is_visible().ok())
-                .is_some_and(|v| !v);
-            if !new.is_empty()
-                && settings.notify_updates
-                && window_hidden
-                && crate::commands::system::shell_user_matches() == Some(true)
-            {
+            if !new.is_empty() && settings.notify_updates && super::shell::should_notify(&app) {
                 let names: Vec<String> =
                     new.iter().filter_map(|k| current.get(k).cloned()).collect();
                 let (title, body) = super::toast::update_lines(&names);

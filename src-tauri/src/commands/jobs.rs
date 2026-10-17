@@ -7,7 +7,8 @@ use crate::jobs::worker::{JobSink, QueueSnapshot};
 use crate::sources::model::{OpKind, OpRequest, UpgradeCandidate};
 use crate::state::AppState;
 use serde::Deserialize;
-use tauri::{AppHandle, Emitter, State};
+use crate::background::toast::{batch_lines, BatchWatch};
+use tauri::{AppHandle, Emitter, Manager, State};
 use ts_rs::TS;
 
 #[derive(Debug, Clone, Deserialize, TS)]
@@ -19,17 +20,38 @@ pub struct EnqueueItem {
 }
 
 /// Forwards queue activity to the UI as Tauri events.
-pub struct TauriSink(pub AppHandle);
+pub struct TauriSink {
+    app: AppHandle,
+    batch: std::sync::Mutex<BatchWatch>,
+}
+
+impl TauriSink {
+    pub fn new(app: AppHandle) -> Self {
+        Self { app, batch: Default::default() }
+    }
+}
 
 impl JobSink for TauriSink {
     fn changed(&self, job: &Job) {
-        let _ = self.0.emit("job://changed", job);
+        let _ = self.app.emit("job://changed", job);
     }
     fn progress(&self, job: &Job) {
-        let _ = self.0.emit("job://progress", job);
+        let _ = self.app.emit("job://progress", job);
     }
     fn queue(&self, snapshot: &QueueSnapshot) {
-        let _ = self.0.emit("queue://changed", snapshot);
+        let _ = self.app.emit("queue://changed", snapshot);
+        let Some(done) = self.batch.lock().expect("batch lock").observe(&snapshot.jobs) else {
+            return;
+        };
+        let Some(state) = self.app.try_state::<AppState>() else {
+            return;
+        };
+        let s = state.settings();
+        if crate::background::shell::should_notify(&self.app) {
+            for (title, body) in batch_lines(&done, s.notify_finished, s.notify_failed) {
+                crate::background::toast::show(&title, &body);
+            }
+        }
     }
 }
 

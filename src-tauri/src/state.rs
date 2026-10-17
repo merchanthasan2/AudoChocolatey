@@ -165,7 +165,7 @@ impl AppState {
                     choco: ChocoSource::new(SystemRunner, paths.choco.clone()),
                 })),
             },
-            Arc::new(TauriSink(app)),
+            Arc::new(TauriSink::new(app)),
         );
         let icons = IconService::new(
             data_dir.join("icons"),

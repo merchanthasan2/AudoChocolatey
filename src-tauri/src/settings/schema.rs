@@ -75,6 +75,10 @@ pub struct Settings {
     pub motion: Motion,
     pub check_interval_hours: u32,
     pub notify_updates: bool,
+    /// Notify when a batch of changes finishes (window closed).
+    pub notify_finished: bool,
+    /// Notify when a change fails (window closed).
+    pub notify_failed: bool,
     pub start_at_login: bool,
     pub start_in_tray: bool,
     pub close_to_tray: bool,
@@ -99,6 +103,8 @@ impl Default for Settings {
             motion: Motion::System,
             check_interval_hours: 6,
             notify_updates: true,
+            notify_finished: false,
+            notify_failed: true,
             start_at_login: false,
             start_in_tray: true,
             close_to_tray: true,
@@ -122,6 +128,8 @@ pub struct SettingsPatch {
     pub motion: Option<Motion>,
     pub check_interval_hours: Option<u32>,
     pub notify_updates: Option<bool>,
+    pub notify_finished: Option<bool>,
+    pub notify_failed: Option<bool>,
     pub start_at_login: Option<bool>,
     pub start_in_tray: Option<bool>,
     pub close_to_tray: Option<bool>,

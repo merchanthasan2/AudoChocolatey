@@ -48,8 +48,16 @@
       <Toggle label="Closing keeps it running" checked={s.closeToTray} onchange={(v) => settings.update({ closeToTray: v })} />
     </div>
     <div class="row">
-      <div><div class="label">Notify me about new updates</div><div class="hint">A Windows notification when new updates appear while the window is closed.</div></div>
-      <Toggle label="Notify me about new updates" checked={s.notifyUpdates} onchange={(v) => settings.update({ notifyUpdates: v })} />
+      <div><div class="label">Notify me when updates are ready</div><div class="hint">A Windows notification when new updates appear while the window is closed.</div></div>
+      <Toggle label="Notify me when updates are ready" checked={s.notifyUpdates} onchange={(v) => settings.update({ notifyUpdates: v })} />
+    </div>
+    <div class="row">
+      <div><div class="label">Notify me when changes finish</div><div class="hint">One notification when a batch of updates, installs or removals is done.</div></div>
+      <Toggle label="Notify me when changes finish" checked={s.notifyFinished} onchange={(v) => settings.update({ notifyFinished: v })} />
+    </div>
+    <div class="row">
+      <div><div class="label">Notify me when something fails</div><div class="hint">Tells you when an app couldn't be updated, installed or removed, so you can try again.</div></div>
+      <Toggle label="Notify me when something fails" checked={s.notifyFailed} onchange={(v) => settings.update({ notifyFailed: v })} />
     </div>
     <div class="row">
       <div><div class="label">Check every</div><div class="hint">How often to look for updates in the background.</div></div>

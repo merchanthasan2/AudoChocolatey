@@ -66,6 +66,16 @@ pub fn show_main(app: &AppHandle) {
     }
 }
 
+/// Notifications only make sense when the window is closed to the tray and the person at the
+/// desktop is the account running the app.
+pub fn should_notify(app: &AppHandle) -> bool {
+    let hidden = app
+        .get_webview_window("main")
+        .and_then(|w| w.is_visible().ok())
+        .is_some_and(|v| !v);
+    hidden && crate::commands::system::shell_user_matches() == Some(true)
+}
+
 /// Updates the tooltip and the "Update all (n)" item after a check.
 pub fn set_count(app: &AppHandle, updates: usize) {
     if let Some(t) = app.tray_by_id(TRAY_ID) {
