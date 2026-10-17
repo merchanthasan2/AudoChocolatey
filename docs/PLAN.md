@@ -5,7 +5,7 @@
 > **Spec:** [superpowers/specs/2026-10-12-quantum-updater-v3-redesign-design.md](superpowers/specs/2026-10-12-quantum-updater-v3-redesign-design.md)
 > **Detailed phase plans:** `docs/superpowers/plans/`. Each phase's plan is written just before the phase starts, because it depends on code from earlier phases.
 
-**Status:** P0–P5 done, including P3 extras + sources · next: P6 → P7 → P8 · **Last updated:** 2026-10-13
+**Status:** P0–P5 done, including P3 extras + sources · P6a nearly done (live check pending) · next: P6b–e → P7 → P8 · **Last updated:** 2026-10-17
 
 | Phase | Name | Status | Detailed plan |
 |---|---|---|---|
@@ -15,8 +15,9 @@
 | P3 | Queue and real progress | Done (core: v3/p3-core; extras + sources: v3/p3x-sources) | [p3-core-queue](superpowers/plans/2026-10-12-p3-core-queue.md), [p3x-sources](superpowers/plans/2026-10-13-p3x-sources.md) |
 | P4 | New interface (Warm Store + springy motion) | Done (branch v3/p4-ui) | [p4-interface](superpowers/plans/2026-10-12-p4-interface.md) |
 | P5 | Real icons | Done, pulled forward (branch v3/p4-ui) | [p5-icons](superpowers/plans/2026-10-12-p5-icons.md) |
-| P6 | Background (a), Control (b), Safety (c) | In progress (branch v3/p6) | [p6](superpowers/plans/2026-10-13-p6.md) |
+| P6 | Background (a), Control (b), Safety (c), Lists (d), Everyday polish (e) | In progress (branch v3/p6); d and e added 2026-10-17 | [p6](superpowers/plans/2026-10-13-p6.md) |
 | P7 | Distribution (signing, auto-update, winget) | Not started | (to be written) |
+| PDev | Developer pack (Pip, Npm, PowerShell Gallery, Cargo), off by default | Approved by owner 2026-10-17; after P7 (ADR 029) | (to be written) |
 | P7b | Payment and licensing | Not started; questions for the owner first | (to be written) |
 | PD | Drivers (signed Windows Update drivers, maker tools, driver list) | **Approved by owner 2026-10-13**; build after payment and licensing | [drivers](superpowers/plans/2026-10-13-drivers.md) |
 | P8 | Docs and hardening | Not started | (to be written) |
@@ -84,11 +85,15 @@ Goal: one runtime, a fresh Svelte shell, admin manifest really embedded, locked-
 - [x] Remote fetch: Chocolatey IconUrl, publisher homepage apple-touch-icon/icon/favicon; https, public IPs, size caps, sandboxed SVG
 - [ ] *(dropped)* Bundled icons: replaced by live originals (owner: "icons must be actual original")
 
-## P6: Background and extras
-- [ ] Scheduler (2 min after launch, then interval), tray menu, toasts only on change
-- [ ] Scheduled Task autostart (`--background`) + NSIS uninstall hook; single instance; close-to-tray
-- [ ] Export / import with preview; bundles install flow
-- [ ] Settings page complete; over-the-shoulder elevation warning
+## P6: Background, control, safety, lists, polish
+- [x] P6a 1–3 Launch modes and single instance, window and close-to-tray, tray (`db5833e`, `e368eb7`)
+- [x] P6a 4–5 Scheduler and toasts only on change (`d6d3c00`)
+- [x] P6a 6 Scheduled Task start at sign-in, first-run card, NSIS uninstall hook (`9a6133f`); live check awaits owner approval
+- [ ] P6a 7 Notification choices (ready / finished / failed)
+- [ ] P6b Per-app policy, automatic mode with battery, metered, quiet hours and minimum update age, My bundles (add selection, export and import, scheduled backup), remove several, Settings
+- [ ] P6c Restore point, history, rollback, signer note, security first, download site changed
+- [ ] P6d Lists: toolbar, table, friendly sources and filter, hide Windows components, views, What's new and size and date, CSV, link "Installed directly" apps (architect design first)
+- [ ] P6e Polish: desktop shortcut cleanup, close the app first, restart needed, better retry, startup manager, live log, searchable Settings
 
 ## P7: Distribution
 - [ ] Updater key generation + offline backup procedure; `tauri-plugin-updater` via Rust `updater.rs` + UI
@@ -151,3 +156,6 @@ Goal: one runtime, a fresh Svelte shell, admin manifest really embedded, locked-
 | 2026-10-13 | Debug builds use their own WebView2 profile | WebView2 refuses to share a profile between an elevated and a normal instance |
 | 2026-10-13 | P4/P5 review: misdirected clicks fixed (likely cause of the unexplained vcredist140 job); icon SSRF, path and DoS hardening | Review findings; tests added for each |
 | 2026-10-13 | Residual risk logged: the elevated app parses user-writable icon files (HKCU) in-process | A fix needs an unelevated helper process; planned for P8 hardening |
+| 2026-10-17 | `start_at_login` default changed to off, and a settings file without `backgroundPrompted` loads it as off | Plan says off until the person says yes; the P0 default was on, so the toggle showed on with no task |
+| 2026-10-17 | Owner compared UniGetUI 2026.3.x (installed on their PC): added P6a 7, minimum update age, My bundles, download site changed, P6d Lists and P6e Everyday polish | Owner picked 8 of 10 ideas plus 4 web-found extras; see COMPETITIVE.md |
+| 2026-10-17 | Source column with friendly names (ADR 028); Developer pack incl. Cargo approved for after P7 (ADR 029) | Owner wants version and source per app like UniGetUI, and its full source list |

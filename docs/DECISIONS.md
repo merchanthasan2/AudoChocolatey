@@ -195,3 +195,20 @@
 ### ADR 027: Screens Describe Apps, Not Package Tools (P3 extras)
 - **Status:** Accepted (owner decision 2026-10-13)
 - **Decision:** normal screens and messages never name winget, Chocolatey or the Store source. Failure messages say what happened and what to do. Tool names appear only in Settings → "Advanced: app sources" and in the details panel's collapsed "Advanced" block. `scripts/policy.mjs` fails the build on tool names in screen text.
+- **Amended by ADR 028** (lists show a friendly source per app).
+
+### ADR 028: Friendly Source Names on Every List (P6d)
+- **Status:** Accepted (owner decision 2026-10-17, after comparing UniGetUI's Updates and Installed tables)
+- **Context:** the owner wants to see each app's version and source, as UniGetUI shows them, without bringing back tool jargon (ADR 027).
+- **Decision:** lists show a source column with friendly names: Microsoft catalog (winget), Community catalog (Chocolatey), Microsoft Store, Installed directly (Windows' Programs list), Steam, and Developer once ADR 029 lands. The mapping lives in one file that `policy.mjs` exempts. Tool names stay in the Advanced block and the live job log.
+- **Consequences:** a source filter and "Hide Windows components" become possible, which UniGetUI lacks. Sources must be classified once in Rust, not guessed in the UI.
+
+### ADR 029: Developer Pack, Including Cargo (after P7)
+- **Status:** Accepted (owner decision 2026-10-17). This reverses the earlier "not planned" note for pip, npm, PowerShell Gallery and Cargo in COMPETITIVE.md. Scoop stays out (ADR 026).
+- **Context:** on the owner's PC, UniGetUI lists about 290 developer packages (about 275 from Pip). It also installed `cargo-binstall` on its own to support Cargo, which surprised the owner.
+- **Decision:** a separate Developer section holds Pip, Npm, PowerShell Gallery and Cargo.
+  - It is off by default and switched on in Settings.
+  - These packages are never auto-updated and never included in "Update all".
+  - A helper tool (for example `cargo-binstall` or `cargo-update`) is installed only after the person says yes, never on its own.
+  - Per-user tools run with the person's own rights through a vetted path, never by borrowing explorer's token (the reason for ADR 026).
+- **Consequences:** this is its own phase after P7, with its own plan and security review. Updating libraries can break the person's projects, so the screen says so.
