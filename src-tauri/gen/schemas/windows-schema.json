@@ -201,6 +201,12 @@
           "markdownDescription": "Enables the clear_finished command without any pre-configured scope."
         },
         {
+          "description": "Enables the close_apps command without any pre-configured scope.",
+          "type": "string",
+          "const": "allow-close-apps",
+          "markdownDescription": "Enables the close_apps command without any pre-configured scope."
+        },
+        {
           "description": "Enables the delete_bundle command without any pre-configured scope.",
           "type": "string",
           "const": "allow-delete-bundle",
@@ -405,6 +411,12 @@
           "markdownDescription": "Enables the rollback command without any pre-configured scope."
         },
         {
+          "description": "Enables the running_apps command without any pre-configured scope.",
+          "type": "string",
+          "const": "allow-running-apps",
+          "markdownDescription": "Enables the running_apps command without any pre-configured scope."
+        },
+        {
           "description": "Enables the search command without any pre-configured scope.",
           "type": "string",
           "const": "allow-search",
@@ -457,6 +469,12 @@
           "type": "string",
           "const": "deny-clear-finished",
           "markdownDescription": "Denies the clear_finished command without any pre-configured scope."
+        },
+        {
+          "description": "Denies the close_apps command without any pre-configured scope.",
+          "type": "string",
+          "const": "deny-close-apps",
+          "markdownDescription": "Denies the close_apps command without any pre-configured scope."
         },
         {
           "description": "Denies the delete_bundle command without any pre-configured scope.",
@@ -661,6 +679,12 @@
           "type": "string",
           "const": "deny-rollback",
           "markdownDescription": "Denies the rollback command without any pre-configured scope."
+        },
+        {
+          "description": "Denies the running_apps command without any pre-configured scope.",
+          "type": "string",
+          "const": "deny-running-apps",
+          "markdownDescription": "Denies the running_apps command without any pre-configured scope."
         },
         {
           "description": "Denies the search command without any pre-configured scope.",

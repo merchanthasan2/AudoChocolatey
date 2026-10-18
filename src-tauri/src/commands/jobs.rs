@@ -286,12 +286,33 @@ pub fn permitted(ops: Vec<(OpRequest, String)>, g: Gates) -> Vec<(OpRequest, Str
 }
 
 #[tauri::command]
-pub async fn update_all(state: State<'_, AppState>) -> Result<Vec<String>, AppError> {
+pub async fn update_all(
+    state: State<'_, AppState>,
+    skip: Option<Vec<SourceRef>>,
+) -> Result<Vec<String>, AppError> {
     refuse_unelevated(crate::commands::system::is_elevated())?;
+    let skip = skip.unwrap_or_default();
+    if skip.len() > 500 {
+        return Err(AppError::new("invalid_input", "too many apps to skip"));
+    }
     let updates = crate::commands::library::collect_updates(&state).await;
     // `items` already excludes apps the user skipped or set to never update.
-    let ops = permitted(upgrades_to_ops(updates.items), gates(&state));
+    let ops = without_skipped(
+        permitted(upgrades_to_ops(updates.items), gates(&state)),
+        &skip,
+    );
     Ok(state.queue.enqueue(ops))
+}
+
+/// Drops apps the person chose to update later (for example because they're open). It can
+/// only remove work, never add it.
+pub fn without_skipped(
+    ops: Vec<(OpRequest, String)>,
+    skip: &[SourceRef],
+) -> Vec<(OpRequest, String)> {
+    ops.into_iter()
+        .filter(|(op, _)| !skip.contains(&op.target))
+        .collect()
 }
 
 #[tauri::command]
@@ -513,6 +534,25 @@ mod tests {
             "Microsoft.EdgeWebView2Runtime",
         )]);
         assert!(refuse_protected_uninstall(&upd).is_ok());
+    }
+
+    #[test]
+    fn update_all_leaves_out_apps_to_update_later() {
+        let ops = upgrades_to_ops(vec![
+            cand(SourceKind::Winget, "VideoLAN.VLC"),
+            cand(SourceKind::Winget, "Mozilla.Firefox"),
+        ]);
+        let skip = [SourceRef::new(SourceKind::Winget, "VideoLAN.VLC").unwrap()];
+        let left = without_skipped(ops.clone(), &skip);
+        assert_eq!(left.len(), 1);
+        assert_eq!(
+            left[0].0.target,
+            SourceRef::new(SourceKind::Winget, "Mozilla.Firefox").unwrap()
+        );
+        // Same id in another source is a different app.
+        let other = [SourceRef::new(SourceKind::Choco, "vlc").unwrap()];
+        assert_eq!(without_skipped(ops.clone(), &other).len(), 2);
+        assert_eq!(without_skipped(ops, &[]).len(), 2);
     }
 
     #[test]

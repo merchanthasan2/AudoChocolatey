@@ -12,3 +12,14 @@ Things the owner tests by hand on their PC. Add new items as each phase lands; t
 - [ ] Sign out and in: app starts hidden in the tray about 15 s after sign-in (task last run result 0)
 - [ ] Toast about 2 min after start when updates are waiting; clicking it opens Updates
 - [ ] Uninstall removes the Scheduled Task
+
+## P6d Lists
+
+- [ ] Links from the elevated app open the browser unelevated
+- [ ] FileZilla / WinSCP "Installed directly" link works (test in Windows Sandbox)
+- [ ] Reinstall works end to end (use an app that is not already installed first)
+
+## P6e Polish
+
+- [ ] With an app open that has an update, Update asks "X is open"; Update later skips it, Close and update closes it politely (it may ask to save) and updates
+- [ ] Automatic updates leave an open app for the next round

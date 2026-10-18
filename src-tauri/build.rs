@@ -24,6 +24,8 @@ const COMMANDS: &[&str] = &[
     "quit_anyway",
     "relaunch_as_admin",
     "restart_now",
+    "running_apps",
+    "close_apps",
     "cancel_job",
     "retry_job",
     "clear_finished",

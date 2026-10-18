@@ -254,6 +254,9 @@ export const myBundles = new MyBundlesStore();
 
 /* ---------------------------------------------------------------- queue */
 const FINISHED = new Set(['succeeded', 'failed', 'cancelled', 'skipped']);
+/** The answer to "VLC is open. Close it and update?" */
+export type OpenAnswer = 'close' | 'later' | 'cancel';
+
 class QueueStore {
   jobs = $state<Job[]>([]);
   paused = $state(false);
@@ -339,7 +342,34 @@ class QueueStore {
     try { await api.enqueue(ops); } catch (e) { toasts.push({ text: message(e), tone: 'error' }); return 0; }
     return ops.length;
   }
-  update(c: UpgradeCandidate) { return this.#enqueue('upgrade', c.source, c.id, c.name); }
+  /** "VLC is open. Close it and update?" Set while asking; the dialog answers through `answerOpen`. */
+  openAsk = $state<{ apps: api.RunningApp[]; resolve: (a: OpenAnswer) => void } | null>(null);
+  answerOpen(a: OpenAnswer) {
+    const ask = this.openAsk;
+    this.openAsk = null;
+    ask?.resolve(a);
+  }
+  /** Splits updates into the ones to run now and the ones to leave for later, asking first when
+   *  any app is open. Returns null when the person cancels. Never closes anything silently. */
+  async #checkOpen(list: { source: SourceKind; id: string; name: string }[]): Promise<{ later: api.RunningApp[] } | null> {
+    if (list.length === 0) return { later: [] };
+    let open: api.RunningApp[] = [];
+    try { open = await api.runningApps(list.map((c) => ({ source: c.source, id: c.id, name: c.name }))); } catch { return { later: [] }; }
+    if (open.length === 0) return { later: [] };
+    const answer = await new Promise<OpenAnswer>((resolve) => { this.openAsk = { apps: open, resolve }; });
+    if (answer === 'cancel') return null;
+    if (answer === 'later') return { later: open };
+    const still = await api.closeApps(open.map((a) => ({ source: a.source, id: a.id, name: a.name }))).catch(() => open.map((a) => a.name));
+    if (still.length > 0) {
+      toasts.push({ text: `${still.join(', ')} ${still.length === 1 ? 'is' : 'are'} still open, so ${still.length === 1 ? 'it waits' : 'they wait'} for later.`, tone: 'warn' }, 8000);
+    }
+    return { later: open.filter((a) => still.includes(a.name)) };
+  }
+  async update(c: UpgradeCandidate) {
+    const r = await this.#checkOpen([c]);
+    if (!r || r.later.length > 0) return;
+    return this.#enqueue('upgrade', c.source, c.id, c.name);
+  }
   uninstall(p: { source: SourceKind; id: string; name: string }) { return this.#enqueue('uninstall', p.source, p.id, p.name); }
   /** Removes several apps in one go (the backend refuses more than 50, or a protected app). */
   async uninstallMany(list: { source: SourceKind; id: string; name: string }[]) {
@@ -356,10 +386,17 @@ class QueueStore {
   batchRunning = $derived(this.batchJobs.length > 0 && this.batchDone < this.batchJobs.length);
 
   async updateAll() {
-    try { this.batch = await api.updateAll(); } catch (e) { toasts.push({ text: message(e), tone: 'error' }); }
+    const r = await this.#checkOpen(updates.items);
+    if (!r) return;
+    const skip = r.later.map((a) => ({ source: a.source, id: a.id }));
+    try { this.batch = await api.updateAll(skip); } catch (e) { toasts.push({ text: message(e), tone: 'error' }); }
   }
   /** `mode`: silent (normal), with the installer's own window, or reinstall the same version. */
   async updateMany(list: UpgradeCandidate[], mode: api.OpMode = 'normal') {
+    if (list.length === 0) return;
+    const r = await this.#checkOpen(list);
+    if (!r) return;
+    list = list.filter((c) => !r.later.some((a) => a.source === c.source && a.id === c.id));
     if (list.length === 0) return;
     try {
       this.batch = await api.enqueue(

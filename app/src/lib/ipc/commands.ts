@@ -53,7 +53,15 @@ export type { UpdatesListing, RuleKind, Rule, HiddenUpdate, SourceRef };
 export type { JobPhase } from './bindings/JobPhase';
 
 export const enqueue = (ops: EnqueueItem[]) => invoke<string[]>('enqueue', { ops });
-export const updateAll = () => invoke<string[]>('update_all');
+/** `skip`: apps to update later (for example because they're open). It can only remove work. */
+export const updateAll = (skip: SourceRef[] = []) => invoke<string[]>('update_all', { skip });
+import type { RunningQuery } from './bindings/RunningQuery';
+import type { RunningApp } from './bindings/RunningApp';
+export type { RunningQuery, RunningApp };
+/** Which of these apps are open right now (programs started from their own install folder). */
+export const runningApps = (apps: RunningQuery[]) => invoke<RunningApp[]>('running_apps', { apps });
+/** Asks them to close as their X button would, waits up to 15 s; returns names still open. */
+export const closeApps = (apps: RunningQuery[]) => invoke<string[]>('close_apps', { apps });
 export const getQueue = () => invoke<QueueSnapshot>('get_queue');
 export const pauseQueue = () => invoke<void>('pause_queue');
 export const resumeQueue = () => invoke<void>('resume_queue');

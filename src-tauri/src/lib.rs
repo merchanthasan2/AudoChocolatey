@@ -12,6 +12,7 @@ mod jobs;
 pub mod launch;
 mod rollback;
 mod rules;
+mod running;
 mod safe_url;
 mod settings;
 mod shell_open;
@@ -181,6 +182,8 @@ pub fn run(launch: launch::Launch) {
             commands::jobs::quit_anyway,
             commands::system::relaunch_as_admin,
             commands::system::restart_now,
+            commands::running::running_apps,
+            commands::running::close_apps,
             commands::jobs::cancel_job,
             commands::jobs::retry_job,
             commands::jobs::clear_finished,

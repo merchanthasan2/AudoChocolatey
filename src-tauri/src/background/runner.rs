@@ -161,6 +161,32 @@ async fn start_automatic(
     if picked.is_empty() {
         return BTreeSet::new();
     }
+    // An app that's open waits for the next round instead of being closed.
+    let picked = {
+        let queries: Vec<crate::commands::running::RunningQuery> = picked
+            .iter()
+            .map(|c| crate::commands::running::RunningQuery {
+                source: c.source,
+                id: c.id.clone(),
+                name: c.name.clone(),
+            })
+            .collect();
+        let open: Vec<String> = tauri::async_runtime::spawn_blocking(move || {
+            crate::commands::running::find_running(&queries)
+                .into_iter()
+                .map(|(a, _)| format!("{}:{}", a.source.as_str(), a.id))
+                .collect()
+        })
+        .await
+        .unwrap_or_default();
+        picked
+            .into_iter()
+            .filter(|c| !open.contains(&format!("{}:{}", c.source.as_str(), c.id)))
+            .collect::<Vec<_>>()
+    };
+    if picked.is_empty() {
+        return BTreeSet::new();
+    }
     let probe = tauri::async_runtime::spawn_blocking(read_probe)
         .await
         .unwrap_or_default();

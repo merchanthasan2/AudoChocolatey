@@ -35,6 +35,8 @@
     "allow-quit-anyway",
     "allow-relaunch-as-admin",
     "allow-restart-now",
+    "allow-running-apps",
+    "allow-close-apps",
     "allow-cancel-job",
     "allow-retry-job",
     "allow-clear-finished",
