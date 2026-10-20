@@ -13,6 +13,7 @@
   import ImportDialog from './lib/components/ImportDialog.svelte';
   import AddToBundle from './lib/components/AddToBundle.svelte';
   import OpenAppsPrompt from './lib/components/OpenAppsPrompt.svelte';
+  import ShortcutPrompt from './lib/components/ShortcutPrompt.svelte';
   import Marketplace from './views/Marketplace.svelte';
   import Updates from './views/Updates.svelte';
   import Installed from './views/Installed.svelte';
@@ -86,6 +87,7 @@
 <ImportDialog />
 <AddToBundle />
 <OpenAppsPrompt />
+<ShortcutPrompt />
 <Toasts />
 
 <style>

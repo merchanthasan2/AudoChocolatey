@@ -23,6 +23,7 @@ pub struct EnqueueItem {
 pub struct TauriSink {
     app: AppHandle,
     batch: std::sync::Mutex<BatchWatch>,
+    desktop: std::sync::Mutex<crate::shortcuts::DesktopWatch>,
 }
 
 impl TauriSink {
@@ -30,13 +31,80 @@ impl TauriSink {
         Self {
             app,
             batch: Default::default(),
+            desktop: Default::default(),
         }
     }
+
+    /// New desktop icons from this job: removed at once for "always remove" apps, otherwise
+    /// offered to the page.
+    fn watch_desktop(&self, job: &Job) {
+        let dirs = crate::shortcuts::desktop_dirs();
+        let found = self
+            .desktop
+            .lock()
+            .unwrap_or_else(|e| e.into_inner())
+            .observe(job, || crate::shortcuts::snapshot(&dirs));
+        let Some(files) = found else {
+            return;
+        };
+        let always = self
+            .app
+            .try_state::<AppState>()
+            .is_some_and(|s| s.settings().remove_new_shortcuts.contains(&job.op.target));
+        if always {
+            crate::shortcuts::remove(&files, &dirs);
+            return;
+        }
+        let names = crate::shortcuts::names(&files);
+        crate::shortcuts::remember(&job.id, job.op.target.clone(), files);
+        let _ = self.app.emit(
+            "job://shortcuts",
+            NewShortcuts {
+                job_id: job.id.clone(),
+                app_name: job.display_name.clone(),
+                names,
+            },
+        );
+    }
+}
+
+/// "Remove the new desktop icon?" for one finished job.
+#[derive(Debug, Clone, serde::Serialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export)]
+pub struct NewShortcuts {
+    pub job_id: String,
+    pub app_name: String,
+    pub names: Vec<String>,
+}
+
+/// Removes the desktop icons this job created; `always` also does it for this app from now on.
+#[tauri::command]
+pub fn remove_shortcuts(
+    state: State<'_, AppState>,
+    job_id: String,
+    always: bool,
+) -> Result<usize, AppError> {
+    let Some((target, files)) = crate::shortcuts::take(&job_id) else {
+        return Ok(0);
+    };
+    if always {
+        state
+            .settings
+            .lock()
+            .expect("settings lock")
+            .set_remove_shortcuts(&target, true)?;
+    }
+    Ok(crate::shortcuts::remove(
+        &files,
+        &crate::shortcuts::desktop_dirs(),
+    ))
 }
 
 impl JobSink for TauriSink {
     fn changed(&self, job: &Job) {
         let _ = self.app.emit("job://changed", job);
+        self.watch_desktop(job);
     }
     fn progress(&self, job: &Job) {
         let _ = self.app.emit("job://progress", job);

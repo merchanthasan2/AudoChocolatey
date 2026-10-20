@@ -62,6 +62,8 @@ export type { RunningQuery, RunningApp };
 export const runningApps = (apps: RunningQuery[]) => invoke<RunningApp[]>('running_apps', { apps });
 /** Asks them to close as their X button would, waits up to 15 s; returns names still open. */
 export const closeApps = (apps: RunningQuery[]) => invoke<string[]>('close_apps', { apps });
+/** Removes the desktop icons a job created (Rust knows which); `always` remembers it for the app. */
+export const removeShortcuts = (jobId: string, always: boolean) => invoke<number>('remove_shortcuts', { jobId, always });
 export const getQueue = () => invoke<QueueSnapshot>('get_queue');
 export const pauseQueue = () => invoke<void>('pause_queue');
 export const resumeQueue = () => invoke<void>('resume_queue');

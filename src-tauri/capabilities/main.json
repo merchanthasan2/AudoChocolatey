@@ -37,6 +37,7 @@
     "allow-restart-now",
     "allow-running-apps",
     "allow-close-apps",
+    "allow-remove-shortcuts",
     "allow-cancel-job",
     "allow-retry-job",
     "allow-clear-finished",

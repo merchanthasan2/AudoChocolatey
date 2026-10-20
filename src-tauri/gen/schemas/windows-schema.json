@@ -387,6 +387,12 @@
           "markdownDescription": "Enables the remove_rule command without any pre-configured scope."
         },
         {
+          "description": "Enables the remove_shortcuts command without any pre-configured scope.",
+          "type": "string",
+          "const": "allow-remove-shortcuts",
+          "markdownDescription": "Enables the remove_shortcuts command without any pre-configured scope."
+        },
+        {
           "description": "Enables the restart_now command without any pre-configured scope.",
           "type": "string",
           "const": "allow-restart-now",
@@ -655,6 +661,12 @@
           "type": "string",
           "const": "deny-remove-rule",
           "markdownDescription": "Denies the remove_rule command without any pre-configured scope."
+        },
+        {
+          "description": "Denies the remove_shortcuts command without any pre-configured scope.",
+          "type": "string",
+          "const": "deny-remove-shortcuts",
+          "markdownDescription": "Denies the remove_shortcuts command without any pre-configured scope."
         },
         {
           "description": "Denies the restart_now command without any pre-configured scope.",

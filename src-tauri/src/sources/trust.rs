@@ -143,7 +143,7 @@ pub fn program_files_dir() -> Option<PathBuf> {
     known_folder(&windows_sys::Win32::UI::Shell::FOLDERID_ProgramFiles)
 }
 
-fn known_folder(id: &windows_sys::core::GUID) -> Option<PathBuf> {
+pub(crate) fn known_folder(id: &windows_sys::core::GUID) -> Option<PathBuf> {
     use windows_sys::Win32::System::Com::CoTaskMemFree;
     use windows_sys::Win32::UI::Shell::SHGetKnownFolderPath;
     let mut out: windows_sys::core::PWSTR = std::ptr::null_mut();

@@ -44,6 +44,31 @@ impl SettingsStore {
         }
     }
 
+    /// Turns "always remove new desktop icons" on or off for one app.
+    pub fn set_remove_shortcuts(
+        &mut self,
+        target: &crate::ids::SourceRef,
+        on: bool,
+    ) -> AppResult<Settings> {
+        if self.read_only {
+            return Err(AppError::new(
+                "settings",
+                "settings were saved by a newer version of Quantum Updater and are read-only",
+            ));
+        }
+        let mut next = self.current.clone();
+        next.remove_new_shortcuts.retain(|t| t != target);
+        if on {
+            if next.remove_new_shortcuts.len() >= schema::SHORTCUT_RULES_MAX {
+                return Err(AppError::new("invalid_input", "too many apps"));
+            }
+            next.remove_new_shortcuts.push(target.clone());
+        }
+        write_atomic(&self.path, &next)?;
+        self.current = next;
+        Ok(self.get())
+    }
+
     /// The backup folder, from a Windows folder dialog (never from the UI). Picking one turns
     /// backups on.
     pub fn set_backup_folder(&mut self, folder: &std::path::Path) -> AppResult<Settings> {
@@ -91,6 +116,13 @@ impl SettingsStore {
         {
             return Err(AppError::new("invalid_input", "keep 1 to 30 backups"));
         }
+        if patch
+            .remove_new_shortcuts
+            .as_ref()
+            .is_some_and(|l| l.len() > schema::SHORTCUT_RULES_MAX)
+        {
+            return Err(AppError::new("invalid_input", "too many apps"));
+        }
         if patch.backup_enabled == Some(true) && self.current.backup.folder.is_none() {
             return Err(AppError::new(
                 "invalid_input",
@@ -116,7 +148,8 @@ impl SettingsStore {
             auto_update,
             auto_rules,
             restore_point,
-            lists
+            lists,
+            remove_new_shortcuts
         );
         if let Some(v) = patch.choco_enabled {
             next.choco.enabled = v;

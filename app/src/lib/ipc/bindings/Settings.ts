@@ -6,6 +6,7 @@ import type { ChocoSettings } from "./ChocoSettings";
 import type { ListPrefs } from "./ListPrefs";
 import type { Motion } from "./Motion";
 import type { SelfUpdate } from "./SelfUpdate";
+import type { SourceRef } from "./SourceRef";
 import type { StoreSettings } from "./StoreSettings";
 import type { Theme } from "./Theme";
 
@@ -38,4 +39,8 @@ trayHintShown: boolean,
  * The person answered "Keep apps updated in the background?" (start at sign-in is never
  * set up before that).
  */
-backgroundPrompted: boolean, };
+backgroundPrompted: boolean, 
+/**
+ * Apps whose new desktop icons are always removed after an install or update.
+ */
+removeNewShortcuts: Array<SourceRef>, };

@@ -283,7 +283,13 @@ pub struct Settings {
     /// The person answered "Keep apps updated in the background?" (start at sign-in is never
     /// set up before that).
     pub background_prompted: bool,
+    /// Apps whose new desktop icons are always removed after an install or update.
+    #[serde(deserialize_with = "lenient")]
+    pub remove_new_shortcuts: Vec<crate::ids::SourceRef>,
 }
+
+/// At most this many "always remove the desktop icon" apps.
+pub const SHORTCUT_RULES_MAX: usize = 500;
 
 impl Default for Settings {
     fn default() -> Self {
@@ -310,6 +316,7 @@ impl Default for Settings {
             last_check_at: None,
             tray_hint_shown: false,
             background_prompted: false,
+            remove_new_shortcuts: Vec::new(),
         }
     }
 }
@@ -341,4 +348,5 @@ pub struct SettingsPatch {
     pub backup_every: Option<BackupEvery>,
     pub backup_keep: Option<u32>,
     pub lists: Option<ListPrefs>,
+    pub remove_new_shortcuts: Option<Vec<crate::ids::SourceRef>>,
 }

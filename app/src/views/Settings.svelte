@@ -177,6 +177,14 @@
       <div><div class="label">Show apps with unknown versions</div><div class="hint">Some apps don't report a version, so updates can't be confirmed.</div></div>
       <Toggle label="Show apps with unknown versions" checked={s.showUnknownVersions} onchange={(v) => settings.update({ showUnknownVersions: v })} />
     </div>
+    <div class="row">
+      <div><div class="label">Remove new desktop icons</div><div class="hint">{s.removeNewShortcuts.length === 0
+        ? 'After an install or update adds a desktop icon, you are asked whether to remove it.'
+        : `Removed without asking for ${s.removeNewShortcuts.length} ${s.removeNewShortcuts.length === 1 ? 'app' : 'apps'}. Other apps still ask.`}</div></div>
+      {#if s.removeNewShortcuts.length > 0}
+        <button class="btn" onclick={() => settings.update({ removeNewShortcuts: [] })}>Ask again for all</button>
+      {/if}
+    </div>
   </section>
 
   <section class="card group">

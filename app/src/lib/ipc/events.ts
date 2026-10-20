@@ -24,3 +24,9 @@ export const onCloseBlocked = (cb: () => void): Promise<UnlistenFn> => listen('a
 export const onUpdateInfo = (cb: (info: UpdateInfo[]) => void): Promise<UnlistenFn> =>
   listen<UpdateInfo[]>('updates://info', (e) => cb(e.payload));
 import type { UpdateInfo } from './bindings/UpdateInfo';
+
+/** An install or update put new icons on the desktop. */
+export const onNewShortcuts = (cb: (s: NewShortcuts) => void): Promise<UnlistenFn> =>
+  listen<NewShortcuts>('job://shortcuts', (e) => cb(e.payload));
+import type { NewShortcuts } from './bindings/NewShortcuts';
+export type { NewShortcuts };

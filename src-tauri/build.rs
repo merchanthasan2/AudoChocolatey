@@ -26,6 +26,7 @@ const COMMANDS: &[&str] = &[
     "restart_now",
     "running_apps",
     "close_apps",
+    "remove_shortcuts",
     "cancel_job",
     "retry_job",
     "clear_finished",

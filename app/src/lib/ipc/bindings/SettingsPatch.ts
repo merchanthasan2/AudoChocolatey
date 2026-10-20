@@ -5,9 +5,10 @@ import type { BackupEvery } from "./BackupEvery";
 import type { ListPrefs } from "./ListPrefs";
 import type { Motion } from "./Motion";
 import type { SelfUpdate } from "./SelfUpdate";
+import type { SourceRef } from "./SourceRef";
 import type { Theme } from "./Theme";
 
 /**
  * A partial update from the UI; only present fields change.
  */
-export type SettingsPatch = { theme?: Theme, motion?: Motion, checkIntervalHours?: number, notifyUpdates?: boolean, notifyFinished?: boolean, notifyFailed?: boolean, startAtLogin?: boolean, startInTray?: boolean, closeToTray?: boolean, showUnknownVersions?: boolean, selfUpdate?: SelfUpdate, autoUpdate?: AutoUpdate, autoRules?: AutoRules, restorePoint?: boolean, chocoEnabled?: boolean, chocoBootstrapPrompted?: boolean, storeEnabled?: boolean, backgroundPrompted?: boolean, backupEnabled?: boolean, backupEvery?: BackupEvery, backupKeep?: number, lists?: ListPrefs, };
+export type SettingsPatch = { theme?: Theme, motion?: Motion, checkIntervalHours?: number, notifyUpdates?: boolean, notifyFinished?: boolean, notifyFailed?: boolean, startAtLogin?: boolean, startInTray?: boolean, closeToTray?: boolean, showUnknownVersions?: boolean, selfUpdate?: SelfUpdate, autoUpdate?: AutoUpdate, autoRules?: AutoRules, restorePoint?: boolean, chocoEnabled?: boolean, chocoBootstrapPrompted?: boolean, storeEnabled?: boolean, backgroundPrompted?: boolean, backupEnabled?: boolean, backupEvery?: BackupEvery, backupKeep?: number, lists?: ListPrefs, removeNewShortcuts?: Array<SourceRef>, };
