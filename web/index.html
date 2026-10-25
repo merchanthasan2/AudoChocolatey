@@ -45,7 +45,13 @@
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m7.5 4.27 9 5.15"></path><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"></path><path d="m3.3 7 8.7 5 8.7-5"></path><path d="M12 22V12"></path></svg>
           <span>Installed</span>
         </button>
+        <button class="pill-btn" data-tab="cleanup" id="tab-btn-cleanup">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3z"></path><path d="M5 3v4"></path><path d="M19 17v4"></path><path d="M3 5h4"></path><path d="M17 19h4"></path></svg>
+          <span>Cleanup</span>
+          <span class="nav-counter" id="nav-cleanup-badge" style="display: none;">0</span>
+        </button>
         <button class="pill-btn" data-tab="console" id="tab-btn-console">
+
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 17 10 11 4 5"></polyline><line x1="12" y1="19" x2="20" y2="19"></line></svg>
           <span>Console</span>
         </button>
@@ -70,6 +76,26 @@
         </button>
       </div>
     </header>
+
+    <!-- Global In-App Update Notification Banner -->
+    <div class="update-banner" id="global-update-banner" style="display: none;">
+      <div class="update-banner-content">
+        <span class="update-pulse-dot"></span>
+        <svg class="update-banner-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+          <polyline points="7 10 12 15 17 10"></polyline>
+          <line x1="12" y1="15" x2="12" y2="3"></line>
+        </svg>
+        <span class="update-banner-text" id="update-banner-text">Quantum Updater update is ready to install</span>
+      </div>
+      <div class="update-banner-actions">
+        <button class="glass-btn btn-sm btn-cta" id="btn-banner-update" onclick="app.applySelfUpdate()">Update &amp; Restart</button>
+        <button class="glass-btn btn-sm btn-secondary" onclick="app.switchTab('settings')">View Details</button>
+        <button class="glass-btn btn-sm btn-ghost" onclick="app.dismissUpdateBanner()" title="Dismiss">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
+      </div>
+    </div>
 
     <!-- Main Dynamic Content Workspace -->
     <main class="content-viewport">
@@ -322,8 +348,97 @@
         </div>
       </section>
 
-      <!-- ================= TAB 4: CONSOLE ================= -->
+      <!-- ================= TAB 4: CLEANUP ================= -->
+      <section class="tab-pane" id="tab-cleanup">
+        <div class="cleanup-hero-card">
+          <div class="cleanup-header-row">
+            <div>
+              <div class="cleanup-badge-tag">
+                <span class="status-dot status-dot-pulse"></span>
+                <span>System & Storage Optimizer</span>
+              </div>
+              <h2>Quantum Clean & Storage Reclaimer</h2>
+              <p>Safely reclaim gigabytes of disk space by purging developer bloat, stale app caches, diagnostic logs, and uninstalled application remnants.</p>
+            </div>
+            <div class="cleanup-hero-actions">
+              <button class="glass-btn btn-secondary" onclick="app.toggleAllCleanup(true)">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                <span>Select Safe All</span>
+              </button>
+              <button class="glass-btn btn-primary" id="btn-scan-cleanup" onclick="app.scanCleanup()">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                <span>Scan System Storage</span>
+              </button>
+              <button class="glass-btn btn-danger" id="btn-purge-cleanup" onclick="app.executeCleanup()">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3z"></path></svg>
+                <span>Purge Selected</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Cleanup Bento Metric Grid -->
+          <div class="cleanup-bento-grid">
+            <div class="cleanup-bento-card bento-reclaimable">
+              <div class="bento-card-header">
+                <span class="bento-label">Recoverable Space</span>
+                <div class="bento-icon-wrapper icon-yellow">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                </div>
+              </div>
+              <div class="bento-value text-golden" id="cleanup-reclaimable-total">--</div>
+              <div class="bento-subtext" id="cleanup-reclaimable-sub">Click "Scan System Storage" to analyze</div>
+            </div>
+
+            <div class="cleanup-bento-card bento-health">
+              <div class="bento-card-header">
+                <span class="bento-label">System Health</span>
+                <div class="bento-icon-wrapper icon-mint">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+                </div>
+              </div>
+              <div class="bento-value text-mint" id="cleanup-health-status">Ready to Scan</div>
+              <div class="bento-subtext">Zero risk to user files, active projects, or OS files</div>
+            </div>
+
+            <div class="cleanup-bento-card bento-selected">
+              <div class="bento-card-header">
+                <span class="bento-label">Selected for Purge</span>
+                <div class="bento-icon-wrapper icon-ocean">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                </div>
+              </div>
+              <div class="bento-value text-ocean" id="cleanup-selected-count">0 Categories</div>
+              <div class="bento-subtext" id="cleanup-selected-bytes">0 B selected for reclamation</div>
+            </div>
+
+            <div class="cleanup-bento-card bento-storage">
+              <div class="bento-card-header">
+                <span class="bento-label">Primary Disk Storage</span>
+                <div class="bento-icon-wrapper icon-peach">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="8" rx="2" ry="2"></rect><rect x="2" y="14" width="20" height="8" rx="2" ry="2"></rect><line x1="6" y1="6" x2="6.01" y2="6"></line><line x1="6" y1="18" x2="6.01" y2="18"></line></svg>
+                </div>
+              </div>
+              <div class="bento-value text-peach" id="cleanup-disk-free">--</div>
+              <div class="bento-subtext" id="cleanup-disk-sub">Storage usage overview</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Categories List Grid -->
+        <div class="cleanup-categories-grid" id="cleanup-categories-container">
+          <div class="glass-placeholder">
+            <div class="placeholder-icon">
+              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3z"></path></svg>
+            </div>
+            <h3>Quantum System Cleanup</h3>
+            <p>Click "Scan System Storage" above to inspect user app caches, developer bloat, and recoverable space.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= TAB 5: CONSOLE ================= -->
       <section class="tab-pane" id="tab-console">
+
         <div class="console-glass-wrapper">
           <div class="console-header">
             <div class="console-title-group">
@@ -382,6 +497,103 @@
                 <input type="checkbox" id="pref-accept-agreements" checked onchange="app.savePreference('accept_agreements', this.checked)">
                 <span class="slider"></span>
               </label>
+            </div>
+          </div>
+
+          <!-- Application Updates & Release Feed -->
+          <div class="settings-card full-span update-card">
+            <div class="update-card-header">
+              <div class="update-card-title-group">
+                <div class="update-icon-badge">
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path>
+                    <path d="M3 3v5h5"></path>
+                    <path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"></path>
+                    <path d="M16 21h5v-5"></path>
+                  </svg>
+                </div>
+                <div>
+                  <h3 style="margin-bottom: 2px;">Application Updates &amp; Self-Updater</h3>
+                  <p class="settings-card-desc" style="margin-bottom: 0;">Automatic in-place updates for macOS &amp; Windows without manual file redownloads.</p>
+                </div>
+              </div>
+              <div class="update-status-badge" id="app-update-status-badge">
+                <span class="status-dot healthy"></span>
+                <span id="app-version-display">v2.0.0 • Up to Date</span>
+              </div>
+            </div>
+
+            <div class="update-card-body">
+              <div class="update-info-columns">
+                <div class="update-meta-box">
+                  <div class="meta-row">
+                    <span class="meta-title">Installed Version</span>
+                    <span class="meta-data mono">2.0.0</span>
+                  </div>
+                  <div class="meta-row">
+                    <span class="meta-title">Release Channel</span>
+                    <span class="meta-data">Official GitHub Release</span>
+                  </div>
+                  <div class="meta-row">
+                    <span class="meta-title">Last Checked</span>
+                    <span class="meta-data" id="update-last-checked-time">Not checked yet</span>
+                  </div>
+                </div>
+
+                <div class="update-details-box" id="update-details-box">
+                  <div class="update-state-idle" id="update-state-idle">
+                    <p>Your copy of Quantum Updater is on the latest verified release. Background checks keep your installation patched automatically.</p>
+                  </div>
+                  <div class="update-state-found" id="update-state-found" style="display: none;">
+                    <div class="new-ver-header">
+                      <span class="new-ver-tag" id="update-new-ver-tag">v2.0.1 Available</span>
+                      <span class="new-ver-size mono" id="update-new-ver-size">42.1 MB</span>
+                    </div>
+                    <p class="new-ver-notes" id="update-new-ver-notes">Performance enhancements and security updates.</p>
+                  </div>
+                  <div class="update-state-progress" id="update-state-progress" style="display: none;">
+                    <div class="update-prog-label">
+                      <span id="update-prog-ticker">Downloading update payload...</span>
+                      <span class="mono" id="update-prog-pct">0%</span>
+                    </div>
+                    <div class="update-prog-track">
+                      <div class="update-prog-fill" id="update-prog-fill" style="width: 0%;"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="update-actions-bar">
+                <div class="settings-toggle-row" style="border: none; padding: 0; margin: 0;">
+                  <div class="toggle-info">
+                    <strong>Auto-check for updates on startup</strong>
+                    <span>Query GitHub release feed silently in the background</span>
+                  </div>
+                  <label class="switch">
+                    <input type="checkbox" id="pref-auto-update-check" checked onchange="app.savePreference('auto_update_check', this.checked)">
+                    <span class="slider"></span>
+                  </label>
+                </div>
+
+                <div class="update-btn-group">
+                  <button class="glass-btn btn-secondary btn-sm" id="btn-check-updates" onclick="app.checkForAppUpdates(false)">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <polyline points="23 4 23 10 17 10"></polyline>
+                      <polyline points="1 20 1 14 7 14"></polyline>
+                      <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+                    </svg>
+                    <span>Check for Updates</span>
+                  </button>
+                  <button class="glass-btn btn-cta btn-sm" id="btn-install-app-update" style="display: none;" onclick="app.applySelfUpdate()">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                      <polyline points="7 10 12 15 17 10"></polyline>
+                      <line x1="12" y1="15" x2="12" y2="3"></line>
+                    </svg>
+                    <span>Update &amp; Restart Now</span>
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
 

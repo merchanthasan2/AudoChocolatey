@@ -27,10 +27,17 @@
   "bundle": {
     "active": true,
     "publisher": "Quantum Step",
-    "targets": ["nsis"],
+    "targets": ["nsis", "dmg", "app"],
     "icon": [
-      "icons/icon.ico"
+      "icons/icon.ico",
+      "icons/icon.icns",
+      "icons/icon.png"
     ],
+    "macOS": {
+      "frameworks": [],
+      "minimumSystemVersion": "10.15",
+      "license": null
+    },
     "windows": {
       "nsis": {
         "installMode": "perMachine",
@@ -40,3 +47,4 @@
     }
   }
 }
+

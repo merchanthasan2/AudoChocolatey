@@ -28,9 +28,9 @@ def main():
         # Fallback to local relative
         html_file = os.path.abspath(os.path.join("web", "index.html"))
 
-    # 4. Create Glassmorphism Desktop Window with Edge WebView2
+    # 4. Create Glassmorphism Desktop Window with Edge WebView2 / WebKit
     window = webview.create_window(
-        title="WinPackageHub • Package & Update Manager",
+        title="Quantum Updater • System & Package Manager",
         url=html_file,
         width=1200,
         height=780,

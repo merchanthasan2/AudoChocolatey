@@ -217,17 +217,100 @@ class WebAPI:
         self.manager.save_settings()
         return True
 
+    def scan_cleanup(self, *args, **kwargs) -> Dict[str, Any]:
+        """Scan system cleanup targets for recoverable space."""
+        if self.manager.cleaner:
+            return self.manager.cleaner.scan()
+        return {
+            "total_reclaimable_bytes": 0,
+            "total_reclaimable_str": "0 B",
+            "total_files": 0,
+            "disk_total_str": "Unknown",
+            "disk_used_str": "Unknown",
+            "disk_free_str": "Unknown",
+            "disk_used_percent": 0,
+            "categories": []
+        }
+
+    def execute_cleanup(self, categories: Optional[List[str]] = None, *args, **kwargs) -> bool:
+        """Executes cleanup sequence on background thread with live progress."""
+        if categories is None and args and isinstance(args[0], list):
+            categories = args[0]
+        categories = categories or []
+
+        def worker():
+            try:
+                if self.manager.cleaner:
+                    res = self.manager.cleaner.clean(
+                        category_ids=categories,
+                        on_progress=self._on_progress,
+                        on_log=self._on_log
+                    )
+                    escaped = json.dumps(res)
+                    self._eval_js(f"app.onCleanupFinished(true, {escaped});")
+                else:
+                    self._eval_js("app.onCleanupFinished(false, JSON.stringify({error: 'Cleaner not available on this platform'}));")
+            except Exception as e:
+                err_msg = json.dumps(str(e))
+                self._eval_js(f"app.onCleanupFinished(false, JSON.stringify({{error: {err_msg}}}));")
+
+        threading.Thread(target=worker, daemon=True).start()
+        return True
+
     def get_diagnostics(self, *args, **kwargs) -> Dict[str, Any]:
         engines = self.manager.get_available_engines()
-        return {
+        os_sys = platform.system()
+        os_display = "macOS" if os_sys == "Darwin" else os_sys
+
+        winget_eng = self.manager.engines.get("winget")
+        choco_eng = self.manager.engines.get("choco")
+        brew_eng = self.manager.engines.get("brew")
+        apple_eng = self.manager.engines.get("apple")
+
+        diag = {
             "is_admin": is_admin(),
-            "os_info": f"{platform.system()} {platform.release()} (Build {platform.version().split('.')[-1] if '.' in platform.version() else platform.version()})",
+            "os_system": os_sys,
+            "os_display": os_display,
+            "os_info": f"{os_display} {platform.release()} ({platform.machine()})",
             "arch": platform.machine(),
             "active_engine": self.manager.active_engine_id,
             "engines": engines,
-            "winget_path": str(self.manager.engines["winget"]._executable or "Not Located"),
-            "winget_version": str(self.manager.engines["winget"].get_version() or "Not Available"),
-            "choco_path": str(self.manager.engines["choco"]._executable or "Not Located"),
-            "choco_version": str(self.manager.engines["choco"].get_version() or "Not Available")
         }
+
+        if os_sys == "Darwin":
+            diag["brew_path"] = str(getattr(brew_eng, "_brew_path", "Not Located")) if brew_eng else "Not Installed"
+            diag["brew_version"] = str(brew_eng.get_version() or "Not Available") if brew_eng else "Not Available"
+            diag["apple_version"] = str(apple_eng.get_version() or "Current") if apple_eng else "Current"
+        else:
+            diag["winget_path"] = str(getattr(winget_eng, "_executable", "Not Located")) if winget_eng else "Not Installed"
+            diag["winget_version"] = str(winget_eng.get_version() or "Not Available") if winget_eng else "Not Available"
+            diag["choco_path"] = str(getattr(choco_eng, "_executable", "Not Located")) if choco_eng else "Not Installed"
+            diag["choco_version"] = str(choco_eng.get_version() or "Not Available") if choco_eng else "Not Available"
+
+        return diag
+
+    def check_self_update(self, *args, **kwargs) -> Dict[str, Any]:
+        """Check GitHub for new Quantum Updater releases."""
+        if hasattr(self.manager, "updater") and self.manager.updater:
+            return self.manager.updater.check_for_updates()
+        return {"has_update": False, "current_version": "2.0.0"}
+
+    def apply_self_update(self, download_url: str = "", *args, **kwargs) -> bool:
+        """Download and install the updated binary in-place without prompting."""
+        if not download_url and args and isinstance(args[0], str):
+            download_url = args[0]
+        if not download_url and "downloadUrl" in kwargs:
+            download_url = kwargs["downloadUrl"]
+
+        def worker():
+            if hasattr(self.manager, "updater") and self.manager.updater:
+                self.manager.updater.download_and_apply(
+                    download_url=download_url,
+                    on_progress=self._on_progress,
+                    on_log=self._on_log
+                )
+
+        threading.Thread(target=worker, daemon=True).start()
+        return True
+
 

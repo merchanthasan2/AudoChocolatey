@@ -24,13 +24,16 @@ graph TD
 
     subgraph Backend ["Native Execution Layer"]
         Rust["src-tauri (Tauri v2 / Rust Core)"]
-        Python["web_api.py + core/ (PyInstaller Fallback Core)"]
+        Python["web_api.py + core/ (Local Development Runtime)"]
+        Cleaner["core/mac_cleaner.py (System Storage & Cache Reclaimer)"]
     end
 
-    subgraph System ["Windows System & Package Engines"]
+    subgraph System ["Operating System & Package Engines"]
+        AppleUpdate["Official Apple Software Update (/usr/sbin/softwareupdate)"]
+        Homebrew["Homebrew CLI (brew casks & formulae)"]
+        MacApps["macOS Applications (/Applications & plistlib)"]
         Winget["Windows Package Manager (winget.exe)"]
         Choco["Chocolatey CLI (choco.exe)"]
-        WinAPI["Windows Win32 API (IsUserAnAdmin, UAC Manifest)"]
     end
 
     HTML --> CSS
@@ -39,12 +42,17 @@ graph TD
     JS --> PyBridge
     TauriIPC --> Rust
     PyBridge --> Python
+    Python --> Cleaner
+    Rust --> AppleUpdate
+    Rust --> Homebrew
     Rust --> Winget
     Rust --> Choco
-    Rust --> WinAPI
+    Python --> AppleUpdate
+    Python --> Homebrew
+    Python --> MacApps
     Python --> Winget
     Python --> Choco
-    Python --> WinAPI
+
 ```
 
 ---

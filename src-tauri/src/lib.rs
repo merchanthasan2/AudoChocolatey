@@ -656,6 +656,177 @@ async fn uninstall_package(package_id: String, engine: String) -> Result<bool, S
     Ok(success)
 }
 
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct SelfUpdateInfo {
+    pub has_update: bool,
+    pub current_version: String,
+    pub latest_version: String,
+    pub tag_name: String,
+    pub release_name: String,
+    pub release_notes: String,
+    pub published_at: String,
+    pub download_url: String,
+    pub asset_name: String,
+    pub asset_size: u64,
+    pub asset_size_str: String,
+    pub error: Option<String>,
+}
+
+fn is_newer_version(current: &str, latest: &str) -> bool {
+    let parse = |s: &str| -> (u32, u32, u32) {
+        let parts: Vec<u32> = s.split('.')
+            .map(|p| p.chars().take_while(|c| c.is_ascii_digit()).collect::<String>())
+            .filter_map(|p| p.parse().ok())
+            .collect();
+        (
+            parts.get(0).copied().unwrap_or(0),
+            parts.get(1).copied().unwrap_or(0),
+            parts.get(2).copied().unwrap_or(0),
+        )
+    };
+    parse(latest) > parse(current)
+}
+
+#[tauri::command]
+async fn check_self_update() -> Result<SelfUpdateInfo, String> {
+    let current_ver = "2.0.0".to_string();
+    let ps_script = r#"
+        [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12;
+        $headers = @{ 'User-Agent' = 'QuantumUpdater/2.0.0 (Windows)' };
+        $resp = Invoke-RestMethod -Uri 'https://api.github.com/repos/merchanthasan2/AudoChocolatey/releases/latest' -Headers $headers -TimeoutSec 10;
+        $resp | ConvertTo-Json -Depth 5 -Compress
+    "#;
+
+    let output = Command::new("powershell")
+        .args(&["-NoProfile", "-NonInteractive", "-Command", ps_script])
+        .creation_flags(CREATE_NO_WINDOW)
+        .output()
+        .map_err(|e| format!("Failed to execute update check: {}", e))?;
+
+    if !output.status.success() {
+        return Ok(SelfUpdateInfo {
+            has_update: false,
+            current_version: current_ver,
+            latest_version: "".into(),
+            tag_name: "".into(),
+            release_name: "".into(),
+            release_notes: "".into(),
+            published_at: "".into(),
+            download_url: "".into(),
+            asset_name: "".into(),
+            asset_size: 0,
+            asset_size_str: "0 B".into(),
+            error: Some("Unable to reach release servers".into()),
+        });
+    }
+
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    let json: serde_json::Value = serde_json::from_str(&stdout)
+        .map_err(|e| format!("Invalid release JSON: {}", e))?;
+
+    let tag_name = json["tag_name"].as_str().unwrap_or("").to_string();
+    let latest_ver = tag_name.trim_start_matches('v').trim().to_string();
+
+    let has_update = is_newer_version(&current_ver, &latest_ver);
+
+    let mut download_url = String::new();
+    let mut asset_name = String::new();
+    let mut asset_size: u64 = 0;
+
+    if let Some(assets) = json["assets"].as_array() {
+        for a in assets {
+            let name = a["name"].as_str().unwrap_or("");
+            let name_lower = name.to_lowercase();
+            if name_lower.ends_with(".exe") && name_lower.contains("setup") {
+                download_url = a["browser_download_url"].as_str().unwrap_or("").to_string();
+                asset_name = name.to_string();
+                asset_size = a["size"].as_u64().unwrap_or(0);
+                break;
+            }
+        }
+        if download_url.is_empty() {
+            for a in assets {
+                let name = a["name"].as_str().unwrap_or("");
+                let name_lower = name.to_lowercase();
+                if name_lower.ends_with(".exe") {
+                    download_url = a["browser_download_url"].as_str().unwrap_or("").to_string();
+                    asset_name = name.to_string();
+                    asset_size = a["size"].as_u64().unwrap_or(0);
+                    break;
+                }
+            }
+        }
+    }
+
+    let asset_size_str = if asset_size > 1024 * 1024 {
+        format!("{:.1} MB", (asset_size as f64) / (1024.0 * 1024.0))
+    } else {
+        format!("{:.1} KB", (asset_size as f64) / 1024.0)
+    };
+
+    Ok(SelfUpdateInfo {
+        has_update,
+        current_version: current_ver,
+        latest_version: latest_ver,
+        tag_name,
+        release_name: json["name"].as_str().unwrap_or("").to_string(),
+        release_notes: json["body"].as_str().unwrap_or("Performance and stability improvements.").to_string(),
+        published_at: json["published_at"].as_str().unwrap_or("").to_string(),
+        download_url,
+        asset_name,
+        asset_size,
+        asset_size_str,
+        error: None,
+    })
+}
+
+#[tauri::command]
+async fn apply_self_update(
+    app: tauri::AppHandle,
+    download_url: String,
+) -> Result<bool, String> {
+    if download_url.is_empty() {
+        return Err("No download URL provided".into());
+    }
+
+    let _ = app.emit("progress-update", serde_json::json!({
+        "percent": 0.15,
+        "ticker": "Downloading Quantum Updater update payload...",
+        "current_id": "self-update"
+    }));
+
+    let _ = app.emit("log-line", format!("[Quantum Auto-Updater]: Downloading in-place update from {}...\n", download_url));
+
+    let ps_download_and_exec = format!(
+        r#"
+        $ProgressPreference = 'SilentlyContinue';
+        $dest = Join-Path $env:TEMP 'quantum_updater_setup.exe';
+        Invoke-WebRequest -Uri '{}' -OutFile $dest;
+        Start-Process -FilePath $dest -ArgumentList '/S';
+        "#,
+        download_url
+    );
+
+    let output = Command::new("powershell")
+        .args(&["-NoProfile", "-NonInteractive", "-Command", &ps_download_and_exec])
+        .creation_flags(CREATE_NO_WINDOW)
+        .spawn();
+
+    match output {
+        Ok(_) => {
+            let _ = app.emit("progress-update", serde_json::json!({
+                "percent": 1.0,
+                "ticker": "Update applied. Restarting...",
+                "current_id": "self-update"
+            }));
+            let _ = app.emit("log-line", "[Quantum Auto-Updater]: Silent update initiated. Relaunching application...\n".to_string());
+            tokio::time::sleep(std::time::Duration::from_millis(800)).await;
+            std::process::exit(0);
+        }
+        Err(e) => Err(format!("Failed to execute installer: {}", e)),
+    }
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
@@ -668,7 +839,9 @@ pub fn run() {
             install_package,
             get_installed,
             get_package_details,
-            uninstall_package
+            uninstall_package,
+            check_self_update,
+            apply_self_update
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

@@ -52,13 +52,43 @@
   - Comprehensive documentation overhaul in `docs/DESIGN_SYSTEM.md`.
   - Validation passed: Zero-emoji scan clean, `node -c` clean, `py_compile` clean, `cargo test` 3 passed.
 
+### Phase 12: macOS Universal Architecture, System Cleanup & DMG Packaging
+- **Status:** complete
+- Actions taken:
+  - Developed `core/mac_cleaner.py` providing zero-dependency scanning & purging of user caches, logs, trash, developer caches (npm, pip, Xcode DerivedData), and orphaned app data.
+  - Implemented `core/mac_engine.py` orchestrating official Apple software updates (`softwareupdate`), Homebrew (`brew` casks & formulae), and native `/Applications` auditing.
+  - Built `src-macos/main.m`: Native Cocoa/WebKit host with Apple Silicon Universal 2 binary support (`arm64` + `x86_64`) targeting M1 through M6 Pro/Max/Ultra.
+  - Configured `build_dmg.sh` and generated native drag-and-drop disk image installer (`dist/QuantumUpdater_2.0.0_macOS.dmg`).
+  - Added new `Cleanup` dashboard in `web/index.html` and `web/style.css` adhering strictly to the 6-color system and Zero-Emoji policy.
+  - Integrated `build-tauri-macos` workflow job in `.github/workflows/release.yml`.
+  - Full validation passed: `node -c web/app.js` clean, Zero-Emoji check (0 violations), Python compilation 100% clean, and DMG mount verification verified.
+
+### Phase 13: Cross-Platform In-Place Self-Updating & Launch Stability
+- **Status:** complete
+- Actions taken:
+  - Diagnosed crash report `Quantum Updater-*.ips` (EXC_BAD_ACCESS in `+[NSJSONSerialization dataWithJSONObject:options:error:]` within `sendLog:`): Apple's Foundation framework throws `NSInvalidArgumentException` when top-level objects passed to `dataWithJSONObject:` are not `NSArray` or `NSDictionary`.
+  - Built `json_serialize_safe` helper in `src-macos/main.m` with robust wrapper-unwrapping and exception containment across all bridge methods (`sendLog`, `sendProgress`, `sendSuccessResponse`, `sendErrorResponse`).
+  - Added `AppDelegate` in `src-macos/main.m` to properly manage macOS application lifecycle and window termination.
+  - Implemented `core/updater.py` with semver comparison and asset discovery for both macOS (`.zip`/`.dmg`) and Windows (`.exe`/`.zip`).
+  - Implemented native `check_self_update` and `apply_self_update` in `src-macos/main.m` featuring detached background swap via `ditto` and automatic relaunch without manual DMG redownloads.
+  - Implemented Windows `check_self_update` and silent in-place update `/S` in `src-tauri/src/lib.rs`.
+  - Exposed RPC endpoints in `web_api.py` (`check_self_update`, `apply_self_update`).
+  - Added Global In-App Update Banner and "Application Updates & Self-Updater" Bento card in `web/index.html` with download progress bar.
+  - Styled update components in `web/style.css` matching the 6-color system tokens.
+  - Added startup auto-update check and update actions in `web/app.js`.
+  - Added ad-hoc code signing (`codesign --force --deep --sign -`) and update archive creation (`dist/QuantumUpdater_macOS_Update.zip`) in `build_dmg.sh`.
+  - Updated `.github/workflows/release.yml` to package and upload DMG and update archives.
+  - Verified runtime: PID verified running normally from independent location without premature exit.
+
 ## 5-Question Reboot Check
 | Question | Answer |
 |---|---|
-| Where am I? | Redesign Completed, Documented & Fully Verified |
-| Where am I going? | Ready to commit and push changes to git |
-| What's the goal? | Complete application redesign with Uxintace 6-color system, Stitch MCP assets, and design system enforcer skills. |
-| What have I learned? | All unit tests pass, zero emojis present, exact 6 colors enforced across dark and light modes. |
-| What have I done? | Stitch screen generation, user multi-choice approvals, token refactoring in CSS/JS, documentation update, and full validation pass. |
+| Where am I? | Phase 13 Complete: Cross-platform In-Place Auto-Update & Launch Stability Verified |
+| Where am I going? | Ready for release and deployment |
+| What's the goal? | Both Windows and macOS versions auto-update in-place with zero manual file redownloads. |
+| What have I learned? | `dataWithJSONObject:` requires top-level arrays/dictionaries in ObjC; ad-hoc code signing ensures Gatekeeper acceptance; in-place ditto swap provides seamless background upgrades without DMG mounting. |
+| What have I done? | Fixed Foundation JSON crash, implemented native & Tauri self-updaters, added update UI banner/cards, signed DMG/App bundles, verified execution stability. |
+
+
 
 

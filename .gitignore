@@ -36,4 +36,6 @@ Thumbs.db
 .gemini/
 .agents/*
 !.agents/skills/
+.mcp.json
+
 

@@ -2,29 +2,49 @@ import threading
 import json
 import os
 from typing import List, Dict, Optional, Callable, Any
+import platform
 from core.models import PackageInfo, SearchResult, OperationStatus
 from core.base_engine import BaseEngine
 from core.winget_engine import WingetEngine
 from core.choco_engine import ChocolateyEngine
+from core.mac_cleaner import MacCleaner
+from core.mac_engine import HomebrewEngine, AppleUpdateEngine, MacApplicationsEngine
+from core.updater import AppUpdater
 
-CONFIG_FILE = os.path.join(os.path.expanduser("~"), ".winpackagehub_config.json")
+CONFIG_FILE = os.path.join(os.path.expanduser("~"), ".quantum_updater_config.json")
 
 class PackageManager:
     """Central manager handling engines, worker threads, and system orchestration."""
 
     def __init__(self):
-        self.engines: Dict[str, BaseEngine] = {
-            "winget": WingetEngine(),
-            "choco": ChocolateyEngine()
-        }
+        self.is_mac = (platform.system() == "Darwin")
+        self.cleaner = MacCleaner() if self.is_mac else None
+        self.updater = AppUpdater()
+
+        if self.is_mac:
+            self.engines: Dict[str, BaseEngine] = {
+                "brew": HomebrewEngine(),
+                "apple": AppleUpdateEngine(),
+                "apps": MacApplicationsEngine()
+            }
+        else:
+            self.engines: Dict[str, BaseEngine] = {
+                "winget": WingetEngine(),
+                "choco": ChocolateyEngine()
+            }
+
         self.settings = self._load_settings()
-        self.active_engine_id = self.settings.get("active_engine", "winget")
-        if not self.engines[self.active_engine_id].is_available():
+        default_engine = "brew" if self.is_mac else "winget"
+        self.active_engine_id = self.settings.get("active_engine", default_engine)
+        if self.active_engine_id not in self.engines or not self.engines[self.active_engine_id].is_available():
             # Fallback to whatever is available
             for eng_id, eng in self.engines.items():
                 if eng.is_available():
                     self.active_engine_id = eng_id
                     break
+            else:
+                self.active_engine_id = list(self.engines.keys())[0]
+
 
         self.cached_updates: List[PackageInfo] = []
         self.cached_installed: List[PackageInfo] = []
@@ -57,7 +77,7 @@ class PackageManager:
 
     @property
     def current_engine(self) -> BaseEngine:
-        return self.engines.get(self.active_engine_id, self.engines["winget"])
+        return self.engines.get(self.active_engine_id, next(iter(self.engines.values())))
 
     def set_active_engine(self, engine_id: str):
         if engine_id in self.engines:

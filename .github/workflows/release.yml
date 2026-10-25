@@ -58,6 +58,41 @@ jobs:
           prerelease: false
           generate_release_notes: true
 
+  build-tauri-macos:
+    name: Build Tauri v2 macOS DMG & Universal App
+    runs-on: macos-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install Rust Stable
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: aarch64-apple-darwin, x86_64-apple-darwin
+
+      - name: Build Native Universal 2 DMG & Update Package
+        run: |
+          chmod +x build_dmg.sh
+          ./build_dmg.sh
+          mkdir -p macos-artifacts
+          cp dist/*.dmg macos-artifacts/
+          cp dist/*.zip macos-artifacts/
+
+      - name: Upload macOS Release Binaries to GitHub
+        uses: softprops/action-gh-release@v2
+        if: startsWith(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch'
+        with:
+          tag_name: ${{ github.ref_name || inputs.tag_name }}
+          files: macos-artifacts/*
+          draft: false
+          prerelease: false
+
+
   build-pyinstaller:
     name: Build Standalone Python Bundle
     runs-on: windows-latest
