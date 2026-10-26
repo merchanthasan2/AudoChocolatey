@@ -3,691 +3,832 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Quantum Updater • Quantum Step</title>
+  <title>Quantum Updater • Apple OS ver 27 Liquid Edition</title>
   <link rel="stylesheet" href="style.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 </head>
-<body class="dark-mode">
-  <!-- Atmospheric Glow Background Orbs -->
-  <div class="glow-orb orb-primary"></div>
-  <div class="glow-orb orb-cyan"></div>
-  <div class="glow-orb orb-violet"></div>
+<body class="dark-mode mac-os-ver27">
+  <div class="app-shell mac-split-view">
+    <!-- ================= APPLE OS 27 VIBRANT SIDEBAR ================= -->
+    <aside class="mac-sidebar" id="mac-sidebar">
+      <!-- Traffic Light Controls Clearance / Safe Zone -->
+      <div class="traffic-lights-spacer" title="macOS Window Controls Safe Zone">
+        <span class="traffic-dot close"></span>
+        <span class="traffic-dot minimize"></span>
+        <span class="traffic-dot zoom"></span>
+      </div>
 
-  <div class="app-shell">
-    <!-- Top Glass Navigation Bar -->
-    <header class="top-nav-glass">
-      <div class="nav-brand">
-        <div class="brand-icon">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      <!-- App Branding Header -->
+      <div class="mac-sidebar-brand" id="brand-link" title="Quantum Step (quantumstep.in)">
+        <div class="brand-monogram">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
             <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
           </svg>
         </div>
-        <div class="brand-text">
-          <span class="brand-title">Quantum Updater</span>
-          <span class="brand-badge" id="brand-link" title="Visit Quantum Step">quantumstep.in</span>
+        <div class="brand-meta">
+          <div class="brand-name-row">
+            <span class="brand-name">Quantum</span>
+            <span class="brand-version-pill">OS 27</span>
+          </div>
+          <span class="brand-subtitle">Liquid Edition • Mac</span>
         </div>
       </div>
 
-      <!-- Center Pill Navigation -->
-      <nav class="nav-pills">
-        <button class="pill-btn active" data-tab="updates" id="tab-btn-updates">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"></path><path d="M16 21h5v-5"></path></svg>
-          <span>Updates</span>
-          <span class="nav-counter" id="nav-update-count" style="display: none;">0</span>
+      <!-- Navigation Hierarchy -->
+      <nav class="mac-sidebar-nav">
+        <!-- Section: Library -->
+        <div class="sidebar-section-header">
+          <span class="section-label">Library</span>
+        </div>
+        <button class="sidebar-item pill-btn active" data-tab="updates" id="tab-btn-updates">
+          <div class="sidebar-item-left">
+            <svg class="sf-icon" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path>
+              <path d="M3 3v5h5"></path>
+              <path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"></path>
+              <path d="M16 21h5v-5"></path>
+            </svg>
+            <span class="item-title">Updates</span>
+          </div>
+          <div class="sidebar-item-right">
+            <span class="nav-counter" id="nav-update-count" style="display: none;">0</span>
+            <span class="shortcut-pill">⌘1</span>
+          </div>
         </button>
-        <button class="pill-btn" data-tab="explore" id="tab-btn-explore">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-          <span>Explore</span>
-        </button>
-        <button class="pill-btn" data-tab="installed" id="tab-btn-installed">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m7.5 4.27 9 5.15"></path><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"></path><path d="m3.3 7 8.7 5 8.7-5"></path><path d="M12 22V12"></path></svg>
-          <span>Installed</span>
-        </button>
-        <button class="pill-btn" data-tab="cleanup" id="tab-btn-cleanup">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3z"></path><path d="M5 3v4"></path><path d="M19 17v4"></path><path d="M3 5h4"></path><path d="M17 19h4"></path></svg>
-          <span>Cleanup</span>
-          <span class="nav-counter" id="nav-cleanup-badge" style="display: none;">0</span>
-        </button>
-        <button class="pill-btn" data-tab="console" id="tab-btn-console">
 
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 17 10 11 4 5"></polyline><line x1="12" y1="19" x2="20" y2="19"></line></svg>
-          <span>Console</span>
+        <button class="sidebar-item pill-btn" data-tab="explore" id="tab-btn-explore">
+          <div class="sidebar-item-left">
+            <svg class="sf-icon" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="11" cy="11" r="8"></circle>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+            <span class="item-title">Explore Catalog</span>
+          </div>
+          <div class="sidebar-item-right">
+            <span class="shortcut-pill">⌘2</span>
+          </div>
         </button>
-        <button class="pill-btn" data-tab="settings" id="tab-btn-settings">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
-          <span>Settings</span>
+
+        <button class="sidebar-item pill-btn" data-tab="installed" id="tab-btn-installed">
+          <div class="sidebar-item-left">
+            <svg class="sf-icon" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="3" width="7" height="7" rx="1.5"></rect>
+              <rect x="14" y="3" width="7" height="7" rx="1.5"></rect>
+              <rect x="14" y="14" width="7" height="7" rx="1.5"></rect>
+              <rect x="3" y="14" width="7" height="7" rx="1.5"></rect>
+            </svg>
+            <span class="item-title">Applications</span>
+          </div>
+          <div class="sidebar-item-right">
+            <span class="shortcut-pill">⌘3</span>
+          </div>
+        </button>
+
+        <!-- Section: Maintenance -->
+        <div class="sidebar-section-header">
+          <span class="section-label">Maintenance</span>
+        </div>
+        <button class="sidebar-item pill-btn" data-tab="cleanup" id="tab-btn-cleanup">
+          <div class="sidebar-item-left">
+            <svg class="sf-icon" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3z"></path>
+              <path d="M5 3v4"></path>
+              <path d="M19 17v4"></path>
+            </svg>
+            <span class="item-title">System Cleaner</span>
+          </div>
+          <div class="sidebar-item-right">
+            <span class="nav-counter" id="nav-cleanup-badge" style="display: none;">0</span>
+            <span class="shortcut-pill">⌘4</span>
+          </div>
+        </button>
+
+        <button class="sidebar-item pill-btn" data-tab="console" id="tab-btn-console">
+          <div class="sidebar-item-left">
+            <svg class="sf-icon" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="4 17 10 11 4 5"></polyline>
+              <line x1="12" y1="19" x2="20" y2="19"></line>
+            </svg>
+            <span class="item-title">Live Terminal</span>
+          </div>
+          <div class="sidebar-item-right">
+            <span class="shortcut-pill">⌘5</span>
+          </div>
+        </button>
+
+        <!-- Section: System Preferences -->
+        <div class="sidebar-section-header">
+          <span class="section-label">System</span>
+        </div>
+        <button class="sidebar-item pill-btn" data-tab="settings" id="tab-btn-settings">
+          <div class="sidebar-item-left">
+            <svg class="sf-icon" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="3"></circle>
+              <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+            </svg>
+            <span class="item-title">Settings &amp; Updates</span>
+          </div>
+          <div class="sidebar-item-right">
+            <span class="shortcut-pill">⌘,</span>
+          </div>
         </button>
       </nav>
 
-      <!-- Right Status & Controls -->
-      <div class="nav-actions">
-        <div class="status-pill status-admin" id="admin-status-pill">
-          <span class="status-dot"></span>
-          <span id="admin-status-text">Elevated</span>
+      <!-- Sidebar Bottom Telemetry Widget -->
+      <div class="mac-sidebar-footer">
+        <div class="sidebar-telemetry-card">
+          <div class="telemetry-row header">
+            <div class="telemetry-badge">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="2" y="2" width="20" height="8" rx="2"></rect><rect x="2" y="14" width="20" height="8" rx="2"></rect></svg>
+              <span>Macintosh HD</span>
+            </div>
+            <span class="telemetry-val" id="sidebar-disk-pct">APFS</span>
+          </div>
+          <div class="disk-progress-track">
+            <div class="disk-progress-fill" id="sidebar-disk-bar" style="width: 45%;"></div>
+          </div>
+          <div class="telemetry-row subtext">
+            <span id="sidebar-disk-free">Storage Telemetry</span>
+            <span class="security-chip-pill">Universal 2</span>
+          </div>
         </div>
-        <div class="status-pill status-engine" id="engine-status-pill">
-          <span id="active-engine-badge">Winget</span>
+
+        <div class="sidebar-security-badge">
+          <span class="security-dot pulse-mint"></span>
+          <span>Apple Gatekeeper &bull; Protected</span>
         </div>
-        <button class="theme-toggle-btn" id="theme-toggle-btn" title="Toggle Light/Dark Theme">
-          <svg class="sun-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
-          <svg class="moon-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
-        </button>
       </div>
-    </header>
+    </aside>
 
-    <!-- Global In-App Update Notification Banner -->
-    <div class="update-banner" id="global-update-banner" style="display: none;">
-      <div class="update-banner-content">
-        <span class="update-pulse-dot"></span>
-        <svg class="update-banner-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-          <polyline points="7 10 12 15 17 10"></polyline>
-          <line x1="12" y1="15" x2="12" y2="3"></line>
-        </svg>
-        <span class="update-banner-text" id="update-banner-text">Quantum Updater update is ready to install</span>
+    <!-- ================= MAIN WORKSPACE & UNIFIED TOOLBAR ================= -->
+    <div class="mac-main-viewport">
+      <!-- Unified macOS Window Toolbar -->
+      <header class="mac-unified-toolbar">
+        <div class="toolbar-left">
+          <button class="mac-icon-btn" id="sidebar-toggle-btn" title="Toggle Sidebar (⌘B)" onclick="app.toggleSidebar()">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"></rect><path d="M9 3v18"></path></svg>
+          </button>
+          <div class="toolbar-heading">
+            <h1 class="toolbar-title" id="toolbar-page-title">Updates</h1>
+            <span class="toolbar-subtitle" id="toolbar-page-sub">Software Library</span>
+          </div>
+        </div>
+
+        <!-- Center Spotlight Search Field -->
+        <div class="toolbar-center">
+          <div class="mac-spotlight-field">
+            <svg class="search-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            <input type="text" id="global-spotlight-search" placeholder="Spotlight Search (⌘K to focus)..." oninput="app.onGlobalSearch(this.value)">
+            <kbd class="spotlight-kbd" id="spotlight-shortcut-badge">⌘K</kbd>
+          </div>
+        </div>
+
+        <!-- Right Controls & Engine Switcher -->
+        <div class="toolbar-right">
+          <!-- Engine Pill -->
+          <div class="mac-engine-pill" id="engine-status-pill" title="Active Package Engine">
+            <span class="engine-dot"></span>
+            <span id="active-engine-badge">Homebrew &bull; Native</span>
+          </div>
+
+          <!-- Elevation Status -->
+          <div class="status-pill status-admin" id="admin-status-pill" title="Security Elevation Level">
+            <span class="status-dot"></span>
+            <span id="admin-status-text">Sandboxed</span>
+          </div>
+
+          <!-- Quick Scan Button -->
+          <button class="mac-pill-action-btn" id="toolbar-btn-scan" onclick="app.scanUpdates()" title="Scan for Updates (⌘R)">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"></path><path d="M16 21h5v-5"></path></svg>
+            <span>Scan</span>
+          </button>
+
+          <!-- Shortcuts Help Button -->
+          <button class="mac-icon-btn" id="btn-help-shortcuts" onclick="app.openShortcutsModal()" title="Keyboard Shortcuts (?)">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 3a3 3 0 0 0-3 3v12a3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3H6a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3V6a3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3h12a3 3 0 0 0 3-3 3 3 0 0 0-3-3z"></path></svg>
+          </button>
+
+          <!-- Theme Toggle -->
+          <button class="mac-icon-btn theme-toggle-btn" id="theme-toggle-btn" title="Toggle Light/Dark Theme">
+            <svg class="sun-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+            <svg class="moon-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+          </button>
+        </div>
+      </header>
+
+      <!-- Global In-App Update Notification Banner -->
+      <div class="update-banner" id="global-update-banner" style="display: none;">
+        <div class="update-banner-content">
+          <span class="update-pulse-dot"></span>
+          <svg class="update-banner-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="7 10 12 15 17 10"></polyline>
+            <line x1="12" y1="15" x2="12" y2="3"></line>
+          </svg>
+          <span class="update-banner-text" id="update-banner-text">Quantum Updater update is ready to install</span>
+        </div>
+        <div class="update-banner-actions">
+          <button class="glass-btn btn-sm btn-cta" id="btn-banner-update" onclick="app.applySelfUpdate()">Update &amp; Restart</button>
+          <button class="glass-btn btn-sm btn-secondary" onclick="app.switchTab('settings')">View Details</button>
+          <button class="glass-btn btn-sm btn-ghost" onclick="app.dismissUpdateBanner()" title="Dismiss">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+          </button>
+        </div>
       </div>
-      <div class="update-banner-actions">
-        <button class="glass-btn btn-sm btn-cta" id="btn-banner-update" onclick="app.applySelfUpdate()">Update &amp; Restart</button>
-        <button class="glass-btn btn-sm btn-secondary" onclick="app.switchTab('settings')">View Details</button>
-        <button class="glass-btn btn-sm btn-ghost" onclick="app.dismissUpdateBanner()" title="Dismiss">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-        </button>
-      </div>
-    </div>
 
-    <!-- Main Dynamic Content Workspace -->
-    <main class="content-viewport">
+      <!-- Main Dynamic Content Workspace -->
+      <main class="content-viewport">
 
-      <!-- ================= TAB 1: UPDATES ================= -->
-      <section class="tab-pane active" id="tab-updates">
-        <!-- Security & Cryptographic Trust Bar -->
-        <div class="security-trust-bar">
-          <div class="trust-left">
-            <span class="trust-shield-glow">
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path><polyline points="9 12 11 14 15 10"></polyline></svg>
-            </span>
-            <div class="trust-text">
-              <span class="trust-title">Cryptographically Signed & Malware-Protected Updates</span>
-              <span class="trust-desc">Enforcing SHA-256 Checksum Validation • Authenticode Digital Signatures • Microsoft SmartScreen Safe</span>
-            </div>
-          </div>
-          <div class="trust-tags">
-            <span class="trust-pill"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg> Authenticode Signed</span>
-            <span class="trust-pill"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg> SHA-256 Validated</span>
-            <span class="trust-pill"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg> Zero Malware / Adware</span>
-          </div>
-        </div>
-
-        <!-- Bento Metrics Grid -->
-        <div class="bento-grid">
-          <div class="bento-card bento-glow-amber" id="bento-card-updates" onclick="app.scanUpdates()">
-            <div class="bento-card-header">
-              <span class="bento-title">Updates Available</span>
-              <div class="bento-icon-badge amber">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"></path><path d="M16 21h5v-5"></path></svg>
+        <!-- ================= TAB 1: UPDATES ================= -->
+        <section class="tab-pane active" id="tab-updates">
+          <!-- Apple Security & Hardened Runtime Bar -->
+          <div class="security-trust-bar">
+            <div class="trust-left">
+              <span class="trust-shield-glow">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path><polyline points="9 12 11 14 15 10"></polyline></svg>
+              </span>
+              <div class="trust-text">
+                <span class="trust-title">Apple Hardened Runtime &bull; Gatekeeper &bull; XProtect Protected</span>
+                <span class="trust-desc">Enforcing SHA-256 Checksum Validation &bull; Developer ID Notarization &bull; APFS Snapshot Safe</span>
               </div>
             </div>
-            <div class="bento-value" id="bento-updates-val">0</div>
-            <div class="bento-subtitle">
-              <span class="indicator-dot amber"></span>
-              <span id="bento-updates-sub">Click to scan system</span>
+            <div class="trust-tags">
+              <span class="trust-pill"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg> Apple Notarized</span>
+              <span class="trust-pill"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg> SHA-256 Verified</span>
+              <span class="trust-pill"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg> Zero Malware</span>
             </div>
           </div>
 
-          <div class="bento-card bento-glow-indigo">
-            <div class="bento-card-header">
-              <span class="bento-title">Selected to Upgrade</span>
-              <div class="bento-icon-badge indigo">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+          <!-- Bento Metrics Grid -->
+          <div class="bento-grid">
+            <div class="bento-card" id="bento-card-updates" onclick="app.scanUpdates()">
+              <div class="bento-card-header">
+                <span class="bento-title">Updates Available</span>
+                <div class="bento-icon-badge amber">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"></path><path d="M16 21h5v-5"></path></svg>
+                </div>
+              </div>
+              <div class="bento-value" id="bento-updates-val">0</div>
+              <div class="bento-subtitle">
+                <span class="indicator-dot amber"></span>
+                <span id="bento-updates-sub">Click to audit Mac software</span>
               </div>
             </div>
-            <div class="bento-value" id="bento-selected-val">0</div>
-            <div class="bento-subtitle">
-              <span class="indicator-dot indigo"></span>
-              <span id="bento-selected-sub">Ready for installation</span>
-            </div>
-          </div>
 
-          <div class="bento-card bento-glow-emerald">
-            <div class="bento-card-header">
-              <span class="bento-title">Software Health</span>
-              <div class="bento-icon-badge emerald">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+            <div class="bento-card">
+              <div class="bento-card-header">
+                <span class="bento-title">Selected to Upgrade</span>
+                <div class="bento-icon-badge indigo">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+                </div>
+              </div>
+              <div class="bento-value" id="bento-selected-val">0</div>
+              <div class="bento-subtitle">
+                <span class="indicator-dot indigo"></span>
+                <span id="bento-selected-sub">Ready for installation</span>
               </div>
             </div>
-            <div class="bento-value" id="bento-health-val">—</div>
-            <div class="bento-subtitle">
-              <span class="indicator-dot emerald"></span>
-              <span id="bento-health-sub">Audited & Verified</span>
-            </div>
-          </div>
 
-          <div class="bento-card bento-glow-cyan">
-            <div class="bento-card-header">
-              <span class="bento-title">Package Engine</span>
-              <div class="bento-icon-badge cyan">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+            <div class="bento-card">
+              <div class="bento-card-header">
+                <span class="bento-title">System Health</span>
+                <div class="bento-icon-badge emerald">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+                </div>
+              </div>
+              <div class="bento-value" id="bento-health-val">—</div>
+              <div class="bento-subtitle">
+                <span class="indicator-dot emerald"></span>
+                <span id="bento-health-sub">Audited &bull; Verified</span>
               </div>
             </div>
-            <div class="bento-value" id="bento-engine-val">Winget</div>
-            <div class="bento-subtitle">
-              <span class="indicator-dot cyan"></span>
-              <span id="bento-engine-sub">Silent Background Mode</span>
-            </div>
-          </div>
-        </div>
 
-        <!-- Dynamic Floating Progress Island -->
-        <div class="progress-island-glass" id="progress-island">
-          <div class="island-top-row">
-            <div class="island-status-group">
-              <span class="island-pulse-dot" id="island-pulse"></span>
-              <span class="island-status-title" id="island-status-title">System Status: Ready</span>
-            </div>
-            <span class="island-pct-badge" id="island-pct-badge"></span>
-          </div>
-          <div class="island-progress-track">
-            <div class="island-progress-fill" id="island-progress-fill" style="width: 0%;"></div>
-          </div>
-          <div class="island-status-ticker" id="island-status-ticker">Ready to scan or update installed packages.</div>
-        </div>
-
-        <!-- Action Control Glass Bar -->
-        <div class="action-bar-glass">
-          <div class="action-left">
-            <label class="custom-checkbox-container" title="Select or Deselect All Updates">
-              <input type="checkbox" id="check-select-all" onchange="app.toggleSelectAll(this.checked)">
-              <span class="checkmark"></span>
-              <span class="checkbox-label">Select All</span>
-            </label>
-            <button class="glass-btn btn-primary" id="btn-scan" onclick="app.scanUpdates()">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"></path><path d="M16 21h5v-5"></path></svg>
-              <span>Scan for Updates</span>
-            </button>
-            <button class="glass-btn btn-success" id="btn-update-action" onclick="app.startUpdateAction()" disabled>
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
-              <span id="btn-update-text">Update All Packages</span>
-            </button>
-          </div>
-          <div class="action-right">
-            <div class="glass-search-input">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-              <input type="text" id="input-filter-updates" placeholder="Filter available updates..." oninput="app.filterUpdates(this.value)">
-            </div>
-          </div>
-        </div>
-
-        <!-- Package Updates Cards Container -->
-        <div class="packages-list" id="updates-list">
-          <div class="glass-placeholder">
-            <div class="placeholder-icon">
-              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><line x1="16.5" y1="9.4" x2="7.55" y2="4.24"></line><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.29 7 12 12 20.71 7"></polyline><line x1="12" y1="22" x2="12" y2="12"></line></svg>
-            </div>
-            <h3>System Ready</h3>
-            <p>Click "Scan for Updates" above to audit all applications installed on your Windows system.</p>
-          </div>
-        </div>
-      </section>
-
-      <!-- ================= TAB 2: EXPLORE ================= -->
-      <section class="tab-pane" id="tab-explore">
-        <div class="explore-hero-card">
-          <div class="explore-header-row">
-            <div>
-              <h2>Explore & Discover Software</h2>
-              <p>Browse curated Windows software, utilities, developer tools, and cutting-edge AI models with silent, verified 1-click installs.</p>
-            </div>
-            <div class="explore-header-stats">
-              <span class="catalog-count-badge" id="explore-count-badge">70+ Curated Apps</span>
-            </div>
-          </div>
-
-          <!-- Quick Category Filters Row -->
-          <div class="category-filters-scroll">
-            <button class="cat-pill active" data-category="all" onclick="app.setExploreCategory('all')">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
-              <span>All</span>
-            </button>
-            <button class="cat-pill" data-category="popular" onclick="app.setExploreCategory('popular')">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline><polyline points="17 6 23 6 23 12"></polyline></svg>
-              <span>Most Popular</span>
-            </button>
-            <button class="cat-pill" data-category="ai" onclick="app.setExploreCategory('ai')">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a4 4 0 0 1 4 4c0 1.95-1.4 3.58-3.25 3.93l-.75.14V14h3a3 3 0 0 1 3 3v4H5v-4a3 3 0 0 1 3-3h3v-3.93l-.75-.14A4.002 4.002 0 0 1 12 2z"></path><circle cx="9" cy="6" r="1"></circle><circle cx="15" cy="6" r="1"></circle></svg>
-              <span>AI & Machine Learning</span>
-            </button>
-            <button class="cat-pill" data-category="development" onclick="app.setExploreCategory('development')">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg>
-              <span>Development</span>
-            </button>
-            <button class="cat-pill" data-category="browsers" onclick="app.setExploreCategory('browsers')">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
-              <span>Browsers</span>
-            </button>
-            <button class="cat-pill" data-category="productivity" onclick="app.setExploreCategory('productivity')">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
-              <span>Productivity</span>
-            </button>
-            <button class="cat-pill" data-category="media" onclick="app.setExploreCategory('media')">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg>
-              <span>Music & Media</span>
-            </button>
-            <button class="cat-pill" data-category="utilities" onclick="app.setExploreCategory('utilities')">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path></svg>
-              <span>Utilities</span>
-            </button>
-            <button class="cat-pill" data-category="gaming" onclick="app.setExploreCategory('gaming')">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="6" y1="12" x2="10" y2="12"></line><line x1="8" y1="10" x2="8" y2="14"></line><line x1="15" y1="13" x2="15.01" y2="13"></line><line x1="18" y1="11" x2="18.01" y2="11"></line><rect x="2" y="6" width="20" height="12" rx="6"></rect></svg>
-              <span>Gaming & Social</span>
-            </button>
-          </div>
-
-          <!-- Explore Search & Sort Action Bar -->
-          <div class="explore-toolbar">
-            <div class="search-input-wrapper">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-              <input type="text" id="input-explore-search" placeholder="Filter apps by name, description, or vendor..." oninput="app.onExploreSearchInput(this.value)" onkeydown="if(event.key==='Enter') app.searchRepositoryCatalog()">
-            </div>
-
-            <div class="explore-toolbar-actions">
-              <div class="sort-select-wrapper">
-                <span class="sort-label">Sort:</span>
-                <select id="select-explore-sort" class="glass-select" onchange="app.setExploreSort(this.value)">
-                  <option value="popular">Most Popular</option>
-                  <option value="name-asc">Name (A - Z)</option>
-                  <option value="name-desc">Name (Z - A)</option>
-                  <option value="category">Category</option>
-                </select>
+            <div class="bento-card">
+              <div class="bento-card-header">
+                <span class="bento-title">macOS Engine</span>
+                <div class="bento-icon-badge cyan">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+                </div>
               </div>
+              <div class="bento-value" id="bento-engine-val">macOS</div>
+              <div class="bento-subtitle">
+                <span class="indicator-dot cyan"></span>
+                <span id="bento-engine-sub">Homebrew &bull; Software Update</span>
+              </div>
+            </div>
+          </div>
 
-              <button class="glass-btn btn-primary" onclick="app.searchRepositoryCatalog()" title="Search full live repository if you need unlisted packages">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-                <span>Search Online</span>
+          <!-- Dynamic Floating Progress Island -->
+          <div class="progress-island-glass" id="progress-island">
+            <div class="island-top-row">
+              <div class="island-status-group">
+                <span class="island-pulse-dot" id="island-pulse"></span>
+                <span class="island-status-title" id="island-status-title">System Status: Ready</span>
+              </div>
+              <span class="island-pct-badge" id="island-pct-badge"></span>
+            </div>
+            <div class="island-progress-track">
+              <div class="island-progress-fill" id="island-progress-fill" style="width: 0%;"></div>
+            </div>
+            <div class="island-status-ticker" id="island-status-ticker">Ready to scan or update installed Mac applications.</div>
+          </div>
+
+          <!-- Action Control Glass Bar -->
+          <div class="action-bar-glass">
+            <div class="action-left">
+              <label class="custom-checkbox-container" title="Select or Deselect All Updates">
+                <input type="checkbox" id="check-select-all" onchange="app.toggleSelectAll(this.checked)">
+                <span class="checkmark"></span>
+                <span class="checkbox-label">Select All</span>
+              </label>
+              <button class="glass-btn btn-primary" id="btn-scan" onclick="app.scanUpdates()">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"></path><path d="M16 21h5v-5"></path></svg>
+                <span>Scan for Updates</span>
+              </button>
+              <button class="glass-btn btn-success" id="btn-update-action" onclick="app.startUpdateAction()" disabled>
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+                <span id="btn-update-text">Update All Packages</span>
               </button>
             </div>
-          </div>
-        </div>
-
-        <!-- Explore Packages Container -->
-        <div class="packages-list" id="explore-results-list">
-          <!-- Populated automatically on start -->
-        </div>
-      </section>
-
-      <!-- ================= TAB 3: INSTALLED ================= -->
-      <section class="tab-pane" id="tab-installed">
-        <div class="installed-hero-card">
-          <div class="installed-header-row">
-            <div>
-              <h2>Installed Applications</h2>
-              <p>Review installed software, audit versions, and uninstall packages cleanly.</p>
-            </div>
-            <div class="installed-actions">
-              <button class="glass-btn btn-primary" onclick="app.loadInstalled()">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"></path><path d="M16 21h5v-5"></path></svg>
-                <span>Audit Installed Software</span>
-              </button>
-            </div>
-          </div>
-          <div class="glass-search-input full-width">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-            <input type="text" id="input-filter-installed" placeholder="Filter installed applications by name or ID..." oninput="app.filterInstalled(this.value)">
-          </div>
-        </div>
-
-        <div class="packages-list" id="installed-list">
-          <div class="glass-placeholder">
-            <div class="placeholder-icon">
-              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><line x1="16.5" y1="9.4" x2="7.55" y2="4.24"></line><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.29 7 12 12 20.71 7"></polyline><line x1="12" y1="22" x2="12" y2="12"></line></svg>
-            </div>
-            <h3>Audit Installed Software</h3>
-            <p>Click "Audit Installed Software" to retrieve applications registered on your system.</p>
-          </div>
-        </div>
-      </section>
-
-      <!-- ================= TAB 4: CLEANUP ================= -->
-      <section class="tab-pane" id="tab-cleanup">
-        <div class="cleanup-hero-card">
-          <div class="cleanup-header-row">
-            <div>
-              <div class="cleanup-badge-tag">
-                <span class="status-dot status-dot-pulse"></span>
-                <span>System & Storage Optimizer</span>
-              </div>
-              <h2>Quantum Clean & Storage Reclaimer</h2>
-              <p>Safely reclaim gigabytes of disk space by purging developer bloat, stale app caches, diagnostic logs, and uninstalled application remnants.</p>
-            </div>
-            <div class="cleanup-hero-actions">
-              <button class="glass-btn btn-secondary" onclick="app.toggleAllCleanup(true)">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                <span>Select Safe All</span>
-              </button>
-              <button class="glass-btn btn-primary" id="btn-scan-cleanup" onclick="app.scanCleanup()">
+            <div class="action-right">
+              <div class="glass-search-input">
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-                <span>Scan System Storage</span>
-              </button>
-              <button class="glass-btn btn-danger" id="btn-purge-cleanup" onclick="app.executeCleanup()">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3z"></path></svg>
-                <span>Purge Selected</span>
-              </button>
-            </div>
-          </div>
-
-          <!-- Cleanup Bento Metric Grid -->
-          <div class="cleanup-bento-grid">
-            <div class="cleanup-bento-card bento-reclaimable">
-              <div class="bento-card-header">
-                <span class="bento-label">Recoverable Space</span>
-                <div class="bento-icon-wrapper icon-yellow">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
-                </div>
-              </div>
-              <div class="bento-value text-golden" id="cleanup-reclaimable-total">--</div>
-              <div class="bento-subtext" id="cleanup-reclaimable-sub">Click "Scan System Storage" to analyze</div>
-            </div>
-
-            <div class="cleanup-bento-card bento-health">
-              <div class="bento-card-header">
-                <span class="bento-label">System Health</span>
-                <div class="bento-icon-wrapper icon-mint">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
-                </div>
-              </div>
-              <div class="bento-value text-mint" id="cleanup-health-status">Ready to Scan</div>
-              <div class="bento-subtext">Zero risk to user files, active projects, or OS files</div>
-            </div>
-
-            <div class="cleanup-bento-card bento-selected">
-              <div class="bento-card-header">
-                <span class="bento-label">Selected for Purge</span>
-                <div class="bento-icon-wrapper icon-ocean">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                </div>
-              </div>
-              <div class="bento-value text-ocean" id="cleanup-selected-count">0 Categories</div>
-              <div class="bento-subtext" id="cleanup-selected-bytes">0 B selected for reclamation</div>
-            </div>
-
-            <div class="cleanup-bento-card bento-storage">
-              <div class="bento-card-header">
-                <span class="bento-label">Primary Disk Storage</span>
-                <div class="bento-icon-wrapper icon-peach">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="8" rx="2" ry="2"></rect><rect x="2" y="14" width="20" height="8" rx="2" ry="2"></rect><line x1="6" y1="6" x2="6.01" y2="6"></line><line x1="6" y1="18" x2="6.01" y2="18"></line></svg>
-                </div>
-              </div>
-              <div class="bento-value text-peach" id="cleanup-disk-free">--</div>
-              <div class="bento-subtext" id="cleanup-disk-sub">Storage usage overview</div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Categories List Grid -->
-        <div class="cleanup-categories-grid" id="cleanup-categories-container">
-          <div class="glass-placeholder">
-            <div class="placeholder-icon">
-              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3z"></path></svg>
-            </div>
-            <h3>Quantum System Cleanup</h3>
-            <p>Click "Scan System Storage" above to inspect user app caches, developer bloat, and recoverable space.</p>
-          </div>
-        </div>
-      </section>
-
-      <!-- ================= TAB 5: CONSOLE ================= -->
-      <section class="tab-pane" id="tab-console">
-
-        <div class="console-glass-wrapper">
-          <div class="console-header">
-            <div class="console-title-group">
-              <span class="console-status-dot"></span>
-              <h3>Real-Time Process & Installer Terminal</h3>
-            </div>
-            <div class="console-actions">
-              <button class="glass-btn btn-secondary btn-sm" onclick="app.copyConsoleLog()">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
-                <span>Copy All</span>
-              </button>
-              <button class="glass-btn btn-secondary btn-sm" onclick="app.clearConsoleLog()">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
-                <span>Clear</span>
-              </button>
-            </div>
-          </div>
-          <div class="console-terminal-body" id="console-output">
-            <div class="terminal-line system">[Quantum Updater]: Silent background engine initialized. Ready.</div>
-          </div>
-        </div>
-      </section>
-
-      <!-- ================= TAB 5: SETTINGS ================= -->
-      <section class="tab-pane" id="tab-settings">
-        <div class="settings-grid">
-          <!-- Engine Switcher -->
-          <div class="settings-card">
-            <h3>Package Manager Backend</h3>
-            <p class="settings-card-desc">Select which package manager engine is utilized for updates and discovery.</p>
-            <div class="engine-radios" id="engine-options-container">
-              <!-- Dynamically rendered -->
-            </div>
-          </div>
-
-          <!-- Preferences -->
-          <div class="settings-card">
-            <h3>Execution & Automation</h3>
-            <p class="settings-card-desc">Configure unattended installer behaviors and licensing agreements.</p>
-            <div class="settings-toggle-row">
-              <div class="toggle-info">
-                <strong>Silent Background Execution</strong>
-                <span>Run all installer wizards non-interactively without GUI popups</span>
-              </div>
-              <label class="switch">
-                <input type="checkbox" id="pref-silent-install" checked onchange="app.savePreference('silent_install', this.checked)">
-                <span class="slider"></span>
-              </label>
-            </div>
-            <div class="settings-toggle-row">
-              <div class="toggle-info">
-                <strong>Automatic Agreements Acceptance</strong>
-                <span>Automatically accept repository package and source agreements</span>
-              </div>
-              <label class="switch">
-                <input type="checkbox" id="pref-accept-agreements" checked onchange="app.savePreference('accept_agreements', this.checked)">
-                <span class="slider"></span>
-              </label>
-            </div>
-          </div>
-
-          <!-- Application Updates & Release Feed -->
-          <div class="settings-card full-span update-card">
-            <div class="update-card-header">
-              <div class="update-card-title-group">
-                <div class="update-icon-badge">
-                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path>
-                    <path d="M3 3v5h5"></path>
-                    <path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"></path>
-                    <path d="M16 21h5v-5"></path>
-                  </svg>
-                </div>
-                <div>
-                  <h3 style="margin-bottom: 2px;">Application Updates &amp; Self-Updater</h3>
-                  <p class="settings-card-desc" style="margin-bottom: 0;">Automatic in-place updates for macOS &amp; Windows without manual file redownloads.</p>
-                </div>
-              </div>
-              <div class="update-status-badge" id="app-update-status-badge">
-                <span class="status-dot healthy"></span>
-                <span id="app-version-display">v2.0.0 • Up to Date</span>
-              </div>
-            </div>
-
-            <div class="update-card-body">
-              <div class="update-info-columns">
-                <div class="update-meta-box">
-                  <div class="meta-row">
-                    <span class="meta-title">Installed Version</span>
-                    <span class="meta-data mono">2.0.0</span>
-                  </div>
-                  <div class="meta-row">
-                    <span class="meta-title">Release Channel</span>
-                    <span class="meta-data">Official GitHub Release</span>
-                  </div>
-                  <div class="meta-row">
-                    <span class="meta-title">Last Checked</span>
-                    <span class="meta-data" id="update-last-checked-time">Not checked yet</span>
-                  </div>
-                </div>
-
-                <div class="update-details-box" id="update-details-box">
-                  <div class="update-state-idle" id="update-state-idle">
-                    <p>Your copy of Quantum Updater is on the latest verified release. Background checks keep your installation patched automatically.</p>
-                  </div>
-                  <div class="update-state-found" id="update-state-found" style="display: none;">
-                    <div class="new-ver-header">
-                      <span class="new-ver-tag" id="update-new-ver-tag">v2.0.1 Available</span>
-                      <span class="new-ver-size mono" id="update-new-ver-size">42.1 MB</span>
-                    </div>
-                    <p class="new-ver-notes" id="update-new-ver-notes">Performance enhancements and security updates.</p>
-                  </div>
-                  <div class="update-state-progress" id="update-state-progress" style="display: none;">
-                    <div class="update-prog-label">
-                      <span id="update-prog-ticker">Downloading update payload...</span>
-                      <span class="mono" id="update-prog-pct">0%</span>
-                    </div>
-                    <div class="update-prog-track">
-                      <div class="update-prog-fill" id="update-prog-fill" style="width: 0%;"></div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div class="update-actions-bar">
-                <div class="settings-toggle-row" style="border: none; padding: 0; margin: 0;">
-                  <div class="toggle-info">
-                    <strong>Auto-check for updates on startup</strong>
-                    <span>Query GitHub release feed silently in the background</span>
-                  </div>
-                  <label class="switch">
-                    <input type="checkbox" id="pref-auto-update-check" checked onchange="app.savePreference('auto_update_check', this.checked)">
-                    <span class="slider"></span>
-                  </label>
-                </div>
-
-                <div class="update-btn-group">
-                  <button class="glass-btn btn-secondary btn-sm" id="btn-check-updates" onclick="app.checkForAppUpdates(false)">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                      <polyline points="23 4 23 10 17 10"></polyline>
-                      <polyline points="1 20 1 14 7 14"></polyline>
-                      <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
-                    </svg>
-                    <span>Check for Updates</span>
-                  </button>
-                  <button class="glass-btn btn-cta btn-sm" id="btn-install-app-update" style="display: none;" onclick="app.applySelfUpdate()">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                      <polyline points="7 10 12 15 17 10"></polyline>
-                      <line x1="12" y1="15" x2="12" y2="3"></line>
-                    </svg>
-                    <span>Update &amp; Restart Now</span>
-                  </button>
-                </div>
+                <input type="text" id="input-filter-updates" placeholder="Filter available updates..." oninput="app.filterUpdates(this.value)">
               </div>
             </div>
           </div>
 
-          <!-- Diagnostics -->
-          <div class="settings-card full-span">
-            <h3>System Diagnostics & Environment</h3>
-            <p class="settings-card-desc">Runtime elevation status, operating system architecture, and binary paths.</p>
-            <div class="diagnostics-table" id="diagnostics-container">
-              <!-- Dynamically populated -->
+          <!-- Package Updates Cards Container -->
+          <div class="packages-list" id="updates-list">
+            <div class="glass-placeholder">
+              <div class="placeholder-icon">
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><line x1="16.5" y1="9.4" x2="7.55" y2="4.24"></line><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.29 7 12 12 20.71 7"></polyline><line x1="12" y1="22" x2="12" y2="12"></line></svg>
+              </div>
+              <h3>macOS System Ready</h3>
+              <p>Click "Scan for Updates" above to audit all applications and packages installed on your Mac.</p>
             </div>
           </div>
+        </section>
 
-          <!-- Quantum Step Company & Download Portal -->
-          <div class="settings-card full-span" style="border-color: rgba(99, 102, 241, 0.35); background: linear-gradient(135deg, rgba(99, 102, 241, 0.08), rgba(6, 182, 212, 0.05));">
-            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+        <!-- ================= TAB 2: EXPLORE ================= -->
+        <section class="tab-pane" id="tab-explore">
+          <div class="explore-hero-card">
+            <div class="explore-header-row">
               <div>
-                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6366F1" stroke-width="2.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
-                  <h3 style="color: #6366F1; margin-bottom: 0;">Quantum Updater</h3>
-                </div>
-                <p class="settings-card-desc" style="margin-bottom: 0;">An official utility product crafted by <strong>Quantum Step</strong> (<a href="https://quantumstep.in" target="_blank" rel="noopener" style="color: #06B6D4; text-decoration: underline;">quantumstep.in</a>).</p>
+                <h2>Explore &amp; Discover Mac Software</h2>
+                <p>Browse curated macOS software, native developer tools, and cutting-edge local AI models with verified 1-click installation.</p>
               </div>
-              <div style="display: flex; gap: 8px;">
-                <a href="https://quantumstep.in/quantum-updater" target="_blank" rel="noopener" class="glass-btn btn-secondary btn-sm" style="text-decoration: none; display: inline-flex; align-items: center; gap: 6px;">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
-                  <span>Product Page & Downloads</span>
-                </a>
-                <a href="https://quantumstep.in" target="_blank" rel="noopener" class="glass-btn btn-primary btn-sm" style="text-decoration: none; display: inline-flex; align-items: center; gap: 6px;">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
-                  <span>Quantum Step</span>
-                </a>
+              <div class="explore-header-stats">
+                <span class="catalog-count-badge" id="explore-count-badge">80+ Curated Apps</span>
+              </div>
+            </div>
+
+            <!-- Quick Category Filters Row -->
+            <div class="category-filters-scroll">
+              <button class="cat-pill active" data-category="all" onclick="app.setExploreCategory('all')">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+                <span>All</span>
+              </button>
+              <button class="cat-pill" data-category="popular" onclick="app.setExploreCategory('popular')">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline><polyline points="17 6 23 6 23 12"></polyline></svg>
+                <span>Most Popular</span>
+              </button>
+              <button class="cat-pill" data-category="ai" onclick="app.setExploreCategory('ai')">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a4 4 0 0 1 4 4c0 1.95-1.4 3.58-3.25 3.93l-.75.14V14h3a3 3 0 0 1 3 3v4H5v-4a3 3 0 0 1 3-3h3v-3.93l-.75-.14A4.002 4.002 0 0 1 12 2z"></path><circle cx="9" cy="6" r="1"></circle><circle cx="15" cy="6" r="1"></circle></svg>
+                <span>AI &amp; Local LLMs</span>
+              </button>
+              <button class="cat-pill" data-category="development" onclick="app.setExploreCategory('development')">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg>
+                <span>Developer Tools</span>
+              </button>
+              <button class="cat-pill" data-category="browsers" onclick="app.setExploreCategory('browsers')">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
+                <span>Browsers</span>
+              </button>
+              <button class="cat-pill" data-category="productivity" onclick="app.setExploreCategory('productivity')">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
+                <span>Productivity</span>
+              </button>
+              <button class="cat-pill" data-category="media" onclick="app.setExploreCategory('media')">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg>
+                <span>Music &amp; Media</span>
+              </button>
+              <button class="cat-pill" data-category="utilities" onclick="app.setExploreCategory('utilities')">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path></svg>
+                <span>Mac Utilities</span>
+              </button>
+              <button class="cat-pill" data-category="gaming" onclick="app.setExploreCategory('gaming')">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="6" y1="12" x2="10" y2="12"></line><line x1="8" y1="10" x2="8" y2="14"></line><line x1="15" y1="13" x2="15.01" y2="13"></line><line x1="18" y1="11" x2="18.01" y2="11"></line><rect x="2" y="6" width="20" height="12" rx="6"></rect></svg>
+                <span>Design &amp; Social</span>
+              </button>
+            </div>
+
+            <!-- Explore Search & Sort Action Bar -->
+            <div class="explore-toolbar">
+              <div class="search-input-wrapper">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                <input type="text" id="input-explore-search" placeholder="Filter apps by name, description, or vendor..." oninput="app.onExploreSearchInput(this.value)" onkeydown="if(event.key==='Enter') app.searchRepositoryCatalog()">
+              </div>
+
+              <div class="explore-toolbar-actions">
+                <div class="sort-select-wrapper">
+                  <span class="sort-label">Sort:</span>
+                  <select id="select-explore-sort" class="glass-select" onchange="app.setExploreSort(this.value)">
+                    <option value="popular">Most Popular</option>
+                    <option value="name-asc">Name (A - Z)</option>
+                    <option value="name-desc">Name (Z - A)</option>
+                    <option value="category">Category</option>
+                  </select>
+                </div>
+
+                <button class="glass-btn btn-primary" onclick="app.searchRepositoryCatalog()" title="Search full live Homebrew repository">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                  <span>Search Online</span>
+                </button>
               </div>
             </div>
           </div>
-        </div>
-      </section>
 
-    </main>
+          <!-- Explore Packages Container -->
+          <div class="packages-list" id="explore-results-list">
+            <!-- Populated automatically on start -->
+          </div>
+        </section>
 
-    <!-- ================= PERSISTENT CROSS-TAB GLOBAL OPERATION DOCK ================= -->
-    <div class="global-operation-dock" id="global-operation-dock" style="display: none;">
-      <div class="dock-left">
-        <span class="dock-pulse-dot" id="dock-pulse-dot"></span>
-        <div class="dock-info">
-          <span class="dock-title" id="dock-status-title">Idle</span>
-          <span class="dock-ticker" id="dock-status-ticker">No active background tasks</span>
+        <!-- ================= TAB 3: INSTALLED ================= -->
+        <section class="tab-pane" id="tab-installed">
+          <div class="installed-hero-card">
+            <div class="installed-header-row">
+              <div>
+                <h2>Installed Mac Applications</h2>
+                <p>Audit local `/Applications`, Homebrew casks, and command-line tools. Reveal items in Finder or inspect bundle metadata.</p>
+              </div>
+              <div class="installed-actions">
+                <button class="glass-btn btn-primary" onclick="app.loadInstalled()">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"></path><path d="M16 21h5v-5"></path></svg>
+                  <span>Audit Installed Apps</span>
+                </button>
+              </div>
+            </div>
+            <div class="glass-search-input full-width">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+              <input type="text" id="input-filter-installed" placeholder="Filter installed applications by name or bundle ID..." oninput="app.filterInstalled(this.value)">
+            </div>
+          </div>
+
+          <div class="packages-list" id="installed-list">
+            <div class="glass-placeholder">
+              <div class="placeholder-icon">
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><line x1="16.5" y1="9.4" x2="7.55" y2="4.24"></line><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.29 7 12 12 20.71 7"></polyline><line x1="12" y1="22" x2="12" y2="12"></line></svg>
+              </div>
+              <h3>Audit Installed Software</h3>
+              <p>Click "Audit Installed Apps" to inspect macOS applications registered on your Mac.</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- ================= TAB 4: CLEANUP ================= -->
+        <section class="tab-pane" id="tab-cleanup">
+          <div class="cleanup-hero-card">
+            <div class="cleanup-header-row">
+              <div>
+                <div class="cleanup-badge-tag">
+                  <span class="status-dot status-dot-pulse"></span>
+                  <span>macOS Storage &amp; APFS Purge Engine</span>
+                </div>
+                <h2>Quantum Clean &bull; Storage Reclaimer</h2>
+                <p>Safely reclaim gigabytes of disk space by purging developer bloat, Xcode DerivedData, simulator caches, diagnostic logs, and stale package bottles.</p>
+              </div>
+              <div class="cleanup-hero-actions">
+                <button class="glass-btn btn-secondary" onclick="app.toggleAllCleanup(true)">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                  <span>Select Safe All</span>
+                </button>
+                <button class="glass-btn btn-primary" id="btn-scan-cleanup" onclick="app.scanCleanup()">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                  <span>Scan Storage</span>
+                </button>
+                <button class="glass-btn btn-danger" id="btn-purge-cleanup" onclick="app.executeCleanup()">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3z"></path></svg>
+                  <span>Purge Selected</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Cleanup Bento Metric Grid -->
+            <div class="cleanup-bento-grid">
+              <div class="cleanup-bento-card bento-reclaimable">
+                <div class="bento-card-header">
+                  <span class="bento-label">Recoverable Space</span>
+                  <div class="bento-icon-wrapper icon-yellow">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                  </div>
+                </div>
+                <div class="bento-value text-golden" id="cleanup-reclaimable-total">--</div>
+                <div class="bento-subtext" id="cleanup-reclaimable-sub">Click "Scan Storage" to analyze</div>
+              </div>
+
+              <div class="cleanup-bento-card bento-health">
+                <div class="bento-card-header">
+                  <span class="bento-label">System Health</span>
+                  <div class="bento-icon-wrapper icon-mint">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+                  </div>
+                </div>
+                <div class="bento-value text-mint" id="cleanup-health-status">Ready to Scan</div>
+                <div class="bento-subtext">Zero risk to user projects, git repositories, or OS files</div>
+              </div>
+
+              <div class="cleanup-bento-card bento-selected">
+                <div class="bento-card-header">
+                  <span class="bento-label">Selected for Purge</span>
+                  <div class="bento-icon-wrapper icon-ocean">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                  </div>
+                </div>
+                <div class="bento-value text-ocean" id="cleanup-selected-count">0 Categories</div>
+                <div class="bento-subtext" id="cleanup-selected-bytes">0 B selected for reclamation</div>
+              </div>
+
+              <div class="cleanup-bento-card bento-storage">
+                <div class="bento-card-header">
+                  <span class="bento-label">Primary APFS Volume</span>
+                  <div class="bento-icon-wrapper icon-peach">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="8" rx="2" ry="2"></rect><rect x="2" y="14" width="20" height="8" rx="2" ry="2"></rect><line x1="6" y1="6" x2="6.01" y2="6"></line><line x1="6" y1="18" x2="6.01" y2="18"></line></svg>
+                  </div>
+                </div>
+                <div class="bento-value text-peach" id="cleanup-disk-free">--</div>
+                <div class="bento-subtext" id="cleanup-disk-sub">Storage usage overview</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Categories List Grid -->
+          <div class="cleanup-categories-grid" id="cleanup-categories-container">
+            <div class="glass-placeholder">
+              <div class="placeholder-icon">
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3z"></path></svg>
+              </div>
+              <h3>macOS System Cleanup</h3>
+              <p>Click "Scan Storage" above to inspect user app caches, developer bloat, and recoverable space.</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- ================= TAB 5: CONSOLE ================= -->
+        <section class="tab-pane" id="tab-console">
+          <div class="console-glass-wrapper">
+            <div class="console-header">
+              <div class="console-title-group">
+                <span class="console-status-dot"></span>
+                <h3>Real-Time Process &amp; Installer Terminal</h3>
+              </div>
+              <div class="console-actions">
+                <button class="glass-btn btn-secondary btn-sm" onclick="app.copyConsoleLog()">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                  <span>Copy All</span>
+                </button>
+                <button class="glass-btn btn-secondary btn-sm" onclick="app.clearConsoleLog()">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                  <span>Clear</span>
+                </button>
+              </div>
+            </div>
+            <div class="console-terminal-body" id="console-output">
+              <div class="terminal-line system">[Quantum Updater]: macOS Universal engine initialized. Ready.</div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ================= TAB 6: SETTINGS ================= -->
+        <section class="tab-pane" id="tab-settings">
+          <div class="settings-grid">
+            <!-- Engine Switcher -->
+            <div class="settings-card">
+              <h3>Package Manager Backend</h3>
+              <p class="settings-card-desc">Select which package manager engine is utilized for updates and discovery.</p>
+              <div class="engine-radios" id="engine-options-container">
+                <!-- Dynamically rendered -->
+              </div>
+            </div>
+
+            <!-- Preferences -->
+            <div class="settings-card">
+              <h3>Execution &amp; Automation</h3>
+              <p class="settings-card-desc">Configure unattended installer behaviors and licensing agreements.</p>
+              <div class="settings-toggle-row">
+                <div class="toggle-info">
+                  <strong>Silent Background Execution</strong>
+                  <span>Run package operations non-interactively in background</span>
+                </div>
+                <label class="switch">
+                  <input type="checkbox" id="pref-silent-install" checked onchange="app.savePreference('silent_install', this.checked)">
+                  <span class="slider"></span>
+                </label>
+              </div>
+              <div class="settings-toggle-row">
+                <div class="toggle-info">
+                  <strong>Automatic Agreements Acceptance</strong>
+                  <span>Automatically accept repository and source agreements</span>
+                </div>
+                <label class="switch">
+                  <input type="checkbox" id="pref-accept-agreements" checked onchange="app.savePreference('accept_agreements', this.checked)">
+                  <span class="slider"></span>
+                </label>
+              </div>
+            </div>
+
+            <!-- Application Updates & Release Feed -->
+            <div class="settings-card full-span update-card">
+              <div class="update-card-header">
+                <div class="update-card-title-group">
+                  <div class="update-icon-badge">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path>
+                      <path d="M3 3v5h5"></path>
+                      <path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"></path>
+                      <path d="M16 21h5v-5"></path>
+                    </svg>
+                  </div>
+                  <div>
+                    <h3 style="margin-bottom: 2px;">Application Updates &amp; Self-Updater</h3>
+                    <p class="settings-card-desc" style="margin-bottom: 0;">Automatic in-place updates for macOS &amp; Windows without manual file redownloads.</p>
+                  </div>
+                </div>
+                <div class="update-status-badge" id="app-update-status-badge">
+                  <span class="status-dot healthy"></span>
+                  <span id="app-version-display">v2.0.0 &bull; Up to Date</span>
+                </div>
+              </div>
+
+              <div class="update-card-body">
+                <div class="update-info-columns">
+                  <div class="update-meta-box">
+                    <div class="meta-row">
+                      <span class="meta-title">Installed Version</span>
+                      <span class="meta-data mono">2.0.0</span>
+                    </div>
+                    <div class="meta-row">
+                      <span class="meta-title">Release Channel</span>
+                      <span class="meta-data">Official GitHub Release</span>
+                    </div>
+                    <div class="meta-row">
+                      <span class="meta-title">Last Checked</span>
+                      <span class="meta-data" id="update-last-checked-time">Not checked yet</span>
+                    </div>
+                  </div>
+
+                  <div class="update-details-box" id="update-details-box">
+                    <div class="update-state-idle" id="update-state-idle">
+                      <p>Your copy of Quantum Updater is on the latest verified release. Background checks keep your installation patched automatically.</p>
+                    </div>
+                    <div class="update-state-found" id="update-state-found" style="display: none;">
+                      <div class="new-ver-header">
+                        <span class="new-ver-tag" id="update-new-ver-tag">v2.0.1 Available</span>
+                        <span class="new-ver-size mono" id="update-new-ver-size">42.1 MB</span>
+                      </div>
+                      <p class="new-ver-notes" id="update-new-ver-notes">Performance enhancements and security updates.</p>
+                    </div>
+                    <div class="update-state-progress" id="update-state-progress" style="display: none;">
+                      <div class="update-prog-label">
+                        <span id="update-prog-ticker">Downloading update payload...</span>
+                        <span class="mono" id="update-prog-pct">0%</span>
+                      </div>
+                      <div class="update-prog-track">
+                        <div class="update-prog-fill" id="update-prog-fill" style="width: 0%;"></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="update-actions-bar">
+                  <div class="settings-toggle-row" style="border: none; padding: 0; margin: 0;">
+                    <div class="toggle-info">
+                      <strong>Auto-check for updates on startup</strong>
+                      <span>Query GitHub release feed silently in background</span>
+                    </div>
+                    <label class="switch">
+                      <input type="checkbox" id="pref-auto-update-check" checked onchange="app.savePreference('auto_update_check', this.checked)">
+                      <span class="slider"></span>
+                    </label>
+                  </div>
+
+                  <div class="update-btn-group">
+                    <button class="glass-btn btn-secondary btn-sm" id="btn-check-updates" onclick="app.checkForAppUpdates(false)">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="23 4 23 10 17 10"></polyline>
+                        <polyline points="1 20 1 14 7 14"></polyline>
+                        <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+                      </svg>
+                      <span>Check for Updates</span>
+                    </button>
+                    <button class="glass-btn btn-cta btn-sm" id="btn-install-app-update" style="display: none;" onclick="app.applySelfUpdate()">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                        <polyline points="7 10 12 15 17 10"></polyline>
+                        <line x1="12" y1="15" x2="12" y2="3"></line>
+                      </svg>
+                      <span>Update &amp; Restart Now</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Diagnostics -->
+            <div class="settings-card full-span">
+              <h3>macOS Diagnostics &amp; Environment</h3>
+              <p class="settings-card-desc">Runtime elevation status, operating system architecture, and binary paths.</p>
+              <div class="diagnostics-table" id="diagnostics-container">
+                <!-- Dynamically populated -->
+              </div>
+            </div>
+
+            <!-- Quantum Step Portal -->
+            <div class="settings-card full-span brand-about-card">
+              <div class="about-card-inner">
+                <div>
+                  <div class="about-card-title-row">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+                    <h3 class="about-card-heading">Quantum Updater &bull; Apple OS ver 27 Edition</h3>
+                  </div>
+                  <p class="settings-card-desc" style="margin-bottom: 0;">An official desktop utility product crafted by <strong>Quantum Step</strong> (<a href="https://quantumstep.in" target="_blank" rel="noopener" class="about-card-link">quantumstep.in</a>).</p>
+                </div>
+                <div class="about-card-actions">
+                  <a href="https://quantumstep.in/quantum-updater" target="_blank" rel="noopener" class="glass-btn btn-secondary btn-sm" style="text-decoration: none; display: inline-flex; align-items: center; gap: 6px;">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
+                    <span>Product Page</span>
+                  </a>
+                  <a href="https://quantumstep.in" target="_blank" rel="noopener" class="glass-btn btn-primary btn-sm" style="text-decoration: none; display: inline-flex; align-items: center; gap: 6px;">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+                    <span>Quantum Step</span>
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+      </main>
+
+      <!-- ================= PERSISTENT APPLE DYNAMIC ISLAND DOCK ================= -->
+      <div class="global-operation-dock mac-dynamic-island" id="global-operation-dock" style="display: none;">
+        <div class="dock-left">
+          <span class="dock-pulse-dot" id="dock-pulse-dot"></span>
+          <div class="dock-info">
+            <span class="dock-title" id="dock-status-title">Idle</span>
+            <span class="dock-ticker" id="dock-status-ticker">No active background tasks</span>
+          </div>
+        </div>
+        <div class="dock-center">
+          <div class="dock-progress-track">
+            <div class="dock-progress-fill" id="dock-progress-fill" style="width: 0%;"></div>
+          </div>
+          <span class="dock-pct" id="dock-pct-label">0%</span>
+        </div>
+        <div class="dock-right">
+          <button class="dock-queue-btn" id="dock-queue-toggle-btn" onclick="app.toggleQueueDrawer()" title="View Task Queue">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
+            <span>Queue</span>
+            <span class="dock-queue-count" id="dock-queue-count">0</span>
+          </button>
         </div>
       </div>
-      <div class="dock-center">
-        <div class="dock-progress-track">
-          <div class="dock-progress-fill" id="dock-progress-fill" style="width: 0%;"></div>
+
+      <!-- ================= EXPANDABLE GLOBAL QUEUE DRAWER ================= -->
+      <div class="queue-drawer-glass" id="queue-drawer">
+        <div class="queue-drawer-header">
+          <div class="queue-header-left">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
+            <h4>Operation Queue</h4>
+            <span class="queue-badge" id="queue-drawer-badge">0 items</span>
+          </div>
+          <div class="queue-header-actions">
+            <button class="glass-btn btn-secondary btn-xs" onclick="app.clearFinishedQueue()">Clear Done</button>
+            <button class="queue-close-btn" onclick="app.toggleQueueDrawer(false)" aria-label="Close Queue Drawer"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
+          </div>
         </div>
-        <span class="dock-pct" id="dock-pct-label">0%</span>
+        <div class="queue-drawer-list" id="queue-items-list">
+          <div class="queue-empty-state">No background operations currently queued.</div>
+        </div>
       </div>
-      <div class="dock-right">
-        <button class="dock-queue-btn" id="dock-queue-toggle-btn" onclick="app.toggleQueueDrawer()" title="View Installation Queue">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
-          <span>Queue</span>
-          <span class="dock-queue-count" id="dock-queue-count">0</span>
-        </button>
-      </div>
+
+      <!-- ================= GLOBAL TOAST CONTAINER ================= -->
+      <div class="global-toast-container" id="global-toast-container"></div>
     </div>
-
-    <!-- ================= EXPANDABLE GLOBAL QUEUE DRAWER ================= -->
-    <div class="queue-drawer-glass" id="queue-drawer">
-      <div class="queue-drawer-header">
-        <div class="queue-header-left">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
-          <h4>Operation Queue</h4>
-          <span class="queue-badge" id="queue-drawer-badge">0 items</span>
-        </div>
-        <div class="queue-header-actions">
-          <button class="glass-btn btn-secondary btn-xs" onclick="app.clearFinishedQueue()">Clear Done</button>
-          <button class="queue-close-btn" onclick="app.toggleQueueDrawer(false)" aria-label="Close Queue Drawer"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
-        </div>
-      </div>
-      <div class="queue-drawer-list" id="queue-items-list">
-        <div class="queue-empty-state">No background operations currently queued.</div>
-      </div>
-    </div>
-
-    <!-- ================= GLOBAL TOAST CONTAINER ================= -->
-    <div class="global-toast-container" id="global-toast-container"></div>
   </div>
 
-  <!-- Package Transparency & Security Inspector Modal -->
+  <!-- Package Transparency & Security Inspector Modal (Quick Look / Get Info) -->
   <div class="modal-backdrop" id="modal-details-backdrop" onclick="app.closeDetailsModal()">
-    <div class="modal-glass" onclick="event.stopPropagation()">
+    <div class="modal-glass mac-inspector-sheet" onclick="event.stopPropagation()">
       <div class="modal-header">
         <div class="modal-header-left">
           <div id="modal-pkg-logo"></div>
           <div>
             <h3 class="modal-pkg-title" id="modal-pkg-title">Application Name</h3>
-            <span class="modal-pkg-id" id="modal-pkg-id">Package.Id</span>
+            <span class="modal-pkg-id" id="modal-pkg-id">com.apple.bundle</span>
           </div>
         </div>
         <button class="modal-close-btn" onclick="app.closeDetailsModal()" title="Close (Esc)" aria-label="Close Modal"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
@@ -696,7 +837,7 @@
       <div class="modal-security-strip">
         <div class="sec-strip-pill">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
-          <span>Authenticode Signed</span>
+          <span>Gatekeeper Verified</span>
         </div>
         <div class="sec-strip-pill">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
@@ -704,14 +845,14 @@
         </div>
         <div class="sec-strip-pill">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path><polyline points="9 12 11 14 15 10"></polyline></svg>
-          <span>SmartScreen Verified</span>
+          <span>Hardened Runtime Safe</span>
         </div>
       </div>
 
       <div class="modal-body" id="modal-pkg-body">
         <div class="modal-meta-grid">
           <div class="modal-meta-item">
-            <span class="meta-label">Verified Publisher</span>
+            <span class="meta-label">Publisher / Developer</span>
             <span class="meta-val" id="modal-pkg-publisher">—</span>
           </div>
           <div class="modal-meta-item">
@@ -723,8 +864,8 @@
             <span class="meta-val" id="modal-pkg-license">—</span>
           </div>
           <div class="modal-meta-item">
-            <span class="meta-label">Installer Architecture</span>
-            <span class="meta-val" id="modal-pkg-type">—</span>
+            <span class="meta-label">Architecture</span>
+            <span class="meta-val" id="modal-pkg-type">Universal 2 (arm64 &bull; x86_64)</span>
           </div>
         </div>
 
@@ -736,11 +877,10 @@
         <div class="modal-security-box">
           <div class="sec-box-title">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path><polyline points="9 12 11 14 15 10"></polyline></svg>
-            <span>Cryptographic Integrity & Anti-Malware Protection</span>
+            <span>Cryptographic Integrity &bull; Apple Security Architecture</span>
           </div>
           <p class="sec-box-desc">
-            This application binary is obtained directly from the verified publisher's official HTTPS infrastructure. 
-            Before running any setup, Quantum Updater and Windows Package Manager enforce cryptographic SHA-256 checksum matching against Microsoft's digitally signed manifest. Corrupted or altered files are automatically rejected.
+            This application binary is cryptographically verified against the official package repository. Before installation or updating, Quantum Updater enforces SHA-256 hash checks and Apple Gatekeeper Hardened Runtime verification. Corrupted or altered payloads are automatically rejected.
           </p>
           <div class="sec-hash-row">
             <span class="sec-hash-label">SHA-256:</span>
@@ -748,14 +888,91 @@
           </div>
           <div class="sec-url-row">
             <span class="sec-hash-label">Source URL:</span>
-            <span class="sec-url-link" id="modal-pkg-url">Direct Publisher Server</span>
+            <span class="sec-url-link" id="modal-pkg-url">Verified Repository Infrastructure</span>
           </div>
         </div>
       </div>
 
       <div class="modal-footer">
+        <button class="glass-btn btn-secondary btn-sm" id="modal-btn-finder" onclick="app.revealSelectedInFinder()" title="Reveal this application in macOS Finder">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
+          <span>Reveal in Finder</span>
+        </button>
         <button class="glass-btn btn-secondary btn-sm" onclick="app.closeDetailsModal()">Close</button>
         <div id="modal-action-btn-container"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- macOS Keyboard Shortcuts Cheat Sheet Modal -->
+  <div class="modal-backdrop" id="modal-shortcuts-backdrop" onclick="app.closeShortcutsModal()" style="display: none;">
+    <div class="modal-glass mac-shortcuts-sheet" onclick="event.stopPropagation()">
+      <div class="modal-header">
+        <div class="modal-header-left">
+          <div class="shortcuts-icon-badge">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 3a3 3 0 0 0-3 3v12a3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3H6a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3V6a3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3h12a3 3 0 0 0 3-3 3 3 0 0 0-3-3z"></path></svg>
+          </div>
+          <div>
+            <h3 class="modal-pkg-title">macOS Keyboard Shortcuts</h3>
+            <span class="modal-pkg-id">Quantum Updater &bull; Apple OS 27</span>
+          </div>
+        </div>
+        <button class="modal-close-btn" onclick="app.closeShortcutsModal()" title="Close (Esc)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
+      </div>
+
+      <div class="modal-body shortcuts-grid-body">
+        <div class="shortcut-item">
+          <span class="shortcut-desc">Focus Spotlight Search</span>
+          <kbd class="shortcut-kbd">⌘K</kbd>
+        </div>
+        <div class="shortcut-item">
+          <span class="shortcut-desc">Scan for System Updates</span>
+          <kbd class="shortcut-kbd">⌘R</kbd>
+        </div>
+        <div class="shortcut-item">
+          <span class="shortcut-desc">Update All Pending Packages</span>
+          <kbd class="shortcut-kbd">⌘U</kbd>
+        </div>
+        <div class="shortcut-item">
+          <span class="shortcut-desc">Toggle Left Navigation Sidebar</span>
+          <kbd class="shortcut-kbd">⌘B</kbd>
+        </div>
+        <div class="shortcut-item">
+          <span class="shortcut-desc">Switch to Updates View</span>
+          <kbd class="shortcut-kbd">⌘1</kbd>
+        </div>
+        <div class="shortcut-item">
+          <span class="shortcut-desc">Switch to Explore Catalog</span>
+          <kbd class="shortcut-kbd">⌘2</kbd>
+        </div>
+        <div class="shortcut-item">
+          <span class="shortcut-desc">Switch to Installed Apps</span>
+          <kbd class="shortcut-kbd">⌘3</kbd>
+        </div>
+        <div class="shortcut-item">
+          <span class="shortcut-desc">Switch to System Cleaner</span>
+          <kbd class="shortcut-kbd">⌘4</kbd>
+        </div>
+        <div class="shortcut-item">
+          <span class="shortcut-desc">Switch to Process Terminal</span>
+          <kbd class="shortcut-kbd">⌘5</kbd>
+        </div>
+        <div class="shortcut-item">
+          <span class="shortcut-desc">Open Preferences &amp; Settings</span>
+          <kbd class="shortcut-kbd">⌘,</kbd>
+        </div>
+        <div class="shortcut-item">
+          <span class="shortcut-desc">Quick Look / Inspector Sheet</span>
+          <kbd class="shortcut-kbd">Space</kbd>
+        </div>
+        <div class="shortcut-item">
+          <span class="shortcut-desc">Dismiss Sheet / Clear Search</span>
+          <kbd class="shortcut-kbd">Esc</kbd>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="glass-btn btn-primary btn-sm" onclick="app.closeShortcutsModal()">Done</button>
       </div>
     </div>
   </div>

@@ -80,14 +80,45 @@
   - Updated `.github/workflows/release.yml` to package and upload DMG and update archives.
   - Verified runtime: PID verified running normally from independent location without premature exit.
 
+### Phase 14: Apple-Centric OS ver 27 Liquid Edition Redesign & Native Bridge Expansion
+- **Status:** complete
+- Actions taken:
+  - Redesigned UI architecture to a native macOS Split View layout with a 250px vibrant left sidebar, unified top toolbar, and traffic light controls safe zone.
+  - Prioritized Apple San Francisco typography stack (`-apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text"`).
+  - Implemented Apple OS ver 27 Liquid Glass aesthetic: dynamic frosted vibrancy (`backdrop-filter: blur(48px) saturate(210%)`), continuous squircle curvatures (`border-radius: 12px / 16px / 25px`), and 0.5px hairline specular rim lighting.
+  - Replaced legacy Windows references with native Apple security terminology: Apple Gatekeeper, Hardened Runtime, XProtect Notarization, APFS Snapshot Protection, and Universal 2 architecture.
+  - Expanded Explore catalog with iconic macOS software (Raycast, Arc Browser, OrbStack, iTerm2, Zed, Rectangle, Shottr).
+  - Added native macOS keyboard shortcuts (`⌘K` Spotlight search, `⌘R` scan, `⌘U` update all, `⌘B` toggle sidebar, `⌘1`-`⌘5` tab switching, `⌘,` settings, `Space` Quick Look inspector, `Esc` dismiss, `?` shortcuts sheet).
+  - Implemented Quick Look / Get Info inspector sheet modal with comprehensive bundle telemetry and "Reveal in Finder" action.
+  - Implemented Web Audio API subtle haptic click synthesizer for tactile micro-interactions.
+  - Expanded native Cocoa bridge in `src-macos/main.m`: added `search_catalog`, `install_package`, `upgrade_packages`, `uninstall_package`, `reveal_in_finder`, `set_engine`, `save_setting`.
+  - Recompiled Universal 2 binary and regenerated disk image installer (`dist/QuantumUpdater_2.0.0_macOS.dmg`) and update payload.
+  - Verified Zero-Emoji check (0 violations), JS syntax (`node -c`), and code signing validation.
+
+### Phase 15: Aesthetic Overhaul - Eradication of Midnight Teal & Material Design
+- **Status:** complete
+- Actions taken:
+  - Completely purged saturated midnight teal (`#073A4B`, `#00161f`, `rgba(7, 58, 75, ...)`, `rgba(4, 25, 33, ...)`) across all stylesheets and web assets.
+  - Replaced the dark canvas with authentic Apple Obsidian Charcoal (`#161618`, `#121214`) and translucent glass surfaces (`rgba(28, 28, 32, 0.78)` with `backdrop-filter: blur(50px) saturate(190%)`).
+  - Implemented Apple Silver Snow light mode canvas (`#f5f5f7`, `#ffffff`) with crisp typography and subtle Apple borders.
+  - Removed all floating background neon glow blobs (`.glow-orb.orb-primary`, `.orb-cyan`, `.orb-violet`) and `@keyframes floatOrb` that created an Android/crypto-landing aesthetic.
+  - Replaced colored Material drop shadows with Apple Inset Grouped card styling, 0.5px hairline specular borders (`rgba(255, 255, 255, 0.08)`), and top rim highlights (`inset 0 1px 0 rgba(255, 255, 255, 0.08)`).
+  - Aligned all accent colors to macOS Sonoma/Sequoia HIG system tokens: Apple Blue (`#0A84FF`), Apple Mint (`#30D158`), Apple Amber (`#FF9F0A`), Apple Red (`#FF453A`), Apple Purple (`#BF5AF2`).
+  - Overhauled monogram gradient palettes in `web/app.js` to Apple HIG pairs.
+  - Redesigned Settings toggles with authentic Apple push button and green toggle switches (`#30D158`).
+  - Redesigned Quantum Clean storage reclaimer and Self-Updater cards with native Apple inset wells.
+  - Validated Zero-Emoji compliance (0 violations).
+  - Rebuilt Universal 2 binary and DMG: `dist/QuantumUpdater_2.0.0_macOS.dmg` and `dist/QuantumUpdater_macOS_Update.zip`.
+
 ## 5-Question Reboot Check
 | Question | Answer |
 |---|---|
-| Where am I? | Phase 13 Complete: Cross-platform In-Place Auto-Update & Launch Stability Verified |
-| Where am I going? | Ready for release and deployment |
-| What's the goal? | Both Windows and macOS versions auto-update in-place with zero manual file redownloads. |
-| What have I learned? | `dataWithJSONObject:` requires top-level arrays/dictionaries in ObjC; ad-hoc code signing ensures Gatekeeper acceptance; in-place ditto swap provides seamless background upgrades without DMG mounting. |
-| What have I done? | Fixed Foundation JSON crash, implemented native & Tauri self-updaters, added update UI banner/cards, signed DMG/App bundles, verified execution stability. |
+| Where am I? | Phase 15 Complete: Aesthetic Overhaul - Eradication of Midnight Teal & Material Design |
+| Where am I going? | Complete delivery and user confirmation |
+| What's the goal? | Deliver a pure, authentic Apple HIG / Apple OS ver 27 Liquid Edition visual experience free of Material Design and midnight teal backgrounds. |
+| What have I learned? | Replacing heavy multi-color neon shadows with 0.5px specular borders and Apple Obsidian surfaces instantly shifts an app from looking like an Android web app to an authentic macOS native desktop app. |
+| What have I done? | Purged all glow blobs and saturated teal backgrounds, adopted Apple Obsidian `#161618` and Silver Snow `#f5f5f7`, updated all cards, switches, and buttons to Apple HIG standards, passed zero-emoji verification, and rebuilt the DMG installer. |
+
 
 
 

@@ -75,7 +75,26 @@ Phase 10: Verification & Delivery
 - [x] Verify Rust backend compilation and unit tests (`cargo test`: 3 passed)
 - [x] Verify Python compilation across all modules (`py_compile`: 0 errors)
 - [x] Push commits to GitHub repository `https://github.com/merchanthasan2/AudoChocolatey`
-- **Status:** in_progress
+- **Status:** complete
+
+### Phase 11: Apple-Centric OS ver 27 Redesign & Next-Gen Architecture
+- [x] 11.1: Design System & Styling: Implement Apple OS ver 27 / HIG design tokens, SF font stack, liquid glass translucency, 0.5px specular borders, squircle corners, and strict 6-color palette.
+- [x] 11.2: Window & Navigation Architecture: Re-architect UI into a native macOS Split View with 240px Sidebar, unified titlebar, traffic-light safe zones, and segmented toolbar controls.
+- [x] 11.3: Apple-Centric Terminology & Security Branding: Purge all Windows references; introduce Apple Hardened Runtime, Gatekeeper, Notarization, APFS protection, and Universal 2 telemetry.
+- [x] 11.4: Curated Mac Application Catalog: Expand Explore catalog with iconic macOS apps and verified Homebrew cask identifiers (Raycast, Arc, iTerm2, OrbStack, Zed, etc.).
+- [x] 11.5: Advanced macOS Features: Implement keyboard shortcuts (⌘K, ⌘R, ⌘U, ⌘1-5, ⌘,), Quick Look Inspector sheet (Spacebar), Reveal in Finder, and Dynamic Island HUD.
+- [x] 11.6: Native Cocoa Host Bridge Expansion: Add `search_catalog`, `install_package`, `upgrade_packages`, `uninstall_package`, and `reveal_in_finder` in `src-macos/main.m`.
+- [x] 11.7: Build & Verification: Compile Universal 2 binary, generate DMG, verify with browser subagent, validate zero-emoji policy, and commit.
+- **Status:** complete
+
+### Phase 12: Aesthetic Overhaul - Eradicate Material Design & Midnight Teal
+- [x] 12.1: Canvas Overhaul: Eradicated all saturated midnight teal (`#073A4B`, `#00161f`, `rgba(7, 58, 75, ...)`, `rgba(4, 25, 33, ...)`) in favor of authentic Apple Obsidian Charcoal (`#161618`, `#121214`) for Dark Mode and Apple Silver Snow (`#f5f5f7`, `#ffffff`) for Light Mode.
+- [x] 12.2: Purge Material Glowing Orbs: Removed all floating background glow blobs (`.glow-orb.orb-primary`, `.orb-cyan`, `.orb-violet`) and `@keyframes floatOrb` that created an Android/crypto-landing aesthetic.
+- [x] 12.3: Inset Grouped Architecture & Specular Hairlines: Replaced heavy multi-color drop shadows with 0.5px specular borders (`rgba(255, 255, 255, 0.08)`) and inset top rim highlights (`inset 0 1px 0 rgba(255, 255, 255, 0.08)`).
+- [x] 12.4: System Color Alignment: Harmonized all accents to macOS Sonoma/Sequoia HIG system colors: Apple Blue (`#0A84FF`), Apple Mint (`#30D158`), Apple Amber (`#FF9F0A`), Apple Red (`#FF453A`), Apple Purple (`#BF5AF2`).
+- [x] 12.5: Components Overhaul: Cleaned up Sidebar, Unified Titlebar, Bento Summary Cards, Glass Push Buttons, Package Cards, Quantum Clean storage reclaimer, Settings switches, and Self-Updater.
+- [x] 12.6: Zero-Emoji Compliance: Verified 0 emoji violations across all code, markup, and styles.
+- **Status:** complete
 
 ## Key Decisions
 | Decision | Rationale |

@@ -42,6 +42,16 @@ static NSComparisonResult compare_semver(NSString *v1, NSString *v2) {
     return NSOrderedSame;
 }
 
+static NSString *find_brew_path(void) {
+    if ([[NSFileManager defaultManager] fileExistsAtPath:@"/opt/homebrew/bin/brew"]) {
+        return @"/opt/homebrew/bin/brew";
+    }
+    if ([[NSFileManager defaultManager] fileExistsAtPath:@"/usr/local/bin/brew"]) {
+        return @"/usr/local/bin/brew";
+    }
+    return nil;
+}
+
 static NSString *json_serialize_safe(id obj) {
     if (!obj) return @"null";
     if ([NSJSONSerialization isValidJSONObject:obj]) {
@@ -308,7 +318,8 @@ static NSString *json_serialize_safe(id obj) {
             NSArray *items = [[NSFileManager defaultManager] contentsOfDirectoryAtPath:dir error:nil];
             for (NSString *item in items) {
                 if ([item hasSuffix:@".app"]) {
-                    NSString *plist = [dir stringByAppendingPathComponent:[NSString stringWithFormat:@"%@/Contents/Info.plist", item]];
+                    NSString *appPath = [dir stringByAppendingPathComponent:item];
+                    NSString *plist = [appPath stringByAppendingPathComponent:@"Contents/Info.plist"];
                     NSDictionary *dict = [NSDictionary dictionaryWithContentsOfFile:plist];
                     NSString *ver = dict[@"CFBundleShortVersionString"] ?: dict[@"CFBundleVersion"] ?: @"1.0";
                     NSString *name = dict[@"CFBundleDisplayName"] ?: dict[@"CFBundleName"] ?: [item stringByDeletingPathExtension];
@@ -318,12 +329,205 @@ static NSString *json_serialize_safe(id obj) {
                         @"name": name,
                         @"installed_version": ver,
                         @"available_version": @"",
-                        @"source": @"mac-app"
+                        @"source": @"mac-app",
+                        @"path": appPath
+                    }];
+                }
+            }
+        }
+
+        NSString *brew = find_brew_path();
+        if (brew) {
+            NSTask *bTask = [[NSTask alloc] init];
+            bTask.launchPath = brew;
+            bTask.arguments = @[@"list", @"--cask", @"--versions"];
+            NSPipe *bPipe = [NSPipe pipe];
+            bTask.standardOutput = bPipe;
+            [bTask launch];
+            NSData *bData = [[bPipe fileHandleForReading] readDataToEndOfFile];
+            [bTask waitUntilExit];
+            NSString *bOut = [[NSString alloc] initWithData:bData encoding:NSUTF8StringEncoding] ?: @"";
+            for (NSString *line in [bOut componentsSeparatedByString:@"\n"]) {
+                NSArray *parts = [line componentsSeparatedByCharactersInSet:[NSCharacterSet whitespaceCharacterSet]];
+                NSMutableArray *clean = [NSMutableArray array];
+                for (NSString *p in parts) { if (p.length > 0) [clean addObject:p]; }
+                if (clean.count >= 2) {
+                    [apps addObject:@{
+                        @"id": clean[0],
+                        @"name": clean[0],
+                        @"installed_version": clean[1],
+                        @"available_version": @"",
+                        @"source": @"brew-cask",
+                        @"path": [NSString stringWithFormat:@"/Applications/%@.app", clean[0]]
                     }];
                 }
             }
         }
         [self sendSuccessResponse:apps callId:callId];
+
+    } else if ([cmd isEqualToString:@"reveal_in_finder"]) {
+        NSString *path = args[@"path"] ?: @"";
+        NSString *packageId = args[@"packageId"] ?: @"";
+        if (path.length > 0 && [[NSFileManager defaultManager] fileExistsAtPath:path]) {
+            [[NSWorkspace sharedWorkspace] selectFile:path inFileViewerRootedAtPath:@""];
+            [self sendSuccessResponse:@{ @"success": @YES } callId:callId];
+        } else {
+            BOOL found = NO;
+            NSArray *roots = @[@"/Applications", [NSHomeDirectory() stringByAppendingPathComponent:@"Applications"]];
+            for (NSString *dir in roots) {
+                NSArray *items = [[NSFileManager defaultManager] contentsOfDirectoryAtPath:dir error:nil];
+                for (NSString *item in items) {
+                    if ([item hasSuffix:@".app"]) {
+                        NSString *appPath = [dir stringByAppendingPathComponent:item];
+                        NSString *plist = [appPath stringByAppendingPathComponent:@"Contents/Info.plist"];
+                        NSDictionary *dict = [NSDictionary dictionaryWithContentsOfFile:plist];
+                        NSString *bId = dict[@"CFBundleIdentifier"] ?: @"";
+                        NSString *base = [item stringByDeletingPathExtension];
+                        if ([bId localizedCaseInsensitiveContainsString:packageId] ||
+                            [base localizedCaseInsensitiveContainsString:packageId]) {
+                            [[NSWorkspace sharedWorkspace] selectFile:appPath inFileViewerRootedAtPath:@""];
+                            found = YES;
+                            break;
+                        }
+                    }
+                }
+                if (found) break;
+            }
+            [self sendSuccessResponse:@{ @"success": @(found) } callId:callId];
+        }
+
+    } else if ([cmd isEqualToString:@"search_catalog"]) {
+        NSString *query = args[@"query"] ?: @"";
+        NSMutableArray *results = [NSMutableArray array];
+        NSString *brew = find_brew_path();
+        if (brew && query.length > 0) {
+            NSTask *task = [[NSTask alloc] init];
+            task.launchPath = brew;
+            task.arguments = @[@"search", query];
+            NSPipe *pipe = [NSPipe pipe];
+            task.standardOutput = pipe;
+            [task launch];
+            NSData *data = [[pipe fileHandleForReading] readDataToEndOfFile];
+            [task waitUntilExit];
+            NSString *outStr = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding] ?: @"";
+            BOOL isCask = NO;
+            for (NSString *line in [outStr componentsSeparatedByString:@"\n"]) {
+                NSString *trim = [line stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]];
+                if ([trim containsString:@"Casks"]) { isCask = YES; continue; }
+                if ([trim containsString:@"Formulae"]) { isCask = NO; continue; }
+                for (NSString *tok in [trim componentsSeparatedByCharactersInSet:[NSCharacterSet whitespaceCharacterSet]]) {
+                    if (tok.length > 0 && ![tok containsString:@"="]) {
+                        [results addObject:@{
+                            @"id": tok,
+                            @"name": tok,
+                            @"version": @"Latest",
+                            @"source": isCask ? @"brew-cask" : @"brew-formula",
+                            @"description": @"Homebrew Software Repository"
+                        }];
+                    }
+                }
+            }
+        }
+        [self sendSuccessResponse:results callId:callId];
+
+    } else if ([cmd isEqualToString:@"install_package"]) {
+        NSString *pkgId = args[@"packageId"] ?: @"";
+        NSString *brew = find_brew_path();
+        if (!brew) {
+            [self sendLog:[NSString stringWithFormat:@"[Quantum Install]: Homebrew not detected. Direct download or install brew via brew.sh"]];
+            [self sendErrorResponse:@"Homebrew is not installed on this system." callId:callId];
+        } else {
+            [self sendLog:[NSString stringWithFormat:@"[Quantum Package Manager]: Installing %@ via Homebrew...", pkgId]];
+            [self sendProgress:0.25 ticker:[NSString stringWithFormat:@"Installing %@...", pkgId]];
+            NSTask *task = [[NSTask alloc] init];
+            task.launchPath = brew;
+            task.arguments = @[@"install", @"--cask", pkgId];
+            NSPipe *pipe = [NSPipe pipe];
+            task.standardOutput = pipe;
+            task.standardError = pipe;
+            [task launch];
+            NSFileHandle *fh = [pipe fileHandleForReading];
+            NSData *data = [fh readDataToEndOfFile];
+            [task waitUntilExit];
+            NSString *outStr = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding] ?: @"";
+            for (NSString *l in [outStr componentsSeparatedByString:@"\n"]) {
+                if (l.length > 0) [self sendLog:l];
+            }
+            BOOL success = (task.terminationStatus == 0);
+            [self sendProgress:1.0 ticker:[NSString stringWithFormat:@"%@ complete", pkgId]];
+            [self sendSuccessResponse:@{ @"success": @(success), @"message": success ? @"Installed successfully" : @"Installation returned non-zero code" } callId:callId];
+        }
+
+    } else if ([cmd isEqualToString:@"upgrade_packages"]) {
+        NSArray *pkgIds = args[@"packageIds"] ?: @[];
+        NSMutableArray *statuses = [NSMutableArray array];
+        NSString *brew = find_brew_path();
+        for (NSString *pid in pkgIds) {
+            [self sendLog:[NSString stringWithFormat:@"[Quantum Updater]: Processing upgrade for %@...", pid]];
+            if ([pid hasPrefix:@"macOS"] || [pid containsString:@"Update"]) {
+                NSTask *task = [[NSTask alloc] init];
+                task.launchPath = @"/usr/sbin/softwareupdate";
+                task.arguments = @[@"-i", pid];
+                NSPipe *pipe = [NSPipe pipe];
+                task.standardOutput = pipe;
+                task.standardError = pipe;
+                [task launch];
+                [task waitUntilExit];
+                BOOL ok = (task.terminationStatus == 0);
+                [statuses addObject:@{ @"package_id": pid, @"success": @(ok), @"message": ok ? @"Apple Update Complete" : @"Update Failed" }];
+            } else if (brew) {
+                NSTask *task = [[NSTask alloc] init];
+                task.launchPath = brew;
+                task.arguments = @[@"upgrade", pid];
+                NSPipe *pipe = [NSPipe pipe];
+                task.standardOutput = pipe;
+                task.standardError = pipe;
+                [task launch];
+                [task waitUntilExit];
+                BOOL ok = (task.terminationStatus == 0);
+                [statuses addObject:@{ @"package_id": pid, @"success": @(ok), @"message": ok ? @"Upgraded" : @"Upgrade failed" }];
+            } else {
+                [statuses addObject:@{ @"package_id": pid, @"success": @NO, @"message": @"Engine unavailable" }];
+            }
+        }
+        [self sendSuccessResponse:statuses callId:callId];
+
+    } else if ([cmd isEqualToString:@"uninstall_package"]) {
+        NSString *pkgId = args[@"packageId"] ?: @"";
+        NSString *brew = find_brew_path();
+        if (brew) {
+            [self sendLog:[NSString stringWithFormat:@"[Quantum Package Manager]: Uninstalling %@...", pkgId]];
+            NSTask *task = [[NSTask alloc] init];
+            task.launchPath = brew;
+            task.arguments = @[@"uninstall", @"--cask", pkgId];
+            NSPipe *pipe = [NSPipe pipe];
+            task.standardOutput = pipe;
+            task.standardError = pipe;
+            [task launch];
+            [task waitUntilExit];
+            BOOL ok = (task.terminationStatus == 0);
+            [self sendSuccessResponse:@{ @"success": @(ok) } callId:callId];
+        } else {
+            [self sendSuccessResponse:@{ @"success": @NO, @"message": @"Homebrew required for uninstalling casks" } callId:callId];
+        }
+
+    } else if ([cmd isEqualToString:@"set_engine"]) {
+        [self sendSuccessResponse:@{ @"success": @YES } callId:callId];
+
+    } else if ([cmd isEqualToString:@"save_setting"]) {
+        NSString *key = args[@"key"] ?: @"";
+        id val = args[@"value"];
+        if (key.length > 0 && val) {
+            NSString *appSupport = [NSSearchPathForDirectoriesInDomains(NSApplicationSupportDirectory, NSUserDomainMask, YES) firstObject];
+            NSString *dir = [appSupport stringByAppendingPathComponent:@"QuantumUpdater"];
+            [[NSFileManager defaultManager] createDirectoryAtPath:dir withIntermediateDirectories:YES attributes:nil error:nil];
+            NSString *file = [dir stringByAppendingPathComponent:@"settings.json"];
+            NSMutableDictionary *settings = [NSMutableDictionary dictionaryWithContentsOfFile:file] ?: [NSMutableDictionary dictionary];
+            settings[key] = val;
+            NSData *d = [NSJSONSerialization dataWithJSONObject:settings options:NSJSONWritingPrettyPrinted error:nil];
+            [d writeToFile:file atomically:YES];
+        }
+        [self sendSuccessResponse:@{ @"success": @YES } callId:callId];
 
     } else if ([cmd isEqualToString:@"check_self_update"]) {
         NSString *currentVer = [[NSBundle mainBundle] infoDictionary][@"CFBundleShortVersionString"] ?: @"2.0.0";
