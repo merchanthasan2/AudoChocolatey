@@ -22,7 +22,7 @@ mkdir -p "$DIST_DIR/macos" "$DMG_STAGING" "$APP_BUNDLE/Contents/MacOS" "$APP_BUN
 # 2. Compile Universal Binary (arm64 + x86_64)
 echo "[2/5] Compiling native Universal 2 binary with clang..."
 clang -arch arm64 -arch x86_64 -fobjc-arc -O3 \
-  -framework Cocoa -framework WebKit \
+  -framework Cocoa -framework WebKit -framework IOKit -framework AVFoundation \
   src-macos/main.m \
   -o "$APP_BUNDLE/Contents/MacOS/Quantum Updater"
 
@@ -31,6 +31,9 @@ chmod +x "$APP_BUNDLE/Contents/MacOS/Quantum Updater"
 # 3. Copy Application Assets & Resources
 echo "[3/5] Bundling application resources & web assets..."
 cp src-tauri/icons/icon.icns "$APP_BUNDLE/Contents/Resources/icon.icns"
+cp web/icon.png "$APP_BUNDLE/Contents/Resources/icon.png"
+cp web/icon.png "$APP_BUNDLE/Contents/Resources/web/icon.png"
+cp web/icon.png "$APP_BUNDLE/Contents/Resources/web/logo.png"
 cp web/index.html "$APP_BUNDLE/Contents/Resources/web/"
 cp web/style.css "$APP_BUNDLE/Contents/Resources/web/"
 cp web/app.js "$APP_BUNDLE/Contents/Resources/web/"

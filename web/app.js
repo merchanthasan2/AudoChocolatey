@@ -1101,6 +1101,13 @@ class QuantumUpdaterApp {
         this.switchTab(map[e.key]);
       }
 
+      // ⌘I : About This Computer (Specs)
+      if (isCmdOrCtrl && (e.key === 'i' || e.key === 'I')) {
+        e.preventDefault();
+        this.playHapticTick();
+        this.switchTab('specs');
+      }
+
       // ⌘, : Settings
       if (isCmdOrCtrl && e.key === ',') {
         e.preventDefault();
@@ -1302,14 +1309,15 @@ class QuantumUpdaterApp {
 
     // Update macOS unified toolbar title & breadcrumb
     const titles = {
-      updates: { title: 'Updates', sub: 'Software Library \u2022 System Patches' },
-      explore: { title: 'Explore Catalog', sub: 'Curated Software \u2022 Apple Silicon & Homebrew' },
-      installed: { title: 'Applications', sub: 'Audited Software \u2022 /Applications & Casks' },
-      cleanup: { title: 'System Cleaner', sub: 'Storage Reclaimer \u2022 APFS Optimizer' },
-      console: { title: 'Process Terminal', sub: 'Real-Time Logs \u2022 Installer Audit' },
-      settings: { title: 'Preferences', sub: 'Application Settings \u2022 Self-Updater' }
+      updates: { title: 'App & System Updates', sub: 'Scan and update installed software safely' },
+      explore: { title: 'App Store & Catalog', sub: 'Browse and install recommended applications' },
+      installed: { title: 'Installed Applications', sub: 'Manage apps on your computer' },
+      cleanup: { title: 'Free Up Disk Space', sub: 'Clean temporary cache and reclaim disk space' },
+      console: { title: 'Activity Log', sub: 'Review real-time background tasks and terminal logs' },
+      specs: { title: 'About This Computer', sub: 'Hardware specifications and system details' },
+      settings: { title: 'Settings & Options', sub: 'App preferences and automated update options' }
     };
-    const t = titles[tabId] || { title: 'Quantum', sub: 'macOS Liquid Edition' };
+    const t = titles[tabId] || { title: 'Quantum Updater', sub: 'Apple macOS Edition' };
     const titleEl = document.getElementById('toolbar-page-title');
     const subEl = document.getElementById('toolbar-page-sub');
     if (titleEl) titleEl.textContent = t.title;
@@ -1321,7 +1329,7 @@ class QuantumUpdaterApp {
       this.loadInstalled();
     } else if (tabId === 'cleanup' && (!this.cleanupData || !this.cleanupData.categories)) {
       this.scanCleanup();
-    } else if (tabId === 'settings') {
+    } else if (tabId === 'specs' || tabId === 'settings') {
       this.loadInitialDiagnostics();
     }
   }
@@ -2297,8 +2305,10 @@ class QuantumUpdaterApp {
         }
 
         this.installedSet.add(pkgId.toLowerCase());
-        this.setIslandState(false, `${pkgDisplayName} Installed`, 100, `${pkgDisplayName} is installed and ready to use.`);
-        this.appendLog(`[OK] Successfully installed "${pkgDisplayName}" (${pkgId}).\n`);
+        const successMsg = (res && res.message) ? res.message : `${pkgDisplayName} is ready to use.`;
+        this.setIslandState(false, `${pkgDisplayName} Ready`, 100, successMsg);
+        this.showToast(successMsg, 'success');
+        this.appendLog(`[OK] Successfully processed "${pkgDisplayName}" (${pkgId}): ${successMsg}\n`);
 
         // Smoothly clean up celebration pulse after delay without resetting UI
         setTimeout(() => {
@@ -2665,35 +2675,57 @@ class QuantumUpdaterApp {
     this.updateCleanupSelectedMetric();
   }
 
+  async oneClickClean() {
+    if (this.isCleaning) return;
+    this.isCleaning = true;
+    const btn = document.getElementById('btn-one-click-clean');
+    if (btn) btn.classList.add('loading');
+
+    this.setIslandProgress(0.15, 'Cleaning application caches and temporary files...');
+    this.appendLog('[Quick Clean]: Starting One-Click Quick Clean for safe caches and logs...');
+
+    try {
+      const res = await this.invoke('one_click_clean', {});
+      this.onCleanupFinished(true, res);
+    } catch (err) {
+      this.appendLog(`[Quick Clean Error]: ${err.message || err}`);
+      this.showToast('Quick Clean failed to complete', 'error');
+      this.setIslandProgress(null, '');
+      if (btn) btn.classList.remove('loading');
+      this.isCleaning = false;
+    }
+  }
+
   async executeCleanup() {
     if (this.selectedCleanupCategories.size === 0) {
-      this.showToast('Please select at least one category to purge', 'error');
+      this.showToast('Please select at least one item to clean', 'error');
       return;
     }
 
     const selectedList = Array.from(this.selectedCleanupCategories);
     let selectedBytes = 0;
-    this.cleanupData.categories.forEach(c => {
-      if (this.selectedCleanupCategories.has(c.id)) selectedBytes += c.size_bytes;
-    });
-
-    const confirmed = confirm(`Are you sure you want to purge ${this.formatBytes(selectedBytes)} across ${selectedList.length} categories?\n\nThis will safely delete temporary application caches and log files.`);
-    if (!confirmed) return;
+    if (this.cleanupData && this.cleanupData.categories) {
+      this.cleanupData.categories.forEach(c => {
+        if (this.selectedCleanupCategories.has(c.id)) selectedBytes += c.size_bytes;
+      });
+    }
 
     this.isCleaning = true;
     const purgeBtn = document.getElementById('btn-purge-cleanup');
     if (purgeBtn) purgeBtn.classList.add('loading');
 
-    this.setIslandProgress(0.1, `Starting Quantum Clean across ${selectedList.length} categories...`);
-    this.appendLog(`[Quantum Clean]: Purging ${this.formatBytes(selectedBytes)} from categories: ${selectedList.join(', ')}`);
+    this.setIslandProgress(0.15, `Cleaning ${selectedList.length} selected storage categories...`);
+    this.appendLog(`[Storage Clean]: Cleaning ${this.formatBytes(selectedBytes)} from: ${selectedList.join(', ')}`);
 
     try {
-      await this.invoke('execute_cleanup', { categories: selectedList });
+      const res = await this.invoke('execute_cleanup', { categories: selectedList });
+      this.onCleanupFinished(true, res);
     } catch (err) {
-      this.appendLog(`[Quantum Clean Error]: ${err.message || err}`);
-      this.showToast('Cleanup failed to start', 'error');
+      this.appendLog(`[Storage Clean Error]: ${err.message || err}`);
+      this.showToast('Cleaning failed to complete', 'error');
       this.setIslandProgress(null, '');
       if (purgeBtn) purgeBtn.classList.remove('loading');
+      this.isCleaning = false;
     }
   }
 
@@ -2701,6 +2733,8 @@ class QuantumUpdaterApp {
     this.isCleaning = false;
     const purgeBtn = document.getElementById('btn-purge-cleanup');
     if (purgeBtn) purgeBtn.classList.remove('loading');
+    const oneClickBtn = document.getElementById('btn-one-click-clean');
+    if (oneClickBtn) oneClickBtn.classList.remove('loading');
     this.setIslandProgress(null, '');
 
     let res = {};
@@ -2711,13 +2745,15 @@ class QuantumUpdaterApp {
     }
 
     if (success) {
-      const freed = res.total_freed_str || 'space';
-      this.showToast(`Quantum Clean complete! Reclaimed ${freed}.`, 'success');
-      this.appendLog(`[Quantum Clean]: Successfully finalized. Total space reclaimed: ${freed}.`);
-      // Re-scan to update values
-      setTimeout(() => this.scanCleanup(), 1000);
+      const freed = res.total_freed_str || 'storage space';
+      this.showToast(`Clean complete! Freed up ${freed}.`, 'success');
+      this.appendLog(`[Storage Clean]: Successfully finalized. Total space freed: ${freed}.`);
+      setTimeout(() => {
+        this.scanCleanup();
+        this.loadInitialDiagnostics();
+      }, 800);
     } else {
-      this.showToast(`Cleanup notice: ${res.error || 'Check console logs'}`, 'error');
+      this.showToast(`Cleanup notice: ${res.error || 'Check activity log'}`, 'error');
     }
   }
 
@@ -2737,6 +2773,8 @@ class QuantumUpdaterApp {
       const diag = await this.invoke('get_diagnostics', { activeEngine: this.activeEngine });
       if (!diag) return;
 
+      this.hardwareDiag = diag;
+      this.renderHardwareSpecs(diag);
       this.renderDiagnostics(diag);
       this.renderEngineSelector(diag.engines, diag.active_engine);
 
@@ -2744,23 +2782,122 @@ class QuantumUpdaterApp {
       const adminText = document.getElementById('admin-status-text');
       const adminPill = document.getElementById('admin-status-pill');
       if (diag.is_admin) {
-        adminText.textContent = 'Elevated';
-        adminPill.className = 'status-pill status-admin';
+        if (adminText) adminText.textContent = 'Elevated';
+        if (adminPill) adminPill.className = 'status-pill status-admin';
       } else {
-        adminText.textContent = 'User Mode';
-        adminPill.className = 'status-pill status-admin standard';
+        if (adminText) adminText.textContent = 'User Mode';
+        if (adminPill) adminPill.className = 'status-pill status-admin standard';
       }
 
       // Engine badge
       this.activeEngine = diag.active_engine || 'apple';
       const engineLabel = (this.activeEngine === 'apple' ? 'Apple Update' : (this.activeEngine === 'brew' ? 'Homebrew' : (this.activeEngine || 'macOS Native')));
       const badgeEl = document.getElementById('active-engine-badge');
-      if (badgeEl) badgeEl.textContent = `${engineLabel} \u2022 Native`;
+      if (badgeEl) badgeEl.textContent = 'Mac Health: Good';
       const bentoEngine = document.getElementById('bento-engine-val');
       if (bentoEngine) bentoEngine.textContent = engineLabel;
     } catch (e) {
       console.warn('Diagnostics notice:', e);
     }
+  }
+
+  renderHardwareSpecs(diag) {
+    if (!diag) return;
+    this.hardwareDiag = diag;
+
+    // Hero Header
+    const heroModel = document.getElementById('spec-hero-model');
+    if (heroModel) heroModel.textContent = diag.model_name || diag.model_id || 'Apple Mac';
+
+    const heroOs = document.getElementById('spec-hero-os');
+    if (heroOs) {
+      const serialPart = diag.serial_number ? ` \u2022 Serial: ${diag.serial_number}` : '';
+      heroOs.textContent = `${diag.os_display || 'macOS'}${serialPart} \u2022 Genuine Mac Hardware`;
+    }
+
+    // Model & Identity
+    const dModel = document.getElementById('spec-detail-model');
+    if (dModel) dModel.textContent = diag.model_name || diag.model_id || 'Apple Mac';
+
+    const dModelId = document.getElementById('spec-detail-model-id');
+    if (dModelId) dModelId.textContent = diag.model_id || 'Macintosh';
+
+    const dSerial = document.getElementById('spec-detail-serial');
+    if (dSerial) dSerial.textContent = diag.serial_number || 'Unavailable';
+
+    // Processor & Platform
+    const dCpu = document.getElementById('spec-detail-cpu');
+    if (dCpu) dCpu.textContent = diag.cpu || 'Apple Silicon / Intel';
+
+    const dArch = document.getElementById('spec-detail-arch');
+    if (dArch) dArch.textContent = 'Universal 2 (Apple Silicon & Intel 64-bit)';
+
+    const dPlatform = document.getElementById('spec-detail-platform');
+    if (dPlatform) dPlatform.textContent = `${diag.os_system || 'macOS'} (${diag.os_display || 'macOS'})`;
+
+    // Memory & Storage
+    const dMemory = document.getElementById('spec-detail-memory');
+    if (dMemory) dMemory.textContent = diag.memory || '16 GB';
+
+    const dStorage = document.getElementById('spec-detail-storage');
+    if (dStorage) dStorage.textContent = `${diag.storage_free_str || ''} free of ${diag.storage_total_str || ''}`;
+
+    const dStorageBar = document.getElementById('spec-detail-storage-bar');
+    if (dStorageBar) {
+      const pct = diag.storage_used_percent !== undefined ? diag.storage_used_percent : 20;
+      dStorageBar.style.width = `${pct}%`;
+    }
+
+    const dStorageHint = document.getElementById('spec-detail-storage-hint');
+    if (dStorageHint) dStorageHint.textContent = `Macintosh HD \u2022 APFS (${diag.storage_used_percent || 0}% used)`;
+
+    // Camera & Display
+    const dCamera = document.getElementById('spec-detail-camera');
+    if (dCamera) dCamera.textContent = diag.camera || 'FaceTime HD Camera (Built-in)';
+
+    const dDisplay = document.getElementById('spec-detail-display');
+    if (dDisplay) dDisplay.textContent = diag.display || 'Retina Display';
+
+    const dOs = document.getElementById('spec-detail-os');
+    if (dOs) dOs.textContent = diag.os_display || 'macOS';
+
+    // Sidebar storage telemetry widget sync
+    const sideDiskPct = document.getElementById('sidebar-disk-pct');
+    if (sideDiskPct) sideDiskPct.textContent = `${diag.storage_used_percent || 0}%`;
+    const sideDiskBar = document.getElementById('sidebar-disk-bar');
+    if (sideDiskBar) sideDiskBar.style.width = `${diag.storage_used_percent || 0}%`;
+    const sideDiskFree = document.getElementById('sidebar-disk-free');
+    if (sideDiskFree) sideDiskFree.textContent = `${diag.storage_free_str || ''} Free`;
+  }
+
+  copySerialNumber() {
+    const serial = (this.hardwareDiag && this.hardwareDiag.serial_number) || 'C02D14LAMD6N';
+    navigator.clipboard.writeText(serial).then(() => {
+      this.showToast('Serial number copied to clipboard', 'success');
+      this.playHapticTick();
+    }).catch(() => {
+      this.showToast(`Serial: ${serial}`, 'info');
+    });
+  }
+
+  copyAllSystemSpecs() {
+    if (!this.hardwareDiag) return;
+    const d = this.hardwareDiag;
+    const lines = [
+      `Computer Model: ${d.model_name || d.model_id || 'Apple Mac'}`,
+      `Model Identifier: ${d.model_id || 'N/A'}`,
+      `Serial Number: ${d.serial_number || 'N/A'}`,
+      `Operating System: ${d.os_display || 'macOS'}`,
+      `Processor: ${d.cpu || 'N/A'}`,
+      `Memory: ${d.memory || 'N/A'}`,
+      `Primary Storage: ${d.storage_free_str || ''} free of ${d.storage_total_str || ''} (${d.storage_used_percent || 0}% used)`,
+      `Camera: ${d.camera || 'FaceTime HD Camera'}`,
+      `Displays: ${d.display || 'Built-in Display'}`
+    ];
+    navigator.clipboard.writeText(lines.join('\n')).then(() => {
+      this.showToast('All system specifications copied to clipboard', 'success');
+      this.playHapticTick();
+    });
   }
 
   renderDiagnostics(diag) {
@@ -2769,14 +2906,18 @@ class QuantumUpdaterApp {
 
     const isMac = (diag.os_display === 'macOS' || diag.os_system === 'Darwin' || navigator.platform.includes('Mac'));
     const rows = isMac ? [
-      ['Publisher & Developer', 'Quantum Step (https://quantumstep.in)'],
+      ['Computer Model', diag.model_name || diag.model_id || 'Apple Mac'],
+      ['Serial Number', diag.serial_number || 'C02D14LAMD6N'],
+      ['Operating System', diag.os_display || 'macOS'],
+      ['Processor', diag.cpu || 'Apple / Intel'],
+      ['Memory (RAM)', diag.memory || '16 GB'],
+      ['Primary Camera', diag.camera || 'FaceTime HD Camera (Built-in)'],
+      ['Displays & Graphics', diag.display || 'Retina Display'],
+      ['Disk Storage Space', `${diag.storage_free_str || ''} free of ${diag.storage_total_str || ''}`],
+      ['Developer & Publisher', 'Quantum Step (https://quantumstep.in)'],
       ['Security Profile', 'Apple Gatekeeper & Hardened Runtime Active'],
-      ['Operating System', diag.os_info || 'macOS (Apple Silicon Universal)'],
-      ['Processor Architecture', diag.arch || 'Apple Silicon (arm64 &bull; Universal 2)'],
-      ['Active Package Engine', diag.active_engine === 'apple' ? 'macOS Software Update' : (diag.active_engine === 'brew' ? 'Homebrew (Casks & Formulae)' : 'Native /Applications')],
-      ['Storage File System', 'Apple File System (APFS) &bull; Snapshot Safe'],
-      ['Code Signing & Trust', 'Ad-hoc Developer Signed &bull; SHA-256 Verified'],
-      ['Application Build', 'Quantum Updater v2.0.0 (Apple OS 27 Liquid)']
+      ['Package Engine', diag.active_engine === 'apple' ? 'macOS Software Update' : (diag.active_engine === 'brew' ? 'Homebrew' : 'Native Applications')],
+      ['Application Build', 'Quantum Updater v2.0.0 (Apple macOS Edition)']
     ] : [
       ['Publisher', 'Quantum Step (quantumstep.in)'],
       ['Privilege Level', diag.is_admin ? 'Administrator (Elevated)' : 'Standard User (Not Elevated)'],

@@ -110,14 +110,37 @@
   - Validated Zero-Emoji compliance (0 violations).
   - Rebuilt Universal 2 binary and DMG: `dist/QuantumUpdater_2.0.0_macOS.dmg` and `dist/QuantumUpdater_macOS_Update.zip`.
 
+### Phase 16: macOS Native Refinement, Hardware Specs & Friction-Free UX
+- **Status:** complete
+- Actions taken:
+  - **TCC Apple Music Permission Eradication**: Fixed the intrusive system prompt by adding directory skipping (`should_skip_path`) in `src-macos/main.m` for `com.apple.Music`, `com.apple.iTunes`, `com.apple.AMPDevicesAgent`, and `com.apple.MediaLibrary` during recursive storage scans.
+  - **Storage Cleaner One-Click Overhaul**:
+    - Eliminated blocking `confirm()` popups that stalled execution in WebKit without WKUIDelegate.
+    - Implemented `WKUIDelegate` in `QuantumBridge` (`runJavaScriptAlertPanelWithMessage`, `runJavaScriptConfirmPanelWithMessage`).
+    - Added high-visibility **One-Click Quick Clean** button (`#btn-one-click-clean`) in Cocoa host and frontend.
+    - Simplified confusing verbiage: changed "Purge" to "Free Up Disk Space" / "Clean Selected", and "Primary APFS Volume" to "Macintosh HD Storage".
+  - **App Installation Fix & Fallback**:
+    - Handled systems without Homebrew by adding direct official macOS installer download links (`get_app_direct_download_url`) for Chrome, Firefox, Brave, VS Code, Docker, Spotify, Raycast, Arc, Ollama, Cursor, iTerm2, Zed, Slack, Zoom, VLC, Notion, Obsidian, Sublime, Postman, Telegram, WhatsApp, and Discord.
+    - Direct installer opens immediately and notifies user with a success toast.
+  - **Double Window Controls Elimination**:
+    - Removed duplicate HTML traffic light dots in `web/index.html` while preserving native macOS titlebar buttons.
+  - **Native Apple macOS Menu Bar**:
+    - Implemented `setup_macos_menu` in `src-macos/main.m` with standard menus (Quantum Updater, File, Edit, View, Window, Help) and key equivalents (⌘Q, ⌘W, ⌘R, ⌘,, ⌘H, ⌘Z, ⌘X, ⌘C, ⌘V, ⌘A).
+  - **"About This Computer" Hardware Specifications Screen**:
+    - Created dedicated `tab-specs` view in `web/index.html` and styled in `web/style.css`.
+    - Native hardware extraction via IOKit (`get_system_serial_number`), AVFoundation (`get_system_camera_name`), and Cocoa screen/sysctl APIs (`model`, `cpu`, `memory`, `display`, `storage`).
+    - Displays Model Name, Model Identifier, Serial Number (with 1-click copy), Processor, Architecture, RAM, Storage Bar, Built-in Camera, and Displays.
+  - **Zero-Emoji Compliance**: Verified 0 emoji violations across all project files.
+  - **Universal 2 Binary & DMG Packaging**: Recompiled binary with `-framework IOKit -framework AVFoundation` and regenerated `dist/QuantumUpdater_2.0.0_macOS.dmg` (360 KB).
+
 ## 5-Question Reboot Check
 | Question | Answer |
 |---|---|
-| Where am I? | Phase 15 Complete: Aesthetic Overhaul - Eradication of Midnight Teal & Material Design |
-| Where am I going? | Complete delivery and user confirmation |
-| What's the goal? | Deliver a pure, authentic Apple HIG / Apple OS ver 27 Liquid Edition visual experience free of Material Design and midnight teal backgrounds. |
-| What have I learned? | Replacing heavy multi-color neon shadows with 0.5px specular borders and Apple Obsidian surfaces instantly shifts an app from looking like an Android web app to an authentic macOS native desktop app. |
-| What have I done? | Purged all glow blobs and saturated teal backgrounds, adopted Apple Obsidian `#161618` and Silver Snow `#f5f5f7`, updated all cards, switches, and buttons to Apple HIG standards, passed zero-emoji verification, and rebuilt the DMG installer. |
+| Where am I? | Phase 16 Complete: macOS Native Refinement, Hardware Specs & Friction-Free UX |
+| Where am I going? | Delivery to the user with complete testing and verification |
+| What's the goal? | A smooth, native, zero-friction Apple experience with no permission popups, simple verbiage, one-click storage cleaning, instant app installation, and full hardware specs. |
+| What have I learned? | WebKit in custom Cocoa apps silently drops `window.confirm` unless `WKUIDelegate` is implemented, and enumerating `~/Library/Caches/com.apple.Music` triggers macOS TCC privacy alerts. Skipping protected music paths and avoiding blocking confirms makes the app lightning fast. |
+| What have I done? | Eliminated Apple Music alerts, added One-Click Quick Clean, direct app download fallbacks, native menu bar, removed double traffic lights, added About This Computer specs tab, and regenerated the Universal 2 DMG installer. |
 
 
 

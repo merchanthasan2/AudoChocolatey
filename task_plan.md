@@ -88,12 +88,23 @@ Phase 10: Verification & Delivery
 - **Status:** complete
 
 ### Phase 12: Aesthetic Overhaul - Eradicate Material Design & Midnight Teal
-- [x] 12.1: Canvas Overhaul: Eradicated all saturated midnight teal (`#073A4B`, `#00161f`, `rgba(7, 58, 75, ...)`, `rgba(4, 25, 33, ...)`) in favor of authentic Apple Obsidian Charcoal (`#161618`, `#121214`) for Dark Mode and Apple Silver Snow (`#f5f5f7`, `#ffffff`) for Light Mode.
-- [x] 12.2: Purge Material Glowing Orbs: Removed all floating background glow blobs (`.glow-orb.orb-primary`, `.orb-cyan`, `.orb-violet`) and `@keyframes floatOrb` that created an Android/crypto-landing aesthetic.
-- [x] 12.3: Inset Grouped Architecture & Specular Hairlines: Replaced heavy multi-color drop shadows with 0.5px specular borders (`rgba(255, 255, 255, 0.08)`) and inset top rim highlights (`inset 0 1px 0 rgba(255, 255, 255, 0.08)`).
-- [x] 12.4: System Color Alignment: Harmonized all accents to macOS Sonoma/Sequoia HIG system colors: Apple Blue (`#0A84FF`), Apple Mint (`#30D158`), Apple Amber (`#FF9F0A`), Apple Red (`#FF453A`), Apple Purple (`#BF5AF2`).
+- [x] 12.1: Canvas Overhaul: Eradicated all saturated midnight teal in favor of Apple Obsidian Charcoal (`#161618`, `#121214`) for Dark Mode and Apple Silver Snow (`#f5f5f7`, `#ffffff`) for Light Mode.
+- [x] 12.2: Purge Material Glowing Orbs: Removed all floating background glow blobs and `@keyframes floatOrb`.
+- [x] 12.3: Inset Grouped Architecture & Specular Hairlines: Replaced heavy multi-color drop shadows with 0.5px specular borders and inset top rim highlights.
+- [x] 12.4: System Color Alignment: Harmonized all accents to macOS Sonoma/Sequoia HIG system colors.
 - [x] 12.5: Components Overhaul: Cleaned up Sidebar, Unified Titlebar, Bento Summary Cards, Glass Push Buttons, Package Cards, Quantum Clean storage reclaimer, Settings switches, and Self-Updater.
 - [x] 12.6: Zero-Emoji Compliance: Verified 0 emoji violations across all code, markup, and styles.
+- **Status:** complete
+
+### Phase 13: macOS Native Refinement, Hardware Specs & Friction-Free UX
+- [x] 13.1: Apple Music TCC Permission Eradication: Added explicit path skipping for `com.apple.Music`, `com.apple.iTunes`, `com.apple.AMPDevicesAgent`, `com.apple.MediaLibrary` during recursive storage scans, eliminating any system permission alerts.
+- [x] 13.2: Storage Cleaner One-Click Overhaul: Replaced blocking `confirm()` calls with direct execution, implemented `one_click_clean` in Cocoa host and frontend, and renamed confusing "Purge" verbiage to friendly "Free Up Disk Space" / "Clean Selected".
+- [x] 13.3: App Installation Fix & Direct Installer Fallback: Supported systems without Homebrew by adding direct official macOS installer download links (`get_app_direct_download_url`) for all catalog applications.
+- [x] 13.4: Elimination of Double Window Controls: Removed fake HTML colored traffic light spans in `web/index.html` while preserving native macOS window traffic lights.
+- [x] 13.5: Native Apple macOS Menu Bar: Added full macOS Main Menu (`[NSApp setMainMenu:]`) with standard shortcuts (⌘Q, ⌘W, ⌘R, ⌘,, ⌘H, ⌘Z, ⌘X, ⌘C, ⌘V, ⌘A).
+- [x] 13.6: "About This Computer" Hardware Specifications View: Created dedicated `tab-specs` view extracting and displaying Model, Serial Number (with copy button), CPU, Architecture, Memory, Storage Bar, Camera, Display, and OS version.
+- [x] 13.7: Simplified Non-Technical Verbiage: Polished terminology across all tabs, toolbar breadcrumbs, and notification toasts.
+- [x] 13.8: Bundling & DMG Delivery: Recompiled native Universal 2 binary with IOKit and AVFoundation, verified code signature, and regenerated `dist/QuantumUpdater_2.0.0_macOS.dmg`.
 - **Status:** complete
 
 ## Key Decisions
