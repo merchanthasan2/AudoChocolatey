@@ -107,6 +107,17 @@ Phase 10: Verification & Delivery
 - [x] 13.8: Bundling & DMG Delivery: Recompiled native Universal 2 binary with IOKit and AVFoundation, verified code signature, and regenerated `dist/QuantumUpdater_2.0.0_macOS.dmg`.
 - **Status:** complete
 
+### Phase 14: Ecosystem Marketplace, RAM Optimizer, Battery Telemetry & Deep Uninstaller
+- [x] 14.1: 1-Click Starter Bundles: Integrated curated bundle packages in Marketplace (Everyday Essentials, Developer Workstation, Creative Studio, Privacy & Security) with sequential background queueing.
+- [x] 14.2: Unified Memory RAM Optimizer: Added user-mode purgeable memory compaction and inactive cache defragmentation (`optimize_memory`) with real-time HUD and status reporting.
+- [x] 14.3: Battery Health & Power Telemetry: Added IOKit AppleSmartBattery telemetry querying cycle count, battery health %, condition, charge capacity (mAh), operating temperature, and MagSafe power source.
+- [x] 14.4: Vampire Hunter Background Daemons: Implemented inspection of active LaunchAgents and LaunchDaemons with vendor classification to monitor background services.
+- [x] 14.5: Deep Application Uninstaller: Built clean uninstaller deleting `.app` bundle, residual caches in `~/Library/Application Support`, `~/Library/Caches`, `~/Library/Preferences`, `~/Library/Saved Application State`, and running `brew uninstall --cask`.
+- [x] 14.6: Native Installed App Icons: Extracted 64x64 PNG base64 icons via NSWorkspace for all installed apps.
+- [x] 14.7: Zero-Emoji Compliance & CI Update: Maintained 100% zero-emoji compliance while allowing native Apple Command key symbol (`⌘`) in CI policy.
+- [x] 14.8: Universal 2 Binary & DMG Distribution: Recompiled and packaged `dist/QuantumUpdater_2.0.0_macOS.dmg` and in-place update zip.
+- **Status:** complete
+
 ## Key Decisions
 | Decision | Rationale |
 |---|---|

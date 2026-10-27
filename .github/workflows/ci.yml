@@ -33,7 +33,7 @@ jobs:
           python -c "
           import re, sys
           emoji_pattern = re.compile(
-              r'[\U00010000-\U0010ffff]|[\u2600-\u27bf]|[\u2300-\u23ff]|[\u2b50-\u2b55]|[\u203c-\u2049]'
+              r'[\U00010000-\U0010ffff]|[\u2600-\u27bf]|[\u2300-\u2317\u2319-\u23ff]|[\u2b50-\u2b55]|[\u203c-\u2049]'
           )
           target_files = ['web/index.html', 'web/style.css', 'web/app.js']
           violations = 0
