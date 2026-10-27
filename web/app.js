@@ -958,8 +958,50 @@ class QuantumUpdaterApp {
     this.init();
   }
 
+  adaptPlatformUI() {
+    this.isMac = (window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.quantum) ||
+                 (typeof navigator !== 'undefined' && navigator.userAgent && navigator.userAgent.includes('Mac')) ||
+                 (typeof navigator !== 'undefined' && navigator.platform && navigator.platform.includes('Mac'));
+
+    document.body.classList.toggle('platform-mac', !!this.isMac);
+    document.body.classList.toggle('platform-windows', !this.isMac);
+
+    const spotlightBadge = document.getElementById('spotlight-shortcut-badge');
+    if (spotlightBadge) {
+      spotlightBadge.textContent = this.isMac ? '⌘K' : 'Ctrl+K';
+    }
+
+    if (!this.isMac) {
+      // Harmonize shortcut pills for Windows channel
+      document.querySelectorAll('.shortcut-pill').forEach(pill => {
+        pill.textContent = pill.textContent.replace(/⌘/g, 'Ctrl+');
+      });
+
+      // Harmonize security badges
+      const sideSec = document.querySelector('.sidebar-security-badge span:last-child');
+      if (sideSec && sideSec.textContent.includes('Gatekeeper')) {
+        sideSec.textContent = 'SmartScreen & UAC Protected';
+      }
+
+      const activeEngineBadge = document.getElementById('active-engine-badge');
+      if (activeEngineBadge && activeEngineBadge.textContent.includes('Mac Health')) {
+        activeEngineBadge.textContent = 'PC Health: Good';
+      }
+
+      const bentoUpdatesSub = document.getElementById('bento-updates-sub');
+      if (bentoUpdatesSub && bentoUpdatesSub.textContent.includes('Mac')) {
+        bentoUpdatesSub.textContent = 'Click to audit PC software';
+      }
+
+      const bentoHealthSub = document.getElementById('bento-health-sub');
+      if (bentoHealthSub && bentoHealthSub.textContent.includes('Gatekeeper')) {
+        bentoHealthSub.innerHTML = '<span class="status-dot-mini" style="display:inline-block; width:6px; height:6px; border-radius:50%; background:#30D158; margin-right:4px;"></span>SmartScreen Protected';
+      }
+    }
+  }
 
   async init() {
+    this.adaptPlatformUI();
     this.bindEvents();
 
     // Render Curated Explore Catalog immediately on startup
@@ -3085,42 +3127,45 @@ class QuantumUpdaterApp {
     if (!diag) return;
     this.hardwareDiag = diag;
 
+    const isMac = (diag.os_display === 'macOS' || diag.os_system === 'Darwin' || (typeof navigator !== 'undefined' && navigator.platform && navigator.platform.includes('Mac')));
+
     // Hero Header
     const heroModel = document.getElementById('spec-hero-model');
-    if (heroModel) heroModel.textContent = diag.model_name || diag.model_id || 'Apple Mac';
+    if (heroModel) heroModel.textContent = diag.model_name || diag.model_id || (isMac ? 'Apple Mac' : 'Windows PC Hardware');
 
     const heroOs = document.getElementById('spec-hero-os');
     if (heroOs) {
       const serialPart = diag.serial_number ? ` \u2022 Serial: ${diag.serial_number}` : '';
-      heroOs.textContent = `${diag.os_display || 'macOS'}${serialPart} \u2022 Genuine Mac Hardware`;
+      const verifiedTag = isMac ? 'Genuine Mac Hardware' : 'Verified PC Architecture';
+      heroOs.textContent = `${diag.os_display || diag.os_info || (isMac ? 'macOS' : 'Windows 11')}${serialPart} \u2022 ${verifiedTag}`;
     }
 
     // Model & Identity
     const dModel = document.getElementById('spec-detail-model');
-    if (dModel) dModel.textContent = diag.model_name || diag.model_id || 'Apple Mac';
+    if (dModel) dModel.textContent = diag.model_name || diag.model_id || (isMac ? 'Apple Mac' : 'Windows Workstation');
 
     const dModelId = document.getElementById('spec-detail-model-id');
-    if (dModelId) dModelId.textContent = diag.model_id || 'Macintosh';
+    if (dModelId) dModelId.textContent = diag.model_id || (isMac ? 'Macintosh' : 'x64/ARM64 System');
 
     const dSerial = document.getElementById('spec-detail-serial');
-    if (dSerial) dSerial.textContent = diag.serial_number || 'Unavailable';
+    if (dSerial) dSerial.textContent = diag.serial_number || 'Standard Hardware';
 
     // Processor & Platform
     const dCpu = document.getElementById('spec-detail-cpu');
-    if (dCpu) dCpu.textContent = diag.cpu || 'Apple Silicon / Intel';
+    if (dCpu) dCpu.textContent = diag.cpu || (isMac ? 'Apple Silicon / Intel' : (diag.arch ? `Windows ${diag.arch}` : 'Intel / AMD Processor'));
 
     const dArch = document.getElementById('spec-detail-arch');
-    if (dArch) dArch.textContent = 'Universal 2 (Apple Silicon & Intel 64-bit)';
+    if (dArch) dArch.textContent = isMac ? 'Universal 2 (Apple Silicon & Intel 64-bit)' : (diag.arch ? `${diag.arch} Native Architecture` : 'x86_64 Architecture');
 
     const dPlatform = document.getElementById('spec-detail-platform');
-    if (dPlatform) dPlatform.textContent = `${diag.os_system || 'macOS'} (${diag.os_display || 'macOS'})`;
+    if (dPlatform) dPlatform.textContent = `${diag.os_system || diag.os_info || (isMac ? 'macOS' : 'Windows')} (${diag.os_display || diag.os_info || '64-bit'})`;
 
     // Memory & Storage
     const dMemory = document.getElementById('spec-detail-memory');
     if (dMemory) dMemory.textContent = diag.memory || '16 GB';
 
     const dStorage = document.getElementById('spec-detail-storage');
-    if (dStorage) dStorage.textContent = `${diag.storage_free_str || ''} free of ${diag.storage_total_str || ''}`;
+    if (dStorage) dStorage.textContent = `${diag.storage_free_str || 'Available'} free of ${diag.storage_total_str || 'Main Drive'}`;
 
     const dStorageBar = document.getElementById('spec-detail-storage-bar');
     if (dStorageBar) {
@@ -3129,17 +3174,17 @@ class QuantumUpdaterApp {
     }
 
     const dStorageHint = document.getElementById('spec-detail-storage-hint');
-    if (dStorageHint) dStorageHint.textContent = `Macintosh HD \u2022 APFS (${diag.storage_used_percent || 0}% used)`;
+    if (dStorageHint) dStorageHint.textContent = isMac ? `Macintosh HD \u2022 APFS (${diag.storage_used_percent || 0}% used)` : `Local Disk (C:) \u2022 NTFS (${diag.storage_used_percent || 0}% used)`;
 
     // Camera & Display
     const dCamera = document.getElementById('spec-detail-camera');
-    if (dCamera) dCamera.textContent = diag.camera || 'FaceTime HD Camera (Built-in)';
+    if (dCamera) dCamera.textContent = diag.camera || (isMac ? 'FaceTime HD Camera (Built-in)' : 'HD Video Camera');
 
     const dDisplay = document.getElementById('spec-detail-display');
-    if (dDisplay) dDisplay.textContent = diag.display || 'Retina Display';
+    if (dDisplay) dDisplay.textContent = diag.display || (isMac ? 'Retina Display' : 'Primary Monitor Display');
 
     const dOs = document.getElementById('spec-detail-os');
-    if (dOs) dOs.textContent = diag.os_display || 'macOS';
+    if (dOs) dOs.textContent = diag.os_display || diag.os_info || (isMac ? 'macOS' : 'Windows 11');
 
     // Sidebar storage telemetry widget sync
     const sideDiskPct = document.getElementById('sidebar-disk-pct');

@@ -118,6 +118,12 @@ Phase 10: Verification & Delivery
 - [x] 14.8: Universal 2 Binary & DMG Distribution: Recompiled and packaged `dist/QuantumUpdater_2.0.0_macOS.dmg` and in-place update zip.
 - **Status:** complete
 
+### Phase 15: Dedicated macOS Channel Separation & Cross-Platform Look & Feel Unification
+- [x] 15.1: Cross-Platform Bridge & UI Harmonizer: Added `adaptPlatformUI()` in `web/app.js` ensuring dynamic label adaptation (Mac vs PC, ⌘ vs Ctrl+, Gatekeeper vs SmartScreen, APFS vs NTFS) while maintaining 100% unified visual design tokens.
+- [x] 15.2: Multi-Channel Architecture Documentation: Authored `docs/DEVELOPMENT_CHANNELS.md` defining `channel/macos`, `channel/windows`, and `main` branches and release workflows.
+- [x] 15.3: Channel Branch Creation & Remote Push: Created `channel/macos` and `channel/windows` in Git and pushed to `https://github.com/merchanthasan2/AudoChocolatey`.
+- **Status:** complete
+
 ## Key Decisions
 | Decision | Rationale |
 |---|---|
