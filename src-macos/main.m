@@ -147,30 +147,30 @@ static NSString *get_app_direct_download_url(NSString *pkgId) {
     if ([p containsString:@"visualstudio"] || [p containsString:@"vscode"]) return @"https://code.visualstudio.com/sha/download?build=stable&os=darwin-universal";
     if ([p containsString:@"docker"]) return @"https://desktop.docker.com/mac/main/universal/Docker.dmg";
     if ([p containsString:@"spotify"]) return @"https://download.scdn.co/Spotify.dmg";
-    if ([p containsString:@"raycast"]) return @"https://www.raycast.com/download";
+    if ([p containsString:@"raycast"]) return @"https://releases.raycast.com/releases/1.104.32/download?build=arm";
     if ([p containsString:@"arc"]) return @"https://releases.arc.net/release/Arc-latest.dmg";
     if ([p containsString:@"ollama"]) return @"https://ollama.com/download/Ollama-darwin.zip";
     if ([p containsString:@"cursor"]) return @"https://downloader.cursor.sh/mac/universal";
     if ([p containsString:@"iterm"]) return @"https://iterm2.com/downloads/stable/latest";
-    if ([p containsString:@"zed"]) return @"https://zed.dev/download";
+    if ([p containsString:@"zed"]) return @"https://zed.dev/api/releases/stable/latest/Zed.dmg";
     if ([p containsString:@"slack"]) return @"https://slack.com/ssb/download-osx";
     if ([p containsString:@"zoom"]) return @"https://zoom.us/client/latest/Zoom.pkg";
-    if ([p containsString:@"vlc"]) return @"https://get.videolan.org/vlc/last/macosx/";
-    if ([p containsString:@"notion"]) return @"https://www.notion.so/desktop/mac/download";
-    if ([p containsString:@"obsidian"]) return @"https://obsidian.md/download";
+    if ([p containsString:@"vlc"]) return @"https://get.videolan.org/vlc/3.0.21/macosx/vlc-3.0.21-arm64.dmg";
+    if ([p containsString:@"notion"]) return @"https://desktop-release.notion-static.com/Notion-universal.dmg";
+    if ([p containsString:@"obsidian"]) return @"https://github.com/obsidianmd/obsidian-releases/releases/download/v1.7.7/Obsidian-1.7.7-universal.dmg";
     if ([p containsString:@"sublime"]) return @"https://download.sublimetext.com/sublime_text_build_4180_mac.zip";
     if ([p containsString:@"postman"]) return @"https://dl.pstmn.io/download/latest/osx_universal";
     if ([p containsString:@"telegram"]) return @"https://osx.telegram.org/updates/Telegram.dmg";
-    if ([p containsString:@"whatsapp"]) return @"https://web.whatsapp.com/desktop/mac_native/release/";
+    if ([p containsString:@"whatsapp"]) return @"https://web.whatsapp.com/desktop/mac_native/release/?branch=rel.mac.desktop.store";
     if ([p containsString:@"discord"]) return @"https://discord.com/api/download?platform=osx";
-    if ([p containsString:@"blender"]) return @"https://www.blender.org/download/";
+    if ([p containsString:@"blender"]) return @"https://download.blender.org/release/Blender4.2/blender-4.2.3-macos-arm64.dmg";
     if ([p containsString:@"figma"]) return @"https://desktop.figma.com/mac/Figma.zip";
-    if ([p containsString:@"audacity"]) return @"https://www.audacityteam.org/download/mac/";
-    if ([p containsString:@"handbrake"]) return @"https://handbrake.fr/downloads.php";
-    if ([p containsString:@"gimp"]) return @"https://www.gimp.org/downloads/";
+    if ([p containsString:@"audacity"]) return @"https://github.com/audacity/audacity/releases/download/Audacity-3.7.1/audacity-macOS-3.7.1-universal.dmg";
+    if ([p containsString:@"handbrake"]) return @"https://github.com/HandBrake/HandBrake/releases/download/1.8.2/HandBrake-1.8.2.dmg";
+    if ([p containsString:@"gimp"]) return @"https://download.gimp.org/gimp/v2.10/osx/gimp-2.10.38-x86_64.dmg";
     if ([p containsString:@"bitwarden"]) return @"https://vault.bitwarden.com/download/?app=desktop&platform=macos";
-    if ([p containsString:@"keka"]) return @"https://www.keka.io/en/";
-    if ([p containsString:@"tor"]) return @"https://www.torproject.org/download/";
+    if ([p containsString:@"keka"]) return @"https://github.com/aonez/Keka/releases/download/v1.4.3/Keka-1.4.3.dmg";
+    if ([p containsString:@"tor"]) return @"https://www.torproject.org/dist/torbrowser/14.0.1/tor-browser-macos-14.0.1.dmg";
     return nil;
 }
 
@@ -341,7 +341,266 @@ static NSArray *get_launch_agents_telemetry(void) {
 
 @interface QuantumBridge : NSObject <WKScriptMessageHandler, WKNavigationDelegate, WKUIDelegate>
 @property (nonatomic, weak) WKWebView *webView;
+- (void)sendProgress:(double)pct ticker:(NSString *)ticker;
+- (void)sendLog:(NSString *)log;
+- (void)sendSuccessResponse:(id)result callId:(NSString *)callId;
+- (void)sendErrorResponse:(NSString *)error callId:(NSString *)callId;
 @end
+
+@interface QuantumDownloadDelegate : NSObject <NSURLSessionDownloadDelegate>
+@property (nonatomic, weak) QuantumBridge *bridge;
+@property (nonatomic, copy) NSString *appName;
+@property (nonatomic, copy) void (^completion)(NSURL *location, NSString *suggestedFilename, NSError *error);
+@property (nonatomic, copy) NSString *suggestedFilename;
+@end
+
+@implementation QuantumDownloadDelegate
+- (void)URLSession:(NSURLSession *)session downloadTask:(NSURLSessionDownloadTask *)downloadTask didWriteData:(int64_t)bytesWritten totalBytesWritten:(int64_t)totalBytesWritten totalBytesExpectedToWrite:(int64_t)totalBytesExpectedToWrite {
+    double fraction = 0.5;
+    NSString *ticker = nil;
+    if (totalBytesExpectedToWrite > 0) {
+        fraction = (double)totalBytesWritten / (double)totalBytesExpectedToWrite;
+        if (fraction > 1.0) fraction = 1.0;
+        ticker = [NSString stringWithFormat:@"Downloading %@: %.0f%% (%.1f / %.1f MB)",
+            self.appName, fraction * 100.0,
+            (double)totalBytesWritten / 1048576.0,
+            (double)totalBytesExpectedToWrite / 1048576.0];
+    } else {
+        ticker = [NSString stringWithFormat:@"Downloading %@ (%.1f MB downloaded)...",
+            self.appName, (double)totalBytesWritten / 1048576.0];
+    }
+    double scaledPct = 0.05 + fraction * 0.65;
+    [self.bridge sendProgress:scaledPct ticker:ticker];
+}
+
+- (void)URLSession:(NSURLSession *)session downloadTask:(NSURLSessionDownloadTask *)downloadTask didFinishDownloadingToURL:(NSURL *)location {
+    self.suggestedFilename = downloadTask.response.suggestedFilename ?: downloadTask.response.URL.lastPathComponent;
+    if (self.completion) {
+        self.completion(location, self.suggestedFilename, nil);
+    }
+}
+
+- (void)URLSession:(NSURLSession *)session task:(NSURLSessionTask *)task didCompleteWithError:(NSError *)error {
+    if (error && self.completion) {
+        self.completion(nil, nil, error);
+    }
+}
+@end
+
+static BOOL perform_silent_download_and_install(NSString *urlString, NSString *pkgId, NSString *appName, QuantumBridge *bridge) {
+    NSURL *url = [NSURL URLWithString:urlString];
+    if (!url) return NO;
+
+    NSFileManager *fm = [NSFileManager defaultManager];
+    NSString *tempDir = [NSTemporaryDirectory() stringByAppendingPathComponent:@"quantum_downloads"];
+    [fm createDirectoryAtPath:tempDir withIntermediateDirectories:YES attributes:nil error:nil];
+
+    dispatch_semaphore_t sema = dispatch_semaphore_create(0);
+    __block NSURL *downloadedLocation = nil;
+    __block NSString *suggestedName = nil;
+    __block NSError *downloadError = nil;
+
+    NSURLSessionConfiguration *config = [NSURLSessionConfiguration defaultSessionConfiguration];
+    config.requestCachePolicy = NSURLRequestReloadIgnoringLocalCacheData;
+    config.timeoutIntervalForRequest = 45.0;
+    config.timeoutIntervalForResource = 900.0;
+
+    QuantumDownloadDelegate *delegate = [[QuantumDownloadDelegate alloc] init];
+    delegate.bridge = bridge;
+    delegate.appName = appName;
+    delegate.completion = ^(NSURL *loc, NSString *name, NSError *err) {
+        downloadedLocation = loc;
+        suggestedName = name;
+        downloadError = err;
+        dispatch_semaphore_signal(sema);
+    };
+
+    NSURLSession *session = [NSURLSession sessionWithConfiguration:config delegate:delegate delegateQueue:nil];
+    NSMutableURLRequest *req = [NSMutableURLRequest requestWithURL:url];
+    [req setValue:@"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36" forHTTPHeaderField:@"User-Agent"];
+    NSURLSessionDownloadTask *task = [session downloadTaskWithRequest:req];
+    [task resume];
+
+    dispatch_semaphore_wait(sema, DISPATCH_TIME_FOREVER);
+    [session finishTasksAndInvalidate];
+
+    if (downloadError || !downloadedLocation) {
+        [bridge sendLog:[NSString stringWithFormat:@"[Quantum Silent Downloader]: Download notice for %@: %@", appName, downloadError ? downloadError.localizedDescription : @"Unknown error"]];
+        return NO;
+    }
+
+    NSString *ext = [[suggestedName pathExtension] lowercaseString];
+    if (ext.length == 0) {
+        ext = [[url pathExtension] lowercaseString];
+    }
+    if (ext.length == 0 || [ext containsString:@"/"] || [ext containsString:@"?"]) {
+        ext = @"dmg";
+    }
+
+    NSString *savedPath = [tempDir stringByAppendingPathComponent:[NSString stringWithFormat:@"%@_%u.%@", pkgId, arc4random_uniform(10000), ext]];
+    [fm removeItemAtPath:savedPath error:nil];
+    NSError *moveErr = nil;
+    if (![fm moveItemAtURL:downloadedLocation toURL:[NSURL fileURLWithPath:savedPath] error:&moveErr]) {
+        [bridge sendLog:[NSString stringWithFormat:@"[Quantum Silent Downloader]: Could not move download: %@", moveErr.localizedDescription]];
+        return NO;
+    }
+
+    // Inspect file type
+    NSTask *fileTask = [[NSTask alloc] init];
+    fileTask.launchPath = @"/usr/bin/file";
+    fileTask.arguments = @[@"-b", savedPath];
+    NSPipe *filePipe = [NSPipe pipe];
+    fileTask.standardOutput = filePipe;
+    [fileTask launch];
+    NSData *fileData = [[filePipe fileHandleForReading] readDataToEndOfFile];
+    [fileTask waitUntilExit];
+    NSString *fileType = [[NSString alloc] initWithData:fileData encoding:NSUTF8StringEncoding] ?: @"";
+
+    [bridge sendLog:[NSString stringWithFormat:@"[Quantum Silent Downloader]: Downloaded %@ (%lld bytes, %@). Installing silently...", 
+        appName, [fm attributesOfItemAtPath:savedPath error:nil].fileSize, ext]];
+
+    BOOL installSuccess = NO;
+
+    if ([ext isEqualToString:@"dmg"] || [fileType containsString:@"Apple Disk Image"] || [fileType containsString:@"UDIF"] || [fileType containsString:@"zlib compressed"]) {
+        [bridge sendProgress:0.75 ticker:[NSString stringWithFormat:@"Mounting %@ disk image silently...", appName]];
+        [bridge sendLog:[NSString stringWithFormat:@"[Quantum Silent Installer]: Mounting %@ disk image...", appName]];
+
+        NSString *mountPoint = [NSTemporaryDirectory() stringByAppendingPathComponent:[NSString stringWithFormat:@"qmount_%@_%u", pkgId, arc4random_uniform(10000)]];
+        [fm createDirectoryAtPath:mountPoint withIntermediateDirectories:YES attributes:nil error:nil];
+
+        NSTask *mountTask = [[NSTask alloc] init];
+        mountTask.launchPath = @"/usr/bin/hdiutil";
+        mountTask.arguments = @[@"attach", savedPath, @"-nobrowse", @"-readonly", @"-mountpoint", mountPoint, @"-noautoopen", @"-noverify"];
+        NSPipe *inPipe = [NSPipe pipe];
+        mountTask.standardInput = inPipe;
+        @try {
+            [mountTask launch];
+            [[inPipe fileHandleForWriting] writeData:[@"Y\n" dataUsingEncoding:NSUTF8StringEncoding]];
+            [[inPipe fileHandleForWriting] closeFile];
+            [mountTask waitUntilExit];
+        } @catch (NSException *e) {}
+
+        if (mountTask.terminationStatus == 0) {
+            NSArray *mountedFiles = [fm contentsOfDirectoryAtPath:mountPoint error:nil];
+            NSString *foundApp = nil;
+            for (NSString *f in mountedFiles) {
+                if ([f hasSuffix:@".app"]) {
+                    foundApp = f;
+                    break;
+                }
+            }
+
+            if (foundApp) {
+                NSString *sourceApp = [mountPoint stringByAppendingPathComponent:foundApp];
+                NSString *targetApp = [@"/Applications" stringByAppendingPathComponent:foundApp];
+                [bridge sendProgress:0.85 ticker:[NSString stringWithFormat:@"Installing %@ to /Applications...", foundApp]];
+                [bridge sendLog:[NSString stringWithFormat:@"[Quantum Silent Installer]: Copying %@ to /Applications...", foundApp]];
+
+                if ([fm fileExistsAtPath:targetApp]) {
+                    [fm removeItemAtPath:targetApp error:nil];
+                }
+
+                NSTask *dittoTask = [[NSTask alloc] init];
+                dittoTask.launchPath = @"/usr/bin/ditto";
+                dittoTask.arguments = @[sourceApp, targetApp];
+                @try {
+                    [dittoTask launch];
+                    [dittoTask waitUntilExit];
+                    if (dittoTask.terminationStatus == 0) {
+                        NSTask *xattrTask = [[NSTask alloc] init];
+                        xattrTask.launchPath = @"/usr/bin/xattr";
+                        xattrTask.arguments = @[@"-dr", @"com.apple.quarantine", targetApp];
+                        @try { [xattrTask launch]; [xattrTask waitUntilExit]; } @catch (NSException *e) {}
+                        installSuccess = YES;
+                        [bridge sendLog:[NSString stringWithFormat:@"[Quantum Silent Installer]: %@ successfully installed in /Applications.", foundApp]];
+                    }
+                } @catch (NSException *e) {}
+            }
+
+            // Detach disk image
+            NSTask *detachTask = [[NSTask alloc] init];
+            detachTask.launchPath = @"/usr/bin/hdiutil";
+            detachTask.arguments = @[@"detach", mountPoint, @"-force"];
+            @try { [detachTask launch]; [detachTask waitUntilExit]; } @catch (NSException *e) {}
+            [fm removeItemAtPath:mountPoint error:nil];
+        }
+
+    } else if ([ext isEqualToString:@"zip"] || [fileType containsString:@"Zip archive"]) {
+        [bridge sendProgress:0.75 ticker:[NSString stringWithFormat:@"Extracting %@ archive...", appName]];
+        [bridge sendLog:[NSString stringWithFormat:@"[Quantum Silent Installer]: Expanding %@ archive...", appName]];
+
+        NSString *unzipDir = [NSTemporaryDirectory() stringByAppendingPathComponent:[NSString stringWithFormat:@"qunzip_%@_%u", pkgId, arc4random_uniform(10000)]];
+        [fm createDirectoryAtPath:unzipDir withIntermediateDirectories:YES attributes:nil error:nil];
+
+        NSTask *dittoTask = [[NSTask alloc] init];
+        dittoTask.launchPath = @"/usr/bin/ditto";
+        dittoTask.arguments = @[@"-x", @"-k", savedPath, unzipDir];
+        @try {
+            [dittoTask launch];
+            [dittoTask waitUntilExit];
+        } @catch (NSException *e) {}
+
+        NSDirectoryEnumerator *enumerator = [fm enumeratorAtPath:unzipDir];
+        NSString *foundRel = nil;
+        for (NSString *sub in enumerator) {
+            if ([sub hasSuffix:@".app"]) {
+                foundRel = sub;
+                break;
+            }
+        }
+
+        if (foundRel) {
+            NSString *sourceApp = [unzipDir stringByAppendingPathComponent:foundRel];
+            NSString *targetApp = [@"/Applications" stringByAppendingPathComponent:[sourceApp lastPathComponent]];
+            [bridge sendProgress:0.85 ticker:[NSString stringWithFormat:@"Installing %@ to /Applications...", [sourceApp lastPathComponent]]];
+            if ([fm fileExistsAtPath:targetApp]) {
+                [fm removeItemAtPath:targetApp error:nil];
+            }
+
+            NSTask *copyTask = [[NSTask alloc] init];
+            copyTask.launchPath = @"/usr/bin/ditto";
+            copyTask.arguments = @[sourceApp, targetApp];
+            @try {
+                [copyTask launch];
+                [copyTask waitUntilExit];
+                if (copyTask.terminationStatus == 0) {
+                    NSTask *xattrTask = [[NSTask alloc] init];
+                    xattrTask.launchPath = @"/usr/bin/xattr";
+                    xattrTask.arguments = @[@"-dr", @"com.apple.quarantine", targetApp];
+                    @try { [xattrTask launch]; [xattrTask waitUntilExit]; } @catch (NSException *e) {}
+                    installSuccess = YES;
+                    [bridge sendLog:[NSString stringWithFormat:@"[Quantum Silent Installer]: %@ successfully installed in /Applications.", [targetApp lastPathComponent]]];
+                }
+            } @catch (NSException *e) {}
+        }
+        [fm removeItemAtPath:unzipDir error:nil];
+
+    } else if ([ext isEqualToString:@"pkg"] || [fileType containsString:@"xar"] || [fileType containsString:@"installer package"]) {
+        [bridge sendProgress:0.80 ticker:[NSString stringWithFormat:@"Installing package for %@...", appName]];
+        [bridge sendLog:[NSString stringWithFormat:@"[Quantum Silent Installer]: Installing package for %@...", appName]];
+
+        NSTask *pkgTask = [[NSTask alloc] init];
+        pkgTask.launchPath = @"/usr/sbin/installer";
+        pkgTask.arguments = @[@"-pkg", savedPath, @"-target", @"CurrentUserHomeDirectory"];
+        @try {
+            [pkgTask launch];
+            [pkgTask waitUntilExit];
+            if (pkgTask.terminationStatus == 0) {
+                installSuccess = YES;
+            } else {
+                NSTask *rootPkg = [[NSTask alloc] init];
+                rootPkg.launchPath = @"/usr/sbin/installer";
+                rootPkg.arguments = @[@"-pkg", savedPath, @"-target", @"/"];
+                [rootPkg launch];
+                [rootPkg waitUntilExit];
+                if (rootPkg.terminationStatus == 0) installSuccess = YES;
+            }
+        } @catch (NSException *e) {}
+    }
+
+    [fm removeItemAtPath:savedPath error:nil];
+    return installSuccess;
+}
 
 @implementation QuantumBridge
 
@@ -607,25 +866,66 @@ static NSArray *get_launch_agents_telemetry(void) {
 
     } else if ([cmd isEqualToString:@"install_package"]) {
         NSString *pkgId = args[@"packageId"] ?: @"";
+        NSString *appName = args[@"name"] ?: pkgId;
+        NSString *directUrl = get_app_direct_download_url(pkgId);
         NSString *brew = find_brew_path();
 
+        // 1. Prioritize Silent Direct Download & Automated Installation
+        if (directUrl) {
+            [self sendLog:[NSString stringWithFormat:@"[Quantum Silent Installer]: Initiating silent direct install for %@...", appName]];
+            [self sendProgress:0.05 ticker:[NSString stringWithFormat:@"Starting silent download for %@...", appName]];
+
+            BOOL ok = perform_silent_download_and_install(directUrl, pkgId, appName, self);
+            if (ok) {
+                [self sendProgress:1.0 ticker:[NSString stringWithFormat:@"%@ installed successfully in /Applications!", appName]];
+                [self sendLog:[NSString stringWithFormat:@"[Quantum Silent Installer]: Successfully installed %@ into /Applications without external prompts.", appName]];
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    [self sendSuccessResponse:@{ @"success": @YES, @"message": [NSString stringWithFormat:@"%@ installed successfully", appName] } callId:callId];
+                });
+                return;
+            } else {
+                [self sendLog:[NSString stringWithFormat:@"[Quantum Silent Installer]: Direct installer returned notice. Attempting Homebrew fallback for %@...", appName]];
+            }
+        }
+
+        // 2. Homebrew Fallback if direct download not available or failed
         if (brew) {
             [self sendLog:[NSString stringWithFormat:@"[Quantum Package Manager]: Installing %@ via Homebrew...", pkgId]];
-            [self sendProgress:0.3 ticker:[NSString stringWithFormat:@"Installing %@...", pkgId]];
+            [self sendProgress:0.20 ticker:[NSString stringWithFormat:@"Installing %@ via Homebrew...", pkgId]];
             NSTask *task = [[NSTask alloc] init];
             task.launchPath = brew;
             task.arguments = @[@"install", @"--cask", pkgId];
             NSPipe *pipe = [NSPipe pipe];
             task.standardOutput = pipe;
             task.standardError = pipe;
-            [task launch];
-            NSFileHandle *fh = [pipe fileHandleForReading];
-            NSData *data = [fh readDataToEndOfFile];
-            [task waitUntilExit];
-            NSString *outStr = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding] ?: @"";
-            for (NSString *l in [outStr componentsSeparatedByString:@"\n"]) {
-                if (l.length > 0) [self sendLog:l];
-            }
+
+            pipe.fileHandleForReading.readabilityHandler = ^(NSFileHandle *handle) {
+                NSData *data = [handle availableData];
+                if (data.length > 0) {
+                    NSString *outStr = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
+                    for (NSString *l in [outStr componentsSeparatedByString:@"\n"]) {
+                        NSString *trimmed = [l stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]];
+                        if (trimmed.length > 0) {
+                            [self sendLog:trimmed];
+                            if ([trimmed containsString:@"%"]) {
+                                NSRegularExpression *regex = [NSRegularExpression regularExpressionWithPattern:@"(\\d+)%" options:0 error:nil];
+                                NSTextCheckingResult *match = [regex firstMatchInString:trimmed options:0 range:NSMakeRange(0, trimmed.length)];
+                                if (match) {
+                                    double p = [[trimmed substringWithRange:[match rangeAtIndex:1]] doubleValue] / 100.0;
+                                    [self sendProgress:(0.20 + p * 0.75) ticker:[NSString stringWithFormat:@"Installing %@: %@", appName, trimmed]];
+                                }
+                            }
+                        }
+                    }
+                }
+            };
+
+            @try {
+                [task launch];
+                [task waitUntilExit];
+            } @catch (NSException *e) {}
+            pipe.fileHandleForReading.readabilityHandler = nil;
+
             if (task.terminationStatus == 0) {
                 [self sendProgress:1.0 ticker:[NSString stringWithFormat:@"%@ installed successfully", pkgId]];
                 [self sendSuccessResponse:@{ @"success": @YES, @"message": @"Installed successfully via Homebrew" } callId:callId];
@@ -640,7 +940,6 @@ static NSArray *get_launch_agents_telemetry(void) {
                 retryTask.standardError = retryPipe;
                 @try {
                     [retryTask launch];
-                    NSData *retryData = [[retryPipe fileHandleForReading] readDataToEndOfFile];
                     [retryTask waitUntilExit];
                     if (retryTask.terminationStatus == 0) {
                         [self sendProgress:1.0 ticker:[NSString stringWithFormat:@"%@ installed successfully", pkgId]];
@@ -651,56 +950,106 @@ static NSArray *get_launch_agents_telemetry(void) {
             }
         }
 
-        // Direct Download Fallback: If Homebrew is not installed or cask returned error, open official installer directly
-        NSString *directUrl = get_app_direct_download_url(pkgId);
-        if (directUrl) {
-            [self sendLog:[NSString stringWithFormat:@"[Quantum Installer]: Opening official macOS installer for %@...", pkgId]];
-            dispatch_async(dispatch_get_main_queue(), ^{
-                [[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString:directUrl]];
-            });
-            [self sendProgress:1.0 ticker:[NSString stringWithFormat:@"Installer opened for %@", pkgId]];
-            [self sendSuccessResponse:@{ @"success": @YES, @"message": @"Official installer opened in your browser/downloads." } callId:callId];
-        } else {
-            // General web search / official project page fallback
-            NSString *searchUrl = [NSString stringWithFormat:@"https://www.google.com/search?q=%@+mac+download", [pkgId stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet URLQueryAllowedCharacterSet]]];
-            dispatch_async(dispatch_get_main_queue(), ^{
-                [[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString:searchUrl]];
-            });
-            [self sendSuccessResponse:@{ @"success": @YES, @"message": @"Opening official download page." } callId:callId];
-        }
+        [self sendProgress:1.0 ticker:[NSString stringWithFormat:@"Notice for %@", appName]];
+        [self sendErrorResponse:[NSString stringWithFormat:@"Could not automatically install %@. Direct download or Homebrew needed.", appName] callId:callId];
 
     } else if ([cmd isEqualToString:@"upgrade_packages"]) {
         NSArray *pkgIds = args[@"packageIds"] ?: @[];
         NSMutableArray *statuses = [NSMutableArray array];
         NSString *brew = find_brew_path();
-        for (NSString *pid in pkgIds) {
-            [self sendLog:[NSString stringWithFormat:@"[Quantum Updater]: Processing upgrade for %@...", pid]];
+        NSUInteger total = pkgIds.count;
+
+        for (NSUInteger idx = 0; idx < total; idx++) {
+            NSString *pid = pkgIds[idx];
+            double basePct = (double)idx / (double)total;
+            double nextPct = (double)(idx + 1) / (double)total;
+
+            [self sendLog:[NSString stringWithFormat:@"[Quantum Updater]: Processing upgrade for %@ (%lu of %lu)...", pid, (unsigned long)(idx + 1), (unsigned long)total]];
+            [self sendProgress:basePct + 0.05 ticker:[NSString stringWithFormat:@"Starting update for %@...", pid]];
+
             if ([pid hasPrefix:@"macOS"] || [pid containsString:@"Update"]) {
+                [self sendLog:[NSString stringWithFormat:@"[Quantum Updater]: Executing Apple Software Update for %@...", pid]];
                 NSTask *task = [[NSTask alloc] init];
                 task.launchPath = @"/usr/sbin/softwareupdate";
                 task.arguments = @[@"-i", pid];
                 NSPipe *pipe = [NSPipe pipe];
                 task.standardOutput = pipe;
                 task.standardError = pipe;
-                [task launch];
-                [task waitUntilExit];
+
+                pipe.fileHandleForReading.readabilityHandler = ^(NSFileHandle *handle) {
+                    NSData *data = [handle availableData];
+                    if (data.length > 0) {
+                        NSString *str = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
+                        for (NSString *line in [str componentsSeparatedByString:@"\n"]) {
+                            NSString *trimmed = [line stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]];
+                            if (trimmed.length > 0) {
+                                [self sendLog:trimmed];
+                                NSRegularExpression *regex = [NSRegularExpression regularExpressionWithPattern:@"(\\d+)%" options:0 error:nil];
+                                NSTextCheckingResult *match = [regex firstMatchInString:trimmed options:0 range:NSMakeRange(0, trimmed.length)];
+                                if (match) {
+                                    double p = [[trimmed substringWithRange:[match rangeAtIndex:1]] doubleValue] / 100.0;
+                                    double itemPct = basePct + p * (nextPct - basePct);
+                                    [self sendProgress:itemPct ticker:[NSString stringWithFormat:@"%@: %@", pid, trimmed]];
+                                } else {
+                                    [self sendProgress:basePct + 0.3 * (nextPct - basePct) ticker:[NSString stringWithFormat:@"%@: %@", pid, trimmed]];
+                                }
+                            }
+                        }
+                    }
+                };
+
+                @try {
+                    [task launch];
+                    [task waitUntilExit];
+                } @catch (NSException *e) {}
+                pipe.fileHandleForReading.readabilityHandler = nil;
+
                 BOOL ok = (task.terminationStatus == 0);
+                if (ok) {
+                    [self sendProgress:nextPct ticker:[NSString stringWithFormat:@"%@ updated successfully", pid]];
+                }
                 [statuses addObject:@{ @"package_id": pid, @"success": @(ok), @"message": ok ? @"Apple Update Complete" : @"Update Failed" }];
+
             } else if (brew) {
+                [self sendLog:[NSString stringWithFormat:@"[Quantum Updater]: Executing Homebrew upgrade for %@...", pid]];
                 NSTask *task = [[NSTask alloc] init];
                 task.launchPath = brew;
                 task.arguments = @[@"upgrade", pid];
                 NSPipe *pipe = [NSPipe pipe];
                 task.standardOutput = pipe;
                 task.standardError = pipe;
-                [task launch];
-                [task waitUntilExit];
+
+                pipe.fileHandleForReading.readabilityHandler = ^(NSFileHandle *handle) {
+                    NSData *data = [handle availableData];
+                    if (data.length > 0) {
+                        NSString *str = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
+                        for (NSString *line in [str componentsSeparatedByString:@"\n"]) {
+                            NSString *trimmed = [line stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]];
+                            if (trimmed.length > 0) {
+                                [self sendLog:trimmed];
+                                [self sendProgress:basePct + 0.5 * (nextPct - basePct) ticker:[NSString stringWithFormat:@"Upgrading %@...", pid]];
+                            }
+                        }
+                    }
+                };
+
+                @try {
+                    [task launch];
+                    [task waitUntilExit];
+                } @catch (NSException *e) {}
+                pipe.fileHandleForReading.readabilityHandler = nil;
+
                 BOOL ok = (task.terminationStatus == 0);
+                if (ok) {
+                    [self sendProgress:nextPct ticker:[NSString stringWithFormat:@"%@ upgraded successfully", pid]];
+                }
                 [statuses addObject:@{ @"package_id": pid, @"success": @(ok), @"message": ok ? @"Upgraded" : @"Upgrade failed" }];
+
             } else {
                 [statuses addObject:@{ @"package_id": pid, @"success": @NO, @"message": @"Engine unavailable" }];
             }
         }
+        [self sendProgress:1.0 ticker:@"All updates completed"];
         [self sendSuccessResponse:statuses callId:callId];
 
     } else if ([cmd isEqualToString:@"scan_updates"]) {
@@ -1072,12 +1421,14 @@ int main(int argc, const char * argv[]) {
         window.title = @"Quantum Updater • Smart Mac Manager";
         window.titleVisibility = NSWindowTitleHidden;
         window.titlebarAppearsTransparent = YES;
+        window.opaque = NO;
+        window.backgroundColor = [NSColor clearColor];
         [window center];
 
-        // Frosted Glass Background
+        // Frosted Glass Background (Apple Material Vibrancy)
         NSVisualEffectView *vfx = [[NSVisualEffectView alloc] initWithFrame:window.contentView.bounds];
         vfx.autoresizingMask = NSViewWidthSizable | NSViewHeightSizable;
-        vfx.material = NSVisualEffectMaterialUnderWindowBackground;
+        vfx.material = NSVisualEffectMaterialSidebar;
         vfx.blendingMode = NSVisualEffectBlendingModeBehindWindow;
         vfx.state = NSVisualEffectStateActive;
         [window.contentView addSubview:vfx];

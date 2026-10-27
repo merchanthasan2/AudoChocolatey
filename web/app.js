@@ -1903,6 +1903,9 @@ class QuantumUpdaterApp {
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg> Upgrade
             </button>
           </div>
+          <div class="card-inline-progress">
+            <div class="card-inline-progress-fill" id="card-prog-${pkg.id}" style="width: 0%;"></div>
+          </div>
         </div>
       `;
     });
@@ -2046,6 +2049,7 @@ class QuantumUpdaterApp {
 
     for (let i = 0; i < packageIds.length; i++) {
       const pid = packageIds[i];
+      this.currentUpdatingPkgId = pid;
       const pkgObj = this.updates.find(p => p.id === pid);
       const pkgDisplayName = pkgObj ? pkgObj.name : pid;
       const stepPct = Math.round(((i + 0.1) / total) * 100);
@@ -2203,7 +2207,9 @@ class QuantumUpdaterApp {
   }
 
   setIslandProgress(pctVal, tickerText) {
-    const p = Math.round((pctVal || 0) * 100);
+    const p = Math.min(100, Math.max(0, Math.round((pctVal || 0) * 100)));
+
+    // 1. Dynamic Floating Progress Island
     const islandFill = document.getElementById('island-progress-fill');
     if (islandFill) islandFill.style.width = `${p}%`;
     const islandPct = document.getElementById('island-pct-badge');
@@ -2213,7 +2219,28 @@ class QuantumUpdaterApp {
       if (islandTicker) islandTicker.textContent = tickerText;
     }
 
-    // Mirror to App Update Progress Bar if active
+    // 2. Global Persistent Bottom Dock
+    const dock = document.getElementById('global-operation-dock');
+    if (dock && (this.isProcessingQueue || this.isUpdating || p > 0)) {
+      dock.style.display = 'flex';
+    }
+    const dockFill = document.getElementById('dock-progress-fill');
+    if (dockFill) dockFill.style.width = `${p}%`;
+    const dockPct = document.getElementById('dock-pct-label');
+    if (dockPct) dockPct.textContent = `${p}%`;
+    const dockTicker = document.getElementById('dock-status-ticker');
+    if (dockTicker && tickerText) dockTicker.textContent = tickerText;
+
+    // 3. Active Package Card Inline Progress
+    if (this.currentUpdatingPkgId) {
+      const cardProg = document.getElementById(`card-prog-${this.currentUpdatingPkgId}`);
+      if (cardProg) {
+        cardProg.className = 'card-inline-progress-fill';
+        cardProg.style.width = `${p}%`;
+      }
+    }
+
+    // 4. Mirror to App Self-Updater Progress Bar if active
     const updateProgFill = document.getElementById('update-prog-fill');
     if (updateProgFill) {
       updateProgFill.style.width = `${p}%`;
