@@ -3,20 +3,19 @@ import os
 import sys
 import shutil
 
-def build():
+def build(app_name: str = "QuantumUpdaterApp"):
     print("=" * 60)
-    print("Building Quantum Updater Standalone Executable (.exe)")
-    print("Glassmorphic WebView2 Architecture")
+    print(f"Building Quantum Updater Standalone Executable: {app_name}.exe")
+    print("Glassmorphic WebView2 Architecture (Windows)")
     print("=" * 60)
 
-    # Output directory
     dist_dir = os.path.join(os.path.dirname(__file__), "dist")
-    target_out = os.path.join(dist_dir, "QuantumUpdater")
+    target_out = os.path.join(dist_dir, app_name)
     if os.path.exists(target_out):
         try:
             shutil.rmtree(target_out, ignore_errors=True)
-        except Exception:
-            pass
+        except Exception as e:
+            print(f"[Note]: Could not clean {target_out} ({e}), building in-place.")
 
     icon_path = os.path.join(os.path.dirname(__file__), "src-tauri", "icons", "icon.ico")
 
@@ -26,9 +25,9 @@ def build():
         "PyInstaller",
         "--noconfirm",
         "--onedir",
-        "--windowed", # Suppress black cmd prompt
+        "--windowed", # Suppress black console window
         "--uac-admin", # Request Administrator privilege via embedded Windows manifest
-        "--name", "QuantumUpdater",
+        "--name", app_name,
         "--icon", icon_path,
         "--collect-all", "webview",
         "--collect-all", "pythonnet",
@@ -43,9 +42,9 @@ def build():
     res = subprocess.run(cmd)
 
     if res.returncode == 0:
-        exe_path = os.path.join(dist_dir, "QuantumUpdater", "QuantumUpdater.exe")
+        exe_path = os.path.join(dist_dir, app_name, f"{app_name}.exe")
         print("\n" + "=" * 60)
-        print(f"[SUCCESS]: Executable built successfully!")
+        print(f"[SUCCESS]: Standalone executable built successfully!")
         print(f"Location: {exe_path}")
         print("=" * 60)
         return exe_path
@@ -54,4 +53,5 @@ def build():
         return None
 
 if __name__ == "__main__":
-    build()
+    target = sys.argv[1] if len(sys.argv) > 1 else "QuantumUpdaterApp"
+    build(target)

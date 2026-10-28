@@ -8,6 +8,7 @@ from core.base_engine import BaseEngine
 from core.winget_engine import WingetEngine
 from core.choco_engine import ChocolateyEngine
 from core.mac_cleaner import MacCleaner
+from core.windows_cleaner import WindowsCleaner
 from core.mac_engine import HomebrewEngine, AppleUpdateEngine, MacApplicationsEngine
 from core.updater import AppUpdater
 
@@ -18,7 +19,7 @@ class PackageManager:
 
     def __init__(self):
         self.is_mac = (platform.system() == "Darwin")
-        self.cleaner = MacCleaner() if self.is_mac else None
+        self.cleaner = MacCleaner() if self.is_mac else WindowsCleaner()
         self.updater = AppUpdater()
 
         if self.is_mac:

@@ -252,30 +252,40 @@ class WebAPI:
             "categories": []
         }
 
-    def execute_cleanup(self, categories: Optional[List[str]] = None, *args, **kwargs) -> bool:
-        """Executes cleanup sequence on background thread with live progress."""
+    def one_click_clean(self, *args, **kwargs) -> Dict[str, Any]:
+        """Perform one-click clean of all safe low-risk categories."""
+        if not self.manager.cleaner:
+            return {"total_freed_bytes": 0, "total_freed_str": "0 B", "files_removed": 0, "error": "Cleaner not available"}
+
+        categories = self.manager.cleaner.get_category_definitions()
+        safe_ids = [c["id"] for c in categories if c.get("risk") == "low"]
+
+        return self.manager.cleaner.clean(
+            category_ids=safe_ids,
+            on_progress=self._on_progress,
+            on_log=self._on_log
+        )
+
+    def execute_cleanup(self, categories: Optional[List[str]] = None, *args, **kwargs) -> Dict[str, Any]:
+        """Executes cleanup sequence across selected categories with live progress."""
         if categories is None and args and isinstance(args[0], list):
             categories = args[0]
         categories = categories or []
 
-        def worker():
-            try:
-                if self.manager.cleaner:
-                    res = self.manager.cleaner.clean(
-                        category_ids=categories,
-                        on_progress=self._on_progress,
-                        on_log=self._on_log
-                    )
-                    escaped = json.dumps(res)
-                    self._eval_js(f"app.onCleanupFinished(true, {escaped});")
-                else:
-                    self._eval_js("app.onCleanupFinished(false, JSON.stringify({error: 'Cleaner not available on this platform'}));")
-            except Exception as e:
-                err_msg = json.dumps(str(e))
-                self._eval_js(f"app.onCleanupFinished(false, JSON.stringify({{error: {err_msg}}}));")
+        if not self.manager.cleaner:
+            return {"total_freed_bytes": 0, "total_freed_str": "0 B", "files_removed": 0, "error": "Cleaner not available"}
 
-        threading.Thread(target=worker, daemon=True).start()
-        return True
+        return self.manager.cleaner.clean(
+            category_ids=categories,
+            on_progress=self._on_progress,
+            on_log=self._on_log
+        )
+
+    def optimize_memory(self, *args, **kwargs) -> Dict[str, Any]:
+        """Compact memory and purge inactive RAM working sets."""
+        if self.manager.cleaner and hasattr(self.manager.cleaner, "optimize_memory"):
+            return self.manager.cleaner.optimize_memory()
+        return {"freed_bytes": 0, "freed_str": "0 B"}
 
     def get_diagnostics(self, *args, **kwargs) -> Dict[str, Any]:
         engines = self.manager.get_available_engines()
