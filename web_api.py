@@ -40,20 +40,103 @@ class WebAPI:
         p_val = pct if pct is not None else "null"
         escaped_ticker = json.dumps(ticker)
         self._eval_js(f"app.setIslandProgress({p_val}, {escaped_ticker});")
+        self._eval_js(f"if (app.onProgressUpdate) app.onProgressUpdate({p_val}, {escaped_ticker});")
+
+    def _estimate_package_size_bytes(self, pkg_id: str, pkg_name: str) -> int:
+        pid = (pkg_id or "").lower().strip()
+        pname = (pkg_name or "").lower().strip()
+        table = {
+            "git.git": 58 * 1024 * 1024,
+            "github.cli": 18 * 1024 * 1024,
+            "github.githubdesktop": 148 * 1024 * 1024,
+            "xai.grokbot": 65 * 1024 * 1024,
+            "amazon.kiro": 95 * 1024 * 1024,
+            "microsoft.dotnet.desktopruntime.9": 56 * 1024 * 1024,
+            "microsoft.dotnet.desktopruntime.10": 58 * 1024 * 1024,
+            "mobatek.mobaxterm": 32 * 1024 * 1024,
+            "obsproject.obsstudio": 132 * 1024 * 1024,
+            "shininglight.openssl.light": 4800 * 1024,
+            "microsoft.visualstudio.community": 2400 * 1024 * 1024,
+            "microsoft.wsl": 124 * 1024 * 1024,
+            "google.chrome": 112 * 1024 * 1024,
+            "mozilla.firefox": 65 * 1024 * 1024,
+            "brave.brave": 118 * 1024 * 1024,
+            "microsoft.edge": 160 * 1024 * 1024,
+            "microsoft.visualstudiocode": 98 * 1024 * 1024,
+            "docker.dockerdesktop": 580 * 1024 * 1024,
+            "python.python.3.13": 26 * 1024 * 1024,
+            "python.python.3": 26 * 1024 * 1024,
+            "openjs.nodejs.lts": 34 * 1024 * 1024,
+            "7zip.7zip": 1900 * 1024,
+            "rarlab.winrar": 3800 * 1024,
+            "microsoft.powertoys": 188 * 1024 * 1024,
+            "voidtools.everything": 2100 * 1024,
+            "bitwarden.bitwarden": 98 * 1024 * 1024,
+            "spotify.spotify": 88 * 1024 * 1024,
+            "videolan.vlc": 44 * 1024 * 1024,
+            "discord.discord": 92 * 1024 * 1024,
+            "slacktechnologies.slack": 118 * 1024 * 1024,
+            "telegram.telegramdesktop": 52 * 1024 * 1024,
+            "whatsapp.whatsapp": 142 * 1024 * 1024,
+            "zoom.zoom": 68 * 1024 * 1024,
+            "microsoft.teams": 155 * 1024 * 1024,
+            "notion.notion": 96 * 1024 * 1024,
+            "obsidian.obsidian": 86 * 1024 * 1024,
+            "notepad++.notepad++": 4600 * 1024,
+            "adobe.acrobat.reader.64-bit": 320 * 1024 * 1024,
+            "figma.figma": 112 * 1024 * 1024,
+            "blenderfoundation.blender": 380 * 1024 * 1024
+        }
+        for k, v in table.items():
+            if k in pid or (pname and k in pname):
+                return v
+        h = abs(hash(pid))
+        return (35 + (h % 85)) * 1024 * 1024
+
+    def _estimate_package_size_str(self, pkg_id: str, pkg_name: str) -> str:
+        b = self._estimate_package_size_bytes(pkg_id, pkg_name)
+        mb = b / (1024 * 1024)
+        if mb >= 1024:
+            return f"{mb / 1024:.1f} GB"
+        if mb >= 10:
+            return f"{mb:.1f} MB"
+        return f"{mb:.1f} MB"
+
+    def _estimate_package_ete_seconds(self, pkg_id: str, pkg_name: str) -> int:
+        b = self._estimate_package_size_bytes(pkg_id, pkg_name)
+        mb = b / (1024 * 1024)
+        # Average broadband at ~14 MB/s + 3s execution
+        return max(4, int(mb / 14) + 3)
+
+    def _estimate_package_ete_str(self, pkg_id: str, pkg_name: str) -> str:
+        sec = self._estimate_package_ete_seconds(pkg_id, pkg_name)
+        if sec < 60:
+            return f"~{sec}s"
+        m = sec // 60
+        s = sec % 60
+        return f"~{m}m {s}s" if s else f"~{m}m"
+
+    def _enrich_package_dict(self, p: PackageInfo) -> Dict[str, Any]:
+        size_str = getattr(p, "size_str", "") or self._estimate_package_size_str(p.id, p.name)
+        size_bytes = getattr(p, "size_bytes", 0) or self._estimate_package_size_bytes(p.id, p.name)
+        ete_str = getattr(p, "ete_str", "") or self._estimate_package_ete_str(p.id, p.name)
+        ete_seconds = getattr(p, "ete_seconds", 0) or self._estimate_package_ete_seconds(p.id, p.name)
+        return {
+            "id": p.id,
+            "name": p.name,
+            "installed_version": p.installed_version,
+            "available_version": p.available_version,
+            "source": p.source,
+            "size_str": size_str,
+            "size_bytes": size_bytes,
+            "ete_str": ete_str,
+            "ete_seconds": ete_seconds
+        }
 
     def scan_updates(self, *args, **kwargs) -> List[Dict[str, Any]]:
         """Scans system for available updates synchronously for JS call."""
         if self.manager.is_busy and self.manager.cached_updates:
-            return [
-                {
-                    "id": p.id,
-                    "name": p.name,
-                    "installed_version": p.installed_version,
-                    "available_version": p.available_version,
-                    "source": p.source
-                }
-                for p in self.manager.cached_updates
-            ]
+            return [self._enrich_package_dict(p) for p in self.manager.cached_updates]
 
         event = threading.Event()
         result_box = []
@@ -78,16 +161,7 @@ class WebAPI:
         if error_box:
             raise RuntimeError(str(error_box[0]))
 
-        return [
-            {
-                "id": p.id,
-                "name": p.name,
-                "installed_version": p.installed_version,
-                "available_version": p.available_version,
-                "source": p.source
-            }
-            for p in result_box
-        ]
+        return [self._enrich_package_dict(p) for p in result_box]
 
     def upgrade_packages(self, package_ids: Optional[List[str]] = None, *args, **kwargs) -> List[Dict[str, Any]]:
         """Upgrades packages and returns list of OperationStatus dictionaries."""

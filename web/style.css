@@ -407,8 +407,9 @@ body.light-mode .brand-version-pill {
 
 .sidebar-item {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
+  flex-direction: column;
+  justify-content: center;
+  align-items: stretch;
   width: 100%;
   padding: 8px 12px;
   border-radius: 9px;
@@ -1786,8 +1787,9 @@ body.light-mode .btn-secondary:hover {
 
 .package-card {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
+  flex-direction: column;
+  justify-content: center;
+  align-items: stretch;
   background: linear-gradient(180deg, rgba(16, 21, 30, 0.75) 0%, rgba(10, 14, 20, 0.90) 100%);
   border: 1px solid rgba(255, 255, 255, 0.08);
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.07);
@@ -1843,6 +1845,7 @@ body.light-mode .package-card.selected {
 
 /* Live In-Place Card Updating Pulse */
 .package-card.card-updating {
+  gap: 8px !important;
   border-color: #108AB1 !important;
   background: rgba(16, 138, 177, 0.14) !important;
   box-shadow: inset 0 0 14px rgba(16, 138, 177, 0.20) !important;
@@ -5461,4 +5464,185 @@ body.light-mode .trace-files-table td {
 
 .trace-files-table tr:hover td {
   background: rgba(16, 138, 177, 0.06);
+}
+
+/* ================= Update Card File Sizes, ETE & Live Transfer Speed HUD ================= */
+
+.meta-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-family: 'JetBrains Mono', var(--font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 7px;
+  border-radius: 6px;
+  letter-spacing: -0.01em;
+  transition: all 0.2s ease;
+  line-height: 1.25;
+}
+
+.meta-pill svg {
+  flex-shrink: 0;
+  opacity: 0.85;
+}
+
+.size-pill {
+  background: rgba(16, 138, 177, 0.10);
+  border: 1px solid rgba(16, 138, 177, 0.24);
+  color: #108AB1;
+}
+
+body.light-mode .size-pill {
+  background: rgba(16, 138, 177, 0.10) !important;
+  border: 1px solid rgba(16, 138, 177, 0.28) !important;
+  color: #086687 !important;
+}
+
+.ete-pill {
+  background: rgba(6, 215, 160, 0.10);
+  border: 1px solid rgba(6, 215, 160, 0.24);
+  color: #06D7A0;
+}
+
+body.light-mode .ete-pill {
+  background: rgba(6, 215, 160, 0.12) !important;
+  border: 1px solid rgba(6, 215, 160, 0.32) !important;
+  color: #058864 !important;
+}
+
+/* In-Card Dynamic Live Transfer Speed HUD */
+.card-transfer-hud {
+  width: 100%;
+  box-sizing: border-box;
+  margin-top: 8px;
+  padding: 9px 12px;
+  border-radius: 9px;
+  background: rgba(16, 138, 177, 0.07);
+  border: 1px solid rgba(16, 138, 177, 0.22);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  animation: hudFadeSlide 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+body.light-mode .card-transfer-hud {
+  background: rgba(16, 138, 177, 0.08) !important;
+  border: 1px solid rgba(16, 138, 177, 0.26) !important;
+  box-shadow: 0 2px 8px rgba(16, 138, 177, 0.06);
+}
+
+@keyframes hudFadeSlide {
+  from { opacity: 0; transform: translateY(-3px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.transfer-hud-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.transfer-metric-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-family: 'JetBrains Mono', var(--font-mono);
+  font-size: 11.5px;
+}
+
+.speed-pulse-indicator {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #06D7A0;
+  box-shadow: 0 0 8px #06D7A0;
+  animation: speedPulse 0.9s ease-in-out infinite alternate;
+}
+
+@keyframes speedPulse {
+  from { opacity: 0.35; transform: scale(0.85); }
+  to { opacity: 1; transform: scale(1.18); box-shadow: 0 0 10px #06D7A0; }
+}
+
+.transfer-speed-label {
+  color: var(--text-muted);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+body.light-mode .transfer-speed-label {
+  color: #64748B !important;
+}
+
+.transfer-speed-val {
+  font-weight: 700;
+  color: #108AB1;
+}
+
+body.light-mode .transfer-speed-val {
+  color: #086687 !important;
+}
+
+.transfer-bytes-val {
+  font-weight: 600;
+  color: var(--text-main);
+}
+
+body.light-mode .transfer-bytes-val {
+  color: #0F172A !important;
+}
+
+.transfer-pct-pill {
+  padding: 1px 6px;
+  border-radius: 4px;
+  font-size: 10.5px;
+  font-weight: 700;
+  background: rgba(16, 138, 177, 0.15);
+  color: #108AB1;
+}
+
+body.light-mode .transfer-pct-pill {
+  background: rgba(16, 138, 177, 0.18) !important;
+  color: #086687 !important;
+}
+
+.transfer-ete-val {
+  font-weight: 600;
+  color: #06D7A0;
+}
+
+body.light-mode .transfer-ete-val {
+  color: #058864 !important;
+}
+
+.transfer-status-line {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: 'Plus Jakarta Sans', var(--font-sans);
+  font-size: 11.5px;
+  color: var(--text-muted);
+}
+
+body.light-mode .transfer-status-line {
+  color: #475569 !important;
+}
+
+.transfer-ticker-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #108AB1;
+  flex-shrink: 0;
+}
+
+.package-main-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
 }

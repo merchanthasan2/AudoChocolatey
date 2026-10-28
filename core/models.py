@@ -13,6 +13,10 @@ class PackageInfo:
     description: str = ""
     is_pinned: bool = False
     explicit_upgrade_required: bool = False
+    size_str: str = ""
+    size_bytes: int = 0
+    ete_str: str = ""
+    ete_seconds: int = 0
     
     @property
     def has_update(self) -> bool:
