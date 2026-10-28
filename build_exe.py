@@ -5,18 +5,20 @@ import shutil
 
 def build():
     print("=" * 60)
-    print("Building WinPackageHub Standalone Executable (.exe)")
+    print("Building Quantum Updater Standalone Executable (.exe)")
     print("Glassmorphic WebView2 Architecture")
     print("=" * 60)
 
     # Output directory
     dist_dir = os.path.join(os.path.dirname(__file__), "dist")
-    target_out = os.path.join(dist_dir, "WinPackageHub")
+    target_out = os.path.join(dist_dir, "QuantumUpdater")
     if os.path.exists(target_out):
         try:
             shutil.rmtree(target_out, ignore_errors=True)
         except Exception:
             pass
+
+    icon_path = os.path.join(os.path.dirname(__file__), "src-tauri", "icons", "icon.ico")
 
     cmd = [
         sys.executable,
@@ -26,12 +28,14 @@ def build():
         "--onedir",
         "--windowed", # Suppress black cmd prompt
         "--uac-admin", # Request Administrator privilege via embedded Windows manifest
-        "--name", "WinPackageHub",
+        "--name", "QuantumUpdater",
+        "--icon", icon_path,
         "--collect-all", "webview",
         "--collect-all", "pythonnet",
         "--collect-all", "clr_loader",
         "--add-data", f"core{os.pathsep}core",
         "--add-data", f"web{os.pathsep}web",
+        "--add-data", f"brand{os.pathsep}brand",
         "main.py"
     ]
 
@@ -39,7 +43,7 @@ def build():
     res = subprocess.run(cmd)
 
     if res.returncode == 0:
-        exe_path = os.path.join(dist_dir, "WinPackageHub", "WinPackageHub.exe")
+        exe_path = os.path.join(dist_dir, "QuantumUpdater", "QuantumUpdater.exe")
         print("\n" + "=" * 60)
         print(f"[SUCCESS]: Executable built successfully!")
         print(f"Location: {exe_path}")

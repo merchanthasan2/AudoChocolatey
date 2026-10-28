@@ -1403,17 +1403,17 @@ class QuantumUpdaterApp {
       pane.classList.toggle('active', pane.id === `tab-${tabId}`);
     });
 
-    // Update macOS unified toolbar title & breadcrumb
+    // Update toolbar title & breadcrumb
     const titles = {
       updates: { title: 'App & System Updates', sub: 'Scan and update installed software safely' },
-      explore: { title: 'Mac Software Marketplace', sub: 'Curated starter bundles, top apps, and tools' },
+      explore: { title: 'Software Marketplace', sub: 'Curated starter bundles, top apps, and tools' },
       installed: { title: 'Installed Applications', sub: 'Manage apps on your computer' },
       cleanup: { title: 'Free Up Disk Space', sub: 'Clean temporary cache and reclaim disk space' },
       console: { title: 'Activity Log', sub: 'Review real-time background tasks and terminal logs' },
       specs: { title: 'About This Computer', sub: 'Hardware specifications and system details' },
       settings: { title: 'Settings & Options', sub: 'App preferences and automated update options' }
     };
-    const t = titles[tabId] || { title: 'Quantum Updater', sub: 'Apple macOS Edition' };
+    const t = titles[tabId] || { title: 'Quantum Updater', sub: 'Windows Edition' };
     const titleEl = document.getElementById('toolbar-page-title');
     const subEl = document.getElementById('toolbar-page-sub');
     if (titleEl) titleEl.textContent = t.title;
