@@ -2,6 +2,7 @@ import threading
 import json
 import platform
 import sys
+import time
 from typing import List, Dict, Any, Optional
 from core.models import PackageInfo, SearchResult, OperationStatus
 from core.manager import PackageManager
@@ -13,6 +14,7 @@ class WebAPI:
     def __init__(self, manager: PackageManager):
         self.manager = manager
         self._window = None
+        self._last_progress_time = 0.0
 
     def set_window(self, window):
         self._window = window
@@ -29,12 +31,30 @@ class WebAPI:
         self._eval_js(f"app.appendLog({escaped});")
 
     def _on_progress(self, pct: Optional[float], ticker: str):
+        now = time.time()
+        # Cap IPC evaluation to at most 16 calls per second unless completing
+        if (now - self._last_progress_time < 0.06) and (pct not in (0.0, 1.0, None)):
+            return
+        self._last_progress_time = now
+
         p_val = pct if pct is not None else "null"
         escaped_ticker = json.dumps(ticker)
         self._eval_js(f"app.setIslandProgress({p_val}, {escaped_ticker});")
 
     def scan_updates(self, *args, **kwargs) -> List[Dict[str, Any]]:
         """Scans system for available updates synchronously for JS call."""
+        if self.manager.is_busy and self.manager.cached_updates:
+            return [
+                {
+                    "id": p.id,
+                    "name": p.name,
+                    "installed_version": p.installed_version,
+                    "available_version": p.available_version,
+                    "source": p.source
+                }
+                for p in self.manager.cached_updates
+            ]
+
         event = threading.Event()
         result_box = []
         error_box = []

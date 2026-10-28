@@ -1105,6 +1105,8 @@ class QuantumUpdaterApp {
 
 
   onBridgeReady() {
+    if (this._bridgeReadyInitialized) return;
+    this._bridgeReadyInitialized = true;
     console.log('[Quantum Updater]: Backend bridge connected.');
     this.loadInitialDiagnostics();
     this.loadInstalledSilent();
@@ -1277,19 +1279,22 @@ class QuantumUpdaterApp {
   }
 
   onGlobalSearch(query) {
-    if (this.activeTab === 'explore') {
-      const el = document.getElementById('input-explore-search');
-      if (el) el.value = query;
-      this.onExploreSearchInput(query);
-    } else if (this.activeTab === 'installed') {
-      const el = document.getElementById('input-filter-installed');
-      if (el) el.value = query;
-      this.filterInstalled(query);
-    } else {
-      const el = document.getElementById('input-filter-updates');
-      if (el) el.value = query;
-      this.filterUpdates(query);
-    }
+    if (this._globalSearchTimer) clearTimeout(this._globalSearchTimer);
+    this._globalSearchTimer = setTimeout(() => {
+      if (this.activeTab === 'explore') {
+        const el = document.getElementById('input-explore-search');
+        if (el) el.value = query;
+        this.onExploreSearchInput(query);
+      } else if (this.activeTab === 'installed') {
+        const el = document.getElementById('input-filter-installed');
+        if (el) el.value = query;
+        this.filterInstalled(query);
+      } else {
+        const el = document.getElementById('input-filter-updates');
+        if (el) el.value = query;
+        this.filterUpdates(query);
+      }
+    }, 120);
   }
 
   openShortcutsModal() {
@@ -1595,7 +1600,7 @@ class QuantumUpdaterApp {
       return `
         <div class="app-logo-container" style="background: ${catItem.bg || 'rgba(255,255,255,0.06)'};" title="${safeName}">
           <img class="app-logo-img" src="${cleanLogo}" alt="${safeName}" loading="lazy"
-               onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+               onerror="this.onerror=null; this.style.display='none'; this.nextElementSibling.style.display='flex';">
           <span class="app-logo-fallback" style="display: none; background: ${grad};">${mono}</span>
         </div>
       `;
@@ -1619,7 +1624,7 @@ class QuantumUpdaterApp {
       return `
         <div class="app-logo-container" style="background: ${bg};" title="${safeName}">
           <img class="app-logo-img" src="${logoUrl}" alt="${safeName}" loading="lazy"
-               onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+               onerror="this.onerror=null; this.style.display='none'; this.nextElementSibling.style.display='flex';">
           <span class="app-logo-fallback" style="display: none; background: ${grad};">${mono}</span>
         </div>
       `;
@@ -2055,16 +2060,19 @@ class QuantumUpdaterApp {
   }
 
   filterUpdates(query) {
-    const q = (query || '').toLowerCase().trim();
-    if (!q) {
-      this.renderUpdates();
-      return;
-    }
-    const filtered = this.updates.filter(p =>
-      (p.name || '').toLowerCase().includes(q) ||
-      (p.id || '').toLowerCase().includes(q)
-    );
-    this.renderUpdates(filtered);
+    if (this._filterUpdatesTimer) clearTimeout(this._filterUpdatesTimer);
+    this._filterUpdatesTimer = setTimeout(() => {
+      const q = (query || '').toLowerCase().trim();
+      if (!q) {
+        this.renderUpdates();
+        return;
+      }
+      const filtered = this.updates.filter(p =>
+        (p.name || '').toLowerCase().includes(q) ||
+        (p.id || '').toLowerCase().includes(q)
+      );
+      this.renderUpdates(filtered);
+    }, 120);
   }
 
   // ================= Multi / Single Upgrade Execution =================
@@ -2318,8 +2326,11 @@ class QuantumUpdaterApp {
   }
 
   onExploreSearchInput(val) {
-    this.exploreSearchTerm = (val || '').toLowerCase().trim();
-    this.renderExplore();
+    if (this._exploreSearchTimer) clearTimeout(this._exploreSearchTimer);
+    this._exploreSearchTimer = setTimeout(() => {
+      this.exploreSearchTerm = (val || '').toLowerCase().trim();
+      this.renderExplore();
+    }, 120);
   }
 
   renderExplore() {
@@ -2761,16 +2772,19 @@ class QuantumUpdaterApp {
   }
 
   filterInstalled(query) {
-    const q = (query || '').toLowerCase().trim();
-    if (!q) {
-      this.renderInstalled();
-      return;
-    }
-    const filtered = this.installed.filter(p =>
-      (p.name || '').toLowerCase().includes(q) ||
-      (p.id || '').toLowerCase().includes(q)
-    );
-    this.renderInstalled(filtered);
+    if (this._filterInstalledTimer) clearTimeout(this._filterInstalledTimer);
+    this._filterInstalledTimer = setTimeout(() => {
+      const q = (query || '').toLowerCase().trim();
+      if (!q) {
+        this.renderInstalled();
+        return;
+      }
+      const filtered = this.installed.filter(p =>
+        (p.name || '').toLowerCase().includes(q) ||
+        (p.id || '').toLowerCase().includes(q)
+      );
+      this.renderInstalled(filtered);
+    }, 120);
   }
 
   async uninstallPackage(pkgId, pkgName) {
@@ -2801,7 +2815,19 @@ class QuantumUpdaterApp {
     el.className = 'terminal-line';
     el.textContent = line;
     output.appendChild(el);
-    output.scrollTop = output.scrollHeight;
+
+    // Bound DOM size to 250 lines to prevent unbounded memory growth and layout thrashing
+    while (output.childNodes.length > 250) {
+      output.removeChild(output.firstChild);
+    }
+
+    if (!this._logScrollScheduled) {
+      this._logScrollScheduled = true;
+      requestAnimationFrame(() => {
+        output.scrollTop = output.scrollHeight;
+        this._logScrollScheduled = false;
+      });
+    }
   }
 
   clearConsoleLog() {

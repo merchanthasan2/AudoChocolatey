@@ -2,6 +2,7 @@ import subprocess
 import shutil
 import os
 import re
+import time
 from typing import List, Callable, Optional
 from core.base_engine import BaseEngine
 from core.models import PackageInfo, SearchResult, OperationStatus
@@ -106,6 +107,9 @@ class WingetEngine(BaseEngine):
             ansi_escape = re.compile(r'[\x1b\x9b][\[()#;?]*(?:[0-9]{1,4}(?:;[0-9]{0,4})*)?[0-9A-ORZcf-nqry=><]')
 
             buffer = []
+            last_progress_time = 0.0
+            last_pct = -1.0
+
             if proc.stdout:
                 while True:
                     char = proc.stdout.read(1)
@@ -121,13 +125,19 @@ class WingetEngine(BaseEngine):
                             clean_line = re.sub(r'[\x00-\x1f\x7f-\x9f]', ' ', clean_line).strip()
 
                             if clean_line:
-                                if on_log:
+                                pct_match = percent_re.search(clean_line)
+                                pct_val = float(pct_match.group(1)) / 100.0 if pct_match else None
+
+                                # Only emit full lines (or non-progress lines) to persistent log
+                                if on_log and (char == '\n' or pct_val is None):
                                     on_log(clean_line + "\n")
 
-                                if on_progress:
-                                    pct_match = percent_re.search(clean_line)
-                                    pct_val = float(pct_match.group(1)) / 100.0 if pct_match else None
-                                    on_progress(pct_val, clean_line)
+                                if on_progress and pct_val is not None:
+                                    now = time.time()
+                                    if (now - last_progress_time >= 0.08) or abs(pct_val - last_pct) >= 0.01 or pct_val >= 1.0:
+                                        last_progress_time = now
+                                        last_pct = pct_val
+                                        on_progress(pct_val, clean_line)
                     else:
                         buffer.append(char)
 
