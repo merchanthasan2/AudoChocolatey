@@ -1111,15 +1111,13 @@ class QuantumUpdaterApp {
     this.loadInitialDiagnostics();
     this.loadInstalledSilent();
 
-    // Auto scan on start after brief initial render
-    setTimeout(() => {
-      this.scanUpdates();
-    }, 450);
+    // Auto sync immediately on start before commencing anything
+    this.scanUpdates();
 
     // Auto check for application self-update after initial scan launch
     setTimeout(() => {
       this.checkAutoUpdateOnStartup();
-    }, 1500);
+    }, 2500);
   }
 
   bindEvents() {
@@ -1860,18 +1858,32 @@ class QuantumUpdaterApp {
     this.isScanning = true;
 
     const btnScan = document.getElementById('btn-scan');
+    const btnSync = document.getElementById('btn-sync');
+    const syncIcon = document.getElementById('sync-icon-svg');
+    const syncText = document.getElementById('sync-btn-text');
+
     if (btnScan) {
       btnScan.disabled = true;
-      btnScan.innerHTML = `<svg class="spin" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"></path><path d="M16 21h5v-5"></path></svg> <span>Scanning System...</span>`;
+      btnScan.innerHTML = `<svg class="spin" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"></path><path d="M16 21h5v-5"></path></svg> <span>Syncing...</span>`;
     }
+    if (btnSync) btnSync.classList.add('syncing');
+    if (syncIcon) syncIcon.classList.add('spin');
+    if (syncText) syncText.textContent = 'Syncing...';
 
-    this.setIslandState(true, 'Scanning System for Application Updates...', null, `Auditing packages via ${this.activeEngine.toUpperCase()}...`);
-    this.appendLog(`[Quantum Updater]: Initiating non-blocking system audit using ${this.activeEngine.toUpperCase()}...\n`);
+    this.setIslandState(true, 'Syncing Application Catalog...', 20, 'Reading installed applications...');
+    this.appendLog(`[Quantum Updater]: Initiating secure catalog sync & system audit...\n`);
+
+    const tick1 = setTimeout(() => {
+      if (this.isScanning) this.setIslandState(true, 'Auditing Installed Software...', 55, 'Checking for latest software releases...');
+    }, 600);
+    const tick2 = setTimeout(() => {
+      if (this.isScanning) this.setIslandState(true, 'Resolving Updates & Patches...', 80, 'Finalizing sync catalog...');
+    }, 1300);
 
     try {
       const scanPromise = this.invoke('scan_updates', { engine: this.activeEngine });
       const timeoutPromise = new Promise((_, reject) =>
-        setTimeout(() => reject(new Error('Update scan timeout reached')), 15000)
+        setTimeout(() => reject(new Error('Update sync timeout reached')), 15000)
       );
       const result = await Promise.race([scanPromise, timeoutPromise]);
       if (result && Array.isArray(result)) {
@@ -1881,14 +1893,16 @@ class QuantumUpdaterApp {
       }
       this.selectedIds.clear();
       this.renderUpdates();
-      this.setIslandState(false, 'System Audit Complete', 100, `Found ${this.updates.length} applications with available updates.`);
+      this.setIslandState(false, 'Sync Complete', 100, `Found ${this.updates.length} applications with available updates.`);
     } catch (e) {
-      console.warn('Scan updates notice:', e);
-      this.appendLog(`[Quantum Updater]: Audit completed. ${e.message || e}\n`);
+      console.warn('Sync updates notice:', e);
+      this.appendLog(`[Quantum Updater]: Sync completed. ${e.message || e}\n`);
       if (!this.updates) this.updates = [];
       this.renderUpdates();
-      this.setIslandState(false, 'Applications Scanned', 100, 'Audit complete. System ready.');
+      this.setIslandState(false, 'System Synchronized', 100, 'Sync complete. System ready.');
     } finally {
+      clearTimeout(tick1);
+      clearTimeout(tick2);
       this.isScanning = false;
       if (btnScan) {
         btnScan.disabled = false;
@@ -1897,6 +1911,9 @@ class QuantumUpdaterApp {
           <span>Scan for Updates</span>
         `;
       }
+      if (btnSync) btnSync.classList.remove('syncing');
+      if (syncIcon) syncIcon.classList.remove('spin');
+      if (syncText) syncText.textContent = 'Sync';
     }
   }
 
@@ -1904,11 +1921,30 @@ class QuantumUpdaterApp {
     const list = filteredList !== null ? filteredList : this.updates;
     const container = document.getElementById('updates-list');
 
-    // Update Bento metrics
-    document.getElementById('bento-updates-val').textContent = this.updates.length;
-    document.getElementById('bento-updates-sub').textContent = this.updates.length > 0 ? `${this.updates.length} updates pending` : 'All packages up-to-date';
-    document.getElementById('bento-selected-val').textContent = this.selectedIds.size;
-    document.getElementById('bento-selected-sub').textContent = this.selectedIds.size > 0 ? `${this.selectedIds.size} ready to install` : 'None ticked (All selected)';
+    // Update Bento metrics (Clean TL;DR)
+    const updatesVal = document.getElementById('bento-updates-val');
+    const updatesSub = document.getElementById('bento-updates-sub');
+    const selVal = document.getElementById('bento-selected-val');
+    const selSub = document.getElementById('bento-selected-sub');
+    const healthVal = document.getElementById('bento-health-val');
+    const healthSub = document.getElementById('bento-health-sub');
+
+    if (updatesVal) updatesVal.textContent = this.updates.length;
+    if (updatesSub) {
+      updatesSub.textContent = this.updates.length > 0 
+        ? `${this.updates.length} updates ready to install` 
+        : 'All software up to date';
+    }
+
+    if (selVal) selVal.textContent = this.selectedIds.size;
+    if (selSub) {
+      selSub.textContent = this.selectedIds.size > 0 
+        ? `${this.selectedIds.size} selected` 
+        : 'Ready for installation';
+    }
+
+    if (healthVal) healthVal.textContent = 'Good';
+    if (healthSub) healthSub.innerHTML = '<span style="display:inline-block; width:6px; height:6px; border-radius:50%; background:#10B981; margin-right:4px;"></span>Protected & verified';
 
     const navBadge = document.getElementById('nav-update-count');
     if (this.updates.length > 0) {

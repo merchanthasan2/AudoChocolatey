@@ -192,22 +192,18 @@
         <div class="toolbar-center">
           <div class="mac-spotlight-field">
             <svg class="search-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-            <input type="text" id="global-spotlight-search" placeholder="Spotlight Search (⌘K to focus)..." oninput="app.onGlobalSearch(this.value)">
-            <kbd class="spotlight-kbd" id="spotlight-shortcut-badge">⌘K</kbd>
+            <input type="text" id="global-spotlight-search" placeholder="Search catalog (Ctrl+K to focus)..." oninput="app.onGlobalSearch(this.value)">
+            <kbd class="spotlight-kbd" id="spotlight-shortcut-badge">^K</kbd>
           </div>
         </div>
 
-        <!-- Right Controls & Status Indicator -->
+        <!-- Right Controls & Sync Action -->
         <div class="toolbar-right">
-          <div class="mac-status-pill status-healthy" id="engine-status-pill" title="Mac System Status">
-            <span class="status-dot" style="background:#30D158; box-shadow:0 0 6px #30D158; width: 8px; height: 8px; border-radius: 50%; display: inline-block;"></span>
-            <span id="active-engine-badge">Mac Health: Good</span>
-          </div>
-
-          <!-- Quick Scan Button -->
-          <button class="mac-pill-action-btn" id="toolbar-btn-scan" onclick="app.scanUpdates()" title="Scan for Updates (⌘R)">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"></path><path d="M16 21h5v-5"></path></svg>
-            <span>Scan</span>
+          <button class="header-sync-btn" id="btn-sync" onclick="app.scanUpdates()" title="Sync and Check for Updates">
+            <svg id="sync-icon-svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/>
+            </svg>
+            <span id="sync-btn-text">Sync</span>
           </button>
 
           <!-- Shortcuts Help Button -->
@@ -248,44 +244,47 @@
 
         <!-- ================= TAB 1: UPDATES ================= -->
         <section class="tab-pane active" id="tab-updates">
-          <!-- Clean Apple Glassmorphic Summary Bar -->
-          <div class="mac-summary-bar">
-            <div class="summary-tile" id="bento-card-updates" onclick="app.scanUpdates()">
-              <div class="summary-tile-header">
-                <span class="summary-tile-label">Updates Available</span>
-                <div class="summary-tile-icon">
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"></path><path d="M16 21h5v-5"></path></svg>
-                </div>
+          <!-- Clean TL;DR Bento Bar -->
+          <div class="bento-hud-grid">
+            <!-- Capsule 1: Updates Available -->
+            <div class="bento-hud-card accent-amber" id="bento-card-updates" onclick="app.scanUpdates()" style="cursor: pointer;">
+              <div class="bento-hud-eyebrow">
+                <span>Updates Available</span>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#F59E0B" stroke-width="2.5"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"></path><path d="M16 21h5v-5"></path></svg>
               </div>
-              <div class="summary-tile-content">
-                <span class="summary-tile-value" id="bento-updates-val">0</span>
-                <span class="summary-tile-sub" id="bento-updates-sub">All apps up to date</span>
+              <div class="bento-hud-val">
+                <span id="bento-updates-val">0</span>
               </div>
-            </div>
-
-            <div class="summary-tile">
-              <div class="summary-tile-header">
-                <span class="summary-tile-label">Selected to Update</span>
-                <div class="summary-tile-icon">
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
-                </div>
-              </div>
-              <div class="summary-tile-content">
-                <span class="summary-tile-value" id="bento-selected-val">0</span>
-                <span class="summary-tile-sub" id="bento-selected-sub">Ready for installation</span>
+              <div class="bento-hud-footer">
+                <span id="bento-updates-sub">All software up to date</span>
               </div>
             </div>
 
-            <div class="summary-tile">
-              <div class="summary-tile-header">
-                <span class="summary-tile-label">Mac Health Status</span>
-                <div class="summary-tile-icon">
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
-                </div>
+            <!-- Capsule 2: Selected to Update -->
+            <div class="bento-hud-card accent-cyan">
+              <div class="bento-hud-eyebrow">
+                <span>Selected to Update</span>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#0EA5E9" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
               </div>
-              <div class="summary-tile-content">
-                <span class="summary-tile-value" id="bento-health-val">Good</span>
-                <span class="summary-tile-sub" id="bento-health-sub"><span class="status-dot-mini" style="display:inline-block; width:6px; height:6px; border-radius:50%; background:#30D158; margin-right:4px;"></span>Gatekeeper Protected</span>
+              <div class="bento-hud-val">
+                <span id="bento-selected-val">0</span>
+              </div>
+              <div class="bento-hud-footer">
+                <span id="bento-selected-sub">Ready for installation</span>
+              </div>
+            </div>
+
+            <!-- Capsule 3: System Health -->
+            <div class="bento-hud-card accent-emerald">
+              <div class="bento-hud-eyebrow">
+                <span>System Health</span>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#10B981" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+              </div>
+              <div class="bento-hud-val">
+                <span id="bento-health-val" style="color: #10B981;">Good</span>
+              </div>
+              <div class="bento-hud-footer">
+                <span id="bento-health-sub"><span style="display:inline-block; width:6px; height:6px; border-radius:50%; background:#10B981; margin-right:4px;"></span>Protected &amp; verified</span>
               </div>
             </div>
           </div>
