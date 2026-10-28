@@ -3,7 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Quantum Updater • Apple OS ver 27 Liquid Edition</title>
+  <title>Quantum Updater • Windows Edition</title>
+  <link rel="icon" type="image/svg+xml" href="quantum-updater-icon.svg">
+  <link rel="alternate icon" type="image/png" href="icon.png">
   <link rel="stylesheet" href="style.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -16,20 +18,17 @@
       <!-- Native macOS Window Controls Safe Zone & Drag Region (no fake dots) -->
       <div class="traffic-lights-spacer" title="Window Drag Region"></div>
 
-      <!-- App Branding Header with Real Quantum Logo -->
-      <div class="mac-sidebar-brand" id="brand-link" title="Quantum Step (quantumstep.in)">
+      <!-- App Branding Header with Real Quantum Step Logo -->
+      <div class="mac-sidebar-brand" id="brand-link" title="Quantum Step Creation (quantumstep.in)">
         <div class="brand-monogram">
-          <img src="icon.png" class="brand-logo-img" alt="Quantum Logo" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
-          <svg style="display:none;" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
-          </svg>
+          <img src="quantum-updater-icon.svg" class="brand-logo-img" alt="Quantum Step Logo" onerror="this.src='icon.png'">
         </div>
         <div class="brand-meta">
           <div class="brand-name-row">
             <span class="brand-name">Quantum</span>
             <span class="brand-version-pill">v2.0</span>
           </div>
-          <span class="brand-subtitle">Smart Mac Manager</span>
+          <span class="brand-subtitle">Quantum Step Creation</span>
         </div>
       </div>
 
@@ -977,12 +976,14 @@
             <!-- Quantum Step Portal -->
             <div class="settings-card full-span brand-about-card">
               <div class="about-card-inner">
-                <div>
-                  <div class="about-card-title-row">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
-                    <h3 class="about-card-heading">Quantum Updater &bull; Apple OS ver 27 Edition</h3>
+                <div style="display: flex; align-items: center; gap: 16px;">
+                  <img src="quantum-step-logo.svg" alt="Quantum Step Creation Emblem" style="width: 52px; height: 52px; border-radius: 50%; box-shadow: 0 0 16px rgba(0, 229, 255, 0.35); flex-shrink: 0;">
+                  <div>
+                    <div class="about-card-title-row">
+                      <h3 class="about-card-heading">Quantum Updater &bull; Windows Edition</h3>
+                    </div>
+                    <p class="settings-card-desc" style="margin-bottom: 0;">An official desktop utility product crafted by <strong>Quantum Step Creation</strong> (<a href="https://quantumstep.in" target="_blank" rel="noopener" class="about-card-link">quantumstep.in</a>).</p>
                   </div>
-                  <p class="settings-card-desc" style="margin-bottom: 0;">An official desktop utility product crafted by <strong>Quantum Step</strong> (<a href="https://quantumstep.in" target="_blank" rel="noopener" class="about-card-link">quantumstep.in</a>).</p>
                 </div>
                 <div class="about-card-actions">
                   <a href="https://quantumstep.in/quantum-updater" target="_blank" rel="noopener" class="glass-btn btn-secondary btn-sm" style="text-decoration: none; display: inline-flex; align-items: center; gap: 6px;">
@@ -990,7 +991,7 @@
                     <span>Product Page</span>
                   </a>
                   <a href="https://quantumstep.in" target="_blank" rel="noopener" class="glass-btn btn-primary btn-sm" style="text-decoration: none; display: inline-flex; align-items: center; gap: 6px;">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"></path><path d="M2 12h20"></path></svg>
                     <span>Quantum Step</span>
                   </a>
                 </div>

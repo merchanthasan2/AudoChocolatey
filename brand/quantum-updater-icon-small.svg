@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000" role="img" aria-label="Quantum Updater">
+  <!-- 16-32 px version of the app icon: fewer, heavier lines. -->
+  <defs>
+    <linearGradient id="qsm-ring" x1="60" y1="0" x2="940" y2="0" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#00E5FF"/>
+      <stop offset="0.3" stop-color="#3D8BFF"/>
+      <stop offset="0.55" stop-color="#B14BFF"/>
+      <stop offset="0.75" stop-color="#FF2BD6"/>
+      <stop offset="1" stop-color="#FFB000"/>
+    </linearGradient>
+  </defs>
+  <circle cx="500" cy="500" r="495" fill="#0B0614"/>
+  <path d="M884.6,655.3 A415,415 0 1 1 884.6,344.7" fill="none" stroke="url(#qsm-ring)" stroke-width="90" stroke-linecap="round"/>
+  <g fill="none" stroke="#7DF9FF" stroke-width="62">
+    <ellipse cx="500" cy="500" rx="110" ry="275"/>
+    <ellipse cx="500" cy="500" rx="110" ry="275" transform="rotate(60 500 500)"/>
+    <ellipse cx="500" cy="500" rx="110" ry="275" transform="rotate(-60 500 500)"/>
+  </g>
+  <circle cx="500" cy="500" r="62" fill="#2F9BFF"/>
+</svg>
