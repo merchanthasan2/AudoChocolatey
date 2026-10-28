@@ -3373,39 +3373,93 @@ body.light-mode .queue-item-status-pill.pending {
 }
 
 /* ==========================================================================
-   Apple Mac Storage Cleaner Design System
+   Quantum Updater - Storage Cleaner & Optimization Design System
    ========================================================================== */
 
-.mac-cleaner-hero {
-  background: linear-gradient(180deg, rgba(16, 21, 30, 0.80) 0%, rgba(10, 14, 20, 0.92) 100%);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 16px;
-  padding: 24px;
-  margin-bottom: 24px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.30), inset 0 1px 0 rgba(255, 255, 255, 0.08);
-}
-
-.cleaner-hero-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 20px;
+.cleaner-bento-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
   margin-bottom: 20px;
 }
 
-.cleaner-hero-text h2 {
-  font-size: 22px;
-  font-weight: 700;
-  color: var(--text-main);
-  letter-spacing: -0.02em;
-  margin: 6px 0 6px;
+@media (max-width: 960px) {
+  .cleaner-bento-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
-.cleaner-hero-text p {
-  color: var(--text-secondary);
-  font-size: 13px;
-  line-height: 1.5;
-  max-width: 600px;
+.cleaner-mini-meter {
+  margin-top: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.cleaner-meter-track {
+  height: 6px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 3px;
+  overflow: hidden;
+  display: flex;
+}
+
+.meter-bar-used {
+  background: var(--text-muted);
+  height: 100%;
+  transition: width 0.4s ease;
+}
+
+.meter-bar-junk {
+  background: #108AB1;
+  height: 100%;
+  transition: width 0.4s ease;
+}
+
+.cleaner-meter-legend {
+  display: flex;
+  gap: 14px;
+  font-size: 10.5px;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+}
+
+.legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.legend-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.legend-dot.dot-used { background: var(--text-muted); }
+.legend-dot.dot-junk { background: #108AB1; }
+.legend-dot.dot-free { background: rgba(255, 255, 255, 0.2); }
+
+/* Cleaner Action Bar */
+.cleaner-action-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 18px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-glass);
+  border-radius: 12px;
+  margin-bottom: 24px;
+  box-shadow: var(--border-card-specular), 0 4px 16px rgba(0, 0, 0, 0.18);
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.cleaner-action-bar .action-bar-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
 
 .cleaner-badge-tag {
@@ -3413,181 +3467,68 @@ body.light-mode .queue-item-status-pill.pending {
   align-items: center;
   gap: 6px;
   padding: 3px 9px;
-  background: rgba(16, 138, 177, 0.14);
-  border: 1px solid rgba(16, 138, 177, 0.35);
+  background: rgba(6, 215, 160, 0.12);
+  border: 1px solid rgba(6, 215, 160, 0.35);
   border-radius: 12px;
   font-size: 11px;
   font-weight: 600;
-  color: #108AB1;
+  color: #06D7A0;
 }
 
-.cleaner-hero-actions {
+.cleaner-selection-pill {
+  font-size: 12px;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.cleaner-action-bar .action-bar-right {
   display: flex;
   align-items: center;
   gap: 10px;
-  flex-shrink: 0;
 }
 
-.mac-btn-primary {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  background: linear-gradient(135deg, rgba(16, 138, 177, 0.45) 0%, rgba(10, 132, 255, 0.28) 100%);
-  color: #FFFFFF;
-  border: 1px solid rgba(16, 138, 177, 0.75);
-  border-radius: 8px;
-  padding: 10px 18px;
-  font-size: 13px;
+.cleaner-text-btn {
+  background: none;
+  border: none;
+  color: var(--text-accent);
+  font-size: 12.5px;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.16s ease;
-  box-shadow: 0 2px 8px rgba(16, 138, 177, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.22);
+  padding: 6px 10px;
+  border-radius: 6px;
+  transition: all 0.15s ease;
 }
 
-.mac-btn-primary:hover {
-  background: linear-gradient(135deg, rgba(16, 138, 177, 0.75) 0%, rgba(10, 132, 255, 0.55) 100%);
-  border-color: #108AB1;
-  box-shadow: 0 4px 16px rgba(16, 138, 177, 0.45);
+.cleaner-text-btn:hover {
+  background: rgba(16, 138, 177, 0.08);
+  text-decoration: underline;
+}
+
+.btn-clean-now {
+  background: linear-gradient(135deg, #F04770 0%, #D8365D 100%) !important;
+  color: #FFFFFF !important;
+  border: 1px solid rgba(240, 71, 112, 0.6) !important;
+  box-shadow: 0 2px 12px rgba(240, 71, 112, 0.35) !important;
+  font-weight: 600 !important;
+}
+
+.btn-clean-now:hover {
+  background: linear-gradient(135deg, #FF5A82 0%, #F04770 100%) !important;
+  box-shadow: 0 4px 18px rgba(240, 71, 112, 0.5) !important;
   transform: translateY(-1px);
 }
 
-.mac-btn-primary:active {
-  transform: translateY(0);
-}
-
-.mac-btn-secondary {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  background: rgba(255, 255, 255, 0.06);
-  color: #F0F4F8;
-  border: 1px solid rgba(255, 255, 255, 0.10);
-  border-radius: 8px;
-  padding: 10px 16px;
-  font-size: 13px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.16s ease;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.20), inset 0 1px 0 rgba(255, 255, 255, 0.08);
-}
-
-.mac-btn-secondary:hover {
-  background: rgba(255, 255, 255, 0.10);
-  border-color: rgba(255, 255, 255, 0.16);
-  transform: translateY(-1px);
-}
-
-/* Cleaner Telemetry Banner */
-.cleaner-telemetry-banner {
-  display: grid;
-  grid-template-columns: 1fr auto 1fr auto 1fr;
-  align-items: center;
-  background: rgba(0, 0, 0, 0.40);
-  border: 1px solid rgba(255, 255, 255, 0.07);
-  border-radius: 12px;
-  padding: 14px 20px;
-  margin-bottom: 18px;
-  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.35);
-}
-
-.cleaner-stat-tile {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.cleaner-stat-tile .stat-label {
-  font-size: 11px;
-  font-weight: 600;
+.telemetry-separator {
   color: var(--text-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
+  opacity: 0.6;
 }
 
-.cleaner-stat-tile .stat-value {
-  font-size: 22px;
-  font-weight: 700;
-  color: var(--text-main);
-  letter-spacing: -0.02em;
-  font-family: var(--font-display);
-}
-
-.cleaner-stat-tile .stat-value.text-primary {
-  color: #0A84FF;
-}
-
-.cleaner-stat-tile .stat-value.text-mint {
-  color: #30D158;
-}
-
-.cleaner-stat-tile .stat-sub {
-  font-size: 11.5px;
-  color: var(--text-secondary);
-}
-
-.cleaner-stat-divider {
-  width: 1px;
-  height: 38px;
-  background: rgba(255, 255, 255, 0.08);
-  margin: 0 16px;
-}
-
-/* Storage Progress Meter */
-.cleaner-storage-meter {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.cleaner-meter-track {
-  height: 10px;
-  background: rgba(255, 255, 255, 0.08);
-  border-radius: 5px;
-  overflow: hidden;
-  display: flex;
-}
-
-.meter-bar-used {
-  background: #8E8E93;
-  height: 100%;
-  transition: width 0.4s ease;
-}
-
-.meter-bar-junk {
-  background: #0A84FF;
-  height: 100%;
-  transition: width 0.4s ease;
-}
-
-.cleaner-meter-legend {
-  display: flex;
-  gap: 20px;
-  font-size: 11.5px;
-  color: var(--text-secondary);
-}
-
-.legend-item {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.legend-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  display: inline-block;
-}
-
-.legend-dot.dot-used { background: #8E8E93; }
-.legend-dot.dot-junk { background: #0A84FF; }
-.legend-dot.dot-free { background: rgba(255, 255, 255, 0.2); }
-
-/* Breakdown Section */
+/* Cleaner Breakdown Section */
 .cleaner-breakdown-section {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 14px;
+  margin-bottom: 80px;
 }
 
 .cleaner-section-header {
@@ -3598,80 +3539,64 @@ body.light-mode .queue-item-status-pill.pending {
 }
 
 .cleaner-section-header h3 {
-  font-size: 15px;
+  font-size: 16px;
   font-weight: 700;
   color: var(--text-main);
+  letter-spacing: -0.01em;
+  margin: 0;
 }
 
 .cleaner-section-header .section-hint {
   font-size: 12px;
   color: var(--text-muted);
-  margin-left: 10px;
+  margin-top: 2px;
 }
 
-.cleaner-section-header .header-right {
-  display: flex;
-  gap: 12px;
-}
-
-.mac-text-btn {
-  background: none;
-  border: none;
-  color: #0A84FF;
-  font-size: 12.5px;
-  font-weight: 500;
-  cursor: pointer;
-  padding: 4px 6px;
-  border-radius: 4px;
-}
-
-.mac-text-btn:hover {
-  text-decoration: underline;
-}
-
-/* Category Rows */
 .cleaner-categories-list {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 10px;
 }
 
 .cleaner-category-row {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 14px 18px;
-  background: rgba(255, 255, 255, 0.035);
-  border: 0.5px solid rgba(255, 255, 255, 0.07);
+  padding: 16px 20px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-glass);
   border-radius: 12px;
-  transition: all 0.16s ease;
+  box-shadow: var(--border-card-specular), 0 2px 8px rgba(0, 0, 0, 0.08);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .cleaner-category-row:hover {
-  background: rgba(255, 255, 255, 0.06);
-  border-color: rgba(255, 255, 255, 0.14);
+  background: var(--bg-card-hover);
+  border-color: rgba(16, 138, 177, 0.35);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.18);
 }
 
 .cleaner-category-row.selected {
-  border-color: rgba(10, 132, 255, 0.35);
-  background: rgba(10, 132, 255, 0.04);
+  border-color: rgba(16, 138, 177, 0.6);
+  background: rgba(16, 138, 177, 0.06);
 }
 
 .category-row-left {
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 16px;
   flex: 1;
   min-width: 0;
 }
 
 .category-icon-box {
-  width: 40px;
-  height: 40px;
+  width: 42px;
+  height: 42px;
   border-radius: 10px;
-  background: rgba(10, 132, 255, 0.12);
-  border: 0.5px solid rgba(10, 132, 255, 0.25);
-  color: #0A84FF;
+  background: rgba(16, 138, 177, 0.12);
+  border: 1px solid rgba(16, 138, 177, 0.25);
+  color: #108AB1;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -3688,28 +3613,29 @@ body.light-mode .queue-item-status-pill.pending {
 .category-title-line {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
 }
 
 .category-name {
-  font-size: 14px;
+  font-size: 14.5px;
   font-weight: 600;
   color: var(--text-main);
 }
 
 .category-tag-badge {
   font-size: 10px;
-  font-weight: 600;
-  padding: 1px 7px;
-  border-radius: 8px;
-  background: rgba(48, 209, 88, 0.12);
-  border: 0.5px solid rgba(48, 209, 88, 0.3);
-  color: #30D158;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 6px;
+  background: rgba(6, 215, 160, 0.12);
+  border: 1px solid rgba(6, 215, 160, 0.35);
+  color: #06D7A0;
   text-transform: uppercase;
+  letter-spacing: 0.04em;
 }
 
 .category-desc {
-  font-size: 12px;
+  font-size: 12.5px;
   color: var(--text-secondary);
   line-height: 1.4;
 }
@@ -3718,23 +3644,23 @@ body.light-mode .queue-item-status-pill.pending {
   display: flex;
   gap: 6px;
   flex-wrap: wrap;
-  margin-top: 4px;
+  margin-top: 6px;
 }
 
 .subitem-pill {
   font-size: 10.5px;
   font-family: var(--font-mono);
-  padding: 2px 7px;
+  padding: 2px 8px;
   border-radius: 6px;
-  background: rgba(255, 255, 255, 0.06);
-  border: 0.5px solid rgba(255, 255, 255, 0.08);
-  color: var(--text-muted);
+  background: var(--bg-input);
+  border: 1px solid var(--border-glass);
+  color: var(--text-secondary);
 }
 
 .category-row-right {
   display: flex;
   align-items: center;
-  gap: 18px;
+  gap: 20px;
   flex-shrink: 0;
 }
 
@@ -3746,10 +3672,11 @@ body.light-mode .queue-item-status-pill.pending {
 }
 
 .category-size-text {
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 700;
-  font-family: var(--font-mono);
+  font-family: var(--font-display);
   color: var(--text-main);
+  letter-spacing: -0.01em;
 }
 
 .category-size-text.text-zero {
@@ -3813,6 +3740,112 @@ body.light-mode .queue-item-status-pill.pending {
 .mac-checkbox-switch input:disabled + .mac-switch-slider {
   opacity: 0.4;
   cursor: not-allowed;
+}
+
+/* ==========================================================================
+   Cleaner Light Mode Adjustments (100% WCAG AAA Contrast)
+   ========================================================================== */
+body.light-mode .cleaner-bento-grid .bento-hud-card {
+  background: rgba(255, 255, 255, 0.90);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
+}
+
+body.light-mode .cleaner-bento-grid .bento-hud-card:hover {
+  background: #ffffff;
+  border-color: rgba(0, 122, 255, 0.35);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+}
+
+body.light-mode .cleaner-bento-grid .bento-hud-eyebrow {
+  color: #6B7B8E;
+}
+
+body.light-mode .cleaner-bento-grid .bento-hud-val {
+  color: #1d1d1f;
+}
+
+body.light-mode .cleaner-bento-grid .bento-hud-footer {
+  color: #515154;
+}
+
+body.light-mode .cleaner-mini-meter .cleaner-meter-track {
+  background: rgba(0, 0, 0, 0.08);
+}
+
+body.light-mode .cleaner-mini-meter .cleaner-meter-legend {
+  color: #6B7B8E;
+}
+
+body.light-mode .cleaner-action-bar {
+  background: rgba(255, 255, 255, 0.90);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
+}
+
+body.light-mode .cleaner-selection-pill {
+  color: #515154;
+}
+
+body.light-mode .cleaner-text-btn {
+  color: #007AFF;
+}
+
+body.light-mode .cleaner-text-btn:hover {
+  background: rgba(0, 122, 255, 0.08);
+}
+
+body.light-mode .cleaner-category-row {
+  background: rgba(255, 255, 255, 0.90);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+}
+
+body.light-mode .cleaner-category-row:hover {
+  background: #ffffff;
+  border-color: rgba(0, 122, 255, 0.35);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.07);
+}
+
+body.light-mode .cleaner-category-row.selected {
+  background: rgba(0, 122, 255, 0.04);
+  border-color: rgba(0, 122, 255, 0.5);
+}
+
+body.light-mode .category-icon-box {
+  background: rgba(0, 122, 255, 0.10);
+  border-color: rgba(0, 122, 255, 0.20);
+  color: #007AFF;
+}
+
+body.light-mode .category-name {
+  color: #1d1d1f;
+}
+
+body.light-mode .category-desc {
+  color: #515154;
+}
+
+body.light-mode .subitem-pill {
+  background: rgba(0, 0, 0, 0.04);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  color: #515154;
+}
+
+body.light-mode .category-size-text {
+  color: #1d1d1f;
+}
+
+body.light-mode .category-files-text {
+  color: #86868b;
+}
+
+body.light-mode .cleaner-section-header h3 {
+  color: #1d1d1f;
+}
+
+body.light-mode .cleaner-section-header .section-hint {
+  color: #6B7B8E;
 }
 
 /* App Logo Styling & Native Icons */

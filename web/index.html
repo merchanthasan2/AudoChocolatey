@@ -525,72 +525,89 @@
 
         <!-- ================= TAB 4: CLEANUP ================= -->
         <section class="tab-pane" id="tab-cleanup">
-          <div class="mac-cleaner-hero">
-            <div class="cleaner-hero-content">
-              <div class="cleaner-hero-header">
-                <div class="cleaner-hero-text">
-                  <div class="cleaner-badge-tag">
-                    <span class="status-dot status-dot-pulse"></span>
-                    <span>Windows Storage Optimization</span>
-                  </div>
-                  <h2>Free Up Disk Space</h2>
-                  <p>Safely clean application caches, developer build artifacts, and system logs to reclaim gigabytes of storage. Your documents, photos, and code are never touched.</p>
-                </div>
-                <div class="cleaner-hero-actions">
-                  <button class="mac-btn-primary" id="btn-one-click-clean" onclick="app.oneClickClean()" title="Clean all safe caches in one click">
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                    <span>Clean Disk Space Now</span>
-                  </button>
-                  <button class="mac-btn-secondary" id="btn-optimize-ram" onclick="app.optimizeMemory()" title="Purge inactive cache pages and compact Windows RAM working sets">
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 19v-3"></path><path d="M10 19v-3"></path><path d="M14 19v-3"></path><path d="M18 19v-3"></path><rect x="2" y="6" width="20" height="10" rx="2"></rect></svg>
-                    <span>Optimize RAM</span>
-                  </button>
-                  <button class="mac-btn-secondary" id="btn-scan-cleanup" onclick="app.scanCleanup()" title="Analyze storage and scan caches">
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-                    <span>Scan Storage</span>
-                  </button>
-                </div>
+          <!-- Bento HUD Telemetry Grid -->
+          <div class="bento-hud-grid cleaner-bento-grid">
+            <!-- Bento Card 1: Reclaimable Storage -->
+            <div class="bento-hud-card accent-cyan">
+              <div class="bento-hud-eyebrow">
+                <span>Reclaimable Cache</span>
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#108AB1" stroke-width="2.5"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
               </div>
-
-              <!-- Storage Telemetry Banner -->
-              <div class="cleaner-telemetry-banner">
-                <div class="cleaner-stat-tile">
-                  <span class="stat-label">Reclaimable Junk</span>
-                  <div class="stat-value text-primary" id="cleanup-reclaimable-total">--</div>
-                  <span class="stat-sub" id="cleanup-reclaimable-sub">Ready to scan</span>
-                </div>
-                <div class="cleaner-stat-divider"></div>
-                <div class="cleaner-stat-tile">
-                  <span class="stat-label">Available Storage</span>
-                  <div class="stat-value" id="cleanup-disk-free">--</div>
-                  <span class="stat-sub" id="cleanup-disk-sub">Calculating NTFS usage...</span>
-                </div>
-                <div class="cleaner-stat-divider"></div>
-                <div class="cleaner-stat-tile">
-                  <span class="stat-label">System Memory (RAM)</span>
-                  <div class="stat-value text-ocean" id="cleanup-ram-status">RAM Healthy</div>
-                  <span class="stat-sub" id="cleanup-ram-sub">Memory Status: Optimal</span>
-                </div>
-                <div class="cleaner-stat-divider"></div>
-                <div class="cleaner-stat-tile">
-                  <span class="stat-label">System Health</span>
-                  <div class="stat-value text-mint" id="cleanup-health-status">Ready</div>
-                  <span class="stat-sub">Zero risk to user files</span>
-                </div>
+              <div class="bento-hud-val">
+                <span id="cleanup-reclaimable-total">--</span>
               </div>
+              <div class="bento-hud-footer">
+                <span id="cleanup-reclaimable-sub">Ready to scan storage</span>
+              </div>
+            </div>
 
-              <!-- Storage Visual Progress Meter -->
-              <div class="cleaner-storage-meter">
+            <!-- Bento Card 2: Local Disk (C:) Capacity & Visual Meter -->
+            <div class="bento-hud-card accent-emerald">
+              <div class="bento-hud-eyebrow">
+                <span>Local Disk (C:)</span>
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#06D7A0" stroke-width="2.5"><rect x="2" y="2" width="20" height="8" rx="2"></rect><rect x="2" y="14" width="20" height="8" rx="2"></rect><line x1="6" y1="6" x2="6.01" y2="6"></line><line x1="6" y1="18" x2="6.01" y2="18"></line></svg>
+              </div>
+              <div class="bento-hud-val">
+                <span id="cleanup-disk-free">--</span>
+              </div>
+              <div class="bento-hud-footer">
+                <span id="cleanup-disk-sub">Calculating NTFS usage...</span>
+              </div>
+              <!-- Embedded Visual Meter Track -->
+              <div class="cleaner-mini-meter">
                 <div class="cleaner-meter-track">
                   <div class="meter-bar-used" id="cleaner-meter-used" style="width: 20%;"></div>
                   <div class="meter-bar-junk" id="cleaner-meter-junk" style="width: 5%;"></div>
                 </div>
                 <div class="cleaner-meter-legend">
                   <span class="legend-item"><span class="legend-dot dot-used"></span> Windows &amp; Apps</span>
-                  <span class="legend-item"><span class="legend-dot dot-junk"></span> Cleanable Junk</span>
-                  <span class="legend-item"><span class="legend-dot dot-free"></span> Free Storage</span>
+                  <span class="legend-item"><span class="legend-dot dot-junk"></span> Cleanable</span>
+                  <span class="legend-item"><span class="legend-dot dot-free"></span> Free</span>
                 </div>
               </div>
+            </div>
+
+            <!-- Bento Card 3: Memory & System Health -->
+            <div class="bento-hud-card accent-amber">
+              <div class="bento-hud-eyebrow">
+                <span>System Memory &amp; Health</span>
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#FFD167" stroke-width="2.5"><rect x="4" y="4" width="16" height="16" rx="2"></rect><rect x="9" y="9" width="6" height="6"></rect><line x1="9" y1="1" x2="9" y2="4"></line><line x1="15" y1="1" x2="15" y2="4"></line><line x1="9" y1="20" x2="9" y2="23"></line><line x1="15" y1="20" x2="15" y2="23"></line><line x1="20" y1="9" x2="23" y2="9"></line><line x1="20" y1="14" x2="23" y2="14"></line><line x1="1" y1="9" x2="4" y2="9"></line><line x1="1" y1="14" x2="4" y2="14"></line></svg>
+              </div>
+              <div class="bento-hud-val">
+                <span id="cleanup-ram-status">RAM Healthy</span>
+              </div>
+              <div class="bento-hud-footer">
+                <span id="cleanup-health-status" class="text-mint">Ready to Clean</span>
+                <span class="telemetry-separator">&bull;</span>
+                <span id="cleanup-ram-sub">Zero risk to user files</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Sleek Glassmorphic Action Control Bar -->
+          <div class="cleaner-action-bar">
+            <div class="action-bar-left">
+              <div class="cleaner-badge-tag">
+                <span class="status-dot status-dot-pulse"></span>
+                <span>Safe Windows Cleaner</span>
+              </div>
+              <span class="cleaner-selection-pill" id="cleanup-selected-count">All safe categories selected</span>
+            </div>
+            <div class="action-bar-right">
+              <button class="cleaner-text-btn" onclick="app.toggleAllCleanup(true)">Select Recommended</button>
+              <button class="cleaner-text-btn" onclick="app.toggleAllCleanup(false)">Toggle All</button>
+              <button class="glass-btn btn-secondary btn-sm" id="btn-scan-cleanup" onclick="app.scanCleanup()" title="Analyze storage and scan caches">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                <span>Scan Storage</span>
+              </button>
+              <button class="glass-btn btn-secondary btn-sm" id="btn-optimize-ram" onclick="app.optimizeMemory()" title="Purge inactive cache pages and compact Windows RAM working sets">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 19v-3"></path><path d="M10 19v-3"></path><path d="M14 19v-3"></path><path d="M18 19v-3"></path><rect x="2" y="6" width="20" height="10" rx="2"></rect></svg>
+                <span>Optimize RAM</span>
+              </button>
+              <button class="glass-btn btn-cta btn-clean-now" id="btn-one-click-clean" onclick="app.oneClickClean()" title="Clean all safe caches in one click">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                <span>Clean Disk Space Now</span>
+              </button>
             </div>
           </div>
 
@@ -599,11 +616,13 @@
             <div class="cleaner-section-header">
               <div class="header-left">
                 <h3>Storage Breakdown</h3>
-                <span class="section-hint" id="cleanup-selected-count">All safe categories selected</span>
+                <span class="section-hint">Select items to purge safely. Personal files, photos, and code are never touched.</span>
               </div>
               <div class="header-right">
-                <button class="mac-text-btn" onclick="app.toggleAllCleanup(true)">Select Recommended</button>
-                <button class="mac-text-btn" id="btn-purge-cleanup" onclick="app.executeCleanup()">Clean Selected</button>
+                <button class="glass-btn btn-secondary btn-sm" id="btn-purge-cleanup" onclick="app.executeCleanup()">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                  <span>Clean Selected</span>
+                </button>
               </div>
             </div>
             <div class="cleaner-categories-list" id="cleanup-categories-container">
