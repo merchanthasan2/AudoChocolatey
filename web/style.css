@@ -1399,9 +1399,9 @@ body.light-mode .bento-card:hover {
 }
 
 body.light-mode .progress-island-glass {
-  background: rgba(255, 255, 255, 0.85);
-  border-color: rgba(0, 0, 0, 0.08);
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
+  background: linear-gradient(180deg, #E6EEF6 0%, #DAE4F0 100%) !important;
+  border: 1px solid rgba(16, 138, 177, 0.25) !important;
+  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.06), inset 0 1px 0 rgba(255, 255, 255, 0.7) !important;
 }
 
 .island-top-row {
@@ -1487,9 +1487,9 @@ body.light-mode .island-progress-track {
 }
 
 body.light-mode .action-bar-glass {
-  background: rgba(255, 255, 255, 0.85);
-  border-color: rgba(0, 0, 0, 0.08);
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
+  background: linear-gradient(180deg, #EDF2F7 0%, #DFE7F0 100%) !important;
+  border: 1px solid rgba(16, 138, 177, 0.24) !important;
+  box-shadow: 0 2px 10px rgba(15, 23, 42, 0.05), inset 0 1px 0 rgba(255, 255, 255, 0.7) !important;
 }
 
 .action-left {
@@ -1520,9 +1520,9 @@ body.light-mode .action-bar-glass {
 }
 
 body.light-mode .glass-search-input {
-  background: rgba(0, 0, 0, 0.04);
-  border-color: rgba(0, 0, 0, 0.10);
-  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.05);
+  background: rgba(15, 23, 42, 0.05) !important;
+  border: 1px solid rgba(16, 138, 177, 0.28) !important;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.06) !important;
 }
 
 .glass-search-input:focus-within {
@@ -1819,15 +1819,15 @@ body.light-mode .btn-secondary:hover {
 }
 
 body.light-mode .package-card {
-  background: #FFFFFF !important;
-  border: 1px solid rgba(16, 138, 177, 0.14) !important;
-  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04), 0 6px 18px -3px rgba(16, 138, 177, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.95) !important;
+  background: linear-gradient(180deg, #EDF2F7 0%, #DFE7F0 100%) !important;
+  border: 1px solid rgba(16, 138, 177, 0.28) !important;
+  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.06), 0 10px 24px -6px rgba(16, 138, 177, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.7) !important;
 }
 
 body.light-mode .package-card:hover {
-  background: #FFFFFF !important;
-  border-color: rgba(16, 138, 177, 0.35) !important;
-  box-shadow: 0 3px 8px rgba(15, 23, 42, 0.06), 0 12px 28px -4px rgba(16, 138, 177, 0.14), inset 0 1px 0 rgba(255, 255, 255, 1) !important;
+  background: linear-gradient(180deg, #E6EDF5 0%, #D5DFEB 100%) !important;
+  border-color: #108AB1 !important;
+  box-shadow: 0 4px 14px rgba(7, 58, 75, 0.14), 0 14px 30px -4px rgba(16, 138, 177, 0.24) !important;
   transform: translateY(-2px);
 }
 
@@ -1839,16 +1839,23 @@ body.light-mode .package-card:hover {
 
 body.light-mode .package-card.selected {
   border-color: #108AB1 !important;
-  background: rgba(16, 138, 177, 0.08) !important;
-  box-shadow: 0 0 12px rgba(16, 138, 177, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.95) !important;
+  background: linear-gradient(180deg, #DBE7F2 0%, #CDDEF0 100%) !important;
+  box-shadow: 0 0 0 1.5px #108AB1, 0 6px 18px rgba(16, 138, 177, 0.22) !important;
 }
 
 /* Live In-Place Card Updating Pulse */
 .package-card.card-updating {
-  gap: 8px !important;
+  gap: 10px !important;
   border-color: #108AB1 !important;
   background: rgba(16, 138, 177, 0.14) !important;
   box-shadow: inset 0 0 14px rgba(16, 138, 177, 0.20) !important;
+}
+
+body.light-mode .package-card.card-updating {
+  gap: 10px !important;
+  border-color: #108AB1 !important;
+  background: linear-gradient(180deg, #DCE8F3 0%, #CEE0EF 100%) !important;
+  box-shadow: 0 0 0 1.5px #108AB1, 0 8px 24px rgba(16, 138, 177, 0.22) !important;
 }
 
 /* Live In-Place Card Completed State */
@@ -5506,30 +5513,31 @@ body.light-mode .size-pill {
 }
 
 body.light-mode .ete-pill {
-  background: rgba(6, 215, 160, 0.12) !important;
-  border: 1px solid rgba(6, 215, 160, 0.32) !important;
-  color: #058864 !important;
+  background: rgba(6, 215, 160, 0.18) !important;
+  border: 1px solid rgba(6, 215, 160, 0.40) !important;
+  color: #03684B !important;
 }
 
-/* In-Card Dynamic Live Transfer Speed HUD */
+/* In-Card Dynamic Live Transfer Speed HUD (Precision Cockpit Substrate) */
 .card-transfer-hud {
   width: 100%;
   box-sizing: border-box;
-  margin-top: 8px;
-  padding: 9px 12px;
-  border-radius: 9px;
-  background: rgba(16, 138, 177, 0.07);
-  border: 1px solid rgba(16, 138, 177, 0.22);
+  margin-top: 10px;
+  padding: 11px 16px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #073A4B 0%, #03202A 100%);
+  border: 1.5px solid rgba(6, 215, 160, 0.45);
+  box-shadow: inset 0 0 16px rgba(16, 138, 177, 0.25), 0 4px 16px rgba(0, 0, 0, 0.30);
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 7px;
   animation: hudFadeSlide 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 body.light-mode .card-transfer-hud {
-  background: rgba(16, 138, 177, 0.08) !important;
-  border: 1px solid rgba(16, 138, 177, 0.26) !important;
-  box-shadow: 0 2px 8px rgba(16, 138, 177, 0.06);
+  background: linear-gradient(135deg, #073A4B 0%, #03202A 100%) !important;
+  border: 1.5px solid rgba(6, 215, 160, 0.60) !important;
+  box-shadow: inset 0 0 18px rgba(16, 138, 177, 0.35), 0 8px 24px rgba(7, 58, 75, 0.30) !important;
 }
 
 @keyframes hudFadeSlide {
@@ -5548,95 +5556,82 @@ body.light-mode .card-transfer-hud {
 .transfer-metric-group {
   display: inline-flex;
   align-items: center;
-  gap: 5px;
+  gap: 6px;
   font-family: 'JetBrains Mono', var(--font-mono);
   font-size: 11.5px;
 }
 
 .speed-pulse-indicator {
-  width: 7px;
-  height: 7px;
+  width: 8px;
+  height: 8px;
   border-radius: 50%;
   background: #06D7A0;
-  box-shadow: 0 0 8px #06D7A0;
+  box-shadow: 0 0 10px #06D7A0;
   animation: speedPulse 0.9s ease-in-out infinite alternate;
 }
 
 @keyframes speedPulse {
-  from { opacity: 0.35; transform: scale(0.85); }
-  to { opacity: 1; transform: scale(1.18); box-shadow: 0 0 10px #06D7A0; }
+  from { opacity: 0.4; transform: scale(0.85); box-shadow: 0 0 4px #06D7A0; }
+  to { opacity: 1; transform: scale(1.25); box-shadow: 0 0 12px #06D7A0; }
 }
 
-.transfer-speed-label {
-  color: var(--text-muted);
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-}
-
-body.light-mode .transfer-speed-label {
-  color: #64748B !important;
-}
-
-.transfer-speed-val {
-  font-weight: 700;
-  color: #108AB1;
-}
-
-body.light-mode .transfer-speed-val {
-  color: #086687 !important;
-}
-
-.transfer-bytes-val {
-  font-weight: 600;
-  color: var(--text-main);
-}
-
-body.light-mode .transfer-bytes-val {
-  color: #0F172A !important;
-}
-
-.transfer-pct-pill {
-  padding: 1px 6px;
-  border-radius: 4px;
+.card-transfer-hud .transfer-speed-label,
+body.light-mode .card-transfer-hud .transfer-speed-label {
+  color: #73D2FC !important;
   font-size: 10.5px;
   font-weight: 700;
-  background: rgba(16, 138, 177, 0.15);
-  color: #108AB1;
+  letter-spacing: 0.05em;
 }
 
-body.light-mode .transfer-pct-pill {
-  background: rgba(16, 138, 177, 0.18) !important;
-  color: #086687 !important;
+.card-transfer-hud .transfer-speed-val,
+body.light-mode .card-transfer-hud .transfer-speed-val {
+  font-weight: 700;
+  color: #06D7A0 !important;
+  text-shadow: 0 0 8px rgba(6, 215, 160, 0.45);
 }
 
-.transfer-ete-val {
+.card-transfer-hud .transfer-bytes-val,
+body.light-mode .card-transfer-hud .transfer-bytes-val {
   font-weight: 600;
-  color: #06D7A0;
+  color: #BEE9FF !important;
 }
 
-body.light-mode .transfer-ete-val {
-  color: #058864 !important;
+.card-transfer-hud .transfer-pct-pill,
+body.light-mode .card-transfer-hud .transfer-pct-pill {
+  padding: 2px 7px;
+  border-radius: 5px;
+  font-size: 10.5px;
+  font-weight: 700;
+  background: rgba(16, 138, 177, 0.40) !important;
+  border: 1px solid rgba(16, 138, 177, 0.65) !important;
+  color: #73D2FC !important;
 }
 
-.transfer-status-line {
+.card-transfer-hud .transfer-ete-val,
+body.light-mode .card-transfer-hud .transfer-ete-val {
+  font-weight: 600;
+  color: #FFD167 !important;
+  text-shadow: 0 0 8px rgba(255, 209, 103, 0.4);
+}
+
+.card-transfer-hud .transfer-status-line,
+body.light-mode .card-transfer-hud .transfer-status-line {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
   font-family: 'Plus Jakarta Sans', var(--font-sans);
   font-size: 11.5px;
-  color: var(--text-muted);
+  font-weight: 500;
+  color: #BEE9FF !important;
 }
 
-body.light-mode .transfer-status-line {
-  color: #475569 !important;
-}
-
-.transfer-ticker-dot {
-  width: 5px;
-  height: 5px;
+.card-transfer-hud .transfer-ticker-dot,
+body.light-mode .card-transfer-hud .transfer-ticker-dot {
+  width: 6px;
+  height: 6px;
   border-radius: 50%;
-  background: #108AB1;
+  background: #06D7A0 !important;
+  box-shadow: 0 0 8px #06D7A0 !important;
   flex-shrink: 0;
 }
 
