@@ -19,6 +19,11 @@ def build(app_name: str = "QuantumUpdaterApp"):
 
     icon_path = os.path.join(os.path.dirname(__file__), "src-tauri", "icons", "icon.ico")
 
+    # Locate pywebview library directory to ensure all native runtimes (win-arm64, win-x64, win-x86) and DLLs are bundled
+    import webview
+    webview_dir = os.path.dirname(os.path.abspath(webview.__file__))
+    webview_lib = os.path.join(webview_dir, "lib")
+
     cmd = [
         sys.executable,
         "-m",
@@ -35,8 +40,15 @@ def build(app_name: str = "QuantumUpdaterApp"):
         "--add-data", f"core{os.pathsep}core",
         "--add-data", f"web{os.pathsep}web",
         "--add-data", f"brand{os.pathsep}brand",
-        "main.py"
     ]
+
+    if os.path.exists(webview_lib):
+        cmd.extend([
+            "--add-data", f"{webview_lib}{os.pathsep}webview{os.sep}lib",
+            "--add-data", f"{webview_lib}{os.pathsep}lib",
+        ])
+
+    cmd.append("main.py")
 
     print("Running command:", " ".join(cmd))
     res = subprocess.run(cmd)
