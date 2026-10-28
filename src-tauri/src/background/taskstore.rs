@@ -13,7 +13,7 @@ use windows::Win32::System::TaskScheduler::{
 use windows::Win32::System::Variant::{VARIANT, VARIANT_0, VARIANT_0_0, VARIANT_0_0_0, VT_I4};
 
 /// A 32-bit integer VARIANT (collection index).
-fn variant_i4(v: i32) -> VARIANT {
+pub(crate) fn variant_i4(v: i32) -> VARIANT {
     VARIANT {
         Anonymous: VARIANT_0 {
             Anonymous: std::mem::ManuallyDrop::new(VARIANT_0_0 {
@@ -27,7 +27,7 @@ fn variant_i4(v: i32) -> VARIANT {
     }
 }
 
-fn on_com_thread<T: Send + 'static>(
+pub(crate) fn on_com_thread<T: Send + 'static>(
     f: impl FnOnce() -> windows::core::Result<T> + Send + 'static,
 ) -> Result<T, String> {
     std::thread::spawn(move || {
@@ -44,7 +44,7 @@ fn on_com_thread<T: Send + 'static>(
     .map_err(|_| "Task Scheduler call crashed".to_string())?
 }
 
-fn service() -> windows::core::Result<ITaskService> {
+pub(crate) fn service() -> windows::core::Result<ITaskService> {
     // SAFETY: plain in-process COM activation on an initialised MTA thread.
     let s: ITaskService = unsafe { CoCreateInstance(&TaskScheduler, None, CLSCTX_INPROC_SERVER)? };
     let none = VARIANT::default();

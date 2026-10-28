@@ -1,6 +1,7 @@
 pub mod arp;
 pub mod choco;
 pub mod components;
+pub mod direct;
 pub mod label;
 pub mod model;
 pub mod process;

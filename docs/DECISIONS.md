@@ -92,7 +92,7 @@
 - **Decision:** Content motion uses a spring of about 420 ms with soft overshoot (results, Get → ring → tick → Open, row completion, counter roll, page changes). Hover and press respond in 120 ms or less. Reduced motion gets short fades. Motion is always driven by real state.
 
 ### ADR 013: Distribution
-- **Status:** Accepted (implemented in P7)
+- **Status:** Accepted (owner confirmed Azure Trusted Signing on 2026-10-23; implemented in P7)
 - **Decision:** NSIS per-machine installer and signed self-updates (`tauri-plugin-updater`, keys only in CI secrets). Authenticode signing runs inside `tauri build` via `signCommand` (Azure Trusted Signing preferred). winget publishing via komac. A missing secret produces an unsigned build with a warning instead of a failure.
 
 ### ADR 014: Background Operation
@@ -233,3 +233,40 @@
 - **Status:** Accepted (owner decision 2026-10-17)
 - **Decision:** the Quantum Step Creation emblem (gradient ring with a "C" hook, crosshair, inner rings, atom, ring lettering) is the company logo and the source of the app icon. `brand/quantum-step-logo.svg` is a vector redraw of the owner's artwork. The app icon (`brand/quantum-updater-icon.svg`) drops the lettering and crosshair so it reads at 48 px and up, and a heavier version (`brand/quantum-updater-icon-small.svg`) is used at 16–32 px. `icon.ico` holds both.
 - **Consequences:** when the owner supplies the original high-resolution file, it replaces the redraw in `brand/` for print and the website; the app icons stay vector-built.
+
+### ADR 034: Startup Items Are Disabled, Never Deleted (P6e)
+- **Status:** Accepted
+- **Context:** a startup manager that can remove Run values, shortcuts, or scheduled tasks can also be talked into removing security software. The app runs as administrator, so a write here is a machine-wide write.
+- **Decision:**
+  - The page lists Run keys, Startup-folder shortcuts, and scheduled tasks whose only trigger is sign-in. Tasks under `\Microsoft` are not listed.
+  - Turning one off writes the same `StartupApproved` flag Task Manager uses, or sets the task's Enabled bit. The Run value, the shortcut file, and the task are never deleted.
+  - Windows (anything under the Windows directory, or a `\Microsoft` task), security products, items held by policy, and this app's own sign-in task are read-only. The page is not given a switch for them.
+  - The page sends back only which row it means. Rust reads that row again and classifies it again before writing. A name that points outside one real entry is refused.
+  - When a different administrator is signed in, per-user items are left out.
+- **Consequences:** an app can still be turned off, and turned back on, from this page. Security software and Windows stay as they are. This PC's list was checked on 2026-10-23: Kaspersky and Security Health had no switch, and Quantum Updater's own task pointed at Settings.
+
+### ADR 035: Public Repository (2026-10-23)
+- **Status:** Accepted (owner decision 2026-10-23)
+- **Decision:** the public repository is `quantumstep/quantum-updater`. Self-update requests that repository. The earlier repo `merchanthasan2/AudoChocolatey` is not the v3 update address.
+- **Consequences:** P7's updater endpoint and the winget package identifier use this name. Renaming it after the first release would leave installed copies looking at the old address.
+
+### ADR 036: Free and Paid (2026-10-23)
+- **Status:** Accepted (owner decision 2026-10-23)
+- **Decision:** The free app can search, install, update by hand, and use the catalog and bundles. Paid adds automatic updates, drivers, restore points and rollback, and commercial use. A paid copy is recognized by a license key checked on that PC. There is no account.
+- **Consequences:** The licensing phase builds the key check. It is not built before that phase.
+
+### ADR 037: winget Ships with the First Public Release (2026-10-23)
+- **Status:** Accepted (owner decision 2026-10-23)
+- **Decision:** The winget listing is submitted in the same release as the first public build. That release also includes self-update. The listing is not held for a later version.
+- **Consequences:** P7 prepares the winget manifest with the first signed public release. Publishing still needs `WINGET_TOKEN`.
+
+### ADR 038: Drivers After Licensing (2026-10-23)
+- **Status:** Accepted (owner decision 2026-10-23)
+- **Decision:** The driver work is built after the licensing phase. It switches on only when this PC has a paid license key.
+- **Consequences:** Drivers are part of the paid tier from ADR 036. They are not in the free app, and they are not built before the key check exists. Acceptance checks on this PC come before any new phase.
+
+### ADR 039: Uninstall apps that were installed directly (2026-10-23)
+- **Status:** Accepted (owner decision 2026-10-23)
+- **Context:** Rows winget only knows from the Programs list were display-only (ADR 019). Updating one still requires a catalog link (ADR 031), because the wrong installer would run as administrator. The owner asked to manage these apps too, and chose removal through each app's own uninstaller, with updates only where an installer is already known.
+- **Decision:** Installed shows Uninstall on a directly installed app when its own uninstaller can be opened. The page sends only the row id. Rust reads the command again from that PC and does not pass it to a shell. A machine-wide uninstaller runs here and must be the system copy of msiexec, the system copy of rundll32 loading a DLL under a program folder, or a program under Program Files, ProgramData, or Windows Installer. A per-user uninstaller runs as the signed-in person, and only from that person's own folders. When a different administrator is signed in, per-user apps are left out. Windows components, and entries Windows marks as not removable, have no button. "Remove selected" stays limited to catalog apps, because each direct uninstall opens that app's own window. Updates are unchanged: only a catalog link, never part of Update all.
+- **Consequences:** FileZilla's uninstaller on this PC was checked on 2026-10-23 and is its own `uninstall.exe` under Program Files. No app was actually removed in that check.

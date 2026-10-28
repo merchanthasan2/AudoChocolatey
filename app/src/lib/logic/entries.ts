@@ -37,6 +37,16 @@ export function withJobs(set: Set<string>, jobs: JobLike[]): Set<string> {
   return out;
 }
 
+/** An available update for this app, matched on any of its source ids. */
+export function findUpdate<U extends { source: Source; id: string }>(entry: Ids, updates: U[]): U | null {
+  return (
+    updates.find((u) => {
+      const id = u.source === 'winget' ? entry.winget : u.source === 'choco' ? entry.choco : entry.msstore;
+      return !!id && keyOf(u.source, id) === keyOf(u.source, u.id);
+    }) ?? null
+  );
+}
+
 /** The id an install uses, from the entry's chosen source. */
 export function bestId(e: Ids & { best: Source }): string | null {
   return (e.best === 'winget' ? e.winget : e.best === 'choco' ? e.choco : e.msstore) ?? null;

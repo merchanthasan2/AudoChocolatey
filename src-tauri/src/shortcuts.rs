@@ -18,7 +18,7 @@ pub fn desktop_dirs() -> Vec<PathBuf> {
         .collect()
 }
 
-fn is_shortcut(p: &Path) -> bool {
+pub(crate) fn is_shortcut(p: &Path) -> bool {
     p.extension()
         .and_then(|e| e.to_str())
         .is_some_and(|e| e.eq_ignore_ascii_case("lnk") || e.eq_ignore_ascii_case("url"))

@@ -315,6 +315,12 @@
           "markdownDescription": "Enables the list_linked_updates command without any pre-configured scope."
         },
         {
+          "description": "Enables the list_startup command without any pre-configured scope.",
+          "type": "string",
+          "const": "allow-list-startup",
+          "markdownDescription": "Enables the list_startup command without any pre-configured scope."
+        },
+        {
           "description": "Enables the list_updates command without any pre-configured scope.",
           "type": "string",
           "const": "allow-list-updates",
@@ -373,6 +379,12 @@
           "type": "string",
           "const": "allow-relaunch-as-admin",
           "markdownDescription": "Enables the relaunch_as_admin command without any pre-configured scope."
+        },
+        {
+          "description": "Enables the remove_direct command without any pre-configured scope.",
+          "type": "string",
+          "const": "allow-remove-direct",
+          "markdownDescription": "Enables the remove_direct command without any pre-configured scope."
         },
         {
           "description": "Enables the remove_from_bundle command without any pre-configured scope.",
@@ -439,6 +451,12 @@
           "type": "string",
           "const": "allow-set-rules",
           "markdownDescription": "Enables the set_rules command without any pre-configured scope."
+        },
+        {
+          "description": "Enables the set_startup command without any pre-configured scope.",
+          "type": "string",
+          "const": "allow-set-startup",
+          "markdownDescription": "Enables the set_startup command without any pre-configured scope."
         },
         {
           "description": "Enables the update_all command without any pre-configured scope.",
@@ -591,6 +609,12 @@
           "markdownDescription": "Denies the list_linked_updates command without any pre-configured scope."
         },
         {
+          "description": "Denies the list_startup command without any pre-configured scope.",
+          "type": "string",
+          "const": "deny-list-startup",
+          "markdownDescription": "Denies the list_startup command without any pre-configured scope."
+        },
+        {
           "description": "Denies the list_updates command without any pre-configured scope.",
           "type": "string",
           "const": "deny-list-updates",
@@ -649,6 +673,12 @@
           "type": "string",
           "const": "deny-relaunch-as-admin",
           "markdownDescription": "Denies the relaunch_as_admin command without any pre-configured scope."
+        },
+        {
+          "description": "Denies the remove_direct command without any pre-configured scope.",
+          "type": "string",
+          "const": "deny-remove-direct",
+          "markdownDescription": "Denies the remove_direct command without any pre-configured scope."
         },
         {
           "description": "Denies the remove_from_bundle command without any pre-configured scope.",
@@ -715,6 +745,12 @@
           "type": "string",
           "const": "deny-set-rules",
           "markdownDescription": "Denies the set_rules command without any pre-configured scope."
+        },
+        {
+          "description": "Denies the set_startup command without any pre-configured scope.",
+          "type": "string",
+          "const": "deny-set-startup",
+          "markdownDescription": "Denies the set_startup command without any pre-configured scope."
         },
         {
           "description": "Denies the update_all command without any pre-configured scope.",

@@ -10,6 +10,7 @@
     { view: 'marketplace', label: 'Marketplace', icon: 'bag' },
     { view: 'installed', label: 'Installed', icon: 'grid' },
     { view: 'history', label: 'History', icon: 'history' },
+    { view: 'startup', label: 'Startup', icon: 'power' },
     { view: 'settings', label: 'Settings', icon: 'sliders' },
   ];
 </script>

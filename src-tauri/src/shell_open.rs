@@ -5,12 +5,28 @@
 /// Opens `url` (already checked by `safe_url`) through Explorer, on its own COM thread.
 pub fn open_unelevated(url: &str) -> Result<(), String> {
     let url = url.to_string();
-    std::thread::spawn(move || shell_execute_via_desktop(&url))
+    std::thread::spawn(move || shell_execute_via_desktop(&url, "", ""))
         .join()
         .map_err(|_| "Couldn't open the link.".to_string())?
+        .map_err(|_| "Couldn't open the link.".to_string())
 }
 
-fn shell_execute_via_desktop(url: &str) -> Result<(), String> {
+/// Starts a program as the signed-in person. Used for a per-user uninstaller, which must not
+/// run with this app's administrator rights. No elevated fallback.
+pub fn launch_unelevated(file: &std::path::Path, params: &str) -> Result<(), String> {
+    let file = file.display().to_string();
+    let params = params.to_string();
+    let dir = std::path::Path::new(&file)
+        .parent()
+        .map(|p| p.display().to_string())
+        .unwrap_or_default();
+    std::thread::spawn(move || shell_execute_via_desktop(&file, &params, &dir))
+        .join()
+        .map_err(|_| "Couldn't open its uninstaller.".to_string())?
+        .map_err(|_| "Couldn't open its uninstaller.".to_string())
+}
+
+fn shell_execute_via_desktop(file: &str, params: &str, dir: &str) -> Result<(), String> {
     use windows::core::{Interface, BSTR};
     use windows::Win32::System::Com::{
         CoCreateInstance, CoInitializeEx, CoUninitialize, IDispatch, IServiceProvider, CLSCTX_ALL,
@@ -42,16 +58,48 @@ fn shell_execute_via_desktop(url: &str) -> Result<(), String> {
             let folder_view: IShellFolderViewDual = background.cast()?;
             let app = folder_view.Application()?;
             let shell: IShellDispatch2 = app.cast()?;
+            let args = bstr_variant(params);
+            let folder = bstr_variant(dir);
+            let show = if params.is_empty() && dir.is_empty() {
+                VARIANT::default()
+            } else {
+                crate::background::taskstore::variant_i4(1)
+            };
             shell.ShellExecute(
-                &BSTR::from(url),
+                &BSTR::from(file),
+                &args,
+                &folder,
                 &VARIANT::default(),
-                &VARIANT::default(),
-                &VARIANT::default(),
-                &VARIANT::default(),
+                &show,
             )
         })()
     };
     // SAFETY: matches the successful CoInitializeEx above.
     unsafe { CoUninitialize() };
-    result.map_err(|_| "Couldn't open the link.".into())
+    result.map_err(|_| "Couldn't open it.".into())
+}
+
+/// An empty string stays the default (missing) variant. Otherwise a BSTR, freed with the variant.
+fn bstr_variant(s: &str) -> windows::Win32::System::Variant::VARIANT {
+    use std::mem::ManuallyDrop;
+    use windows::core::BSTR;
+    use windows::Win32::System::Variant::{
+        VARIANT, VARIANT_0, VARIANT_0_0, VARIANT_0_0_0, VT_BSTR,
+    };
+    if s.is_empty() {
+        return VARIANT::default();
+    }
+    VARIANT {
+        Anonymous: VARIANT_0 {
+            Anonymous: ManuallyDrop::new(VARIANT_0_0 {
+                vt: VT_BSTR,
+                wReserved1: 0,
+                wReserved2: 0,
+                wReserved3: 0,
+                Anonymous: VARIANT_0_0_0 {
+                    bstrVal: ManuallyDrop::new(BSTR::from(s)),
+                },
+            }),
+        },
+    }
 }

@@ -19,6 +19,7 @@ mod shell_open;
 mod shortcuts;
 mod sites;
 mod sources;
+mod startup;
 mod state;
 mod update_info;
 mod versions;
@@ -185,6 +186,9 @@ pub fn run(launch: launch::Launch) {
             commands::system::restart_now,
             commands::running::running_apps,
             commands::running::close_apps,
+            commands::startup::list_startup,
+            commands::startup::set_startup,
+            commands::direct::remove_direct,
             commands::jobs::remove_shortcuts,
             commands::jobs::cancel_job,
             commands::jobs::retry_job,

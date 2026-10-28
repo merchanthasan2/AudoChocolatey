@@ -1,9 +1,12 @@
 <script lang="ts">
   import type { BundleView, MyBundleView } from '../ipc/commands';
-  import { queue, installed, toasts, myBundles } from '../stores/app.svelte';
+  import { queue, installed, updates, overview, toasts, myBundles } from '../stores/app.svelte';
   import { clickGuard } from '../logic/clickGuard';
+  import { installedSet, withJobs } from '../logic/entries';
+  import { bundleRows } from '../logic/bundleView';
   import AppIcon from './AppIcon.svelte';
   import RowMenu from './RowMenu.svelte';
+  import BundleDialog from './BundleDialog.svelte';
 
   // `mine`: one of the person's own bundles (no blurb; can be exported or deleted).
   let { bundle, mine = false }: { bundle: BundleView | MyBundleView; mine?: boolean } = $props();
@@ -13,7 +16,12 @@
   // Until the installed list is in, "missing" would mean "everything".
   const ready = $derived(installed.loaded && !installed.error);
   const missing = $derived(queue.bundleMissing(bundle.apps));
+  const updateCount = $derived(
+    bundleRows(bundle.apps, withJobs(installedSet(installed.items), queue.jobs), updates.items, overview.on)
+      .filter((r) => r.state === 'update').length,
+  );
   const guard = clickGuard(1000);
+  let open = $state(false);
 
   async function installAll() {
     if (!guard()) return;
@@ -23,6 +31,7 @@
 </script>
 
 <article class="bundle card">
+  <button class="hit" aria-label="Open {bundle.name}" onclick={() => (open = true)}></button>
   <div class="icons" aria-hidden="true">
     {#each bundle.apps.slice(0, 6) as a (a.key)}
       <AppIcon name={a.name} size={34} iconKey={a.iconKey} />
@@ -42,21 +51,35 @@
   <div class="foot">
     {#if !ready}
       <button class="btn btn-primary" disabled>{installed.error ? "Couldn't check installed apps" : 'Checking your apps…'}</button>
-    {:else if missing.length === 0}
-      <span class="badge">All installed</span>
     {:else}
-      <button class="btn btn-primary" onclick={installAll}>
-        {missing.length === bundle.apps.length ? `Install ${missing.length} apps` : `Install ${missing.length} missing`}
-      </button>
+      {#if updateCount > 0}<span class="badge">{updateCount} {updateCount === 1 ? 'update' : 'updates'}</span>{/if}
+      {#if missing.length > 0}
+        <button class="btn btn-primary" onclick={installAll}>
+          {missing.length === bundle.apps.length ? `Install ${missing.length} apps` : `Install ${missing.length} missing`}
+        </button>
+      {:else if updateCount === 0}
+        <span class="badge">All installed</span>
+      {/if}
     {/if}
   </div>
+  {#if open}<BundleDialog {bundle} {mine} onclose={() => (open = false)} />{/if}
 </article>
 
 <style>
-  .bundle { padding: 18px; display: grid; gap: 6px; align-content: start; }
-  .icons { display: flex; gap: 6px; margin-bottom: 8px; }
-  .title { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
-  h3 { font-family: var(--font-display); font-size: 16px; font-weight: 700; letter-spacing: -0.02em; margin: 0; }
+  .bundle {
+    position: relative; padding: 18px; display: grid; gap: 6px; align-content: start;
+    transition: transform var(--dur-quick) var(--ease-out), box-shadow var(--dur-quick) ease;
+  }
+  @media (hover: hover) and (pointer: fine) {
+    .bundle:hover { box-shadow: var(--shadow-raised); transform: translateY(-1px); }
+  }
+  .hit { position: absolute; inset: 0; border-radius: inherit; z-index: 0; }
+  .icons { display: flex; gap: 6px; margin-bottom: 8px; pointer-events: none; }
+  .title { position: relative; z-index: 1; display: flex; align-items: center; justify-content: space-between; gap: 8px; pointer-events: none; }
+  .title :global(button) { pointer-events: auto; }
+  h3 { font-family: var(--font-display); font-size: 16px; font-weight: 700; letter-spacing: -0.02em; margin: 0; pointer-events: none; }
+  .muted, .list { pointer-events: none; }
   .list { font-size: 12px; color: var(--ink-2); }
-  .foot { margin-top: 8px; }
+  .foot { position: relative; z-index: 1; margin-top: 8px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; pointer-events: none; }
+  .foot :global(button) { pointer-events: auto; }
 </style>

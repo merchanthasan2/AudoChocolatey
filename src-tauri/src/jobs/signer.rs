@@ -177,6 +177,39 @@ pub fn check(path: &Path, root: &Path) -> Option<Signer> {
     out
 }
 
+/// Who signed this program, when Windows trusts the signature. Unlike `check` there is no
+/// folder the file must live under. Blocking.
+pub fn signer_name(path: &Path) -> Option<String> {
+    use windows_sys::Win32::Foundation::{CloseHandle, GENERIC_READ, INVALID_HANDLE_VALUE};
+    use windows_sys::Win32::Storage::FileSystem::{
+        CreateFileW, FILE_FLAG_OPEN_REPARSE_POINT, FILE_SHARE_DELETE, FILE_SHARE_READ,
+        OPEN_EXISTING,
+    };
+    let wide: Vec<u16> = path.as_os_str().encode_wide_nul();
+    // SAFETY: NUL-terminated path; the handle is closed below.
+    let h = unsafe {
+        CreateFileW(
+            wide.as_ptr(),
+            GENERIC_READ,
+            FILE_SHARE_READ | FILE_SHARE_DELETE,
+            std::ptr::null(),
+            OPEN_EXISTING,
+            FILE_FLAG_OPEN_REPARSE_POINT,
+            std::ptr::null_mut(),
+        )
+    };
+    if h == INVALID_HANDLE_VALUE {
+        return None;
+    }
+    let out = match verify(&wide, h) {
+        Some(Signer::Signed { name }) => Some(name),
+        _ => None,
+    };
+    // SAFETY: opened above.
+    unsafe { CloseHandle(h) };
+    out
+}
+
 trait WideNul {
     fn encode_wide_nul(&self) -> Vec<u16>;
 }

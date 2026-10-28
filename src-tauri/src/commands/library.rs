@@ -89,6 +89,7 @@ pub async fn collect_installed(state: &AppState) -> Listing<InstalledPackage> {
         // Catalog apps are never components.
         let known = p.source.is_some_and(|s| cat.by_source(s, &p.id).is_some());
         p.component = !known && crate::sources::components::is_component(&p.name, &p.id);
+        p.removable = false;
         p.name = match p.source {
             Some(src) => names::display_name(
                 src,
@@ -101,6 +102,10 @@ pub async fn collect_installed(state: &AppState) -> Listing<InstalledPackage> {
             None => names::strip_version_tail(&p.name, &p.version),
         };
     }
+    crate::sources::direct::mark_removable(
+        &mut listing.items,
+        crate::commands::system::shell_user_matches(),
+    );
     listing
 }
 

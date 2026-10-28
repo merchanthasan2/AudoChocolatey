@@ -1,4 +1,6 @@
 import { describe, expect, it } from 'vitest';
+import type { AppEntry } from '../ipc/bindings/AppEntry';
+import { bundleRows } from './bundleView';
 import type { Job } from '../ipc/bindings/Job';
 import type { JobPhase } from '../ipc/bindings/JobPhase';
 import { jobButtonState } from './jobButton';
@@ -195,6 +197,41 @@ describe('latestOnly.invalidate', () => {
 });
 
 import { installedSet, isInstalled, missingFrom, withJobs } from './entries';
+describe('opened bundle', () => {
+  const app = (over: Partial<AppEntry> & Pick<AppEntry, 'key' | 'name'>): AppEntry => ({
+    publisher: null, blurb: null, category: null, winget: null, choco: null, msstore: null,
+    version: null, homepage: null, best: 'winget', curated: true, iconKey: 'x', ...over,
+  });
+  const up = (source: 'winget' | 'choco' | 'msstore', id: string) => ({ source, id, name: id });
+
+  it('sorts each app into missing, installed, update, or a source that is off', () => {
+    const apps = [
+      app({ key: 'a', name: 'Firefox', winget: 'Mozilla.Firefox' }),
+      app({ key: 'b', name: 'Git', winget: 'Git.Git' }),
+      app({ key: 'c', name: 'VLC', winget: 'VideoLAN.VLC' }),
+      app({ key: 'd', name: 'Paint', best: 'choco', choco: 'paint.net' }),
+    ];
+    const installed = new Set(['winget:mozilla.firefox', 'winget:videolan.vlc']);
+    const rows = bundleRows(apps, installed, [up('winget', 'VideoLAN.VLC')], { choco: false, store: true });
+    expect(rows.map((r) => [r.entry.name, r.state])).toEqual([
+      ['Firefox', 'installed'],
+      ['Git', 'missing'],
+      ['VLC', 'update'],
+      ['Paint', 'off'],
+    ]);
+    expect(rows[2].update).toEqual(up('winget', 'VideoLAN.VLC'));
+    expect(rows[0].update).toBeNull();
+  });
+
+  it('an installed app stays installed when its source is off, and matches updates ignoring case', () => {
+    const apps = [app({ key: 's', name: 'Store', best: 'msstore', msstore: '9nblggh4nns1' })];
+    const rows = bundleRows(apps, new Set(['msstore:9NBLGGH4NNS1']), [up('msstore', '9nblggh4nns1')], { choco: true, store: false });
+    expect(rows[0].state).toBe('update');
+    const fresh = bundleRows(apps, new Set(), [], { choco: true, store: false });
+    expect(fresh[0].state).toBe('off');
+  });
+});
+
 describe('entries', () => {
   const installed = [
     { id: 'Mozilla.Firefox', source: 'winget' as const },

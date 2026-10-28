@@ -263,6 +263,7 @@ mod tests {
             label: classify(source, id),
             component: false,
             linked: false,
+            removable: false,
             source,
         }
     }

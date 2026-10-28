@@ -12,7 +12,8 @@ pub struct InstalledPackage {
     pub id: String,
     pub version: String,
     pub available: Option<String>,
-    /// `None` for rows winget only knows locally (ARP/MSIX entries): display-only, not updatable.
+    /// `None` for rows winget only knows locally (ARP/MSIX entries). Not updated here
+    /// unless linked. `removable` is set when that app's own uninstaller can be opened.
     pub source: Option<SourceKind>,
     /// Where it comes from, as people see it.
     pub label: crate::sources::label::SourceLabel,
@@ -20,6 +21,8 @@ pub struct InstalledPackage {
     pub component: bool,
     /// Installed directly, but linked to a catalog app this app can update.
     pub linked: bool,
+    /// Its own uninstaller can be opened. Catalog apps stay on the normal remove path.
+    pub removable: bool,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, TS)]
