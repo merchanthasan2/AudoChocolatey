@@ -972,6 +972,20 @@ class QuantumUpdaterApp {
     }
 
     if (!this.isMac) {
+      document.title = 'Quantum Updater • Windows Edition';
+
+      // Harmonize branding subtitle
+      const brandSub = document.querySelector('.brand-subtitle');
+      if (brandSub && (brandSub.textContent.includes('Mac') || brandSub.textContent.includes('Smart'))) {
+        brandSub.textContent = 'System & Package Manager';
+      }
+
+      // Harmonize search bar placeholder
+      const spotInput = document.getElementById('global-spotlight-search');
+      if (spotInput) {
+        spotInput.placeholder = 'Search packages & tools (Ctrl+K)...';
+      }
+
       // Harmonize shortcut pills for Windows channel
       document.querySelectorAll('.shortcut-pill').forEach(pill => {
         pill.textContent = pill.textContent.replace(/⌘/g, 'Ctrl+');
@@ -988,6 +1002,17 @@ class QuantumUpdaterApp {
         activeEngineBadge.textContent = 'PC Health: Good';
       }
 
+      const enginePill = document.getElementById('engine-status-pill');
+      if (enginePill) {
+        enginePill.title = 'PC System Status';
+      }
+
+      // Harmonize bento tiles
+      const bentoHealthLabel = document.querySelector('.summary-tile:nth-child(3) .summary-tile-label');
+      if (bentoHealthLabel && bentoHealthLabel.textContent.includes('Mac')) {
+        bentoHealthLabel.textContent = 'PC Health Status';
+      }
+
       const bentoUpdatesSub = document.getElementById('bento-updates-sub');
       if (bentoUpdatesSub && bentoUpdatesSub.textContent.includes('Mac')) {
         bentoUpdatesSub.textContent = 'Click to audit PC software';
@@ -996,6 +1021,32 @@ class QuantumUpdaterApp {
       const bentoHealthSub = document.getElementById('bento-health-sub');
       if (bentoHealthSub && bentoHealthSub.textContent.includes('Gatekeeper')) {
         bentoHealthSub.innerHTML = '<span class="status-dot-mini" style="display:inline-block; width:6px; height:6px; border-radius:50%; background:#30D158; margin-right:4px;"></span>SmartScreen Protected';
+      }
+
+      // Harmonize telemetry drive and architecture tags
+      const diskLabel = document.querySelector('.telemetry-badge span');
+      if (diskLabel && diskLabel.textContent.includes('Macintosh')) {
+        diskLabel.textContent = 'Local Disk (C:)';
+      }
+
+      const diskPct = document.getElementById('sidebar-disk-pct');
+      if (diskPct && diskPct.textContent.includes('APFS')) {
+        diskPct.textContent = 'NTFS';
+      }
+
+      const archBadge = document.querySelector('.security-chip-pill');
+      if (archBadge && archBadge.textContent.includes('Universal 2')) {
+        archBadge.textContent = 'x64 / ARM64';
+      }
+
+      const cleanupSub = document.getElementById('cleanup-disk-sub');
+      if (cleanupSub && cleanupSub.textContent.includes('APFS')) {
+        cleanupSub.textContent = 'Calculating NTFS disk usage...';
+      }
+
+      const specStorageHint = document.getElementById('spec-detail-storage-hint');
+      if (specStorageHint && specStorageHint.textContent.includes('Macintosh')) {
+        specStorageHint.textContent = 'Local Disk (C:) • NTFS';
       }
     }
   }
