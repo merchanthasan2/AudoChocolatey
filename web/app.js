@@ -2195,7 +2195,15 @@ class QuantumUpdaterApp {
           engine: this.activeEngine
         });
 
-        const status = statuses && statuses[0];
+        let status = null;
+        if (Array.isArray(statuses) && statuses.length > 0) {
+          status = statuses[0];
+        } else if (statuses && typeof statuses === 'object' && ('success' in statuses)) {
+          status = statuses;
+        } else if (statuses === true) {
+          status = { success: true, message: 'Upgraded successfully' };
+        }
+
         if (status && status.success) {
           completed++;
 

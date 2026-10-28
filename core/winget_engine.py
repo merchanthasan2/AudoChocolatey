@@ -402,15 +402,19 @@ class WingetEngine(BaseEngine):
         silent: bool = True,
         accept_agreements: bool = True
     ) -> OperationStatus:
-        args = ["upgrade", "--id", package_id, "--exact", "--disable-interactivity", "--force"]
+        args = ["upgrade", "--id", package_id, "--exact", "--include-unknown", "--disable-interactivity", "--force"]
         if silent:
             args.append("--silent")
         if accept_agreements:
             args.extend(["--accept-package-agreements", "--accept-source-agreements"])
 
         code = self._run_streaming_cmd(args, on_log=on_log, on_progress=on_progress)
-        success = (code == 0)
-        msg = "Upgrade completed successfully." if success else f"Upgrade exited with code {code}."
+        # 0: Success, 3010: Success Reboot Required, -1978335189: Already latest, -1978335181: Reboot required
+        success = (code in (0, 3010, -1978335189, -1978335181))
+        if success:
+            msg = "Upgrade completed successfully." if code == 0 else f"Upgrade completed (status code {code})."
+        else:
+            msg = f"Upgrade exited with code {code}."
         return OperationStatus(package_id=package_id, success=success, message=msg, exit_code=code)
 
     def upgrade_all(

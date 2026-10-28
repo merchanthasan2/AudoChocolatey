@@ -89,31 +89,55 @@ class WebAPI:
             for p in result_box
         ]
 
-    def upgrade_packages(self, package_ids: Optional[List[str]] = None, *args, **kwargs) -> bool:
-        """Upgrades multiple packages in background thread, sending live progress."""
+    def upgrade_packages(self, package_ids: Optional[List[str]] = None, *args, **kwargs) -> List[Dict[str, Any]]:
+        """Upgrades packages and returns list of OperationStatus dictionaries."""
         if package_ids is None and args and isinstance(args[0], list):
             package_ids = args[0]
+        if not package_ids and "packageIds" in kwargs:
+            package_ids = kwargs["packageIds"]
+        if not package_ids and "package_ids" in kwargs:
+            package_ids = kwargs["package_ids"]
+        if isinstance(package_ids, str):
+            package_ids = [package_ids]
         package_ids = package_ids or []
-        def worker():
-            def on_item_finish(status: OperationStatus):
-                pass
 
-            def on_all_finish(statuses: List[OperationStatus]):
-                success_count = sum(1 for s in statuses if s.success)
-                msg = f"Completed {success_count}/{len(statuses)} package updates."
-                escaped_msg = json.dumps(msg)
-                self._eval_js(f"app.onOperationFinished(true, {escaped_msg});")
+        if not package_ids:
+            return []
 
-            self.manager.upgrade_multiple_async(
-                package_ids=package_ids,
-                on_log=self._on_log,
-                on_progress=self._on_progress,
-                on_item_finished=on_item_finish,
-                on_all_finished=on_all_finish
-            )
+        engine_id = kwargs.get("engine")
+        if engine_id and engine_id in self.manager.engines:
+            self.manager.set_active_engine(engine_id)
 
-        threading.Thread(target=worker, daemon=True).start()
-        return True
+        engine = self.manager.current_engine
+        results = []
+
+        for pid in package_ids:
+            try:
+                silent = self.manager.settings.get("silent_install", True)
+                agree = self.manager.settings.get("accept_agreements", True)
+                status = engine.upgrade_package(
+                    package_id=pid,
+                    on_log=self._on_log,
+                    on_progress=self._on_progress,
+                    silent=silent,
+                    accept_agreements=agree
+                )
+                results.append({
+                    "package_id": status.package_id,
+                    "success": status.success,
+                    "message": status.message,
+                    "exit_code": getattr(status, "exit_code", 0)
+                })
+            except Exception as e:
+                self._on_log(f"[Upgrade Exception {pid}]: {e}\n")
+                results.append({
+                    "package_id": pid,
+                    "success": False,
+                    "message": str(e),
+                    "exit_code": -1
+                })
+
+        return results
 
     def search_catalog(self, query: str = "", *args, **kwargs) -> List[Dict[str, Any]]:
         if not query and args and isinstance(args[0], str):
