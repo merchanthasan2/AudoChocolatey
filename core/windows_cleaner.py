@@ -173,6 +173,62 @@ class WindowsCleaner:
                 "svg_icon": "archive"
             },
             {
+                "id": "app_caches",
+                "name": "Desktop Application Caches",
+                "tag": "App Cache",
+                "risk": "low",
+                "description": "Cached data from Discord, Slack, Microsoft Teams, VS Code, and Spotify.",
+                "paths": [
+                    os.path.join(self.appdata, "discord", "Cache"),
+                    os.path.join(self.appdata, "discord", "Code Cache"),
+                    os.path.join(self.appdata, "Slack", "Cache"),
+                    os.path.join(self.appdata, "Slack", "Service Worker", "CacheStorage"),
+                    os.path.join(self.appdata, "Microsoft", "Teams", "Cache"),
+                    os.path.join(self.appdata, "Code", "Cache"),
+                    os.path.join(self.appdata, "Code", "CachedData"),
+                    os.path.join(self.local_appdata, "Spotify", "Data"),
+                    os.path.join(self.local_appdata, "Spotify", "Storage")
+                ],
+                "svg_icon": "grid"
+            },
+            {
+                "id": "redundant_installers",
+                "name": "Redundant Staging & DLL Buffers",
+                "tag": "Redundant",
+                "risk": "low",
+                "description": "Leftover installer packages (.msi, .msp), temporary staging files, and orphan deployment artifacts.",
+                "paths": [
+                    os.path.join(self.local_appdata, "Package Cache"),
+                    os.path.join(self.local_appdata, "Downloaded Installations"),
+                    os.path.join(self.local_appdata, "Microsoft", "Windows", "INetCache")
+                ],
+                "svg_icon": "archive"
+            },
+            {
+                "id": "thumbnail_cache",
+                "name": "Windows Thumbnail & Icon Cache",
+                "tag": "Explorer",
+                "risk": "low",
+                "description": "Windows File Explorer thumbnail caches and database indices (thumbcache_*.db).",
+                "paths": [
+                    os.path.join(self.local_appdata, "Microsoft", "Windows", "Explorer")
+                ],
+                "svg_icon": "image"
+            },
+            {
+                "id": "directx_cache",
+                "name": "DirectX Shader Caches",
+                "tag": "GPU Cache",
+                "risk": "low",
+                "description": "Compiled graphics pipeline shaders from DirectX, NVIDIA, and AMD driver caches.",
+                "paths": [
+                    os.path.join(self.local_appdata, "D3DSCache"),
+                    os.path.join(self.local_appdata, "NVIDIA", "DXCache"),
+                    os.path.join(self.local_appdata, "AMD", "DxCache")
+                ],
+                "svg_icon": "monitor"
+            },
+            {
                 "id": "windows_update_cache",
                 "name": "Windows Update Delivery Cache",
                 "tag": "System Cache",
@@ -194,6 +250,110 @@ class WindowsCleaner:
             }
         ]
         return categories
+
+    def inspect_category(self, category_id: str) -> Dict[str, Any]:
+        """Trace top individual files inside a category for pre-cleanup inspection."""
+        import datetime
+        categories = self.get_category_definitions()
+        cat = next((c for c in categories if c["id"] == category_id), None)
+        if not cat:
+            return {"category_id": category_id, "name": "Unknown", "files": [], "total_files": 0, "total_size_bytes": 0, "total_size_str": "0 B"}
+
+        if category_id == "recycle_bin":
+            rb_size, rb_count = self._get_recycle_bin_stats()
+            return {
+                "category_id": "recycle_bin",
+                "name": "Windows Recycle Bin",
+                "files": [{
+                    "path": "Recycle Bin",
+                    "name": "Staged Recycle Bin Items",
+                    "size_bytes": rb_size,
+                    "size_str": human_size(rb_size),
+                    "modified": "Pending Deletion",
+                    "ext": "bin"
+                }] if rb_size > 0 else [],
+                "total_files": rb_count,
+                "total_size_bytes": rb_size,
+                "total_size_str": human_size(rb_size)
+            }
+
+        traced_files = []
+        total_size = 0
+        total_files = 0
+
+        for p in cat["paths"]:
+            if not os.path.exists(p):
+                continue
+            try:
+                for root, _, files in os.walk(p):
+                    for f in files:
+                        try:
+                            fp = os.path.join(root, f)
+                            st = os.stat(fp, follow_symlinks=False)
+                            sz = st.st_size
+                            mtime = datetime.datetime.fromtimestamp(st.st_mtime).strftime("%Y-%m-%d %H:%M")
+                            total_size += sz
+                            total_files += 1
+                            ext = os.path.splitext(f)[1].lstrip('.').lower() or "file"
+                            traced_files.append({
+                                "path": fp,
+                                "name": f,
+                                "size_bytes": sz,
+                                "size_str": human_size(sz),
+                                "modified": mtime,
+                                "ext": ext
+                            })
+                        except Exception:
+                            pass
+            except Exception:
+                pass
+
+        traced_files.sort(key=lambda x: x["size_bytes"], reverse=True)
+        return {
+            "category_id": category_id,
+            "name": cat["name"],
+            "files": traced_files[:30],
+            "total_files": total_files,
+            "total_size_bytes": total_size,
+            "total_size_str": human_size(total_size)
+        }
+
+    def get_cleanup_plan(self, category_ids: Optional[List[str]] = None) -> Dict[str, Any]:
+        """Generate structured consent payload before user confirms disk cleanup."""
+        scan_res = self.scan()
+        all_cats = scan_res.get("categories", [])
+
+        if category_ids:
+            target_cats = [c for c in all_cats if c["id"] in category_ids]
+        else:
+            target_cats = [c for c in all_cats if c.get("selected")]
+
+        total_bytes = sum(c.get("size_bytes", 0) for c in target_cats)
+        total_files = sum(c.get("file_count", 0) for c in target_cats)
+
+        return {
+            "requires_consent": True,
+            "total_size_bytes": total_bytes,
+            "total_size_str": human_size(total_bytes),
+            "total_files": total_files,
+            "categories": [
+                {
+                    "id": c["id"],
+                    "name": c["name"],
+                    "risk": c["risk"],
+                    "size_bytes": c["size_bytes"],
+                    "size_str": c["size_str"],
+                    "file_count": c["file_count"]
+                }
+                for c in target_cats
+            ],
+            "safety_guarantees": [
+                "User Documents, Desktop, Downloads, and Photos are strictly excluded.",
+                "Source code repositories (.git, local workspaces) are never accessed or modified.",
+                "Files locked by active applications will be safely bypassed without interruption.",
+                "Only safe temporary scratch buffers, stale caches, and staging remnants are purged."
+            ]
+        }
 
     def _get_recycle_bin_stats(self) -> tuple[int, int]:
         """Query the Windows Recycle Bin for total size and item count."""

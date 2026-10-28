@@ -14,157 +14,153 @@ const MONOGRAM_PALETTES = [
   ['#8E8E93', '#3A3A3C']  // Apple System Slate
 ];
 
-// Direct package ID to official SVG logo mapping (Simple Icons CDN)
+// Direct package ID to official SVG logo mapping (Local assets or Simple Icons)
 const APP_LOGOS_MAP = {
   // Artificial Intelligence & Machine Learning
-  'ollama.ollama': { slug: 'ollama', bg: 'rgba(255, 255, 255, 0.12)' },
-  'elementlabs.lmstudio': { slug: 'openai', bg: 'rgba(99, 102, 241, 0.15)' },
-  'jan.jan': { slug: 'openai', bg: 'rgba(16, 185, 129, 0.15)' },
-  'openai.chatgpt': { slug: 'openai', bg: 'rgba(16, 163, 127, 0.15)' },
-  'anthropic.claude': { slug: 'anthropic', bg: 'rgba(204, 120, 92, 0.15)' },
-  'anysphere.cursor': { slug: 'visualstudiocode', bg: 'rgba(59, 130, 246, 0.15)' },
-  'superwhisper.superwhisper': { slug: 'openai', bg: 'rgba(236, 72, 153, 0.15)' },
-  'upscayl.upscayl': { slug: 'nvidia', bg: 'rgba(118, 185, 0, 0.15)' },
-  'pinokio.pinokio': { slug: 'github', bg: 'rgba(139, 92, 246, 0.15)' },
+  'ollama.ollama': { url: 'assets/icons/ollama.svg' },
+  'elementlabs.lmstudio': { url: 'assets/icons/lmstudio.png' },
+  'jan.jan': { url: 'assets/icons/jan.png' },
+  'openai.chatgpt': { slug: 'openai' },
+  'anthropic.claude': { slug: 'anthropic' },
+  'superwhisper.superwhisper': { url: 'assets/icons/superwhisper.png' },
+  'upscayl.upscayl': { url: 'assets/icons/upscayl.svg' },
+  'pinokio.pinokio': { url: 'assets/icons/pinokio.png' },
 
   // Browsers
-  'google.chrome': { slug: 'googlechrome', bg: 'rgba(66, 133, 244, 0.12)' },
-  'mozilla.firefox': { slug: 'firefox', bg: 'rgba(255, 113, 57, 0.12)' },
-  'brave.brave': { slug: 'brave', bg: 'rgba(251, 84, 43, 0.12)' },
-  'microsoft.edge': { slug: 'microsoftedge', bg: 'rgba(0, 120, 215, 0.12)' },
-  'opera.opera': { slug: 'opera', bg: 'rgba(255, 27, 45, 0.12)' },
-  'torproject.torbrowser': { slug: 'torbrowser', bg: 'rgba(125, 70, 152, 0.12)' },
-  'vivaldi.vivaldi': { slug: 'vivaldi', bg: 'rgba(239, 57, 57, 0.12)' },
+  'google.chrome': { slug: 'googlechrome' },
+  'mozilla.firefox': { url: 'assets/icons/firefox.svg' },
+  'brave.brave': { url: 'assets/icons/brave.svg' },
+  'microsoft.edge': { url: 'assets/icons/edge.svg' },
+  'opera.opera': { url: 'assets/icons/opera.svg' },
+  'torproject.torbrowser': { url: 'assets/icons/torbrowser.svg' },
+  'vivaldi.vivaldi': { url: 'assets/icons/vivaldi.svg' },
 
   // Development
-  'microsoft.visualstudiocode': { slug: 'visualstudiocode', bg: 'rgba(0, 122, 204, 0.12)' },
-  'git.git': { slug: 'git', bg: 'rgba(240, 80, 50, 0.12)' },
-  'github.githubdesktop': { slug: 'github', bg: 'rgba(255, 255, 255, 0.12)' },
-  'docker.dockerdesktop': { slug: 'docker', bg: 'rgba(36, 150, 237, 0.12)' },
-  'postman.postman': { slug: 'postman', bg: 'rgba(255, 108, 55, 0.12)' },
-  'insomnia.insomnia': { slug: 'insomnia', bg: 'rgba(88, 73, 190, 0.12)' },
-  'dbeaver.dbeaver': { slug: 'dbeaver', bg: 'rgba(56, 41, 35, 0.15)' },
-  'python.python.3.13': { slug: 'python', bg: 'rgba(55, 118, 171, 0.12)' },
-  'python.python.3': { slug: 'python', bg: 'rgba(55, 118, 171, 0.12)' },
-  'python.python': { slug: 'python', bg: 'rgba(55, 118, 171, 0.12)' },
-  'openjs.nodejs.lts': { slug: 'nodedotjs', bg: 'rgba(95, 160, 78, 0.12)' },
-  'openjs.nodejs': { slug: 'nodedotjs', bg: 'rgba(95, 160, 78, 0.12)' },
-  'rustlang.rustup': { slug: 'rust', bg: 'rgba(255, 255, 255, 0.1)' },
-  'golang.go': { slug: 'go', bg: 'rgba(0, 173, 216, 0.12)' },
-  'microsoft.windowsterminal': { slug: 'windowsterminal', bg: 'rgba(77, 77, 77, 0.15)' },
-  'wiresharkfoundation.wireshark': { slug: 'wireshark', bg: 'rgba(22, 121, 167, 0.12)' },
+  'microsoft.visualstudiocode': { slug: 'visualstudiocode' },
+  'git.git': { slug: 'git' },
+  'github.githubdesktop': { url: 'assets/icons/github.svg' },
+  'docker.dockerdesktop': { slug: 'docker' },
+  'postman.postman': { url: 'assets/icons/postman.svg' },
+  'insomnia.insomnia': { url: 'assets/icons/insomnia.svg' },
+  'dbeaver.dbeaver': { url: 'assets/icons/dbeaver.svg' },
+  'python.python.3.13': { slug: 'python' },
+  'python.python.3': { slug: 'python' },
+  'python.python': { slug: 'python' },
+  'openjs.nodejs.lts': { url: 'assets/icons/nodedotjs.svg' },
+  'openjs.nodejs': { url: 'assets/icons/nodedotjs.svg' },
+  'rustlang.rustup': { url: 'assets/icons/rust.svg' },
+  'golang.go': { url: 'assets/icons/go.svg' },
+  'microsoft.windowsterminal': { slug: 'windowsterminal' },
+  'wiresharkfoundation.wireshark': { url: 'assets/icons/wireshark.svg' },
 
   // Music & Media
-  'spotify.spotify': { slug: 'spotify', bg: 'rgba(29, 185, 84, 0.12)' },
-  'videolan.vlc': { slug: 'vlcmediaplayer', bg: 'rgba(255, 136, 0, 0.15)' },
-  'audacity.audacity': { slug: 'audacity', bg: 'rgba(0, 0, 235, 0.12)' },
-  'obsproject.obsstudio': { slug: 'obsstudio', bg: 'rgba(48, 44, 52, 0.15)' },
-  'handbrake.handbrake': { slug: 'handbrake', bg: 'rgba(229, 57, 53, 0.12)' },
-  'foobar2000.foobar2000': { slug: 'foobar2000', bg: 'rgba(103, 58, 183, 0.12)' },
-  'plex.plex': { slug: 'plex', bg: 'rgba(229, 160, 13, 0.12)' },
-  'kodi.kodi': { slug: 'kodi', bg: 'rgba(23, 178, 231, 0.12)' },
-  'deezer.deezer': { slug: 'deezer', bg: 'rgba(162, 56, 255, 0.12)' },
+  'spotify.spotify': { slug: 'spotify' },
+  'videolan.vlc': { slug: 'vlcmediaplayer' },
+  'audacity.audacity': { url: 'assets/icons/audacity.svg' },
+  'obsproject.obsstudio': { url: 'assets/icons/obsstudio.svg' },
+  'handbrake.handbrake': { url: 'assets/icons/handbrake.svg' },
+  'foobar2000.foobar2000': { url: 'assets/icons/foobar2000.svg' },
+  'plex.plex': { url: 'assets/icons/plex.svg' },
+  'kodi.kodi': { url: 'assets/icons/kodi.svg' },
+  'deezer.deezer': { url: 'assets/icons/deezer.svg' },
 
   // Addons & Utilities
-  '7zip.7zip': { slug: 'sevenzip', bg: 'rgba(255, 255, 255, 0.1)' },
-  'rarlab.winrar': { slug: 'winrar', bg: 'rgba(63, 81, 181, 0.12)' },
-  'microsoft.powertoys': { slug: 'windows', bg: 'rgba(0, 120, 212, 0.12)' },
-  'autohotkey.autohotkey': { slug: 'autohotkey', bg: 'rgba(51, 68, 85, 0.15)' },
-  'bitwarden.bitwarden': { slug: 'bitwarden', bg: 'rgba(23, 93, 220, 0.12)' },
-  'keepassxcteam.keepassxc': { slug: 'keepassxc', bg: 'rgba(72, 160, 72, 0.12)' },
-  'qbittorrent.qbittorrent': { slug: 'qbittorrent', bg: 'rgba(47, 103, 159, 0.12)' },
-  'bleachbit.bleachbit': { slug: 'bleachbit', bg: 'rgba(76, 175, 80, 0.12)' },
-  'anydesksoftwaregmbh.anydesk': { slug: 'anydesk', bg: 'rgba(239, 68, 59, 0.12)' },
+  '7zip.7zip': { slug: '7zip' },
+  'rarlab.winrar': { slug: 'winrar' },
+  'microsoft.powertoys': { slug: 'windows' },
+  'sharex.sharex': { url: 'assets/icons/sharex.svg' },
+  'flameshot.flameshot': { url: 'assets/icons/flameshot.svg' },
+  'autohotkey.autohotkey': { url: 'assets/icons/autohotkey.svg' },
+  'bitwarden.bitwarden': { url: 'assets/icons/bitwarden.svg' },
+  'keepassxcteam.keepassxc': { url: 'assets/icons/keepassxc.svg' },
+  'qbittorrent.qbittorrent': { url: 'assets/icons/qbittorrent.svg' },
+  'bleachbit.bleachbit': { url: 'assets/icons/bleachbit.svg' },
+  'anydesksoftwaregmbh.anydesk': { url: 'assets/icons/anydesk.svg' },
 
   // Productivity
-  'notion.notion': { slug: 'notion', bg: 'rgba(255, 255, 255, 0.1)' },
-  'obsidian.obsidian': { slug: 'obsidian', bg: 'rgba(124, 58, 237, 0.12)' },
-  'notepad++.notepad++': { slug: 'notepadplusplus', bg: 'rgba(144, 197, 63, 0.15)' },
-  'thedocumentfoundation.libreoffice': { slug: 'libreoffice', bg: 'rgba(24, 163, 3, 0.12)' },
-  'adobe.acrobat.reader.64-bit': { slug: 'adobeacrobatreader', bg: 'rgba(236, 28, 36, 0.12)' },
-  'figma.figma': { slug: 'figma', bg: 'rgba(242, 78, 30, 0.12)' },
-  'blenderfoundation.blender': { slug: 'blender', bg: 'rgba(232, 125, 13, 0.12)' },
-  'gimp.gimp': { slug: 'gimp', bg: 'rgba(92, 85, 67, 0.15)' },
-  'inkscape.inkscape': { slug: 'inkscape', bg: 'rgba(255, 255, 255, 0.1)' },
+  'notion.notion': { slug: 'notion' },
+  'obsidian.obsidian': { slug: 'obsidian' },
+  'notepad++.notepad++': { url: 'assets/icons/notepadplusplus.svg' },
+  'thedocumentfoundation.libreoffice': { url: 'assets/icons/libreoffice.svg' },
+  'adobe.acrobat.reader.64-bit': { url: 'assets/icons/acrobat.svg' },
+  'figma.figma': { url: 'assets/icons/figma.svg' },
+  'blenderfoundation.blender': { url: 'assets/icons/blender.svg' },
+  'gimp.gimp': { url: 'assets/icons/gimp.svg' },
+  'inkscape.inkscape': { url: 'assets/icons/inkscape.svg' },
 
   // Gaming & Social
-  'discord.discord': { slug: 'discord', bg: 'rgba(88, 101, 242, 0.15)' },
-  'telegram.telegramdesktop': { slug: 'telegram', bg: 'rgba(38, 165, 228, 0.12)' },
-  'whatsapp.whatsapp': { slug: 'whatsapp', bg: 'rgba(37, 211, 102, 0.12)' },
-  'slacktechnologies.slack': { slug: 'slack', bg: 'rgba(74, 21, 75, 0.15)' },
-  'zoom.zoom': { slug: 'zoom', bg: 'rgba(11, 92, 255, 0.12)' },
-  'microsoft.teams': { slug: 'microsoftteams', bg: 'rgba(98, 100, 167, 0.12)' },
-  'valve.steam': { slug: 'steam', bg: 'rgba(255, 255, 255, 0.1)' },
-  'epicgames.epicgameslauncher': { slug: 'epicgames', bg: 'rgba(49, 49, 49, 0.15)' },
-  'gog.galaxy': { slug: 'gogdotcom', bg: 'rgba(138, 43, 226, 0.12)' }
+  'discord.discord': { slug: 'discord' },
+  'telegram.telegramdesktop': { slug: 'telegram' },
+  'whatsapp.whatsapp': { slug: 'whatsapp' },
+  'slacktechnologies.slack': { slug: 'slack' },
+  'zoom.zoom': { url: 'assets/icons/zoom.svg' },
+  'microsoft.teams': { url: 'assets/icons/teams.svg' },
+  'valve.steam': { slug: 'steam' },
+  'epicgames.epicgameslauncher': { url: 'assets/icons/epicgames.svg' },
+  'gog.galaxy': { url: 'assets/icons/gogdotcom.svg' }
 };
 
 // Substring / keyword logo fallbacks
 const APP_KEYWORD_LOGOS = {
-  'ollama': { slug: 'ollama', bg: 'rgba(255, 255, 255, 0.12)' },
-  'lmstudio': { slug: 'openai', bg: 'rgba(99, 102, 241, 0.15)' },
-  'jan': { slug: 'openai', bg: 'rgba(16, 185, 129, 0.15)' },
-  'chatgpt': { slug: 'openai', bg: 'rgba(16, 163, 127, 0.15)' },
-  'claude': { slug: 'anthropic', bg: 'rgba(204, 120, 92, 0.15)' },
-  'cursor': { slug: 'visualstudiocode', bg: 'rgba(59, 130, 246, 0.15)' },
-  'superwhisper': { slug: 'openai', bg: 'rgba(236, 72, 153, 0.15)' },
-  'upscayl': { slug: 'nvidia', bg: 'rgba(118, 185, 0, 0.15)' },
-  'pinokio': { slug: 'github', bg: 'rgba(139, 92, 246, 0.15)' },
+  'ollama': { slug: 'ollama' },
+  'chatgpt': { slug: 'openai' },
+  'claude': { slug: 'anthropic' },
 
-  'chrome': { slug: 'googlechrome', bg: 'rgba(66, 133, 244, 0.12)' },
-  'firefox': { slug: 'firefox', bg: 'rgba(255, 113, 57, 0.12)' },
-  'visualstudio': { slug: 'visualstudio', bg: 'rgba(92, 45, 145, 0.12)' },
-  'vscode': { slug: 'visualstudiocode', bg: 'rgba(0, 122, 204, 0.12)' },
-  'code': { slug: 'visualstudiocode', bg: 'rgba(0, 122, 204, 0.12)' },
-  'vlc': { slug: 'vlcmediaplayer', bg: 'rgba(255, 136, 0, 0.15)' },
-  'spotify': { slug: 'spotify', bg: 'rgba(29, 185, 84, 0.12)' },
-  'git': { slug: 'git', bg: 'rgba(240, 80, 50, 0.12)' },
-  'docker': { slug: 'docker', bg: 'rgba(36, 150, 237, 0.12)' },
-  'python': { slug: 'python', bg: 'rgba(55, 118, 171, 0.12)' },
-  'node': { slug: 'nodedotjs', bg: 'rgba(95, 160, 78, 0.12)' },
-  'discord': { slug: 'discord', bg: 'rgba(88, 101, 242, 0.15)' },
-  'slack': { slug: 'slack', bg: 'rgba(74, 21, 75, 0.15)' },
-  'telegram': { slug: 'telegram', bg: 'rgba(38, 165, 228, 0.12)' },
-  'whatsapp': { slug: 'whatsapp', bg: 'rgba(37, 211, 102, 0.12)' },
-  'zoom': { slug: 'zoom', bg: 'rgba(11, 92, 255, 0.12)' },
-  'steam': { slug: 'steam', bg: 'rgba(255, 255, 255, 0.1)' },
-  'epic': { slug: 'epicgames', bg: 'rgba(49, 49, 49, 0.15)' },
-  'notepad++': { slug: 'notepadplusplus', bg: 'rgba(144, 197, 63, 0.15)' },
-  '7zip': { slug: 'sevenzip', bg: 'rgba(255, 255, 255, 0.1)' },
-  'winrar': { slug: 'winrar', bg: 'rgba(63, 81, 181, 0.12)' },
-  'postman': { slug: 'postman', bg: 'rgba(255, 108, 55, 0.12)' },
-  'obs': { slug: 'obsstudio', bg: 'rgba(48, 44, 52, 0.15)' },
-  'audacity': { slug: 'audacity', bg: 'rgba(0, 0, 235, 0.12)' },
-  'blender': { slug: 'blender', bg: 'rgba(232, 125, 13, 0.12)' },
-  'gimp': { slug: 'gimp', bg: 'rgba(92, 85, 67, 0.15)' },
-  'inkscape': { slug: 'inkscape', bg: 'rgba(255, 255, 255, 0.1)' },
-  'figma': { slug: 'figma', bg: 'rgba(242, 78, 30, 0.12)' },
-  'notion': { slug: 'notion', bg: 'rgba(255, 255, 255, 0.1)' },
-  'obsidian': { slug: 'obsidian', bg: 'rgba(124, 58, 237, 0.12)' },
-  'libreoffice': { slug: 'libreoffice', bg: 'rgba(24, 163, 3, 0.12)' },
-  'bitwarden': { slug: 'bitwarden', bg: 'rgba(23, 93, 220, 0.12)' },
-  'keepass': { slug: 'keepassxc', bg: 'rgba(72, 160, 72, 0.12)' },
-  'wireshark': { slug: 'wireshark', bg: 'rgba(22, 121, 167, 0.12)' },
-  'rust': { slug: 'rust', bg: 'rgba(255, 255, 255, 0.1)' },
-  'golang': { slug: 'go', bg: 'rgba(0, 173, 216, 0.12)' },
-  'edge': { slug: 'microsoftedge', bg: 'rgba(0, 120, 215, 0.12)' },
-  'brave': { slug: 'brave', bg: 'rgba(251, 84, 43, 0.12)' },
-  'opera': { slug: 'opera', bg: 'rgba(255, 27, 45, 0.12)' },
-  'tor': { slug: 'torbrowser', bg: 'rgba(125, 70, 152, 0.12)' },
-  'qbittorrent': { slug: 'qbittorrent', bg: 'rgba(47, 103, 159, 0.12)' },
-  'anydesk': { slug: 'anydesk', bg: 'rgba(239, 68, 59, 0.12)' },
-  'powertoys': { slug: 'windows', bg: 'rgba(0, 120, 212, 0.12)' },
-  'autohotkey': { slug: 'autohotkey', bg: 'rgba(51, 68, 85, 0.15)' },
-  'dbeaver': { slug: 'dbeaver', bg: 'rgba(56, 41, 35, 0.15)' },
-  'insomnia': { slug: 'insomnia', bg: 'rgba(88, 73, 190, 0.12)' },
-  'handbrake': { slug: 'handbrake', bg: 'rgba(229, 57, 53, 0.12)' },
-  'plex': { slug: 'plex', bg: 'rgba(229, 160, 13, 0.12)' },
-  'kodi': { slug: 'kodi', bg: 'rgba(23, 178, 231, 0.12)' },
-  'deezer': { slug: 'deezer', bg: 'rgba(162, 56, 255, 0.12)' },
-  'acrobat': { slug: 'adobeacrobatreader', bg: 'rgba(236, 28, 36, 0.12)' },
-  'microsoft': { slug: 'windows', bg: 'rgba(0, 120, 212, 0.12)' },
-  'google': { slug: 'google', bg: 'rgba(66, 133, 244, 0.12)' },
-  'apple': { slug: 'apple', bg: 'rgba(255, 255, 255, 0.1)' }
+  'chrome': { slug: 'googlechrome' },
+  'firefox': { slug: 'firefox' },
+  'visualstudio': { slug: 'visualstudio' },
+  'vscode': { slug: 'visualstudiocode' },
+  'code': { slug: 'visualstudiocode' },
+  'vlc': { slug: 'vlcmediaplayer' },
+  'spotify': { slug: 'spotify' },
+  'git': { slug: 'git' },
+  'docker': { slug: 'docker' },
+  'python': { slug: 'python' },
+  'node': { slug: 'nodedotjs' },
+  'discord': { slug: 'discord' },
+  'slack': { slug: 'slack' },
+  'telegram': { slug: 'telegram' },
+  'whatsapp': { slug: 'whatsapp' },
+  'zoom': { slug: 'zoom' },
+  'steam': { slug: 'steam' },
+  'epic': { slug: 'epicgames' },
+  'notepad++': { slug: 'notepadplusplus' },
+  '7zip': { slug: '7zip' },
+  'winrar': { slug: 'winrar' },
+  'postman': { slug: 'postman' },
+  'obs': { slug: 'obsstudio' },
+  'audacity': { slug: 'audacity' },
+  'blender': { slug: 'blender' },
+  'gimp': { slug: 'gimp' },
+  'inkscape': { slug: 'inkscape' },
+  'figma': { slug: 'figma' },
+  'notion': { slug: 'notion' },
+  'obsidian': { slug: 'obsidian' },
+  'libreoffice': { slug: 'libreoffice' },
+  'bitwarden': { slug: 'bitwarden' },
+  'keepass': { slug: 'keepassxc' },
+  'wireshark': { slug: 'wireshark' },
+  'rust': { slug: 'rust' },
+  'golang': { slug: 'go' },
+  'edge': { slug: 'microsoftedge' },
+  'brave': { slug: 'brave' },
+  'opera': { slug: 'opera' },
+  'tor': { slug: 'torbrowser' },
+  'qbittorrent': { slug: 'qbittorrent' },
+  'anydesk': { slug: 'anydesk' },
+  'powertoys': { slug: 'windows' },
+  'sharex': { slug: 'sharex' },
+  'flameshot': { slug: 'flameshot' },
+  'autohotkey': { slug: 'autohotkey' },
+  'dbeaver': { slug: 'dbeaver' },
+  'insomnia': { slug: 'insomnia' },
+  'handbrake': { slug: 'handbrake' },
+  'plex': { slug: 'plex' },
+  'kodi': { slug: 'kodi' },
+  'deezer': { slug: 'deezer' },
+  'acrobat': { slug: 'adobeacrobatreader' },
+  'microsoft': { slug: 'windows' },
+  'google': { slug: 'google' }
 };
 
 // Rich Curated Explore Catalog (Automatically loaded on launch)
@@ -177,8 +173,7 @@ const APP_CATALOG = [
     desc: 'Run large language models locally (Llama 3, DeepSeek, Mistral, Gemma) on CPU and GPU with zero cloud lock-in.',
     downloads: 99,
     version: '0.5.7',
-    logo: 'https://cdn.simpleicons.org/ollama',
-    bg: 'rgba(255, 255, 255, 0.12)'
+    logo: 'assets/icons/ollama.svg'
   },
   {
     id: 'ElementLabs.LMStudio',
@@ -187,8 +182,7 @@ const APP_CATALOG = [
     desc: 'Discover, download, and run local LLMs with GPU acceleration, interactive chat UI, and OpenAI-compatible API server.',
     downloads: 98,
     version: '0.3.6',
-    logo: 'https://cdn.simpleicons.org/openai',
-    bg: 'rgba(99, 102, 241, 0.15)'
+    logo: 'assets/icons/lmstudio.png'
   },
   {
     id: 'Jan.Jan',
@@ -197,18 +191,16 @@ const APP_CATALOG = [
     desc: 'Self-hosted, open-source ChatGPT alternative that runs 100% offline on your device with complete privacy.',
     downloads: 95,
     version: '0.5.10',
-    logo: 'https://cdn.simpleicons.org/openai',
-    bg: 'rgba(16, 185, 129, 0.15)'
+    logo: 'assets/icons/jan.png'
   },
   {
     id: 'OpenAI.ChatGPT',
     name: 'ChatGPT Desktop',
     category: 'ai',
-    desc: 'Official macOS desktop client for OpenAI ChatGPT with instant voice mode, global shortcuts, and file attachments.',
+    desc: 'Official Windows desktop client for OpenAI ChatGPT with instant voice mode, global shortcuts, and file attachments.',
     downloads: 100,
     version: '1.2024.310',
-    logo: 'https://cdn.simpleicons.org/openai',
-    bg: 'rgba(16, 163, 127, 0.15)'
+    logo: ''
   },
   {
     id: 'Anthropic.Claude',
@@ -217,8 +209,7 @@ const APP_CATALOG = [
     desc: 'Official Anthropic Claude desktop application with Model Context Protocol (MCP) and Artifacts rendering.',
     downloads: 97,
     version: '0.7.8',
-    logo: 'https://cdn.simpleicons.org/anthropic',
-    bg: 'rgba(204, 120, 92, 0.15)'
+    logo: ''
   },
   {
     id: 'Anysphere.Cursor',
@@ -227,8 +218,7 @@ const APP_CATALOG = [
     desc: 'AI-first code editor fork of VS Code with multi-file reasoning, inline diffs, and terminal execution.',
     downloads: 99,
     version: '0.45.6',
-    logo: 'https://cdn.simpleicons.org/visualstudiocode',
-    bg: 'rgba(59, 130, 246, 0.15)'
+    logo: ''
   },
   {
     id: 'Superwhisper.Superwhisper',
@@ -237,8 +227,7 @@ const APP_CATALOG = [
     desc: 'Ultra-fast, accurate offline voice-to-text dictation and transcription powered by local OpenAI Whisper models.',
     downloads: 91,
     version: '1.4.0',
-    logo: 'https://cdn.simpleicons.org/openai',
-    bg: 'rgba(236, 72, 153, 0.15)'
+    logo: 'assets/icons/superwhisper.png'
   },
   {
     id: 'Upscayl.Upscayl',
@@ -247,8 +236,7 @@ const APP_CATALOG = [
     desc: 'Free, open source AI image upscaler powered by advanced neural network models with zero quality loss.',
     downloads: 93,
     version: '2.15.0',
-    logo: 'https://cdn.simpleicons.org/nvidia',
-    bg: 'rgba(118, 185, 0, 0.15)'
+    logo: 'assets/icons/upscayl.svg'
   },
   {
     id: 'Pinokio.Pinokio',
@@ -257,8 +245,7 @@ const APP_CATALOG = [
     desc: 'Autonomous browser ecosystem that lets you install, run, and automate local AI apps and models with 1 click.',
     downloads: 92,
     version: '3.0.0',
-    logo: 'https://cdn.simpleicons.org/github/white',
-    bg: 'rgba(139, 92, 246, 0.15)'
+    logo: 'assets/icons/pinokio.png'
   },
 
   // Music & Media
@@ -269,8 +256,7 @@ const APP_CATALOG = [
     desc: 'Stream millions of tracks, albums, podcasts, and curated playlists.',
     downloads: 99,
     version: '1.2.53',
-    logo: 'https://cdn.simpleicons.org/spotify',
-    bg: 'rgba(29, 185, 84, 0.15)'
+    logo: ''
   },
   {
     id: 'VideoLAN.VLC',
@@ -279,8 +265,7 @@ const APP_CATALOG = [
     desc: 'Plays virtually all video and audio codecs, discs, streams, and webcams.',
     downloads: 98,
     version: '3.0.21',
-    logo: 'https://cdn.simpleicons.org/vlcmediaplayer',
-    bg: 'rgba(255, 136, 0, 0.15)'
+    logo: ''
   },
   {
     id: 'Audacity.Audacity',
@@ -289,8 +274,7 @@ const APP_CATALOG = [
     desc: 'Open-source multi-track audio editor, recorder, and sound analyzer.',
     downloads: 88,
     version: '3.7.1',
-    logo: 'https://cdn.simpleicons.org/audacity',
-    bg: 'rgba(0, 0, 235, 0.15)'
+    logo: 'assets/icons/audacity.svg'
   },
   {
     id: 'OBSProject.OBSStudio',
@@ -299,8 +283,7 @@ const APP_CATALOG = [
     desc: 'High performance video recording and live streaming for content creators.',
     downloads: 95,
     version: '31.0.0',
-    logo: 'https://cdn.simpleicons.org/obsstudio',
-    bg: 'rgba(48, 44, 52, 0.2)'
+    logo: 'assets/icons/obsstudio.svg'
   },
   {
     id: 'HandBrake.HandBrake',
@@ -309,8 +292,7 @@ const APP_CATALOG = [
     desc: 'Open-source video transcoder for converting video to modern codecs.',
     downloads: 84,
     version: '1.8.2',
-    logo: 'https://cdn.simpleicons.org/handbrake',
-    bg: 'rgba(229, 57, 53, 0.15)'
+    logo: 'assets/icons/handbrake.svg'
   },
   {
     id: 'Foobar2000.Foobar2000',
@@ -319,8 +301,7 @@ const APP_CATALOG = [
     desc: 'Advanced, lightweight audio player with gapless playback and DSP.',
     downloads: 80,
     version: '2.1.6',
-    logo: 'https://cdn.simpleicons.org/foobar2000',
-    bg: 'rgba(103, 58, 183, 0.15)'
+    logo: 'assets/icons/foobar2000.svg'
   },
   {
     id: 'Plex.Plex',
@@ -329,8 +310,7 @@ const APP_CATALOG = [
     desc: 'Stream live TV, movies, shows, and your personal home media library.',
     downloads: 86,
     version: '1.104.0',
-    logo: 'https://cdn.simpleicons.org/plex',
-    bg: 'rgba(229, 160, 13, 0.15)'
+    logo: 'assets/icons/plex.svg'
   },
   {
     id: 'Kodi.Kodi',
@@ -339,8 +319,7 @@ const APP_CATALOG = [
     desc: 'Award-winning open source home entertainment hub and digital jukebox.',
     downloads: 83,
     version: '21.1',
-    logo: 'https://cdn.simpleicons.org/kodi',
-    bg: 'rgba(23, 178, 231, 0.15)'
+    logo: 'assets/icons/kodi.svg'
   },
   {
     id: 'Deezer.Deezer',
@@ -349,80 +328,18 @@ const APP_CATALOG = [
     desc: 'High Fidelity music streaming with FLAC sound and personalized Flow.',
     downloads: 78,
     version: '6.0.190',
-    logo: 'https://cdn.simpleicons.org/deezer',
-    bg: 'rgba(162, 56, 255, 0.15)'
+    logo: 'assets/icons/deezer.svg'
   },
 
   // Addons & Utilities
   {
-    id: 'raycast',
-    name: 'Raycast',
+    id: 'Microsoft.PowerToys',
+    name: 'Microsoft PowerToys',
     category: 'utilities',
-    desc: 'Blazingly fast, extensible Spotlight launcher, window manager, and developer command palette for macOS.',
-    downloads: 100,
-    version: '1.85.0',
-    logo: 'https://cdn.simpleicons.org/raycast',
-    bg: 'rgba(255, 99, 99, 0.15)'
-  },
-  {
-    id: 'rectangle',
-    name: 'Rectangle',
-    category: 'utilities',
-    desc: 'Move and resize windows in macOS using keyboard shortcuts or snap areas with zero background overhead.',
-    downloads: 98,
-    version: '0.82',
-    logo: 'https://cdn.simpleicons.org/apple',
-    bg: 'rgba(16, 138, 177, 0.15)'
-  },
-  {
-    id: 'shottr',
-    name: 'Shottr',
-    category: 'utilities',
-    desc: 'Lightweight pixel-perfect screenshot utility for Mac with OCR text recognition, scrolling capture, and annotations.',
-    downloads: 95,
-    version: '1.7.3',
-    logo: 'https://cdn.simpleicons.org/apple',
-    bg: 'rgba(6, 215, 160, 0.15)'
-  },
-  {
-    id: 'arc',
-    name: 'Arc Browser',
-    category: 'browsers',
-    desc: 'Futuristic, clean browser crafted by The Browser Company with Spaces, Split Views, and native Apple Silicon efficiency.',
+    desc: 'Essential Windows system utilities for power users: FancyZones, Text Extractor, Awake, and PowerToys Run.',
     downloads: 99,
-    version: '1.68.0',
-    logo: 'https://cdn.simpleicons.org/arc',
-    bg: 'rgba(255, 99, 132, 0.15)'
-  },
-  {
-    id: 'orbstack',
-    name: 'OrbStack',
-    category: 'development',
-    desc: 'Fast, lightweight way to run Docker containers and Linux machines on Apple Silicon with 2x lower memory usage.',
-    downloads: 98,
-    version: '1.8.2',
-    logo: 'https://cdn.simpleicons.org/docker',
-    bg: 'rgba(16, 138, 177, 0.15)'
-  },
-  {
-    id: 'iterm2',
-    name: 'iTerm2',
-    category: 'development',
-    desc: 'Premier terminal emulator replacement for macOS with Split Panes, Hotkey Window, and Apple Metal rendering.',
-    downloads: 99,
-    version: '3.5.5',
-    logo: 'https://cdn.simpleicons.org/iterm2',
-    bg: 'rgba(30, 30, 30, 0.2)'
-  },
-  {
-    id: 'zed',
-    name: 'Zed Editor',
-    category: 'development',
-    desc: 'High-performance, multiplayer code editor from the creators of Atom, crafted in Rust for macOS.',
-    downloads: 97,
-    version: '0.160.0',
-    logo: 'https://cdn.simpleicons.org/visualstudiocode',
-    bg: 'rgba(6, 215, 160, 0.15)'
+    version: '0.86.0',
+    logo: ''
   },
   {
     id: '7zip.7zip',
@@ -431,48 +348,52 @@ const APP_CATALOG = [
     desc: 'High compression ratio file archiver supporting 7z, ZIP, RAR, TAR, and ISO.',
     downloads: 99,
     version: '24.09',
-    logo: 'https://cdn.simpleicons.org/sevenzip',
-    bg: 'rgba(255, 255, 255, 0.1)'
+    logo: ''
   },
   {
     id: 'RARLab.WinRAR',
     name: 'WinRAR',
     category: 'utilities',
-    desc: 'Industry standard RAR archive creator and decompression utility.',
+    desc: 'Industry standard RAR archive creator and decompression utility with high-speed unrar.',
     downloads: 93,
     version: '7.01',
-    logo: 'https://cdn.simpleicons.org/winrar',
-    bg: 'rgba(63, 81, 181, 0.15)'
-  },
-  {
-    id: 'Microsoft.PowerToys',
-    name: 'Microsoft PowerToys',
-    category: 'utilities',
-    desc: 'Essential Windows system utilities for power users: FancyZones, Text Extractor, and Run.',
-    downloads: 97,
-    version: '0.86.0',
-    logo: 'https://cdn.simpleicons.org/windows',
-    bg: 'rgba(0, 120, 212, 0.15)'
+    logo: ''
   },
   {
     id: 'voidtools.Everything',
     name: 'Everything',
     category: 'utilities',
-    desc: 'Locate files and folders across all NTFS drives in milliseconds.',
-    downloads: 96,
+    desc: 'Locate files and folders across all NTFS drives in milliseconds with instant index search.',
+    downloads: 98,
     version: '1.4.1',
-    logo: 'https://www.voidtools.com/favicon.ico',
-    bg: 'rgba(255, 152, 0, 0.15)'
+    logo: ''
+  },
+  {
+    id: 'ShareX.ShareX',
+    name: 'ShareX',
+    category: 'utilities',
+    desc: 'Screen capture, file sharing and productivity tool with OCR and screen recorder for Windows.',
+    downloads: 97,
+    version: '16.1.0',
+    logo: 'assets/icons/sharex.svg'
+  },
+  {
+    id: 'Flameshot.Flameshot',
+    name: 'Flameshot',
+    category: 'utilities',
+    desc: 'Powerful yet simple to use screenshot software with in-place annotation and pin to desktop.',
+    downloads: 92,
+    version: '12.1.0',
+    logo: 'assets/icons/flameshot.svg'
   },
   {
     id: 'Rufus.Rufus',
     name: 'Rufus',
     category: 'utilities',
     desc: 'Reliably create bootable USB drives for Windows, Linux, and UEFI installations.',
-    downloads: 92,
+    downloads: 94,
     version: '4.6',
-    logo: 'https://rufus.ie/pics/rufus-128.png',
-    bg: 'rgba(158, 158, 158, 0.15)'
+    logo: ''
   },
   {
     id: 'AutoHotkey.AutoHotkey',
@@ -481,8 +402,7 @@ const APP_CATALOG = [
     desc: 'Desktop automation and macro scripting language for custom keybindings.',
     downloads: 87,
     version: '2.0.18',
-    logo: 'https://cdn.simpleicons.org/autohotkey',
-    bg: 'rgba(51, 68, 85, 0.2)'
+    logo: 'assets/icons/autohotkey.svg'
   },
   {
     id: 'Bitwarden.Bitwarden',
@@ -491,8 +411,7 @@ const APP_CATALOG = [
     desc: 'Open-source end-to-end encrypted password manager and passkey vault.',
     downloads: 94,
     version: '2024.11.0',
-    logo: 'https://cdn.simpleicons.org/bitwarden',
-    bg: 'rgba(23, 93, 220, 0.15)'
+    logo: 'assets/icons/bitwarden.svg'
   },
   {
     id: 'KeePassXCTeam.KeePassXC',
@@ -501,8 +420,7 @@ const APP_CATALOG = [
     desc: 'Offline encrypted password manager with browser integration and auto-type.',
     downloads: 85,
     version: '2.7.9',
-    logo: 'https://cdn.simpleicons.org/keepassxc',
-    bg: 'rgba(72, 160, 72, 0.15)'
+    logo: 'assets/icons/keepassxc.svg'
   },
   {
     id: 'qBittorrent.qBittorrent',
@@ -511,8 +429,7 @@ const APP_CATALOG = [
     desc: 'Free, open-source, ad-free torrent downloader with integrated search.',
     downloads: 91,
     version: '5.0.1',
-    logo: 'https://cdn.simpleicons.org/qbittorrent',
-    bg: 'rgba(47, 103, 159, 0.15)'
+    logo: 'assets/icons/qbittorrent.svg'
   },
   {
     id: 'BleachBit.BleachBit',
@@ -521,8 +438,7 @@ const APP_CATALOG = [
     desc: 'Free cache cleaner, privacy cleaner, and disk space optimizer.',
     downloads: 81,
     version: '4.6.0',
-    logo: 'https://cdn.simpleicons.org/bleachbit',
-    bg: 'rgba(76, 175, 80, 0.15)'
+    logo: 'assets/icons/bleachbit.svg'
   },
   {
     id: 'AnyDeskSoftwareGmbH.AnyDesk',
@@ -531,8 +447,7 @@ const APP_CATALOG = [
     desc: 'High frame-rate remote desktop application for IT support and telework.',
     downloads: 90,
     version: '8.1.1',
-    logo: 'https://cdn.simpleicons.org/anydesk',
-    bg: 'rgba(239, 68, 59, 0.15)'
+    logo: 'assets/icons/anydesk.svg'
   },
 
   // Development & Tools
@@ -543,8 +458,7 @@ const APP_CATALOG = [
     desc: 'Lightweight, extensible code editor with integrated Git, debugging, and terminal.',
     downloads: 100,
     version: '1.95.3',
-    logo: 'https://cdn.simpleicons.org/visualstudiocode',
-    bg: 'rgba(0, 122, 204, 0.15)'
+    logo: ''
   },
   {
     id: 'Git.Git',
@@ -553,8 +467,7 @@ const APP_CATALOG = [
     desc: 'Fast, distributed version control system for tracking source code changes.',
     downloads: 100,
     version: '2.47.1',
-    logo: 'https://cdn.simpleicons.org/git',
-    bg: 'rgba(240, 80, 50, 0.15)'
+    logo: ''
   },
   {
     id: 'GitHub.GitHubDesktop',
@@ -563,8 +476,7 @@ const APP_CATALOG = [
     desc: 'Visual interface for Git and GitHub with seamless diffs, branches, and PRs.',
     downloads: 95,
     version: '3.4.9',
-    logo: 'https://cdn.simpleicons.org/github',
-    bg: 'rgba(255, 255, 255, 0.1)'
+    logo: 'assets/icons/github.svg'
   },
   {
     id: 'Docker.DockerDesktop',
@@ -573,8 +485,7 @@ const APP_CATALOG = [
     desc: 'Build, share, and run containerized microservices with Docker and Kubernetes.',
     downloads: 97,
     version: '4.35.1',
-    logo: 'https://cdn.simpleicons.org/docker',
-    bg: 'rgba(36, 150, 237, 0.15)'
+    logo: ''
   },
   {
     id: 'Postman.Postman',
@@ -583,8 +494,7 @@ const APP_CATALOG = [
     desc: 'API testing platform for building, debugging, and mocking REST and GraphQL APIs.',
     downloads: 93,
     version: '11.19.0',
-    logo: 'https://cdn.simpleicons.org/postman',
-    bg: 'rgba(255, 108, 55, 0.15)'
+    logo: 'assets/icons/postman.svg'
   },
   {
     id: 'Insomnia.Insomnia',
@@ -593,8 +503,7 @@ const APP_CATALOG = [
     desc: 'Streamlined desktop API client for REST, GraphQL, gRPC, and WebSockets.',
     downloads: 82,
     version: '10.1.1',
-    logo: 'https://cdn.simpleicons.org/insomnia',
-    bg: 'rgba(88, 73, 190, 0.15)'
+    logo: 'assets/icons/insomnia.svg'
   },
   {
     id: 'dbeaver.dbeaver',
@@ -603,8 +512,7 @@ const APP_CATALOG = [
     desc: 'Universal SQL database administration tool for Postgres, MySQL, SQLite, and Oracle.',
     downloads: 89,
     version: '24.2.4',
-    logo: 'https://cdn.simpleicons.org/dbeaver',
-    bg: 'rgba(56, 41, 35, 0.2)'
+    logo: 'assets/icons/dbeaver.svg'
   },
   {
     id: 'Python.Python.3.13',
@@ -613,8 +521,7 @@ const APP_CATALOG = [
     desc: 'Modern general-purpose programming language for AI, data science, and scripting.',
     downloads: 98,
     version: '3.13.0',
-    logo: 'https://cdn.simpleicons.org/python',
-    bg: 'rgba(55, 118, 171, 0.15)'
+    logo: ''
   },
   {
     id: 'OpenJS.NodeJS.LTS',
@@ -623,8 +530,7 @@ const APP_CATALOG = [
     desc: 'JavaScript runtime built on Chrome V8 engine for scalable backend servers.',
     downloads: 97,
     version: '22.11.0',
-    logo: 'https://cdn.simpleicons.org/nodedotjs',
-    bg: 'rgba(95, 160, 78, 0.15)'
+    logo: 'assets/icons/nodedotjs.svg'
   },
   {
     id: 'Rustlang.Rustup',
@@ -633,8 +539,7 @@ const APP_CATALOG = [
     desc: 'Official installer for the memory-safe, ultra-fast Rust programming language.',
     downloads: 90,
     version: '1.27.1',
-    logo: 'https://cdn.simpleicons.org/rust',
-    bg: 'rgba(255, 255, 255, 0.1)'
+    logo: 'assets/icons/rust.svg'
   },
   {
     id: 'Golang.Go',
@@ -643,8 +548,7 @@ const APP_CATALOG = [
     desc: 'Simple, fast, and concurrent systems programming language developed by Google.',
     downloads: 88,
     version: '1.23.3',
-    logo: 'https://cdn.simpleicons.org/go',
-    bg: 'rgba(0, 173, 216, 0.15)'
+    logo: 'assets/icons/go.svg'
   },
   {
     id: 'Microsoft.WindowsTerminal',
@@ -653,8 +557,7 @@ const APP_CATALOG = [
     desc: 'GPU-accelerated terminal for PowerShell, Command Prompt, and WSL Linux.',
     downloads: 96,
     version: '1.21.2911',
-    logo: 'https://cdn.simpleicons.org/windowsterminal',
-    bg: 'rgba(77, 77, 77, 0.2)'
+    logo: ''
   },
   {
     id: 'WiresharkFoundation.Wireshark',
@@ -663,8 +566,7 @@ const APP_CATALOG = [
     desc: 'World’s foremost network traffic and packet capture analyzer.',
     downloads: 87,
     version: '4.4.1',
-    logo: 'https://cdn.simpleicons.org/wireshark',
-    bg: 'rgba(22, 121, 167, 0.15)'
+    logo: 'assets/icons/wireshark.svg'
   },
 
   // Browsers & Web
@@ -675,8 +577,7 @@ const APP_CATALOG = [
     desc: 'Fast, secure, and customizable browser built by Google for the modern web.',
     downloads: 100,
     version: '131.0.6778',
-    logo: 'https://cdn.simpleicons.org/googlechrome',
-    bg: 'rgba(66, 133, 244, 0.15)'
+    logo: ''
   },
   {
     id: 'Mozilla.Firefox',
@@ -685,8 +586,7 @@ const APP_CATALOG = [
     desc: 'Privacy-focused, independent web browser with advanced tracking protection.',
     downloads: 96,
     version: '132.0.2',
-    logo: 'https://cdn.simpleicons.org/firefox',
-    bg: 'rgba(255, 113, 57, 0.15)'
+    logo: 'assets/icons/firefox.svg'
   },
   {
     id: 'Brave.Brave',
@@ -695,8 +595,7 @@ const APP_CATALOG = [
     desc: 'Shields privacy by blocking advertisements and trackers automatically by default.',
     downloads: 95,
     version: '1.71.123',
-    logo: 'https://cdn.simpleicons.org/brave',
-    bg: 'rgba(251, 84, 43, 0.15)'
+    logo: 'assets/icons/brave.svg'
   },
   {
     id: 'Microsoft.Edge',
@@ -705,8 +604,7 @@ const APP_CATALOG = [
     desc: 'Fast and secure Windows browser with built-in Copilot AI features and vertical tabs.',
     downloads: 92,
     version: '131.0.2903',
-    logo: 'https://cdn.simpleicons.org/microsoftedge',
-    bg: 'rgba(0, 120, 215, 0.15)'
+    logo: 'assets/icons/edge.svg'
   },
   {
     id: 'Opera.Opera',
@@ -715,8 +613,7 @@ const APP_CATALOG = [
     desc: 'Feature-rich web browser with built-in free VPN, ad blocker, and AI assistant.',
     downloads: 87,
     version: '114.0.5282',
-    logo: 'https://cdn.simpleicons.org/opera',
-    bg: 'rgba(255, 27, 45, 0.15)'
+    logo: 'assets/icons/opera.svg'
   },
   {
     id: 'TorProject.TorBrowser',
@@ -725,8 +622,7 @@ const APP_CATALOG = [
     desc: 'Browse anonymously with multi-layered onion encryption protecting privacy.',
     downloads: 84,
     version: '14.0.1',
-    logo: 'https://cdn.simpleicons.org/torbrowser',
-    bg: 'rgba(125, 70, 152, 0.15)'
+    logo: 'assets/icons/torbrowser.svg'
   },
   {
     id: 'Vivaldi.Vivaldi',
@@ -735,8 +631,7 @@ const APP_CATALOG = [
     desc: 'Highly customizable power browser with tabs stacking, split views, and notes.',
     downloads: 83,
     version: '7.0.3495',
-    logo: 'https://cdn.simpleicons.org/vivaldi',
-    bg: 'rgba(239, 57, 57, 0.15)'
+    logo: 'assets/icons/vivaldi.svg'
   },
 
   // Productivity & Office
@@ -747,8 +642,7 @@ const APP_CATALOG = [
     desc: 'The all-in-one workspace for notes, tasks, databases, and project management.',
     downloads: 96,
     version: '3.14.0',
-    logo: 'https://cdn.simpleicons.org/notion',
-    bg: 'rgba(255, 255, 255, 0.1)'
+    logo: ''
   },
   {
     id: 'Obsidian.Obsidian',
@@ -757,8 +651,7 @@ const APP_CATALOG = [
     desc: 'Markdown-based second brain and personal knowledge base stored locally on disk.',
     downloads: 94,
     version: '1.7.5',
-    logo: 'https://cdn.simpleicons.org/obsidian',
-    bg: 'rgba(124, 58, 237, 0.15)'
+    logo: ''
   },
   {
     id: 'Notepad++.Notepad++',
@@ -767,8 +660,7 @@ const APP_CATALOG = [
     desc: 'Fast, lightweight text and source code editor with multi-document tabs.',
     downloads: 98,
     version: '8.7.1',
-    logo: 'https://cdn.simpleicons.org/notepadplusplus',
-    bg: 'rgba(144, 197, 63, 0.18)'
+    logo: 'assets/icons/notepadplusplus.svg'
   },
   {
     id: 'TheDocumentFoundation.LibreOffice',
@@ -777,8 +669,7 @@ const APP_CATALOG = [
     desc: 'Free open source office suite for documents, spreadsheets, and presentations.',
     downloads: 91,
     version: '24.8.3',
-    logo: 'https://cdn.simpleicons.org/libreoffice',
-    bg: 'rgba(24, 163, 3, 0.15)'
+    logo: 'assets/icons/libreoffice.svg'
   },
   {
     id: 'Adobe.Acrobat.Reader.64-bit',
@@ -787,8 +678,7 @@ const APP_CATALOG = [
     desc: 'Standard for viewing, printing, signing, and annotating PDF documents.',
     downloads: 95,
     version: '24.004.20243',
-    logo: 'https://cdn.simpleicons.org/adobeacrobatreader',
-    bg: 'rgba(236, 28, 36, 0.15)'
+    logo: 'assets/icons/acrobat.svg'
   },
   {
     id: 'Figma.Figma',
@@ -797,8 +687,7 @@ const APP_CATALOG = [
     desc: 'Collaborative UI/UX design tool for prototyping and design systems.',
     downloads: 93,
     version: '124.5.5',
-    logo: 'https://cdn.simpleicons.org/figma',
-    bg: 'rgba(242, 78, 30, 0.15)'
+    logo: 'assets/icons/figma.svg'
   },
   {
     id: 'BlenderFoundation.Blender',
@@ -807,8 +696,7 @@ const APP_CATALOG = [
     desc: 'Free and open source 3D creation suite: modeling, animation, VFX, and rendering.',
     downloads: 93,
     version: '4.2.3',
-    logo: 'https://cdn.simpleicons.org/blender',
-    bg: 'rgba(232, 125, 13, 0.15)'
+    logo: 'assets/icons/blender.svg'
   },
   {
     id: 'GIMP.GIMP',
@@ -817,8 +705,7 @@ const APP_CATALOG = [
     desc: 'Cross-platform image editor with advanced retouching and drawing tools.',
     downloads: 87,
     version: '2.10.38',
-    logo: 'https://cdn.simpleicons.org/gimp',
-    bg: 'rgba(92, 85, 67, 0.2)'
+    logo: 'assets/icons/gimp.svg'
   },
   {
     id: 'Inkscape.Inkscape',
@@ -827,8 +714,7 @@ const APP_CATALOG = [
     desc: 'Professional vector graphics editor for creating SVG illustrations and logos.',
     downloads: 86,
     version: '1.4',
-    logo: 'https://cdn.simpleicons.org/inkscape',
-    bg: 'rgba(255, 255, 255, 0.1)'
+    logo: 'assets/icons/inkscape.svg'
   },
 
   // Gaming & Social
@@ -839,8 +725,7 @@ const APP_CATALOG = [
     desc: 'High clarity voice, video, and text communication for communities and gamers.',
     downloads: 99,
     version: '1.0.9168',
-    logo: 'https://cdn.simpleicons.org/discord',
-    bg: 'rgba(88, 101, 242, 0.18)'
+    logo: ''
   },
   {
     id: 'Telegram.TelegramDesktop',
@@ -849,8 +734,7 @@ const APP_CATALOG = [
     desc: 'Cloud-based instant messaging with powerful channels, bots, and file sharing.',
     downloads: 95,
     version: '5.7.1',
-    logo: 'https://cdn.simpleicons.org/telegram',
-    bg: 'rgba(38, 165, 228, 0.15)'
+    logo: ''
   },
   {
     id: 'WhatsApp.WhatsApp',
@@ -859,8 +743,7 @@ const APP_CATALOG = [
     desc: 'Simple, reliable, private messaging and HD calls synced to your PC.',
     downloads: 97,
     version: '2.2444.6',
-    logo: 'https://cdn.simpleicons.org/whatsapp',
-    bg: 'rgba(37, 211, 102, 0.15)'
+    logo: ''
   },
   {
     id: 'SlackTechnologies.Slack',
@@ -869,8 +752,7 @@ const APP_CATALOG = [
     desc: 'Enterprise communication hub bringing teamwork, channels, and apps together.',
     downloads: 94,
     version: '4.41.97',
-    logo: 'https://cdn.simpleicons.org/slack',
-    bg: 'rgba(74, 21, 75, 0.18)'
+    logo: ''
   },
   {
     id: 'Zoom.Zoom',
@@ -879,8 +761,7 @@ const APP_CATALOG = [
     desc: 'Video meetings, virtual team chat, whiteboard, and screen sharing.',
     downloads: 93,
     version: '6.2.6',
-    logo: 'https://cdn.simpleicons.org/zoom',
-    bg: 'rgba(11, 92, 255, 0.15)'
+    logo: 'assets/icons/zoom.svg'
   },
   {
     id: 'Microsoft.Teams',
@@ -889,8 +770,7 @@ const APP_CATALOG = [
     desc: 'Connect and collaborate with coworkers, group calls, and Office integration.',
     downloads: 92,
     version: '24277.502',
-    logo: 'https://cdn.simpleicons.org/microsoftteams',
-    bg: 'rgba(98, 100, 167, 0.15)'
+    logo: 'assets/icons/teams.svg'
   },
   {
     id: 'Valve.Steam',
@@ -899,18 +779,16 @@ const APP_CATALOG = [
     desc: 'The ultimate digital entertainment platform for playing and purchasing PC games.',
     downloads: 98,
     version: '2.10.91',
-    logo: 'https://cdn.simpleicons.org/steam',
-    bg: 'rgba(255, 255, 255, 0.1)'
+    logo: ''
   },
   {
     id: 'EpicGames.EpicGamesLauncher',
     name: 'Epic Games Launcher',
     category: 'gaming',
-    desc: 'Play Fortnite, claim free weekly games, and build with Unreal Engine.',
-    downloads: 93,
-    version: '16.14.1',
-    logo: 'https://cdn.simpleicons.org/epicgames',
-    bg: 'rgba(49, 49, 49, 0.2)'
+    desc: 'Gateway to Unreal Engine games, Fortnite, and weekly free games store.',
+    downloads: 88,
+    version: '17.0.0',
+    logo: 'assets/icons/epicgames.svg'
   },
   {
     id: 'GOG.Galaxy',
@@ -919,8 +797,7 @@ const APP_CATALOG = [
     desc: 'All your PC games in one launcher with DRM-free downloads and friend lists.',
     downloads: 85,
     version: '2.0.73',
-    logo: 'https://cdn.simpleicons.org/gogdotcom',
-    bg: 'rgba(138, 43, 226, 0.15)'
+    logo: 'assets/icons/gogdotcom.svg'
   }
 ];
 
@@ -1052,6 +929,7 @@ class QuantumUpdaterApp {
   }
 
   async init() {
+    this.initTheme();
     this.adaptPlatformUI();
     this.bindEvents();
 
@@ -1249,11 +1127,28 @@ class QuantumUpdaterApp {
     });
   }
 
-  toggleTheme() {
-    const isLight = document.body.classList.toggle('light-mode');
+  initTheme() {
+    let saved = 'light';
+    try {
+      saved = localStorage.getItem('quantum_theme') || 'light';
+    } catch (e) {}
+    this.setTheme(saved);
+  }
+
+  setTheme(theme) {
+    const isLight = theme === 'light';
+    document.documentElement.classList.toggle('light-mode', isLight);
+    document.documentElement.classList.toggle('dark-mode', !isLight);
+    document.body.classList.toggle('light-mode', isLight);
     document.body.classList.toggle('dark-mode', !isLight);
-    const theme = isLight ? 'light' : 'dark';
-    this.invoke('save_setting', { key: 'theme', value: theme }).catch(() => {});
+    try { localStorage.setItem('quantum_theme', theme); } catch (e) {}
+  }
+
+  toggleTheme() {
+    const isLight = document.body.classList.contains('light-mode');
+    const newTheme = isLight ? 'dark' : 'light';
+    this.setTheme(newTheme);
+    this.invoke('save_setting', { key: 'theme', value: newTheme }).catch(() => {});
   }
 
   toggleSidebar() {
@@ -1474,108 +1369,133 @@ class QuantumUpdaterApp {
    */
   getBuiltinAppSvg(id, name) {
     const s = `${id} ${name}`.toLowerCase();
+    
+    // 1. Google Chrome (Official 4-color pinwheel)
     if (s.includes('chrome') || s.includes('google-chrome')) {
-      return {
-        bg: 'rgba(66, 133, 244, 0.12)',
-        svg: `<svg width="26" height="26" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="#EA4335"/><circle cx="12" cy="12" r="7" fill="#FBBC05"/><circle cx="12" cy="12" r="4.2" fill="#34A853"/><circle cx="12" cy="12" r="2.8" fill="#4285F4"/></svg>`
-      };
+      return `<svg width="34" height="34" viewBox="0 0 192 192"><circle cx="96" cy="96" r="88" fill="#FFFFFF"/><path fill="#EA4335" d="M96 8A88 88 0 0 0 19.6 52.4L57 117.2A44 44 0 0 1 96 52h76.3A88.3 88.3 0 0 0 96 8z"/><path fill="#4CAF50" d="M96 184a88 88 0 0 0 76.4-44.4L135 74.8A44 44 0 0 1 96 140v44z"/><path fill="#FFEB3B" d="M96 184H19.6A88 88 0 0 0 135 74.8l-37.5 65.2A44 44 0 0 1 52 96l-32.4-43.6A88.2 88.2 0 0 0 96 184z"/><circle cx="96" cy="96" r="34" fill="#1976D2"/></svg>`;
     }
+
+    // 2. Visual Studio Code (Official folded ribbon in #007ACC)
     if (s.includes('visualstudiocode') || s.includes('vscode') || s.includes('code.visualstudio')) {
-      return {
-        bg: 'rgba(0, 122, 204, 0.15)',
-        svg: `<svg width="26" height="26" viewBox="0 0 24 24" fill="#007ACC"><path d="M23.15 2.587L18.21.21a1.494 1.494 0 0 0-1.705.29l-9.46 8.63-4.12-3.128a.999.999 0 0 0-1.276.057L.327 7.261A1 1 0 0 0 .32 8.688l3.47 3.313-3.47 3.314a1 1 0 0 0 .007 1.427l1.323 1.201a1 1 0 0 0 1.276.057l4.12-3.128 9.46 8.63a1.492 1.492 0 0 0 1.704.29l4.94-2.377A1.5 1.5 0 0 0 24 20.06V3.939a1.5 1.5 0 0 0-.85-1.352zm-5.146 14.861L10.826 12l7.178-5.448v10.896z"/></svg>`
-      };
+      return `<svg width="34" height="34" viewBox="0 0 24 24" fill="#007ACC"><path d="M23.15 2.587L18.21.21a1.494 1.494 0 0 0-1.705.29l-9.46 8.63-4.12-3.128a.999.999 0 0 0-1.276.057L.327 7.261A1 1 0 0 0 .32 8.688l3.47 3.313-3.47 3.314a1 1 0 0 0 .007 1.427l1.323 1.201a1 1 0 0 0 1.276.057l4.12-3.128 9.46 8.63a1.492 1.492 0 0 0 1.704.29l4.94-2.377A1.5 1.5 0 0 0 24 20.06V3.939a1.5 1.5 0 0 0-.85-1.352zm-5.146 14.861L10.826 12l7.178-5.448v10.896z"/></svg>`;
     }
+
+    // 3. Anthropic Claude (Official Claude Starburst in #CC785C)
     if (s.includes('claude') || s.includes('anthropic')) {
-      return {
-        bg: 'rgba(204, 120, 92, 0.15)',
-        svg: `<svg width="26" height="26" viewBox="0 0 24 24" fill="#CC785C"><path d="M12 2L14.4 9.6L22 12L14.4 14.4L12 22L9.6 14.4L2 12L9.6 9.6L12 2Z"/></svg>`
-      };
+      return `<svg width="34" height="34" viewBox="0 0 24 24" fill="#CC785C"><path d="M13.83 1.54a.58.58 0 0 0-.85 0L9.58 5.06 5.36 2.63a.58.58 0 0 0-.85.49v4.88L.85 8.32a.58.58 0 0 0 0 .85l3.66.33-2.44 4.22a.58.58 0 0 0 .49.85h4.88l.33 3.66a.58.58 0 0 0 .85 0l3.39-3.52 4.22 2.44a.58.58 0 0 0 .85-.49v-4.88l3.66-.33a.58.58 0 0 0 0-.85l-3.66-.33 2.44-4.22a.58.58 0 0 0-.49-.85h-4.88l-.33-3.66z"/></svg>`;
     }
+
+    // 4. OpenAI ChatGPT (Official OpenAI spiral swirl rosette in #10A37F)
     if (s.includes('chatgpt') || s.includes('openai')) {
-      return {
-        bg: 'rgba(16, 163, 127, 0.15)',
-        svg: `<svg width="26" height="26" viewBox="0 0 24 24" fill="#10A37F"><circle cx="12" cy="12" r="9" fill="none" stroke="#10A37F" stroke-width="2"/><path d="M12 7v10M7 12h10" stroke="#10A37F" stroke-width="2" stroke-linecap="round"/></svg>`
-      };
+      return `<svg width="34" height="34" viewBox="0 0 24 24" fill="#10A37F"><path d="M22.28 9.82a5.98 5.98 0 0 0-.52-4.91 6.05 6.05 0 0 0-6.51-2.9 6.07 6.07 0 0 0-4.27 2.17 5.98 5.98 0 0 0-4 2.9 6.05 6.05 0 0 0 .74 7.1 5.98 5.98 0 0 0 .51 4.91 6.05 6.05 0 0 0 6.51 2.9A5.98 5.98 0 0 0 13.26 24a6.06 6.06 0 0 0 5.77-4.21 5.99 5.99 0 0 0 4-2.9 6.06 6.06 0 0 0-.75-7.07zm-9.02 12.61a4.48 4.48 0 0 1-2.88-1.04l.14-.08 4.78-2.76a.79.79 0 0 0 .39-.68v-6.74l2.02 1.17c.02.01.04.03.04.05v5.58a4.5 4.5 0 0 1-4.49 4.5zm-9.66-4.13a4.47 4.47 0 0 1-.53-3.01l.14.08 4.78 2.76a.77.77 0 0 0 .78 0l5.84-3.37v2.33a.08.08 0 0 1-.03.06L9.74 19.95a4.5 4.5 0 0 1-6.14-1.65zM2.34 7.9a4.49 4.49 0 0 1 2.37-1.98v5.68a.77.77 0 0 0 .39.68l5.81 3.35-2.02 1.17a.08.08 0 0 1-.07 0L4.71 14a4.5 4.5 0 0 1-2.37-6.1zm16.6 3.85L13.1 8.36l2.02-1.16a.08.08 0 0 1 .07 0l4.83 2.79a4.5 4.5 0 0 1-.68 8.1v-5.67a.79.79 0 0 0-.4-.67zm2.01-3.02l-.14-.09-4.77-2.78a.78.78 0 0 0-.79 0L9.41 9.23V6.9a.07.07 0 0 1 .03-.06l4.83-2.79a4.5 4.5 0 0 1 6.68 4.66zM8.31 12.86l-2.02-1.16a.08.08 0 0 1-.04-.06V6.07a4.5 4.5 0 0 1 7.38-3.45l-.14.08L8.7 5.46a.79.79 0 0 0-.39.68zm1.1-2.37l2.6-1.5 2.61 1.5v3l-2.6 1.5-2.61-1.5z"/></svg>`;
     }
+
+    // 5. Cursor (Official isometric 3D mark)
     if (s.includes('cursor')) {
-      return {
-        bg: 'rgba(10, 132, 255, 0.15)',
-        svg: `<svg width="26" height="26" viewBox="0 0 24 24" fill="#0A84FF"><path d="M12 2L2 7l10 5 10-5-10-5zm0 8.5L4.5 8 12 4.2 19.5 8 12 10.5zM2 9v6l10 5v-6L2 9zm20 0l-10 5v6l10-5V9z"/></svg>`
-      };
+      return `<svg width="34" height="34" viewBox="0 0 24 24" fill="none"><path d="M12 2L3 7.5v9L12 22l9-5.5v-9L12 2z" fill="#18181B"/><path d="M12 2v10.5L3 7.5 12 2z" fill="#38BDF8"/><path d="M12 12.5V22l9-5.5V7l-9 5.5z" fill="#0284C7"/><path d="M3 16.5l9 5.5v-9.5L3 7.5v9z" fill="#0EA5E9"/></svg>`;
     }
-    if (s.includes('spotify')) {
-      return {
-        bg: 'rgba(29, 185, 84, 0.15)',
-        svg: `<svg width="26" height="26" viewBox="0 0 24 24" fill="#1DB954"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/></svg>`
-      };
+
+    // 6. Microsoft PowerToys (Official 4-color tiles)
+    if (s.includes('powertoys')) {
+      return `<svg width="34" height="34" viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="8.5" height="8.5" rx="1.5" fill="#0078D4"/><rect x="12.5" y="3" width="8.5" height="8.5" rx="1.5" fill="#2B88D8"/><rect x="3" y="12.5" width="8.5" height="8.5" rx="1.5" fill="#106EBE"/><rect x="12.5" y="12.5" width="8.5" height="8.5" rx="1.5" fill="#005A9E"/><path d="M7 7h4v2H7zm0 8h4v2H7zm8-8h2v2h-2zm0 8h2v2h-2z" fill="#FFFFFF"/></svg>`;
     }
-    if (s.includes('slack')) {
-      return {
-        bg: 'rgba(74, 21, 75, 0.15)',
-        svg: `<svg width="26" height="26" viewBox="0 0 24 24"><path fill="#E01E5A" d="M6 15a2 2 0 1 0-2 2h2v-2zm1 0a2 2 0 1 0 4 0V9a2 2 0 1 0-4 0v6z"/><path fill="#36C5F0" d="M9 6a2 2 0 1 0-2-2v2h2zm0 1a2 2 0 1 0 0 4h6a2 2 0 1 0 0-4H9z"/><path fill="#2EB67D" d="M18 9a2 2 0 1 0 2-2h-2v2zm-1 0a2 2 0 1 0-4 0v6a2 2 0 1 0 4 0V9z"/><path fill="#ECB22E" d="M15 18a2 2 0 1 0 2 2v-2h-2zm0-1a2 2 0 1 0 0-4H9a2 2 0 1 0 0 4h6z"/></svg>`
-      };
-    }
-    if (s.includes('discord')) {
-      return {
-        bg: 'rgba(88, 101, 242, 0.15)',
-        svg: `<svg width="26" height="26" viewBox="0 0 24 24" fill="#5865F2"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994.021-.041.001-.09-.041-.106a13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.929 1.793 8.18 1.793 12.061 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.893.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.028zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"/></svg>`
-      };
-    }
-    if (s.includes('telegram')) {
-      return {
-        bg: 'rgba(42, 171, 238, 0.15)',
-        svg: `<svg width="26" height="26" viewBox="0 0 24 24" fill="#2AABEE"><path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.894 8.221l-1.97 9.28c-.145.658-.537.818-1.084.508l-3-2.21-1.446 1.394c-.14.18-.357.295-.6.295-.002 0-.003 0-.005 0l.213-3.054 5.56-5.022c.24-.213-.054-.334-.373-.121l-6.869 4.326-2.96-.924c-.64-.203-.658-.64.135-.954l11.566-4.458c.538-.196 1.006.128.832.94z"/></svg>`
-      };
-    }
-    if (s.includes('whatsapp')) {
-      return {
-        bg: 'rgba(37, 211, 102, 0.15)',
-        svg: `<svg width="26" height="26" viewBox="0 0 24 24" fill="#25D366"><path d="M17.472 14.382c-.301-.15-1.78-.878-2.056-.978-.276-.1-.477-.15-.678.15-.2.301-.778.978-.954 1.179-.176.2-.351.226-.652.075s-1.272-.469-2.422-1.495c-.895-.798-1.5-1.784-1.676-2.085-.176-.301-.019-.464.131-.614.136-.135.301-.351.452-.527.15-.176.2-.301.3-.502.1-.2.05-.376-.025-.527s-.678-1.631-.93-2.233c-.244-.585-.493-.506-.678-.515-.176-.009-.376-.01-.577-.01s-.527.075-.803.376c-.276.301-1.054 1.029-1.054 2.509s1.079 2.909 1.23 3.11c.15.2 2.122 3.241 5.141 4.545.718.31 1.278.496 1.716.635.722.23 1.378.197 1.9.119.58-.088 1.78-.728 2.03-1.431.25-.703.25-1.305.176-1.431-.075-.126-.276-.201-.577-.351zM12.042.028C5.405.028.019 5.414.019 12.051c0 2.12.554 4.192 1.606 6.015L0 24l6.108-1.603c1.761.96 3.754 1.468 5.934 1.468 6.637 0 12.023-5.386 12.023-12.023S18.679.028 12.042.028z"/></svg>`
-      };
-    }
-    if (s.includes('docker')) {
-      return {
-        bg: 'rgba(36, 150, 237, 0.15)',
-        svg: `<svg width="26" height="26" viewBox="0 0 24 24" fill="#2496ED"><path d="M13.983 11.078h2.119a.186.186 0 00.186-.185V9.006a.186.186 0 00-.186-.186h-2.119a.185.185 0 00-.185.186v1.887c0 .102.083.185.185.185zm-2.954-5.43h2.118a.186.186 0 00.186-.186V3.574a.186.186 0 00-.186-.185h-2.118a.185.185 0 00-.185.185v1.888c0 .102.082.185.185.185zm0 2.716h2.118a.187.187 0 00.186-.186V6.29a.186.186 0 00-.186-.185h-2.118a.185.185 0 00-.185.185v1.887c0 .102.082.186.185.186zm-2.93 0h2.12a.186.186 0 00.184-.186V6.29a.185.185 0 00-.185-.185H8.1a.185.185 0 00-.185.185v1.887c0 .102.083.186.185.186zm-2.964 0h2.119a.186.186 0 00.185-.186V6.29a.185.185 0 00-.185-.185H5.136a.186.186 0 00-.186.185v1.887c0 .102.084.186.186.186zm5.894 2.714h2.118a.186.186 0 00.186-.185V9.006a.186.186 0 00-.186-.186h-2.118a.185.185 0 00-.185.186v1.887c0 .102.082.185.185.185zm-2.93 0h2.12a.185.185 0 00.184-.185V9.006a.185.185 0 00-.184-.186H8.1a.185.185 0 00-.185.186v1.887c0 .102.083.185.185.185zm-2.964 0h2.119a.185.185 0 00.185-.185V9.006a.185.185 0 00-.185-.186H5.136a.186.186 0 00-.186.186v1.887c0 .102.084.185.186.185zm-2.928 0h2.119a.185.185 0 00.185-.185V9.006a.185.185 0 00-.185-.186H2.208a.186.186 0 00-.186.186v1.887c0 .102.084.185.186.185zM23.987 11.882c-.378-.456-1.127-.58-1.748-.387-.194-.648-.68-1.188-1.34-1.464-.326-.137-.68-.21-1.043-.213l-.58-.004-.325.48c-.628.928-.76 2.05-.36 3.067-.29.176-.59.34-.9.493-1.077.532-2.316.812-3.565.812H1.94c-.454 0-.895.077-1.312.227a.407.407 0 00-.256.368c-.144 2.875 1.096 5.617 3.398 7.525C5.83 24.37 8.5 25.1 11.233 25.1c7.34 0 13.064-4.805 13.513-11.218.02-.277.01-.555-.027-.83a3.52 3.52 0 00-.732-1.17z"/></svg>`
-      };
-    }
+
+    // 7. GitHub Desktop & GitHub (Official GitHub Octocat Mark - checked before Git)
     if (s.includes('github')) {
-      return {
-        bg: 'rgba(255, 255, 255, 0.12)',
-        svg: `<svg width="26" height="26" viewBox="0 0 24 24" fill="#F5F5F7"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>`
-      };
+      return `<svg width="34" height="34" viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" clip-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.53 1.032 1.53 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/></svg>`;
     }
-    if (s.includes('notion')) {
-      return {
-        bg: 'rgba(255, 255, 255, 0.12)',
-        svg: `<svg width="26" height="26" viewBox="0 0 24 24" fill="#FFFFFF"><path d="M4.459 4.208c.746.606 1.026.56 2.428.466l13.215-.793c.28 0 .047-.28-.046-.326L17.86 1.976c-.466-.373-.7-.466-1.54-.42l-11.436.653c-.373.047-.466.233-.42.42zm.84 3.733v13.535c0 .607.327.84.887.84h11.48c.56 0 .84-.327.84-.84V7.941c0-.56-.28-.84-.84-.84H6.186c-.56 0-.887.28-.887.84zm11.2 1.12l.14 9.88c.047.373-.093.56-.467.56l-1.4.093c-.373 0-.513-.14-.513-.42l-.093-6.944-4.57 6.944c-.28.42-.513.466-.933.466l-1.353.093c-.373 0-.513-.187-.513-.513l-.14-9.833c0-.373.14-.56.513-.56l1.353-.093c.373 0 .513.187.513.513l.093 6.944 4.57-6.944c.28-.42.513-.466.933-.466l1.353-.093c.373 0 .513.187.513.513z"/></svg>`
-      };
+
+    // 8. Git SCM (Official Git logo with strict word boundary)
+    if ((s.includes('git.git') || s.includes('git-scm') || /git/.test(s)) && !s.includes('github')) {
+      return `<svg width="34" height="34" viewBox="0 0 24 24" fill="#F05032"><path d="M23.546 10.93L13.067.452a1.5 1.5 0 0 0-2.126 0L8.808 2.585l3.22 3.22a1.78 1.78 0 0 1 2.25 2.25l3.098 3.098a1.78 1.78 0 0 1 1.706 2.457l2.463 2.464a.75.75 0 0 0 1.06-1.06l-2.464-2.464a1.78 1.78 0 0 1-1.096-1.614zm-14.88 5.75a1.78 1.78 0 0 1-2.25-2.25L3.318 11.332a1.5 1.5 0 0 0 0 2.126l10.479 10.48a1.5 1.5 0 0 0 2.126 0l2.133-2.133-3.22-3.22a1.78 1.78 0 0 1-2.25-2.25l-2.92-2.92v6.245z"/></svg>`;
     }
-    if (s.includes('obsidian')) {
-      return {
-        bg: 'rgba(124, 58, 237, 0.15)',
-        svg: `<svg width="26" height="26" viewBox="0 0 24 24" fill="#7C3AED"><path d="M12 2L3 8l3 13 9 1 6-7-9-13zm0 3.5l6.5 9-4.5 5.5L6.5 19 4.5 9.5 12 5.5z"/></svg>`
-      };
+
+    // 9. Windows Terminal
+    if (s.includes('windowsterminal') || s.includes('terminal')) {
+      return `<svg width="34" height="34" viewBox="0 0 24 24"><rect width="24" height="24" rx="4" fill="#4D4D4D"/><path d="M5 8l4 4-4 4" stroke="#4EC9B0" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" fill="none"/><line x1="11" y1="16" x2="17" y2="16" stroke="#FFFFFF" stroke-width="2.2" stroke-linecap="round"/></svg>`;
     }
+
+    // 10. voidtools Everything
+    if (s.includes('everything') || s.includes('voidtools')) {
+      return `<svg width="34" height="34" viewBox="0 0 24 24" fill="none"><rect width="24" height="24" rx="5" fill="#FF9800"/><circle cx="11" cy="11" r="6" stroke="#FFFFFF" stroke-width="2.2"/><line x1="15.5" y1="15.5" x2="20" y2="20" stroke="#FFFFFF" stroke-width="2.5" stroke-linecap="round"/></svg>`;
+    }
+
+    // 11. Rufus
+    if (s.includes('rufus')) {
+      return `<svg width="34" height="34" viewBox="0 0 24 24" fill="none"><rect width="24" height="24" rx="5" fill="#475569"/><rect x="8" y="3" width="8" height="5" rx="1" fill="#94A3B8"/><rect x="7" y="7" width="10" height="14" rx="2" fill="#0EA5E9"/><path d="M12 11v6m-2-2l2 2 2-2" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+    }
+
+    // 12. 7-Zip
+    if (s.includes('7zip') || s.includes('sevenzip')) {
+      return `<svg width="34" height="34" viewBox="0 0 24 24" fill="none"><rect width="24" height="24" rx="4" fill="#000000"/><path d="M4 6h16v3l-8 9H8l7-8H4V6z" fill="#FFFFFF"/></svg>`;
+    }
+
+    // 13. WinRAR
+    if (s.includes('winrar')) {
+      return `<svg width="34" height="34" viewBox="0 0 24 24"><path fill="#3F51B5" d="M4 3h16v18H4z"/><path fill="#FFFFFF" d="M7 6h10v2H7zm0 4h10v2H7zm0 4h10v2H7z"/><path fill="#FFC107" d="M14 2v20h3V2z"/></svg>`;
+    }
+
+    // 14. Python
+    if (s.includes('python')) {
+      return `<svg width="34" height="34" viewBox="0 0 24 24"><path fill="#3776AB" d="M11.9 2c-3.1 0-4.9 1.4-4.9 3.2v2.4h5v.8H5.1C3.3 8.4 2 9.8 2 12.9s1.1 4.7 3.1 4.7h1.6v-2.3c0-1.8 1.5-3.3 3.3-3.3h5.1c1.5 0 2.7-1.2 2.7-2.7V5.2C17.9 3.4 15 2 11.9 2zm-1.4 1.7a.9.9 0 1 1 0 1.8.9.9 0 0 1 0-1.8z"/><path fill="#FFD43B" d="M12.1 22c3.1 0 4.9-1.4 4.9-3.2v-2.4h-5v-.8h6.9c1.8 0 3.1-1.4 3.1-4.5s-1.1-4.7-3.1-4.7h-1.6v2.3c0 1.8-1.5 3.3-3.3 3.3H8.9c-1.5 0-2.7 1.2-2.7 2.7v4.1c0 1.8 2.9 3.2 5.9 3.2zm1.4-1.7a.9.9 0 1 1 0-1.8.9.9 0 0 1 0 1.8z"/></svg>`;
+    }
+
+    // 15. Docker
+    if (s.includes('docker')) {
+      return `<svg width="34" height="34" viewBox="0 0 24 24" fill="#2496ED"><path d="M13.983 11.078h2.119a.186.186 0 00.186-.185V9.006a.186.186 0 00-.186-.186h-2.119a.185.185 0 00-.185.186v1.887c0 .102.083.185.185.185zm-2.954-5.43h2.118a.186.186 0 00.186-.186V3.574a.186.186 0 00-.186-.185h-2.118a.185.185 0 00-.185.185v1.888c0 .102.082.185.185.185zm0 2.716h2.118a.187.187 0 00.186-.186V6.29a.186.186 0 00-.186-.185h-2.118a.185.185 0 00-.185.185v1.887c0 .102.082.186.185.186zm-2.93 0h2.12a.186.186 0 00.184-.186V6.29a.185.185 0 00-.185-.185H8.1a.185.185 0 00-.185.185v1.887c0 .102.083.186.185.186zm-2.964 0h2.119a.186.186 0 00.185-.186V6.29a.185.185 0 00-.185-.185H5.136a.186.186 0 00-.186.185v1.887c0 .102.084.186.186.186zm5.894 2.714h2.118a.186.186 0 00.186-.185V9.006a.186.186 0 00-.186-.186h-2.118a.185.185 0 00-.185.186v1.887c0 .102.082.185.185.185zm-2.93 0h2.12a.185.185 0 00.184-.185V9.006a.185.185 0 00-.184-.186H8.1a.185.185 0 00-.185.186v1.887c0 .102.083.185.185.185zm-2.964 0h2.119a.185.185 0 00.185-.185V9.006a.185.185 0 00-.185-.186H5.136a.186.186 0 00-.186.185v1.887c0 .102.084.185.186.185zm-2.928 0h2.119a.185.185 0 00.185-.185V9.006a.185.185 0 00-.185-.186H2.208a.186.186 0 00-.186.186v1.887c0 .102.084.185.186.185zM23.987 11.882c-.378-.456-1.127-.58-1.748-.387-.194-.648-.68-1.188-1.34-1.464-.326-.137-.68-.21-1.043-.213l-.58-.004-.325.48c-.628.928-.76 2.05-.36 3.067-.29.176-.59.34-.9.493-1.077.532-2.316.812-3.565.812H1.94c-.454 0-.895.077-1.312.227a.407.407 0 00-.256.368c-.144 2.875 1.096 5.617 3.398 7.525C5.83 24.37 8.5 25.1 11.233 25.1c7.34 0 13.064-4.805 13.513-11.218.02-.277.01-.555-.027-.83a3.52 3.52 0 00-.732-1.17z"/></svg>`;
+    }
+
+    // 16. Spotify
+    if (s.includes('spotify')) {
+      return `<svg width="34" height="34" viewBox="0 0 24 24" fill="#1DB954"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/></svg>`;
+    }
+
+    // 17. Slack
+    if (s.includes('slack')) {
+      return `<svg width="34" height="34" viewBox="0 0 24 24"><path fill="#E01E5A" d="M6 15a2 2 0 1 0-2 2h2v-2zm1 0a2 2 0 1 0 4 0V9a2 2 0 1 0-4 0v6z"/><path fill="#36C5F0" d="M9 6a2 2 0 1 0-2-2v2h2zm0 1a2 2 0 1 0 0 4h6a2 2 0 1 0 0-4H9z"/><path fill="#2EB67D" d="M18 9a2 2 0 1 0 2-2h-2v2zm-1 0a2 2 0 1 0-4 0v6a2 2 0 1 0 4 0V9z"/><path fill="#ECB22E" d="M15 18a2 2 0 1 0 2 2v-2h-2zm0-1a2 2 0 1 0 0-4H9a2 2 0 1 0 0 4h6z"/></svg>`;
+    }
+
+    // 18. Discord
+    if (s.includes('discord')) {
+      return `<svg width="34" height="34" viewBox="0 0 24 24" fill="#5865F2"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994.021-.041.001-.09-.041-.106a13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.929 1.793 8.18 1.793 12.061 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.893.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.028zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"/></svg>`;
+    }
+
+    // 19. Telegram
+    if (s.includes('telegram')) {
+      return `<svg width="34" height="34" viewBox="0 0 24 24" fill="#2AABEE"><path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.894 8.221l-1.97 9.28c-.145.658-.537.818-1.084.508l-3-2.21-1.446 1.394c-.14.18-.357.295-.6.295-.002 0-.003 0-.005 0l.213-3.054 5.56-5.022c.24-.213-.054-.334-.373-.121l-6.869 4.326-2.96-.924c-.64-.203-.658-.64.135-.954l11.566-4.458c.538-.196 1.006.128.832.94z"/></svg>`;
+    }
+
+    // 20. WhatsApp
+    if (s.includes('whatsapp')) {
+      return `<svg width="34" height="34" viewBox="0 0 24 24" fill="#25D366"><path d="M17.472 14.382c-.301-.15-1.78-.878-2.056-.978-.276-.1-.477-.15-.678.15-.2.301-.778.978-.954 1.179-.176.2-.351.226-.652.075s-1.272-.469-2.422-1.495c-.895-.798-1.5-1.784-1.676-2.085-.176-.301-.019-.464.131-.614.136-.135.301-.351.452-.527.15-.176.2-.301.3-.502.1-.2.05-.376-.025-.527s-.678-1.631-.93-2.233c-.244-.585-.493-.506-.678-.515-.176-.009-.376-.01-.577-.01s-.527.075-.803.376c-.276.301-1.054 1.029-1.054 2.509s1.079 2.909 1.23 3.11c.15.2 2.122 3.241 5.141 4.545.718.31 1.278.496 1.716.635.722.23 1.378.197 1.9.119.58-.088 1.78-.728 2.03-1.431.25-.703.25-1.305.176-1.431-.075-.126-.276-.201-.577-.351zM12.042.028C5.405.028.019 5.414.019 12.051c0 2.12.554 4.192 1.606 6.015L0 24l6.108-1.603c1.761.96 3.754 1.468 5.934 1.468 6.637 0 12.023-5.386 12.023-12.023S18.679.028 12.042.028z"/></svg>`;
+    }
+
+    // 21. VLC Media Player
     if (s.includes('vlc')) {
-      return {
-        bg: 'rgba(255, 136, 0, 0.15)',
-        svg: `<svg width="26" height="26" viewBox="0 0 24 24"><polygon points="12,2 8,11 16,11" fill="#FF8800"/><polygon points="7.5,12 5.5,17 18.5,17 16.5,12" fill="#FFFFFF"/><polygon points="5,18 2,22 22,22 19,18" fill="#FF8800"/></svg>`
-      };
+      return `<svg width="34" height="34" viewBox="0 0 24 24"><polygon points="12,2 8,11 16,11" fill="#FF8800"/><polygon points="7.5,12 5.5,17 18.5,17 16.5,12" fill="#FFFFFF"/><polygon points="5,18 2,22 22,22 19,18" fill="#FF8800"/></svg>`;
     }
-    if (s.includes('terminal') || s.includes('iterm')) {
-      return {
-        bg: 'rgba(28, 28, 30, 0.8)',
-        svg: `<svg width="26" height="26" viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="18" rx="4" fill="#1C1C1E" stroke="#3A3A3C" stroke-width="1.5"/><path d="M7 8l4 4-4 4" stroke="#30D158" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/><line x1="13" y1="16" x2="17" y2="16" stroke="#30D158" stroke-width="2" stroke-linecap="round"/></svg>`
-      };
+
+    // 22. Obsidian
+    if (s.includes('obsidian')) {
+      return `<svg width="34" height="34" viewBox="0 0 24 24" fill="#7C3AED"><path d="M12 2L3 8l3 13 9 1 6-7-9-13zm0 3.5l6.5 9-4.5 5.5L6.5 19 4.5 9.5 12 5.5z"/></svg>`;
     }
+
+    // 23. Notion
+    if (s.includes('notion')) {
+      return `<svg width="34" height="34" viewBox="0 0 24 24" fill="currentColor"><path d="M4.459 4.208c.746.606 1.026.56 2.428.466l13.215-.793c.28 0 .047-.28-.046-.326L17.86 1.976c-.466-.373-.7-.466-1.54-.42l-11.436.653c-.373.047-.466.233-.42.42zm.84 3.733v13.535c0 .607.327.84.887.84h11.48c.56 0 .84-.327.84-.84V7.941c0-.56-.28-.84-.84-.84H6.186c-.56 0-.887.28-.887.84zm11.2 1.12l.14 9.88c.047.373-.093.56-.467.56l-1.4.093c-.373 0-.513-.14-.513-.42l-.093-6.944-4.57 6.944c-.28.42-.513.466-.933.466l-1.353.093c-.373 0-.513-.187-.513-.513l-.14-9.833c0-.373.14-.56.513-.56l1.353-.093c.373 0 .513.187.513.513l.093 6.944 4.57-6.944c.28-.42.513-.466.933-.466l1.353-.093c.373 0 .513.187.513.513z"/></svg>`;
+    }
+
+    // 24. Steam
+    if (s.includes('steam')) {
+      return `<svg width="34" height="34" viewBox="0 0 24 24" fill="#171A21"><path d="M11.979 0C5.678 0 .511 4.86.022 11.037l6.432 2.658c.545-.371 1.203-.59 1.912-.59.063 0 .125.004.188.006l2.861-4.142V8.91c0-2.495 2.028-4.524 4.524-4.524 2.494 0 4.524 2.031 4.524 4.527s-2.03 4.525-4.524 4.525h-.105l-4.076 2.911c0 .052.004.105.004.159 0 1.875-1.515 3.396-3.39 3.396-1.635 0-3.016-1.173-3.331-2.704L.452 15.34C1.942 20.358 6.551 24 11.979 24c6.627 0 12-5.373 12-12s-5.373-12-12-12zM7.55 16.568a1.536 1.536 0 1 0 1.536 1.537 1.537 1.537 0 0 0-1.536-1.537zm8.39-10.743c1.674 0 3.036 1.362 3.036 3.035 0 1.675-1.362 3.036-3.036 3.036s-3.036-1.361-3.036-3.036c0-1.673 1.362-3.035 3.036-3.035z"/></svg>`;
+    }
+
     return null;
   }
 
   /**
    * Resolves the authentic official software logo for any package across Updates, Explore, and Installed tabs.
-   * Priority: 1. Native macOS icon -> 2. Builtin brand SVG -> 3. Catalog -> 4. SimpleIcons -> 5. Monogram
+   * Zero-background on icon containers. True crisp brand vector graphics.
    */
   getAppLogoHtml(pkgId, pkgName, customIcon = null) {
     const id = (pkgId || '').toLowerCase().trim();
@@ -1584,33 +1504,33 @@ class QuantumUpdaterApp {
     const grad = this.getGradient(pkgName || pkgId);
     const safeName = this.escapeHtml(pkgName || pkgId);
 
-    // 1. Native macOS Cocoa icon (from [[NSWorkspace sharedWorkspace] iconForFile:])
+    // 1. Native Windows/System icon if cached
     const nativeIcon = customIcon || (this.installedIconsMap && (this.installedIconsMap.get(id) || this.installedIconsMap.get(name)));
     if (nativeIcon) {
       return `
-        <div class="app-logo-container native-mac-icon" title="${safeName}">
+        <div class="app-logo-container" title="${safeName}">
           <img class="app-logo-img" src="${nativeIcon}" alt="${safeName}">
         </div>
       `;
     }
 
-    // 2. Built-in crisp vector SVGs for top apps (offline, zero-fail)
+    // 2. Built-in crisp official vector SVGs (instant offline sharpness)
     const builtinSvg = this.getBuiltinAppSvg(id, name);
     if (builtinSvg) {
+      const svgContent = typeof builtinSvg === 'string' ? builtinSvg : (builtinSvg.svg || '');
       return `
-        <div class="app-logo-container" style="background: ${builtinSvg.bg || 'rgba(255,255,255,0.06)'};" title="${safeName}">
-          ${builtinSvg.svg}
+        <div class="app-logo-container" title="${safeName}">
+          ${svgContent}
         </div>
       `;
     }
 
-    // 3. Direct Catalog Match
+    // 3. Direct Catalog Match (Local assets preserved intact)
     const catItem = APP_CATALOG.find(c => c.id.toLowerCase() === id);
-    if (catItem) {
-      const cleanLogo = (catItem.logo || '').replace(/\.svg$/, '');
+    if (catItem && catItem.logo) {
       return `
-        <div class="app-logo-container" style="background: ${catItem.bg || 'rgba(255,255,255,0.06)'};" title="${safeName}">
-          <img class="app-logo-img" src="${cleanLogo}" alt="${safeName}" loading="lazy"
+        <div class="app-logo-container" title="${safeName}">
+          <img class="app-logo-img" src="${catItem.logo}" alt="${safeName}" loading="lazy"
                onerror="this.onerror=null; this.style.display='none'; this.nextElementSibling.style.display='flex';">
           <span class="app-logo-fallback" style="display: none; background: ${grad};">${mono}</span>
         </div>
@@ -1629,11 +1549,9 @@ class QuantumUpdaterApp {
     }
 
     if (match) {
-      const slugClean = (match.slug || '').replace(/\.svg$/, '');
-      const logoUrl = match.url || `https://cdn.simpleicons.org/${slugClean}`;
-      const bg = match.bg || 'rgba(255,255,255,0.06)';
+      const logoUrl = match.url || `https://cdn.simpleicons.org/${match.slug}`;
       return `
-        <div class="app-logo-container" style="background: ${bg};" title="${safeName}">
+        <div class="app-logo-container" title="${safeName}">
           <img class="app-logo-img" src="${logoUrl}" alt="${safeName}" loading="lazy"
                onerror="this.onerror=null; this.style.display='none'; this.nextElementSibling.style.display='flex';">
           <span class="app-logo-fallback" style="display: none; background: ${grad};">${mono}</span>
@@ -1641,9 +1559,9 @@ class QuantumUpdaterApp {
       `;
     }
 
-    // 5. Clean Fallback to Monogram
+    // 5. Clean Fallback to Monogram (No outer container background, clean internal pill)
     return `
-      <div class="app-logo-container" style="background: rgba(255,255,255,0.05);" title="${safeName}">
+      <div class="app-logo-container" title="${safeName}">
         <span class="app-logo-fallback" style="background: ${grad};">${mono}</span>
       </div>
     `;
@@ -2585,44 +2503,44 @@ class QuantumUpdaterApp {
   installBundle(bundleId) {
     const bundleConfigs = {
       essentials: {
-        title: 'Everyday Essentials',
+        title: 'Essential Windows Starter',
         apps: [
-          { pkgId: 'google-chrome', name: 'Google Chrome' },
-          { pkgId: 'spotify', name: 'Spotify' },
-          { pkgId: 'vlc', name: 'VLC Media Player' },
-          { pkgId: 'raycast', name: 'Raycast' },
-          { pkgId: 'whatsapp', name: 'WhatsApp' },
-          { pkgId: 'telegram', name: 'Telegram' }
+          { pkgId: 'Google.Chrome', name: 'Google Chrome' },
+          { pkgId: 'Spotify.Spotify', name: 'Spotify' },
+          { pkgId: 'VideoLAN.VLC', name: 'VLC Media Player' },
+          { pkgId: 'Microsoft.PowerToys', name: 'Microsoft PowerToys' },
+          { pkgId: 'WhatsApp.WhatsApp', name: 'WhatsApp' },
+          { pkgId: 'Telegram.TelegramDesktop', name: 'Telegram Desktop' }
         ]
       },
       dev: {
         title: 'Developer Workstation',
         apps: [
-          { pkgId: 'visual-studio-code', name: 'Visual Studio Code' },
-          { pkgId: 'docker', name: 'Docker Desktop' },
-          { pkgId: 'iterm2', name: 'iTerm2' },
-          { pkgId: 'git', name: 'Git' },
-          { pkgId: 'node', name: 'Node.js LTS' },
-          { pkgId: 'python@3.12', name: 'Python 3' }
+          { pkgId: 'Microsoft.VisualStudioCode', name: 'Visual Studio Code' },
+          { pkgId: 'Docker.DockerDesktop', name: 'Docker Desktop' },
+          { pkgId: 'Microsoft.WindowsTerminal', name: 'Windows Terminal' },
+          { pkgId: 'Git.Git', name: 'Git' },
+          { pkgId: 'OpenJS.NodeJS.LTS', name: 'Node.js LTS' },
+          { pkgId: 'Python.Python.3.13', name: 'Python 3.13' }
         ]
       },
       creator: {
         title: 'Creative Studio',
         apps: [
-          { pkgId: 'blender', name: 'Blender' },
-          { pkgId: 'figma', name: 'Figma' },
-          { pkgId: 'audacity', name: 'Audacity' },
-          { pkgId: 'handbrake', name: 'HandBrake' },
-          { pkgId: 'gimp', name: 'GIMP' }
+          { pkgId: 'BlenderFoundation.Blender', name: 'Blender' },
+          { pkgId: 'Figma.Figma', name: 'Figma Desktop' },
+          { pkgId: 'Audacity.Audacity', name: 'Audacity' },
+          { pkgId: 'HandBrake.HandBrake', name: 'HandBrake' },
+          { pkgId: 'GIMP.GIMP', name: 'GIMP' }
         ]
       },
       privacy: {
         title: 'Privacy & Security',
         apps: [
-          { pkgId: 'bitwarden', name: 'Bitwarden' },
-          { pkgId: 'brave-browser', name: 'Brave Browser' },
-          { pkgId: 'keka', name: 'Keka File Archiver' },
-          { pkgId: 'tor-browser', name: 'Tor Browser' }
+          { pkgId: 'Bitwarden.Bitwarden', name: 'Bitwarden' },
+          { pkgId: 'Brave.Brave', name: 'Brave Browser' },
+          { pkgId: '7zip.7zip', name: '7-Zip' },
+          { pkgId: 'TorProject.TorBrowser', name: 'Tor Browser' }
         ]
       }
     };
@@ -3172,6 +3090,123 @@ class QuantumUpdaterApp {
       if (btn) btn.classList.remove('loading');
       this.isCleaning = false;
     }
+  }
+
+  // ================= System Cleanup Consent & File Trace Inspector =================
+
+  openCleanupConsentModal(mode = 'purge') {
+    const modal = document.getElementById('modal-cleanup-consent');
+    if (!modal) {
+      this.executeCleanup();
+      return;
+    }
+
+    if (this.selectedCleanupCategories.size === 0) {
+      this.showToast('Please select at least one storage item to review', 'error');
+      return;
+    }
+
+    const selectedList = Array.from(this.selectedCleanupCategories);
+    let totalBytes = 0;
+    let totalItems = 0;
+    let categoriesHtml = '';
+
+    const categories = (this.cleanupData && this.cleanupData.categories) ? this.cleanupData.categories : [];
+    
+    categories.forEach(cat => {
+      if (this.selectedCleanupCategories.has(cat.id)) {
+        totalBytes += cat.size_bytes || 0;
+        totalItems += cat.item_count || 0;
+
+        const sizeFormatted = cat.size_str || this.formatBytes(cat.size_bytes || 0);
+        const countFormatted = `${cat.item_count || 0} items`;
+
+        categoriesHtml += `
+          <div class="consent-category-row">
+            <div class="consent-category-info">
+              <span class="consent-cat-name">${this.escapeHtml(cat.name || cat.id)}</span>
+              <span class="consent-cat-desc">${this.escapeHtml(cat.description || '')}</span>
+            </div>
+            <div class="consent-category-meta">
+              <span class="consent-cat-size">${sizeFormatted}</span>
+              <button class="glass-btn btn-secondary btn-xs" onclick="app.inspectCleanupCategory('${cat.id}')" title="Inspect traced files">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                Trace
+              </button>
+            </div>
+          </div>
+        `;
+      }
+    });
+
+    const sizeEl = document.getElementById('consent-total-size');
+    const filesEl = document.getElementById('consent-total-files');
+    const catsEl = document.getElementById('consent-total-cats');
+    const listEl = document.getElementById('consent-categories-list');
+
+    if (sizeEl) sizeEl.textContent = this.formatBytes(totalBytes);
+    if (filesEl) filesEl.textContent = `${totalItems.toLocaleString()} items`;
+    if (catsEl) catsEl.textContent = `${selectedList.length} categories`;
+    if (listEl) listEl.innerHTML = categoriesHtml;
+
+    modal.style.display = 'flex';
+  }
+
+  closeCleanupConsentModal() {
+    const modal = document.getElementById('modal-cleanup-consent');
+    if (modal) modal.style.display = 'none';
+  }
+
+  confirmExecuteCleanup() {
+    this.closeCleanupConsentModal();
+    this.executeCleanup();
+  }
+
+  inspectCleanupCategory(catId) {
+    const drawer = document.getElementById('drawer-category-inspect');
+    if (!drawer) return;
+
+    const cat = (this.cleanupData && this.cleanupData.categories) ? this.cleanupData.categories.find(c => c.id === catId) : null;
+    if (!cat) return;
+
+    const titleEl = document.getElementById('inspect-title');
+    const subEl = document.getElementById('inspect-subtitle');
+    const statsBar = document.getElementById('inspect-stats-bar');
+    const tableBody = document.getElementById('trace-files-tbody');
+
+    if (titleEl) titleEl.textContent = cat.name || catId;
+    if (subEl) subEl.textContent = cat.description || `Traced artifacts for ${catId}`;
+
+    const totalSize = cat.size_str || this.formatBytes(cat.size_bytes || 0);
+    const totalFiles = cat.item_count || (cat.items ? cat.items.length : 0);
+
+    if (statsBar) {
+      statsBar.innerHTML = `
+        <span class="trace-pill"><strong>${totalSize}</strong> tracked</span>
+        <span class="trace-pill"><strong>${totalFiles}</strong> artifacts</span>
+      `;
+    }
+
+    if (tableBody) {
+      const items = cat.items || [];
+      if (!items.length) {
+        tableBody.innerHTML = `<tr><td colspan="2" style="text-align: center; color: var(--text-muted); padding: 18px;">No individual files logged for this category (aggregate directory cleanup).</td></tr>`;
+      } else {
+        tableBody.innerHTML = items.slice(0, 50).map(it => `
+          <tr>
+            <td class="trace-path-cell" title="${this.escapeHtml(it.path || it.name || '')}">${this.escapeHtml(it.path || it.name || '')}</td>
+            <td class="trace-size-cell">${it.size_str || this.formatBytes(it.size_bytes || 0)}</td>
+          </tr>
+        `).join('');
+      }
+    }
+
+    drawer.style.display = 'flex';
+  }
+
+  closeInspectDrawer() {
+    const drawer = document.getElementById('drawer-category-inspect');
+    if (drawer) drawer.style.display = 'none';
   }
 
   async executeCleanup() {

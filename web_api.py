@@ -305,6 +305,72 @@ class WebAPI:
             on_log=self._on_log
         )
 
+    def inspect_cleanup_category(self, category_id: str = "", *args, **kwargs) -> Dict[str, Any]:
+        """Inspect and trace specific files within a cleanup category."""
+        if not category_id and args and isinstance(args[0], str):
+            category_id = args[0]
+        if not category_id and "categoryId" in kwargs:
+            category_id = kwargs["categoryId"]
+        if not category_id and "category_id" in kwargs:
+            category_id = kwargs["category_id"]
+
+        if self.manager.cleaner and hasattr(self.manager.cleaner, "inspect_category"):
+            return self.manager.cleaner.inspect_category(category_id)
+        return {"category_id": category_id, "name": "Unknown", "files": [], "total_files": 0, "total_size_bytes": 0, "total_size_str": "0 B"}
+
+    def get_cleanup_plan(self, categories: Optional[List[str]] = None, *args, **kwargs) -> Dict[str, Any]:
+        """Generate structured cleanup plan requiring user consent."""
+        if categories is None and args and isinstance(args[0], list):
+            categories = args[0]
+        if not categories and "categories" in kwargs:
+            categories = kwargs["categories"]
+
+        if self.manager.cleaner and hasattr(self.manager.cleaner, "get_cleanup_plan"):
+            return self.manager.cleaner.get_cleanup_plan(categories)
+        return {"requires_consent": False, "categories": [], "total_size_str": "0 B", "total_files": 0}
+
+    def reveal_in_explorer(self, package_id: str = "", path: str = "", *args, **kwargs) -> Dict[str, Any]:
+        """Reveal file or package directory in Windows File Explorer."""
+        import subprocess
+        if not package_id and args and isinstance(args[0], str):
+            package_id = args[0]
+        if not path and "path" in kwargs:
+            path = kwargs["path"]
+
+        target = path
+        if not target or not os.path.exists(target):
+            # Try to find standard installation path
+            prog_files = os.environ.get("ProgramFiles", "C:\\Program Files")
+            prog_files_x86 = os.environ.get("ProgramFiles(x86)", "C:\\Program Files (x86)")
+            local_appdata = os.environ.get("LOCALAPPDATA", "")
+            for base in [prog_files, prog_files_x86, os.path.join(local_appdata, "Programs")]:
+                for entry in (os.listdir(base) if os.path.exists(base) else []):
+                    if package_id.lower() in entry.lower():
+                        target = os.path.join(base, entry)
+                        break
+                if target:
+                    break
+
+        if target and os.path.exists(target):
+            try:
+                if os.path.isfile(target):
+                    subprocess.Popen(f'explorer.exe /select,"{os.path.abspath(target)}"')
+                else:
+                    subprocess.Popen(f'explorer.exe "{os.path.abspath(target)}"')
+                return {"success": True, "path": target}
+            except Exception as e:
+                return {"success": False, "error": str(e)}
+
+        try:
+            subprocess.Popen('explorer.exe shell:AppsFolder')
+            return {"success": True, "path": "shell:AppsFolder"}
+        except Exception as e:
+            return {"success": False, "error": str(e)}
+
+    def reveal_in_finder(self, package_id: str = "", path: str = "", *args, **kwargs) -> Dict[str, Any]:
+        """Backward-compatible alias for reveal_in_explorer."""
+        return self.reveal_in_explorer(package_id, path, *args, **kwargs)
+
     def optimize_memory(self, *args, **kwargs) -> Dict[str, Any]:
         """Compact memory and purge inactive RAM working sets."""
         if self.manager.cleaner and hasattr(self.manager.cleaner, "optimize_memory"):
