@@ -24,7 +24,20 @@ if (-not (Test-Path -LiteralPath $ExePath)) {
 $hash = (Get-FileHash -LiteralPath $ExePath -Algorithm SHA256).Hash.ToUpperInvariant()
 $tag = if ($Version.StartsWith("v")) { $Version } else { "v$Version" }
 $ver = $Version.TrimStart("v")
+if (-not $PSBoundParameters.ContainsKey("AssetName") -or [string]::IsNullOrWhiteSpace($AssetName)) {
+  $AssetName = [System.IO.Path]::GetFileName($ExePath)
+}
 $url = "https://github.com/$Repo/releases/download/$tag/$AssetName"
+$isZip = $AssetName.ToLowerInvariant().EndsWith(".zip")
+$installerType = if ($isZip) { "zip" } else { "portable" }
+$nestedBlock = if ($isZip) {
+  @"
+    NestedInstallerType: portable
+    NestedInstallerFiles:
+      - RelativeFilePath: QuantumUpdater.exe
+        PortableCommandAlias: QuantumUpdater
+"@
+} else { "" }
 
 if (-not $ManifestRoot) {
   $ManifestRoot = Join-Path $PSScriptRoot "..\manifests\w\QuantumStep\QuantumUpdater\$ver"
@@ -41,7 +54,7 @@ $templateLocale = Join-Path $PSScriptRoot "..\manifests\w\QuantumStep\QuantumUpd
 PackageIdentifier: QuantumStep.QuantumUpdater
 PackageVersion: $ver
 MinimumOSVersion: 10.0.17763.0
-InstallerType: portable
+InstallerType: $installerType
 Scope: user
 UpgradeBehavior: install
 Commands:
@@ -51,6 +64,7 @@ Installers:
     InstallerUrl: $url
     InstallerSha256: $hash
     InstallerLocale: en-US
+$nestedBlock
 ManifestType: installer
 ManifestVersion: 1.6.0
 "@ | Set-Content -LiteralPath $installerPath -Encoding utf8

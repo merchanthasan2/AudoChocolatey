@@ -134,22 +134,22 @@ tr.grp td { background: #18243a; font-weight: 700; }
   <section class="resume" aria-label="Resume point">
     <div>
       <span class="next-pill">RESUME POINT</span>
-      <h2>Build 7 ready — upgrade hang fix</h2>
-      <p>Fresh <code>dist\QuantumUpdater\QuantumUpdater.exe</code> (2.0.0 · Build 7). Batch upgrades now time out a stuck winget package after 10 minutes and continue. Owner later: tag/release + Park lock.</p>
+      <h2>Build 8 — fix broken GitHub download</h2>
+      <p>Lone release <code>QuantumUpdater.exe</code> was only the onedir bootloader (Python errors). Download <strong>QuantumUpdater-Windows.zip</strong>, unzip with <code>_internal</code>, run the exe. Local Build 8 has startup crash logging.</p>
       <ol>
-        <li>Close the stuck 2.0 app; open Build 7 from <code>dist\QuantumUpdater\</code>.</li>
-        <li>Owner later: tag <code>v*</code> so self-update has a downloadable EXE.</li>
+        <li>Use the zip from GitHub Releases — not a bare bootloader exe.</li>
+        <li>Open local <code>dist\QuantumUpdater\QuantumUpdater.exe</code> (Build 8).</li>
         <li>Owner later: <code>wingetcreate submit</code> for QuantumStep.QuantumUpdater.</li>
-        <li>Then any PC: <code>winget install QuantumStep.QuantumUpdater</code>.</li>
+        <li>Owner later: Park D lock / on-PC looks.</li>
       </ol>
     </div>
     <div>
       <span class="eyebrow">Owner later (non-blocking)</span>
       <ul class="prio">
-        <li class="now"><span>Open Build 7 on this PC</span><span class="muted">now</span></li>
-        <li><span>Tag release for self-update download</span><span class="muted">later</span></li>
+        <li class="now"><span>Open Build 8 / zip on other PC</span><span class="muted">now</span></li>
         <li><span>Submit winget manifests</span><span class="muted">later</span></li>
         <li><span>Lock Park D / on-PC looks</span><span class="muted">later</span></li>
+        <li><span>Security 28.1 full score</span><span class="muted">later</span></li>
       </ul>
     </div>
   </section>

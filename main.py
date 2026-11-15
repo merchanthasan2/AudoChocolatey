@@ -1,5 +1,39 @@
 import sys
 import os
+import traceback
+
+def _startup_log_path() -> str:
+    base = os.environ.get("LOCALAPPDATA") or os.path.expanduser("~")
+    folder = os.path.join(base, "QuantumUpdater", "logs")
+    try:
+        os.makedirs(folder, exist_ok=True)
+    except Exception:
+        folder = os.environ.get("TEMP") or os.getcwd()
+    return os.path.join(folder, "startup-crash.log")
+
+
+def _log_startup_failure(exc: BaseException) -> None:
+    path = _startup_log_path()
+    try:
+        with open(path, "a", encoding="utf-8") as handle:
+            handle.write("\n===== Quantum Updater startup failure =====\n")
+            handle.write(traceback.format_exc())
+            handle.write("\n")
+    except Exception:
+        pass
+    try:
+        import ctypes
+
+        ctypes.windll.user32.MessageBoxW(
+            None,
+            f"Quantum Updater could not start.\n\n{exc}\n\nDetails: {path}",
+            "Quantum Updater",
+            0x10,
+        )
+    except Exception:
+        print(traceback.format_exc(), file=sys.stderr)
+
+
 import webview.util
 
 # ==============================================================================
@@ -160,4 +194,10 @@ def main():
     webview.start(debug=False)
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except SystemExit:
+        raise
+    except BaseException as exc:
+        _log_startup_failure(exc)
+        raise

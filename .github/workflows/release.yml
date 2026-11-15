@@ -50,16 +50,22 @@ jobs:
         shell: pwsh
         run: |
           python build_exe.py QuantumUpdater
-          New-Item -ItemType Directory -Force -Path py-artifacts
-          # Portable EXE — AppUpdater + winget (QuantumStep.QuantumUpdater) use this asset.
-          Copy-Item -Path "dist\QuantumUpdater\QuantumUpdater.exe" -Destination "py-artifacts\QuantumUpdater.exe"
+          New-Item -ItemType Directory -Force -Path py-artifacts | Out-Null
+          # onedir needs the whole folder — a lone .exe bootloader will not start (Python DLL / _internal missing).
+          $zip = "py-artifacts\QuantumUpdater-Windows.zip"
+          if (Test-Path $zip) { Remove-Item $zip -Force }
+          Compress-Archive -Path "dist\QuantumUpdater\*" -DestinationPath $zip -Force
+          # Keep a copy of the bootloader only for hashing notes; do not publish it alone as the install asset.
+          Copy-Item -Path "dist\QuantumUpdater\QuantumUpdater.exe" -Destination "py-artifacts\QuantumUpdater.bootloader.exe"
+          Get-Item $zip | Format-List FullName, Length
 
       - name: Prepare winget manifests
         shell: pwsh
         run: |
           $tag = "${{ steps.meta.outputs.tag }}"
           $ver = $tag.TrimStart("v")
-          .\tools\prepare_winget_release.ps1 -ExePath "py-artifacts\QuantumUpdater.exe" -Version $ver
+          # Point winget at the zip until a true single-file portable exists.
+          .\tools\prepare_winget_release.ps1 -ExePath "py-artifacts\QuantumUpdater-Windows.zip" -Version $ver -AssetName "QuantumUpdater-Windows.zip"
           New-Item -ItemType Directory -Force -Path winget-artifacts | Out-Null
           Copy-Item -Path "manifests\w\QuantumStep\QuantumUpdater\$ver\*" -Destination "winget-artifacts\" -Force
           Get-ChildItem winget-artifacts | Format-Table Name, Length
@@ -72,14 +78,18 @@ jobs:
           name: Quantum Updater ${{ steps.meta.outputs.tag }}
           generate_release_notes: true
           body: |
-            ## Install
-            After this package is accepted into the Windows Package Manager community repo:
+            ## Install (another PC)
+            1. Download **QuantumUpdater-Windows.zip**
+            2. Unzip the whole folder (keep `_internal` next to the exe)
+            3. Run `QuantumUpdater.exe` and approve UAC
+
+            Do **not** download a lone bootloader `.exe` without `_internal` — that fails with Python errors.
+
+            After winget community acceptance:
             ```
             winget install QuantumStep.QuantumUpdater
             ```
-            Direct download: `QuantumUpdater.exe` on this release.
-            Winget YAML for submission is attached as release assets (`QuantumStep.QuantumUpdater.*.yaml`).
           files: |
-            py-artifacts/QuantumUpdater.exe
+            py-artifacts/QuantumUpdater-Windows.zip
             winget-artifacts/*
           fail_on_unmatched_files: true
