@@ -1054,8 +1054,9 @@ const NAV_SCAN_SLOTS = [
   { tab: 'specs', job: 'local-hardware' }
 ];
 
-/** Startup ready-gate jobs (ADR 025). local-hardware stays off this list. */
+/** Startup ready-gate jobs (ADR 025 + 032). local-hardware stays off this list. */
 const STARTUP_GATE_JOBS = [
+  { id: 'self-update', label: 'Quantum Updater', detail: 'Checks for a newer app build before the rest starts.', local: true },
   { id: 'local-arp', label: 'Programs on this PC', detail: 'Uninstall entries on this PC.' },
   { id: 'catalog-updates', label: 'App updates', detail: 'Reading the catalog. No invented percent.' },
   { id: 'catalog-installed', label: 'Programs from the catalog', detail: 'Starts after App updates when needed.' }
@@ -1553,18 +1554,34 @@ class QuantumUpdaterApp {
     if (this._bridgeReadyInitialized) return;
     this._bridgeReadyInitialized = true;
     console.log('[Quantum Updater]: Backend bridge connected.');
+    this._selfUpdateStatus = 'scanning';
+    this.updateStartupReadyGate();
     this.loadInitialDiagnostics();
     this.loadSettingsFromBridge();
     this.showInstalledReadingState();
     this.loadInstalledSilent();
-    if (this.scanStore) this.scanStore.bootstrap();
-
-    // Auto check for application self-update after initial scan launch
-    setTimeout(() => {
-      this.checkAutoUpdateOnStartup();
-    }, 2500);
-
+    // 42.5: check for a newer Quantum Updater build before catalog scans run.
+    void this._runStartupSelfUpdateThenBootstrap();
     this.refreshVisibleAppIconsAfterBridge();
+  }
+
+  async _runStartupSelfUpdateThenBootstrap() {
+    this._selfUpdateStatus = 'scanning';
+    this.updateStartupReadyGate();
+    try {
+      await Promise.race([
+        this.checkAutoUpdateOnStartup(),
+        new Promise((resolve) => setTimeout(resolve, 10000)),
+      ]);
+      this._selfUpdateStatus = this.pendingUpdate ? 'ready' : 'ready';
+    } catch (_) {
+      this._selfUpdateStatus = 'failed';
+    }
+    if (!this._selfUpdateStatus || this._selfUpdateStatus === 'scanning') {
+      this._selfUpdateStatus = 'ready';
+    }
+    this.updateStartupReadyGate();
+    if (this.scanStore) this.scanStore.bootstrap();
   }
 
   async loadSettingsFromBridge() {
@@ -4993,8 +5010,13 @@ class QuantumUpdaterApp {
 
     let settled = 0;
     const total = STARTUP_GATE_JOBS.length;
-    STARTUP_GATE_JOBS.forEach(({ id }) => {
-      const status = store.job(id).status;
+    STARTUP_GATE_JOBS.forEach(({ id, local }) => {
+      let status;
+      if (local || id === 'self-update') {
+        status = this._selfUpdateStatus || 'queued';
+      } else {
+        status = store.job(id).status;
+      }
       const row = gate.querySelector(`li[data-job="${id}"]`);
       if (this._startupJobSettled(status)) settled += 1;
       if (row) {
@@ -5002,7 +5024,13 @@ class QuantumUpdaterApp {
         row.classList.toggle('is-failed', status === 'failed' || status === 'cancelled');
         row.classList.toggle('is-wait', status === 'queued' || (!status));
         const em = row.querySelector('em');
-        if (em) em.textContent = this._startupJobLabel(status);
+        if (em) {
+          if (id === 'self-update' && status === 'ready' && this.pendingUpdate) {
+            em.textContent = 'Update available';
+          } else {
+            em.textContent = this._startupJobLabel(status);
+          }
+        }
       }
     });
 
@@ -6164,10 +6192,87 @@ class QuantumUpdaterApp {
 
   async checkAutoUpdateOnStartup() {
     const prefToggle = document.getElementById('pref-auto-update-check');
+    // Prefer the pre-window result; still honour an explicit off toggle when present.
     if (prefToggle && !prefToggle.checked) {
+      this._selfUpdateStatus = 'ready';
       return;
     }
+    try {
+      const pre = await this.invoke('get_startup_update', {});
+      if (pre && pre.preloaded && !pre.pending) {
+        await this._applySelfUpdateCheckResult(pre, true);
+        return;
+      }
+    } catch (_) {
+      /* fall through to a live check */
+    }
     await this.checkForAppUpdates(true);
+  }
+
+  async _applySelfUpdateCheckResult(res, silent = false) {
+    const btnCheck = document.getElementById('btn-check-updates');
+    const timeEl = document.getElementById('update-last-checked-time');
+    if (timeEl) {
+      timeEl.textContent = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    }
+    if (res && res.has_update) {
+      this.pendingUpdate = res;
+      const statusBadge = document.getElementById('app-update-status-badge');
+      if (statusBadge) {
+        statusBadge.className = 'update-status-badge pending';
+        statusBadge.innerHTML = `<span class="status-dot"></span><span id="app-version-display">v${res.latest_version} • Update Available</span>`;
+      }
+      const idleBox = document.getElementById('update-state-idle');
+      const foundBox = document.getElementById('update-state-found');
+      const progBox = document.getElementById('update-state-progress');
+      if (idleBox) idleBox.style.display = 'none';
+      if (progBox) progBox.style.display = 'none';
+      if (foundBox) {
+        foundBox.style.display = 'block';
+        const tagEl = document.getElementById('update-new-ver-tag');
+        if (tagEl) tagEl.textContent = `v${res.latest_version} Available`;
+        const sizeEl = document.getElementById('update-new-ver-size');
+        if (sizeEl) sizeEl.textContent = res.asset_size_str || '';
+        const notesEl = document.getElementById('update-new-ver-notes');
+        if (notesEl) notesEl.textContent = res.release_notes || res.release_name || 'Includes performance and security enhancements.';
+      }
+      const btnInstall = document.getElementById('btn-install-app-update');
+      if (btnInstall) btnInstall.style.display = 'inline-flex';
+      const banner = document.getElementById('global-update-banner');
+      if (banner) {
+        const bannerText = document.getElementById('update-banner-text');
+        if (bannerText) {
+          bannerText.textContent = `Quantum Updater v${res.latest_version} is available. Install before you continue for the better build.`;
+        }
+        banner.style.display = 'flex';
+      }
+      this.appendLog(`[Quantum Auto-Updater]: New release available: v${res.latest_version} (${res.asset_size_str || 'Verified'}).`);
+    } else {
+      this.pendingUpdate = null;
+      const statusBadge = document.getElementById('app-update-status-badge');
+      if (statusBadge) {
+        statusBadge.className = 'update-status-badge';
+        const cur = (res && res.current_version) || '2.0.0';
+        statusBadge.innerHTML = `<span class="status-dot healthy"></span><span id="app-version-display">v${cur} • Up to Date</span>`;
+      }
+      const idleBox = document.getElementById('update-state-idle');
+      const foundBox = document.getElementById('update-state-found');
+      const progBox = document.getElementById('update-state-progress');
+      if (idleBox) idleBox.style.display = 'block';
+      if (foundBox) foundBox.style.display = 'none';
+      if (progBox) progBox.style.display = 'none';
+      const btnInstall = document.getElementById('btn-install-app-update');
+      if (btnInstall) btnInstall.style.display = 'none';
+      if (!silent) {
+        this.appendLog('[Quantum Auto-Updater]: Installed application is on the latest verified release.');
+      }
+      if (res && res.error && !silent) {
+        this.appendLog(`[Quantum Auto-Updater Warning]: ${res.error}`);
+      }
+    }
+    if (btnCheck) {
+      btnCheck.disabled = false;
+    }
   }
 
   async checkForAppUpdates(silent = false) {
@@ -6191,80 +6296,8 @@ class QuantumUpdaterApp {
     }
 
     try {
-      const res = await this.invoke('check_self_update');
-
-      const timeEl = document.getElementById('update-last-checked-time');
-      if (timeEl) {
-        timeEl.textContent = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-      }
-
-      if (res && res.has_update) {
-        this.pendingUpdate = res;
-
-        // Update Settings Status Badge
-        const statusBadge = document.getElementById('app-update-status-badge');
-        if (statusBadge) {
-          statusBadge.className = 'update-status-badge pending';
-          statusBadge.innerHTML = `<span class="status-dot"></span><span id="app-version-display">v${res.latest_version} • Update Available</span>`;
-        }
-
-        // Show update details
-        const idleBox = document.getElementById('update-state-idle');
-        const foundBox = document.getElementById('update-state-found');
-        const progBox = document.getElementById('update-state-progress');
-        if (idleBox) idleBox.style.display = 'none';
-        if (progBox) progBox.style.display = 'none';
-        if (foundBox) {
-          foundBox.style.display = 'block';
-          const tagEl = document.getElementById('update-new-ver-tag');
-          if (tagEl) tagEl.textContent = `v${res.latest_version} Available`;
-          const sizeEl = document.getElementById('update-new-ver-size');
-          if (sizeEl) sizeEl.textContent = res.asset_size_str || '';
-          const notesEl = document.getElementById('update-new-ver-notes');
-          if (notesEl) notesEl.textContent = res.release_notes || res.release_name || 'Includes performance and security enhancements.';
-        }
-
-        // Show Install Action Button
-        const btnInstall = document.getElementById('btn-install-app-update');
-        if (btnInstall) btnInstall.style.display = 'inline-flex';
-
-        // Show Global Header Banner
-        const banner = document.getElementById('global-update-banner');
-        if (banner) {
-          const bannerText = document.getElementById('update-banner-text');
-          if (bannerText) {
-            bannerText.textContent = `Quantum Updater v${res.latest_version} is available. No setup redownload required.`;
-          }
-          banner.style.display = 'flex';
-        }
-
-        this.appendLog(`[Quantum Auto-Updater]: New release available: v${res.latest_version} (${res.asset_size_str || 'Verified'}).`);
-
-      } else {
-        this.pendingUpdate = null;
-
-        // Set status badge to healthy
-        const statusBadge = document.getElementById('app-update-status-badge');
-        if (statusBadge) {
-          statusBadge.className = 'update-status-badge';
-          statusBadge.innerHTML = `<span class="status-dot healthy"></span><span id="app-version-display">v2.0.0 • Up to Date</span>`;
-        }
-
-        const idleBox = document.getElementById('update-state-idle');
-        const foundBox = document.getElementById('update-state-found');
-        const progBox = document.getElementById('update-state-progress');
-        if (idleBox) idleBox.style.display = 'block';
-        if (foundBox) foundBox.style.display = 'none';
-        if (progBox) progBox.style.display = 'none';
-
-        const btnInstall = document.getElementById('btn-install-app-update');
-        if (btnInstall) btnInstall.style.display = 'none';
-
-        if (!silent) {
-          this.appendLog('[Quantum Auto-Updater]: Installed application is on the latest verified release.');
-        }
-      }
-
+      const res = await this.invoke('check_self_update', { force: !silent });
+      await this._applySelfUpdateCheckResult(res, silent);
     } catch (err) {
       console.warn('[Auto-Updater Check Failed]:', err);
       if (!silent) {

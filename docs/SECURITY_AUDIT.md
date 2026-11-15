@@ -19,6 +19,12 @@ Two skills are already installed and must be used: `vibe-security` (raroque) and
 
 ## Results
 
+### Slice 42.5 Early self-update check — 15 Nov 2026
+- **Seat:** Manager (Security architect seat hit Other Models limit; Manager check recorded)
+- **Verdict:** Pass for source. Still uses ADR 026 official asset rules. Preload only calls `check_for_updates`. Apply path unchanged (caller URL ignored). Failed/offline check does not block the app.
+- **Scope:** `main.py` preload join, `web_api.py` preload/get_startup_update/check cache, ready-gate self-update row, `web/app.js` bootstrap-after-check, ADR 032.
+- **Middleware:** No new layer.
+
 ### Slice 31.10 Print queue / spooler — 15 Nov 2026
 - **Seat:** Manager (Security architect seat hit Other Models limit; Manager check recorded)
 - **Verdict:** Pass for source. Cancel and machine-wide clear both require `confirmed`. Job cancel re-checks the live list. Spool folder path is fixed under `%SystemRoot%`.

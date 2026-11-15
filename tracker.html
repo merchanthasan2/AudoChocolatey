@@ -134,20 +134,20 @@ tr.grp td { background: #18243a; font-weight: 700; }
   <section class="resume" aria-label="Resume point">
     <div>
       <span class="next-pill">RESUME POINT</span>
-      <h2>Wave 2 repair cards on Settings — publish still Owner later</h2>
-      <p>Local commit <code>49df260</code> has release/winget wiring. Settings now has Catalog sources (029), Store app repair (030), and Print queue (031). Team continues remaining Wave 2; push/tag/winget submit stay queued.</p>
+      <h2>Early self-update + Wave 2 — keep shipping</h2>
+      <p>Branch pushed through Wave 2 repair. Tracker <code>42.5</code> checks for a newer Quantum Updater build before catalog scans. Tag a Release when you want installed copies to download it. Team keeps Wave 2 moving.</p>
       <ol>
-        <li>Finish 31.10 verify + security, then next waiting Wave 2 rows.</li>
-        <li>Owner later: push, tag <code>v*</code>, wait for Action EXE.</li>
-        <li>Owner later: <code>wingetcreate submit</code> (or winget-pkgs PR) for QuantumStep.QuantumUpdater.</li>
+        <li>Finish 42.5, then next waiting Wave 2 rows (31.2 / 31.5 / …).</li>
+        <li>Owner later: tag <code>v*</code> so self-update has a downloadable EXE.</li>
+        <li>Owner later: <code>wingetcreate submit</code> for QuantumStep.QuantumUpdater.</li>
         <li>Then any PC: <code>winget install QuantumStep.QuantumUpdater</code>.</li>
       </ol>
     </div>
     <div>
       <span class="eyebrow">Owner later (non-blocking)</span>
       <ul class="prio">
-        <li class="now"><span>Team continues Wave 2 (31.10)</span><span class="muted">now</span></li>
-        <li><span>Push / tag release (commit done)</span><span class="muted">later</span></li>
+        <li class="now"><span>Team: 42.5 + Wave 2</span><span class="muted">now</span></li>
+        <li><span>Tag release for self-update download</span><span class="muted">later</span></li>
         <li><span>Submit winget manifests</span><span class="muted">later</span></li>
         <li><span>Lock Park D / on-PC looks</span><span class="muted">later</span></li>
       </ul>
@@ -530,9 +530,10 @@ const TRACKER = {
       title: "GitHub release channel and self-update",
       items: [
         { id: "42.1", text: "Official self-update and downloads use merchanthasan2/AudoChocolatey Releases. Tag v* builds QuantumUpdater.exe. Portable EXE swaps the frozen app; *setup*.exe still uses /S. ADR 026.", status: "done", owner: "engine", parts: { plan: "done", build: "done", verify: "done", sec: "done", valid: "todo", pc: "todo", acc: "todo" } },
-        { id: "42.2", text: "Owner commits and pushes this wiring, then tags a milestone (for example v2.0.1) when a downloadable EXE is needed. Installed copies can then check for updates.", status: "needs-owner", owner: "owner", stage: "Commit and tag", with: "Owner" },
+        { id: "42.2", text: "Owner tags a milestone (for example v2.0.1) when a downloadable EXE is needed. Channel push is in progress from the team. Installed copies can then download updates.", status: "needs-owner", owner: "owner", stage: "Tag release", with: "Owner" },
         { id: "42.3", text: "Winget package QuantumStep.QuantumUpdater: portable manifests + release Action prepare script (ADR 028). Not in community index until a public Release exists and the winget-pkgs PR merges.", status: "done", owner: "engine", parts: { plan: "done", build: "done", verify: "todo", sec: "todo", valid: "todo", pc: "todo", acc: "todo" } },
-        { id: "42.4", text: "Owner later: after tag builds, submit manifests with wingetcreate submit (or PR to microsoft/winget-pkgs) so winget install QuantumStep.QuantumUpdater works on any PC.", status: "needs-owner", owner: "owner", stage: "Submit to winget", with: "Owner" }
+        { id: "42.4", text: "Owner later: after tag builds, submit manifests with wingetcreate submit (or PR to microsoft/winget-pkgs) so winget install QuantumStep.QuantumUpdater works on any PC.", status: "needs-owner", owner: "owner", stage: "Submit to winget", with: "Owner" },
+        { id: "42.5", text: "Check for a newer Quantum Updater build before the app starts work. Preload in main.py, show on Getting ready, then start catalog scans. Offer Install so this PC can run the better build. Offline does not block. ADR 032.", status: "done", owner: "engine", parts: { plan: "done", build: "done", verify: "todo", sec: "todo", valid: "todo", pc: "todo", acc: "todo" } }
       ]
     }
   ]

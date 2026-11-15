@@ -81,6 +81,7 @@ def _patched_interop_dll_path(dll_name: str) -> str:
 
 webview.util.interop_dll_path = _patched_interop_dll_path
 
+import threading
 import webview
 from core.admin import elevate_if_needed, is_admin
 from core.build_info import LABEL
@@ -103,6 +104,12 @@ def main():
     # 2. Initialize Dual-Engine Core
     manager = PackageManager()
     api = WebAPI(manager)
+
+    # 2b. Check for Quantum Updater updates before the window works (ADR 032 / 42.5).
+    # Short wait so a release is ready for the Getting ready gate; offline does not hang launch.
+    update_thread = threading.Thread(target=api.preload_self_update_check, daemon=True)
+    update_thread.start()
+    update_thread.join(timeout=8.0)
 
     # 3. Resolve Frontend URL
     html_file = get_web_root()

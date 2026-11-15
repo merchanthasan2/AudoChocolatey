@@ -10,7 +10,10 @@ import shutil
 import tempfile
 from typing import Dict, Any, Optional, Callable
 
-CURRENT_VERSION = "2.0.0"
+try:
+    from core.build_info import VERSION as CURRENT_VERSION
+except Exception:
+    CURRENT_VERSION = "2.0.0"
 # Official download channel: this GitHub repo's Releases (tag v* → Action builds EXE).
 GITHUB_REPO = "merchanthasan2/AudoChocolatey"
 API_URL = f"https://api.github.com/repos/{GITHUB_REPO}/releases/latest"

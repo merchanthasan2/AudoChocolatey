@@ -186,6 +186,12 @@
 
 ---
 
+### ADR 032: Check for Quantum Updater updates before the app starts (42.5)
+- **Status:** Accepted (2026-11-15).
+- **Context:** Self-update only ran 2.5s after bridge ready, after catalog scans had already started. Owner wants this PC to pick up a better build before the rest of the app runs.
+- **Decision:** No new protective middle layer. `main.py` starts `preload_self_update_check` and waits up to 8s before opening the window. Getting ready includes a **Quantum Updater** row. Catalog bootstrap starts only after that check settles (or times out at 10s in the UI). Offline or failed checks do not hold the app. The install banner still offers the update; applying it remains user-confirmed via the existing Install path. Official Releases rules from ADR 026 stay.
+- **Consequences:** Tracker 42.5. A tagged Release is still required before an installed EXE can download a newer build.
+
 ### ADR 031: Clear stuck print jobs and restart spooler (31.10)
 - **Status:** Accepted (2026-11-15). Manager filled Design Architect seat after Other Models limit.
 - **Context:** Wave 2 F035 — cancel selected jobs first; machine-wide clear is a second confirm.

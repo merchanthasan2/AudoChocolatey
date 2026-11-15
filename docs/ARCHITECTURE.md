@@ -189,7 +189,7 @@ These slices wait for Manager approval. Order is fixed.
 
 **A. Theme tokens.** `web/style.css` only, plus any hex in `web/index.html`. Map the table above. Search for `#073A4B`, `#108AB1`, `#06D7A0`, `#04212A`, `#6CD0EE`, `#4FC3E8`. Remove those fills. Test: light window is cream; dark window is near-black; an active nav mark is orange; a primary button label is readable.
 
-**B. Ready gate.** `web/index.html` holds the full-window panel. `web/app.js` `ScanStore.poll`, `applyReadinessGates`, and the tab click path. Startup jobs are `BOOTSTRAP_JOB_IDS`: `catalog-updates`, `catalog-installed`, `local-arp`. Leave `local-hardware`, `cleanup_scan`, `startup`, and `leftovers` on `ensureDeferredJob`. Copy matches the gate mockup. A later Check again does not show the gate.
+**B. Ready gate.** `web/index.html` holds the full-window panel. `web/app.js` `ScanStore.poll`, `applyReadinessGates`, and the tab click path. Gate rows are Quantum Updater self-update (42.5 / ADR 032), then `BOOTSTRAP_JOB_IDS`: `catalog-updates`, `catalog-installed`, `local-arp`. `main.py` preloads the self-update check before the window works. Catalog bootstrap starts after that check settles. Leave `local-hardware`, `cleanup_scan`, `startup`, and `leftovers` on `ensureDeferredJob`. A later Check again does not show the gate.
 
 **C. Speed, measured.** See the investigation list below. Each change records a before and after duration from `core/scan_trace.py` (`winget_call`, `job_ended`). No invented percent.
 
@@ -208,7 +208,7 @@ These slices wait for Manager approval. Order is fixed.
 
 The cream mockup is the live theme. Teal is retired.
 
-The screen flow starts at the ready gate when the three startup jobs have no result yet. About this computer stays off that gate.
+The screen flow starts at the ready gate with the Quantum Updater self-check, then the three catalog/ARP startup jobs. About this computer stays off that gate.
 
 The picture names the catalog lock, the ARP plan loop, the prefetch call, and the poll interval as the speed work. Cleanup, startup apps, and leftovers stay off the gate.
 

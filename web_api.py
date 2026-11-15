@@ -180,6 +180,8 @@ class WebAPI(__import__("web_api_tools").SystemToolsAPI):
         self.manager = manager
         self._window = None
         self._last_progress_time = 0.0
+        self._startup_update_info = None
+        self._startup_update_checked_at = 0.0
         self._register_tool_scan_jobs()
 
     def _register_tool_scan_jobs(self) -> None:
@@ -1211,10 +1213,49 @@ class WebAPI(__import__("web_api_tools").SystemToolsAPI):
 
         return diag
 
+    def preload_self_update_check(self) -> None:
+        """Run before the UI is ready so launch can use a fresh release first (42.5)."""
+        try:
+            if hasattr(self.manager, "updater") and self.manager.updater:
+                info = self.manager.updater.check_for_updates()
+            else:
+                info = {"has_update": False, "current_version": "2.0.0", "error": "Updater missing"}
+        except Exception as e:
+            info = {"has_update": False, "current_version": "2.0.0", "error": str(e)}
+        self._startup_update_info = info
+        self._startup_update_checked_at = time.time()
+
+    def get_startup_update(self, *args, **kwargs) -> Dict[str, Any]:
+        """Return the pre-window self-update result, or a still-checking marker."""
+        info = getattr(self, "_startup_update_info", None)
+        if info is not None:
+            out = dict(info)
+            out["preloaded"] = True
+            return out
+        return {
+            "has_update": False,
+            "pending": True,
+            "preloaded": False,
+            "current_version": "2.0.0",
+        }
+
     def check_self_update(self, *args, **kwargs) -> Dict[str, Any]:
         """Check GitHub for new Quantum Updater releases."""
+        force = bool(kwargs.get("force", False))
+        if args:
+            force = force or bool(args[0])
+        cached = getattr(self, "_startup_update_info", None)
+        checked_at = float(getattr(self, "_startup_update_checked_at", 0) or 0)
+        fresh = cached is not None and (time.time() - checked_at) < 60
+        if cached is not None and fresh and not force:
+            out = dict(cached)
+            out["preloaded"] = True
+            return out
         if hasattr(self.manager, "updater") and self.manager.updater:
-            return self.manager.updater.check_for_updates()
+            info = self.manager.updater.check_for_updates()
+            self._startup_update_info = info
+            self._startup_update_checked_at = time.time()
+            return info
         return {"has_update": False, "current_version": "2.0.0"}
 
     def apply_self_update(self, download_url: str = "", *args, **kwargs) -> bool:
