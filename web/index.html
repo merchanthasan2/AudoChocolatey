@@ -947,6 +947,46 @@
               </div>
             </div>
 
+            <!-- Catalog sources (31.1) -->
+            <div class="settings-card full-span" id="catalog-sources-card">
+              <h3>Catalog sources</h3>
+              <p class="settings-card-desc">Refresh the package catalog list when updates or search look stuck. Reset is recovery only — it restores the default WinGet sources.</p>
+              <div style="display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-top: 12px;">
+                <button type="button" class="glass-btn btn-primary btn-sm" id="btn-catalog-sources-refresh" onclick="app.refreshCatalogSources()">Refresh sources</button>
+                <button type="button" class="glass-btn btn-secondary btn-sm" id="btn-catalog-sources-reset" onclick="app.resetCatalogSources()">Reset sources (recovery)</button>
+              </div>
+              <p class="settings-card-desc" id="catalog-sources-status" style="margin-top: 12px; margin-bottom: 0;" aria-live="polite"></p>
+            </div>
+
+            <!-- Store app repair (31.8) -->
+            <div class="settings-card full-span" id="store-apps-card">
+              <h3>Store app repair</h3>
+              <p class="settings-card-desc">Re-register a Microsoft Store app already installed for this Windows account. Use when a Store app will not open.</p>
+              <div style="display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-top: 12px;">
+                <button type="button" class="glass-btn btn-secondary btn-sm" id="btn-store-apps-load" onclick="app.loadStoreAppsList()">Load Store apps</button>
+                <select id="store-apps-select" class="glass-select" style="min-width: 220px; max-width: 100%; flex: 1;" disabled>
+                  <option value="">Load the list first</option>
+                </select>
+                <button type="button" class="glass-btn btn-primary btn-sm" id="btn-store-apps-reregister" onclick="app.reregisterSelectedStoreApp()" disabled>Re-register</button>
+              </div>
+              <p class="settings-card-desc" id="store-apps-status" style="margin-top: 12px; margin-bottom: 0;" aria-live="polite"></p>
+            </div>
+
+            <!-- Print queue (31.10) -->
+            <div class="settings-card full-span" id="print-queue-card">
+              <h3>Print queue</h3>
+              <p class="settings-card-desc">Cancel a stuck print job first. Clearing the whole queue stops the print spooler briefly and is recovery only.</p>
+              <div style="display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-top: 12px;">
+                <button type="button" class="glass-btn btn-secondary btn-sm" id="btn-print-jobs-load" onclick="app.loadPrintJobs()">Refresh jobs</button>
+                <button type="button" class="glass-btn btn-primary btn-sm" id="btn-print-job-cancel" onclick="app.cancelSelectedPrintJob()" disabled>Cancel selected job</button>
+                <button type="button" class="glass-btn btn-secondary btn-sm" id="btn-print-queue-clear" onclick="app.clearPrintQueue()">Clear queue and restart spooler</button>
+              </div>
+              <select id="print-jobs-select" class="glass-select" style="width: 100%; margin-top: 12px;" disabled>
+                <option value="">No jobs loaded</option>
+              </select>
+              <p class="settings-card-desc" id="print-queue-status" style="margin-top: 12px; margin-bottom: 0;" aria-live="polite"></p>
+            </div>
+
             <!-- Diagnostics -->
             <div class="settings-card full-span">
               <h3>Windows Diagnostics &amp; Environment</h3>

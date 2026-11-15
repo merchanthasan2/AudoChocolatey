@@ -134,11 +134,11 @@ tr.grp td { background: #18243a; font-weight: 700; }
   <section class="resume" aria-label="Resume point">
     <div>
       <span class="next-pill">RESUME POINT</span>
-      <h2>Winget path ready — publish when you can</h2>
-      <p>ADR 028: <code>QuantumStep.QuantumUpdater</code> manifests + release Action are in source. Not on winget yet (community PR needed after a public GitHub Release). Team keeps building Wave 2; owner actions stay queued.</p>
+      <h2>Wave 2 repair cards on Settings — publish still Owner later</h2>
+      <p>Local commit <code>49df260</code> has release/winget wiring. Settings now has Catalog sources (029), Store app repair (030), and Print queue (031). Team continues remaining Wave 2; push/tag/winget submit stay queued.</p>
       <ol>
-        <li>Team continues Wave 2 / theme / cleanup polish.</li>
-        <li>Owner later: commit/push, tag <code>v*</code>, wait for Action EXE.</li>
+        <li>Finish 31.10 verify + security, then next waiting Wave 2 rows.</li>
+        <li>Owner later: push, tag <code>v*</code>, wait for Action EXE.</li>
         <li>Owner later: <code>wingetcreate submit</code> (or winget-pkgs PR) for QuantumStep.QuantumUpdater.</li>
         <li>Then any PC: <code>winget install QuantumStep.QuantumUpdater</code>.</li>
       </ol>
@@ -146,8 +146,8 @@ tr.grp td { background: #18243a; font-weight: 700; }
     <div>
       <span class="eyebrow">Owner later (non-blocking)</span>
       <ul class="prio">
-        <li class="now"><span>Team continues Wave 2</span><span class="muted">now</span></li>
-        <li><span>Commit / push / tag release</span><span class="muted">later</span></li>
+        <li class="now"><span>Team continues Wave 2 (31.10)</span><span class="muted">now</span></li>
+        <li><span>Push / tag release (commit done)</span><span class="muted">later</span></li>
         <li><span>Submit winget manifests</span><span class="muted">later</span></li>
         <li><span>Lock Park D / on-PC looks</span><span class="muted">later</span></li>
       </ul>
@@ -398,16 +398,16 @@ const TRACKER = {
       id: "31",
       title: "Wave 2 — App and shell repair",
       items: [
-        { id: "31.1", text: "Catalog source refresh and recovery reset", status: "waiting", owner: "engine" },
+        { id: "31.1", text: "Catalog source refresh and recovery reset", status: "done", owner: "engine", parts: { plan: "done", build: "done", verify: "done", sec: "done", valid: "todo", pc: "todo", acc: "todo" } },
         { id: "31.2", text: "Installed app list export and reinstall (IDs only)", status: "waiting", owner: "engine" },
         { id: "31.3", text: "Scheduled cleanup, user-chosen categories and cadence", status: "waiting", owner: "engine" },
         { id: "31.4", text: "Duplicate file finder, Recycle Bin default", status: "waiting", owner: "engine" },
         { id: "31.5", text: "Repair an installed desktop app where supported", status: "waiting", owner: "engine" },
         { id: "31.6", text: "Repair or reset a packaged app (reset wipes that app data)", status: "waiting", owner: "engine" },
         { id: "31.7", text: "Reset Microsoft Store cache for this user", status: "done", owner: "engine", parts: { plan: "done", build: "done", verify: "todo", sec: "todo", valid: "todo", pc: "todo", acc: "todo" } },
-        { id: "31.8", text: "Re-register an installed Store app for this account", status: "waiting", owner: "engine" },
+        { id: "31.8", text: "Re-register an installed Store app for this account", status: "done", owner: "engine", parts: { plan: "done", build: "done", verify: "done", sec: "done", valid: "todo", pc: "todo", acc: "todo" } },
         { id: "31.9", text: "Rebuild Explorer icon cache", status: "done", owner: "engine", parts: { plan: "done", build: "done", verify: "todo", sec: "todo", valid: "todo", pc: "todo", acc: "todo" } },
-        { id: "31.10", text: "Clear stuck print jobs and restart spooler", status: "waiting", owner: "engine" },
+        { id: "31.10", text: "Clear stuck print jobs and restart spooler", status: "done", owner: "engine", parts: { plan: "done", build: "done", verify: "done", sec: "done", valid: "todo", pc: "todo", acc: "todo" } },
         { id: "31.11", text: "Remove a broken or orphaned installation, then leftover scan", status: "waiting", owner: "engine" }
       ]
     },

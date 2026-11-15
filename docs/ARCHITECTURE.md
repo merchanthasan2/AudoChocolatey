@@ -166,6 +166,8 @@ The overall line is a real count of settled jobs, for example **1 of 3 checks fi
 
 Sidebar order after unlock: Updates, Marketplace, Installed, Cleanup, Startup apps, Large files, Leftover folders, Activity log, About this computer, Settings.
 
+Settings holds repair cards (no new sidebar tab): **Catalog sources** (31.1), **Store app repair** (31.8), and **Print queue** (31.10). Destructive recovery actions require `confirmed=true` on `web_api.py`.
+
 ## Parts
 
 | Part | Role |
@@ -175,7 +177,7 @@ Sidebar order after unlock: Updates, Marketplace, Installed, Cleanup, Startup ap
 | `web_api.py` | Bridge. `scans_start_all` starts `BOOTSTRAP_JOB_IDS` only. |
 | `core/manager.py` | One install or uninstall at a time. `prefetch_package` still runs from the queue in `web/app.js`. |
 | `core/scan_orchestrator.py` | Lanes, `BOOTSTRAP_JOB_IDS`, `DEFERRED_MAINTENANCE_JOB_IDS`, saved results. |
-| `core/winget_engine.py` | Catalog check and list use `_run_capture` under `_query_lock`. Install and update use `_run_streaming_cmd`. |
+| `core/winget_engine.py` | Catalog check and list use `_run_capture` under `_query_lock`. Install and update use `_run_streaming_cmd`. Settings repair: `refresh_sources` / `reset_sources` (31.1). |
 | `core/arp_inventory.py` | `list_arp_entries` and `plan_uninstall`. The startup job calls both. |
 | `core/hardware_facts.py` | About this computer. `collect_windows_hardware`. |
 | `core/system_tools/` | Cleanup, startup, large files, leftovers. Deferred until that screen opens. |

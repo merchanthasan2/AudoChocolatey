@@ -19,6 +19,26 @@ Two skills are already installed and must be used: `vibe-security` (raroque) and
 
 ## Results
 
+### Slice 31.10 Print queue / spooler — 15 Nov 2026
+- **Seat:** Manager (Security architect seat hit Other Models limit; Manager check recorded)
+- **Verdict:** Pass for source. Cancel and machine-wide clear both require `confirmed`. Job cancel re-checks the live list. Spool folder path is fixed under `%SystemRoot%`.
+- **Scope:** `core/system_tools/print_spooler.py`, `core/test_print_spooler.py`, `web_api.py` print_* methods, Settings Print queue card, ADR 031.
+- **Middleware:** No new layer.
+
+### Slice 31.8 Store app re-register — 15 Nov 2026
+- **Seat:** Manager (Security architect seat hit Other Models limit; Manager check recorded)
+- **Verdict:** Pass for source. Unit tests cover confirm gate, bad id, and listed-manifest path. Do not treat as owner-tested until a Build is opened on this PC.
+- **Scope:** `core/system_tools/store_apps.py`, `core/test_store_apps.py`, `web_api.py` `store_apps_list`/`store_apps_reregister`, Settings card in `web/index.html` + `web/app.js`, ADR 030.
+- **Checks:** (1) No secrets. (2) No new deps. (3) Package full name allow-list; manifest path from `Get-AppxPackage` list only; PowerShell register uses escaped path. (4) Requires `confirmed=true` + UI confirm. (5) Select options built with `textContent`. (8) Tests present. Checks 6–7 N/A.
+- **Middleware:** No new layer.
+
+### Slice 31.1 Catalog sources — 15 Nov 2026
+- **Seat:** Manager (Security architect seat hit Other Models limit; Manager check recorded)
+- **Verdict:** Pass for source. Unit tests green. Do not treat as owner-tested until a Build is opened on this PC.
+- **Scope:** `core/winget_engine.py` `refresh_sources`/`reset_sources`, `web_api.py` bridge methods, Settings card in `web/index.html` + `web/app.js`, `core/test_winget_sources.py`, ADR 029.
+- **Checks:** (1) No secrets. (2) No new deps. (3) Fixed argv only — no shell interpolation. (4) Reset requires `confirmed=true` plus two UI confirms; refresh is everyday. (5) Status text is plain text, not HTML. (8) Tests cover ok / missing winget / confirm gate. (9–10) N/A. Checks 6–7 N/A.
+- **Middleware:** No new layer. Bridge stays the only path that starts winget source repair.
+
 ### DisplayLink USB devices (phase 40) — 11 Nov 2026
 - **Seat:** Security architect on Grok 4.7 (`68945f3d-a951-473c-8323-261353355ee6`)
 - **Verdict:** Pass. A new program file may be built for this slice.

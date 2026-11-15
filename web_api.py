@@ -1016,6 +1016,72 @@ class WebAPI(__import__("web_api_tools").SystemToolsAPI):
 
         return optimize_ram_trim()
 
+    def catalog_sources_refresh(self, *args, **kwargs) -> Dict[str, Any]:
+        """31.1: everyday catalog repair — winget source update."""
+        eng = self.manager.engines.get("winget")
+        if not eng or not eng.is_available():
+            return {"ok": False, "error": "WinGet is not available on this PC."}
+        return eng.refresh_sources()
+
+    def catalog_sources_reset(self, *args, **kwargs) -> Dict[str, Any]:
+        """31.1: recovery only — winget source reset --force. Requires confirmed=true."""
+        confirmed = bool(kwargs.get("confirmed", False))
+        if args and not confirmed:
+            confirmed = bool(args[0])
+        eng = self.manager.engines.get("winget")
+        if not eng or not eng.is_available():
+            return {"ok": False, "error": "WinGet is not available on this PC."}
+        return eng.reset_sources(confirmed=confirmed)
+
+    def store_apps_list(self, *args, **kwargs) -> Dict[str, Any]:
+        """31.8: list AppX packages installed for this Windows account."""
+        from core.system_tools.store_apps import list_store_packages
+
+        return list_store_packages()
+
+    def store_apps_reregister(self, *args, **kwargs) -> Dict[str, Any]:
+        """31.8: re-register one listed Store app. Requires confirmed=true."""
+        from core.system_tools.store_apps import reregister_store_package
+
+        package_full_name = str(kwargs.get("package_full_name") or "").strip()
+        if not package_full_name and args:
+            package_full_name = str(args[0] or "").strip()
+        confirmed = bool(kwargs.get("confirmed", False))
+        if len(args) > 1 and not confirmed:
+            confirmed = bool(args[1])
+        return reregister_store_package(package_full_name, confirmed=confirmed)
+
+    def print_jobs_list(self, *args, **kwargs) -> Dict[str, Any]:
+        """31.10: list jobs across local printers."""
+        from core.system_tools.print_spooler import list_print_jobs
+
+        return list_print_jobs()
+
+    def print_job_cancel(self, *args, **kwargs) -> Dict[str, Any]:
+        """31.10: cancel one listed job. Requires confirmed=true."""
+        from core.system_tools.print_spooler import cancel_print_job
+
+        printer = str(kwargs.get("printer") or "").strip()
+        job_id = str(kwargs.get("job_id") or kwargs.get("id") or "").strip()
+        if args:
+            if not printer:
+                printer = str(args[0] or "").strip()
+            if len(args) > 1 and not job_id:
+                job_id = str(args[1] or "").strip()
+        confirmed = bool(kwargs.get("confirmed", False))
+        if len(args) > 2 and not confirmed:
+            confirmed = bool(args[2])
+        return cancel_print_job(printer, job_id, confirmed=confirmed)
+
+    def print_queue_clear(self, *args, **kwargs) -> Dict[str, Any]:
+        """31.10: machine-wide spooler clear + restart. Requires confirmed=true."""
+        from core.system_tools.print_spooler import clear_print_queue_and_restart_spooler
+
+        confirmed = bool(kwargs.get("confirmed", False))
+        if args and not confirmed:
+            confirmed = bool(args[0])
+        return clear_print_queue_and_restart_spooler(confirmed=confirmed)
+
     def get_app_icons(self, *args, **kwargs) -> Dict[str, Optional[str]]:
         """Return data URLs for package icons. Missing icons are null, never an error."""
         ids = kwargs.get("ids")

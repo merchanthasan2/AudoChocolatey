@@ -186,6 +186,24 @@
 
 ---
 
+### ADR 031: Clear stuck print jobs and restart spooler (31.10)
+- **Status:** Accepted (2026-11-15). Manager filled Design Architect seat after Other Models limit.
+- **Context:** Wave 2 F035 — cancel selected jobs first; machine-wide clear is a second confirm.
+- **Decision:** No new protective middle layer. `web_api.py` stays the middle. Settings card **Print queue** lists jobs, cancels one listed job with confirm, and offers machine-wide clear (stop Spooler, clear `%SystemRoot%\System32\spool\PRINTERS`, start Spooler) only after two UI confirms and `confirmed=true`. Printer names and job ids are allow-listed; cancel re-checks the live list. Do not change live Park theme colours.
+- **Consequences:** Tracker 31.10 moves to build.
+
+### ADR 030: Re-register an installed Store app (31.8)
+- **Status:** Accepted (2026-11-15). Manager filled Design Architect seat after Other Models limit.
+- **Context:** Wave 2 needs Store app repair when an AppX package will not open. Only packages already installed for this account.
+- **Decision:** No new protective middle layer. `web_api.py` stays the middle. Settings card **Store app repair** lists current-user AppX packages (frameworks skipped) and re-registers via `Add-AppxPackage -DisableDevelopmentMode -Register` using the manifest path from that list only. Require `confirmed=true`. Reject unsafe package full names. Do not change live Park theme colours.
+- **Consequences:** Tracker 31.8 moves to build. Security checks confirm-gate and path provenance.
+
+### ADR 029: Catalog source refresh and recovery reset (31.1)
+- **Status:** Accepted (2026-11-15). Manager filled Design Architect seat after Other Models limit.
+- **Context:** Wave 2 F002 needs WinGet source repair. Refresh is everyday; reset is recovery. No new screen; Settings already holds diagnostics.
+- **Decision:** No new protective middle layer. `web_api.py` stays the middle. Add Settings card **Catalog sources** with Refresh (`winget source update`) and Reset (`winget source reset --force`) behind two confirm dialogs and `confirmed=true` on the bridge. Engine methods live on `core/winget_engine.py`. Do not change live Park theme colours. After a successful refresh or reset, the user can re-run Check again on Updates.
+- **Consequences:** Tracker 31.1 moves to build. Security checks that reset refuses without confirm and never runs arbitrary shell.
+
 ### ADR 028: Winget package QuantumStep.QuantumUpdater
 - **Status:** Accepted (2026-11-15). In progress — not yet in the community index.
 - **Context:** Owner wants `winget install QuantumStep.QuantumUpdater` on any PC. Local manifests existed but pointed at a non-working quantumstep.in setup URL, and the package is not in microsoft/winget-pkgs yet (`winget show` finds nothing).

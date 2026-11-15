@@ -4,7 +4,7 @@ import os
 import re
 import time
 import threading
-from typing import Dict, List, Callable, Optional
+from typing import Any, Dict, List, Callable, Optional
 from core.base_engine import BaseEngine
 from core.models import PackageInfo, SearchResult, OperationStatus
 from core.files_in_use import files_in_use_operation_fields
@@ -696,6 +696,82 @@ class WingetEngine(BaseEngine):
             )
         finally:
             self._download_slots.release()
+
+    def refresh_sources(self, timeout: int = 120) -> Dict[str, Any]:
+        """Refresh package catalog sources (winget source update). Everyday repair."""
+        if not self.is_available():
+            return {"ok": False, "error": "WinGet is not available on this PC.", "exit_code": -1}
+        self.last_error = ""
+        try:
+            res = self._run_capture(
+                [self._executable, "source", "update", "--disable-interactivity"],
+                timeout=timeout,
+            )
+            out = ((res.stdout or "") + "\n" + (res.stderr or "")).strip()
+            ok = res.returncode == 0
+            if not ok:
+                self.last_error = out or f"winget source update exited {res.returncode}"
+            return {
+                "ok": ok,
+                "exit_code": res.returncode,
+                "message": (
+                    "Catalog sources refreshed."
+                    if ok
+                    else (out or f"Refresh failed (exit {res.returncode}).")
+                ),
+                "detail": out[:2000],
+            }
+        except subprocess.TimeoutExpired:
+            self.last_error = "winget source update timed out"
+            return {"ok": False, "error": "Catalog source refresh timed out.", "exit_code": -1}
+        except Exception as e:
+            self.last_error = str(e)
+            return {"ok": False, "error": str(e), "exit_code": -1}
+
+    def reset_sources(self, confirmed: bool = False, timeout: int = 120) -> Dict[str, Any]:
+        """Reset catalog sources to defaults (winget source reset --force). Recovery only."""
+        if not confirmed:
+            return {
+                "ok": False,
+                "error": "Reset requires explicit confirmation.",
+                "exit_code": -1,
+                "needs_confirm": True,
+            }
+        if not self.is_available():
+            return {"ok": False, "error": "WinGet is not available on this PC.", "exit_code": -1}
+        self.last_error = ""
+        try:
+            res = self._run_capture(
+                [
+                    self._executable,
+                    "source",
+                    "reset",
+                    "--force",
+                    "--disable-interactivity",
+                ],
+                timeout=timeout,
+            )
+            out = ((res.stdout or "") + "\n" + (res.stderr or "")).strip()
+            ok = res.returncode == 0
+            if not ok:
+                self.last_error = out or f"winget source reset exited {res.returncode}"
+            return {
+                "ok": ok,
+                "exit_code": res.returncode,
+                "message": (
+                    "Catalog sources reset to defaults."
+                    if ok
+                    else (out or f"Reset failed (exit {res.returncode}).")
+                ),
+                "detail": out[:2000],
+                "recovery": True,
+            }
+        except subprocess.TimeoutExpired:
+            self.last_error = "winget source reset timed out"
+            return {"ok": False, "error": "Catalog source reset timed out.", "exit_code": -1}
+        except Exception as e:
+            self.last_error = str(e)
+            return {"ok": False, "error": str(e), "exit_code": -1}
 
     def uninstall_package(
         self, 

@@ -1475,6 +1475,10 @@ class QuantumUpdaterApp {
       leftovers_recycle: ['path', 'confirmed'],
       leftovers_confirm_registry: ['entry_id'],
       leftovers_delete_registry: ['entry_id', 'token'],
+      catalog_sources_reset: ['confirmed'],
+      store_apps_reregister: ['package_full_name', 'confirmed'],
+      print_job_cancel: ['printer', 'job_id', 'confirmed'],
+      print_queue_clear: ['confirmed'],
     };
     const keys = order[cmd];
     if (keys) return keys.map((k) => args[k]);
@@ -5649,6 +5653,302 @@ class QuantumUpdaterApp {
 
   // ================= Settings & Diagnostics =================
 
+  _setCatalogSourcesStatus(text) {
+    const el = document.getElementById('catalog-sources-status');
+    if (el) el.textContent = text || '';
+  }
+
+  async refreshCatalogSources() {
+    const btn = document.getElementById('btn-catalog-sources-refresh');
+    const resetBtn = document.getElementById('btn-catalog-sources-reset');
+    if (btn) btn.disabled = true;
+    if (resetBtn) resetBtn.disabled = true;
+    this._setCatalogSourcesStatus('Refreshing catalog sources…');
+    this.setIslandState(true, 'Refreshing catalog sources', null, 'Working');
+    try {
+      const res = await this.invoke('catalog_sources_refresh', {});
+      if (res && res.ok) {
+        this._setCatalogSourcesStatus(res.message || 'Catalog sources refreshed.');
+        this.setIslandState(false, 'Catalog sources refreshed', 100, res.message || 'Done');
+      } else {
+        const err = (res && (res.error || res.message)) || 'Refresh failed.';
+        this._setCatalogSourcesStatus(err);
+        this.setIslandState(false, 'Catalog refresh failed', 0, err);
+      }
+    } catch (e) {
+      const err = String(e.message || e);
+      this._setCatalogSourcesStatus(err);
+      this.setIslandState(false, 'Catalog refresh failed', 0, err);
+    } finally {
+      if (btn) btn.disabled = false;
+      if (resetBtn) resetBtn.disabled = false;
+    }
+  }
+
+  async resetCatalogSources() {
+    if (!confirm(
+      'Reset catalog sources to the WinGet defaults?\n\n' +
+      'Use this only if Refresh did not fix a broken catalog. Custom sources you added will be removed.'
+    )) {
+      return;
+    }
+    if (!confirm('Final confirmation: reset catalog sources now?')) {
+      return;
+    }
+    const btn = document.getElementById('btn-catalog-sources-refresh');
+    const resetBtn = document.getElementById('btn-catalog-sources-reset');
+    if (btn) btn.disabled = true;
+    if (resetBtn) resetBtn.disabled = true;
+    this._setCatalogSourcesStatus('Resetting catalog sources…');
+    this.setIslandState(true, 'Resetting catalog sources', null, 'Working');
+    try {
+      const res = await this.invoke('catalog_sources_reset', { confirmed: true });
+      if (res && res.ok) {
+        this._setCatalogSourcesStatus(res.message || 'Catalog sources reset to defaults.');
+        this.setIslandState(false, 'Catalog sources reset', 100, res.message || 'Done');
+      } else {
+        const err = (res && (res.error || res.message)) || 'Reset failed.';
+        this._setCatalogSourcesStatus(err);
+        this.setIslandState(false, 'Catalog reset failed', 0, err);
+      }
+    } catch (e) {
+      const err = String(e.message || e);
+      this._setCatalogSourcesStatus(err);
+      this.setIslandState(false, 'Catalog reset failed', 0, err);
+    } finally {
+      if (btn) btn.disabled = false;
+      if (resetBtn) resetBtn.disabled = false;
+    }
+  }
+
+  _setStoreAppsStatus(text) {
+    const el = document.getElementById('store-apps-status');
+    if (el) el.textContent = text || '';
+  }
+
+  async loadStoreAppsList() {
+    const btn = document.getElementById('btn-store-apps-load');
+    const select = document.getElementById('store-apps-select');
+    const regBtn = document.getElementById('btn-store-apps-reregister');
+    if (btn) btn.disabled = true;
+    this._setStoreAppsStatus('Loading Store apps for this account…');
+    try {
+      const res = await this.invoke('store_apps_list', {});
+      if (!res || !res.ok) {
+        const err = (res && res.error) || 'Could not load Store apps.';
+        this._setStoreAppsStatus(err);
+        if (select) {
+          select.innerHTML = '<option value="">None loaded</option>';
+          select.disabled = true;
+        }
+        if (regBtn) regBtn.disabled = true;
+        return;
+      }
+      const packages = Array.isArray(res.packages) ? res.packages : [];
+      if (select) {
+        select.innerHTML = '';
+        if (!packages.length) {
+          const empty = document.createElement('option');
+          empty.value = '';
+          empty.textContent = 'No Store apps found';
+          select.appendChild(empty);
+          select.disabled = true;
+          if (regBtn) regBtn.disabled = true;
+        } else {
+          packages.forEach((p) => {
+            const opt = document.createElement('option');
+            opt.value = String(p.package_full_name || '');
+            opt.textContent = String(p.name || p.package_full_name || '');
+            select.appendChild(opt);
+          });
+          select.disabled = false;
+          if (regBtn) regBtn.disabled = false;
+        }
+      }
+      this._setStoreAppsStatus(`${packages.length} Store app(s) listed for this account.`);
+    } catch (e) {
+      this._setStoreAppsStatus(String(e.message || e));
+      if (regBtn) regBtn.disabled = true;
+    } finally {
+      if (btn) btn.disabled = false;
+    }
+  }
+
+  async reregisterSelectedStoreApp() {
+    const select = document.getElementById('store-apps-select');
+    const full = select && select.value ? String(select.value) : '';
+    if (!full) {
+      this._setStoreAppsStatus('Choose a Store app first.');
+      return;
+    }
+    const label = (select && select.options[select.selectedIndex])
+      ? select.options[select.selectedIndex].textContent
+      : full;
+    if (!confirm(
+      `Re-register "${label}" for this Windows account?\n\n` +
+      'Use this when that Store app will not open. It does not uninstall the app.'
+    )) {
+      return;
+    }
+    const btn = document.getElementById('btn-store-apps-reregister');
+    const loadBtn = document.getElementById('btn-store-apps-load');
+    if (btn) btn.disabled = true;
+    if (loadBtn) loadBtn.disabled = true;
+    this._setStoreAppsStatus('Re-registering Store app…');
+    this.setIslandState(true, 'Re-registering Store app', null, 'Working');
+    try {
+      const res = await this.invoke('store_apps_reregister', {
+        package_full_name: full,
+        confirmed: true,
+      });
+      if (res && res.ok) {
+        this._setStoreAppsStatus(res.message || 'Store app re-registered.');
+        this.setIslandState(false, 'Store app re-registered', 100, res.message || 'Done');
+      } else {
+        const err = (res && (res.error || res.message)) || 'Re-register failed.';
+        this._setStoreAppsStatus(err);
+        this.setIslandState(false, 'Store re-register failed', 0, err);
+      }
+    } catch (e) {
+      const err = String(e.message || e);
+      this._setStoreAppsStatus(err);
+      this.setIslandState(false, 'Store re-register failed', 0, err);
+    } finally {
+      if (btn) btn.disabled = false;
+      if (loadBtn) loadBtn.disabled = false;
+    }
+  }
+
+  _setPrintQueueStatus(text) {
+    const el = document.getElementById('print-queue-status');
+    if (el) el.textContent = text || '';
+  }
+
+  async loadPrintJobs() {
+    const btn = document.getElementById('btn-print-jobs-load');
+    const select = document.getElementById('print-jobs-select');
+    const cancelBtn = document.getElementById('btn-print-job-cancel');
+    if (btn) btn.disabled = true;
+    this._setPrintQueueStatus('Loading print jobs…');
+    try {
+      const res = await this.invoke('print_jobs_list', {});
+      if (!res || !res.ok) {
+        this._setPrintQueueStatus((res && res.error) || 'Could not load print jobs.');
+        if (select) {
+          select.innerHTML = '';
+          const empty = document.createElement('option');
+          empty.value = '';
+          empty.textContent = 'None loaded';
+          select.appendChild(empty);
+          select.disabled = true;
+        }
+        if (cancelBtn) cancelBtn.disabled = true;
+        return;
+      }
+      const jobs = Array.isArray(res.jobs) ? res.jobs : [];
+      if (select) {
+        select.innerHTML = '';
+        if (!jobs.length) {
+          const empty = document.createElement('option');
+          empty.value = '';
+          empty.textContent = 'No print jobs in the queue';
+          select.appendChild(empty);
+          select.disabled = true;
+          if (cancelBtn) cancelBtn.disabled = true;
+        } else {
+          jobs.forEach((j) => {
+            const opt = document.createElement('option');
+            opt.value = `${j.printer}\t${j.id}`;
+            const doc = j.document || 'Document';
+            opt.textContent = `${doc} — ${j.printer} (#${j.id}) ${j.status || ''}`.trim();
+            select.appendChild(opt);
+          });
+          select.disabled = false;
+          if (cancelBtn) cancelBtn.disabled = false;
+        }
+      }
+      this._setPrintQueueStatus(`${jobs.length} print job(s) in the queue.`);
+    } catch (e) {
+      this._setPrintQueueStatus(String(e.message || e));
+      if (cancelBtn) cancelBtn.disabled = true;
+    } finally {
+      if (btn) btn.disabled = false;
+    }
+  }
+
+  async cancelSelectedPrintJob() {
+    const select = document.getElementById('print-jobs-select');
+    const raw = select && select.value ? String(select.value) : '';
+    const parts = raw.split('\t');
+    const printer = parts[0] || '';
+    const jobId = parts[1] || '';
+    if (!printer || !jobId) {
+      this._setPrintQueueStatus('Choose a print job first.');
+      return;
+    }
+    const label = (select && select.options[select.selectedIndex])
+      ? select.options[select.selectedIndex].textContent
+      : raw;
+    if (!confirm(`Cancel this print job?\n\n${label}`)) return;
+    const btn = document.getElementById('btn-print-job-cancel');
+    if (btn) btn.disabled = true;
+    this._setPrintQueueStatus('Cancelling print job…');
+    this.setIslandState(true, 'Cancelling print job', null, 'Working');
+    try {
+      const res = await this.invoke('print_job_cancel', {
+        printer,
+        job_id: jobId,
+        confirmed: true,
+      });
+      if (res && res.ok) {
+        this._setPrintQueueStatus(res.message || 'Print job cancelled.');
+        this.setIslandState(false, 'Print job cancelled', 100, res.message || 'Done');
+        await this.loadPrintJobs();
+      } else {
+        const err = (res && (res.error || res.message)) || 'Cancel failed.';
+        this._setPrintQueueStatus(err);
+        this.setIslandState(false, 'Cancel failed', 0, err);
+      }
+    } catch (e) {
+      const err = String(e.message || e);
+      this._setPrintQueueStatus(err);
+      this.setIslandState(false, 'Cancel failed', 0, err);
+    } finally {
+      if (btn) btn.disabled = false;
+    }
+  }
+
+  async clearPrintQueue() {
+    if (!confirm(
+      'Clear the whole print queue and restart the print spooler?\n\n' +
+      'This cancels every waiting print job on this PC. Use only if cancelling one job did not help.'
+    )) {
+      return;
+    }
+    if (!confirm('Final confirmation: clear the print queue now?')) return;
+    const btn = document.getElementById('btn-print-queue-clear');
+    if (btn) btn.disabled = true;
+    this._setPrintQueueStatus('Clearing print queue and restarting spooler…');
+    this.setIslandState(true, 'Repairing print spooler', null, 'Working');
+    try {
+      const res = await this.invoke('print_queue_clear', { confirmed: true });
+      if (res && res.ok) {
+        this._setPrintQueueStatus(res.message || 'Print queue cleared.');
+        this.setIslandState(false, 'Print spooler restarted', 100, res.message || 'Done');
+        await this.loadPrintJobs();
+      } else {
+        const err = (res && (res.error || res.message)) || 'Spooler repair failed.';
+        this._setPrintQueueStatus(err);
+        this.setIslandState(false, 'Spooler repair failed', 0, err);
+      }
+    } catch (e) {
+      const err = String(e.message || e);
+      this._setPrintQueueStatus(err);
+      this.setIslandState(false, 'Spooler repair failed', 0, err);
+    } finally {
+      if (btn) btn.disabled = false;
+    }
+  }
 
   async loadInitialDiagnostics() {
     this.applyAllowBetaCheckbox();
