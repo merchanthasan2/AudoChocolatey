@@ -55,10 +55,10 @@ PackageIdentifier: QuantumStep.QuantumUpdater
 PackageVersion: $ver
 MinimumOSVersion: 10.0.17763.0
 InstallerType: $installerType
-Scope: user
 UpgradeBehavior: install
 Commands:
   - QuantumUpdater
+ElevationRequirement: elevationRequired
 Installers:
   - Architecture: x64
     InstallerUrl: $url

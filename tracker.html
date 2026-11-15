@@ -139,7 +139,7 @@ tr.grp td { background: #18243a; font-weight: 700; }
       <ol>
         <li>Rebuild / open Build 9 with zip self-update; download from <code>v2.0.3</code> when tagged.</li>
         <li>Owner later: on-PC look at Build 9 + second-PC zip install.</li>
-        <li>Owner later: <code>wingetcreate submit</code>.</li>
+        <li>Winget PR open: microsoft/winget-pkgs#480804 (await community merge).</li>
         <li>Owner later: Park D lock.</li>
       </ol>
     </div>
@@ -532,7 +532,7 @@ const TRACKER = {
         { id: "42.1", text: "Official self-update uses Releases zip (ADR 026 + 038 + 039). Prefers setup, then QuantumUpdater-Windows.zip, applies onedir via robocopy. Bare exe last.", status: "done", owner: "engine", parts: { plan: "done", build: "done", verify: "done", sec: "todo", valid: "todo", pc: "todo", acc: "todo" } },
         { id: "42.2", text: "Tagged v2.0.2+ with QuantumUpdater-Windows.zip (full onedir). Prefer zip over any bare bootloader exe.", status: "done", owner: "engine", stage: "Tag release", with: "Manager" },
         { id: "42.3", text: "Winget package QuantumStep.QuantumUpdater: portable manifests + release Action prepare script (ADR 028). Not in community index until a public Release exists and the winget-pkgs PR merges.", status: "done", owner: "engine", parts: { plan: "done", build: "done", verify: "todo", sec: "todo", valid: "todo", pc: "todo", acc: "todo" } },
-        { id: "42.4", text: "Owner later: after tag builds, submit manifests with wingetcreate submit (or PR to microsoft/winget-pkgs) so winget install QuantumStep.QuantumUpdater works on any PC.", status: "needs-owner", owner: "owner", stage: "Submit to winget", with: "Owner" },
+        { id: "42.4", text: "Submitted: https://github.com/microsoft/winget-pkgs/pull/480804 (QuantumStep.QuantumUpdater 2.0.3 zip). Await Microsoft merge; then winget install works.", status: "waiting", owner: "security", stage: "Await winget-pkgs merge", with: "Manager" },
         { id: "42.5", text: "Check for a newer Quantum Updater build before the app starts work. Preload in main.py, show on Getting ready, then start catalog scans. Offer Install so this PC can run the better build. Offline does not block. ADR 032.", status: "done", owner: "engine", parts: { plan: "done", build: "done", verify: "todo", sec: "todo", valid: "todo", pc: "todo", acc: "todo" } }
       ]
     }

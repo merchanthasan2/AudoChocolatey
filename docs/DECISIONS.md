@@ -198,6 +198,12 @@
 - **Decision:** No new protective middle layer. `main.py` starts `preload_self_update_check` and waits up to 8s before opening the window. Getting ready includes a **Quantum Updater** row. Catalog bootstrap starts only after that check settles (or times out at 10s in the UI). Offline or failed checks do not hold the app. The install banner still offers the update; applying it remains user-confirmed via the existing Install path. Official Releases rules from ADR 026 stay.
 - **Consequences:** Tracker 42.5. A tagged Release is still required before an installed EXE can download a newer build.
 
+### ADR 040: Winget community submit for 2.0.3
+- **Status:** Accepted (2026-11-15).
+- **Context:** Tagged Releases publish `QuantumUpdater-Windows.zip`. Tracker 42.4 needed a public winget-pkgs PR.
+- **Decision:** No new protective middle layer. Manifests use `InstallerType: zip` + `NestedInstallerType: portable` + `ElevationRequirement: elevationRequired`. Submitted via `wingetcreate submit` as PR https://github.com/microsoft/winget-pkgs/pull/480804. Local mirror kept under `mirrors/winget-pkgs/manifests/q/QuantumStep/QuantumUpdater/2.0.3/`.
+- **Consequences:** `winget install QuantumStep.QuantumUpdater` works only after Microsoft merges. Until then use the GitHub zip.
+
 ### ADR 039: Self-update applies QuantumUpdater-Windows.zip
 - **Status:** Accepted (2026-11-15). Manager provisional (Design Architect seat at model limit).
 - **Context:** Releases ship a full onedir zip. In-app update still preferred a bare `.exe`, which cannot replace a working install.

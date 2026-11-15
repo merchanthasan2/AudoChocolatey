@@ -18,6 +18,8 @@ env/
 # Build artifacts & distribution binaries
 dist/
 build/
+py-artifacts/
+_winget_sample.txt
 *.exe
 *.msi
 *.setup.exe
