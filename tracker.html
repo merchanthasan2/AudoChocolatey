@@ -134,19 +134,19 @@ tr.grp td { background: #18243a; font-weight: 700; }
   <section class="resume" aria-label="Resume point">
     <div>
       <span class="next-pill">RESUME POINT</span>
-      <h2>Build 8 — fix broken GitHub download</h2>
-      <p>Lone release <code>QuantumUpdater.exe</code> was only the onedir bootloader (Python errors). Download <strong>QuantumUpdater-Windows.zip</strong>, unzip with <code>_internal</code>, run the exe. Local Build 8 has startup crash logging.</p>
+      <h2>Zip self-update + architecture refresh</h2>
+      <p>ADR 039: in-app update prefers <code>QuantumUpdater-Windows.zip</code> and applies the full onedir folder. <code>docs/ARCHITECTURE.md</code> refreshed for Waves 2–5 + zip releases. Park D still owner-later for live CSS.</p>
       <ol>
-        <li>Use the zip from GitHub Releases — not a bare bootloader exe.</li>
-        <li>Open local <code>dist\QuantumUpdater\QuantumUpdater.exe</code> (Build 8).</li>
-        <li>Owner later: <code>wingetcreate submit</code> for QuantumStep.QuantumUpdater.</li>
-        <li>Owner later: Park D lock / on-PC looks.</li>
+        <li>Rebuild / open Build 9 with zip self-update; download from <code>v2.0.3</code> when tagged.</li>
+        <li>Owner later: on-PC look at Build 9 + second-PC zip install.</li>
+        <li>Owner later: <code>wingetcreate submit</code>.</li>
+        <li>Owner later: Park D lock.</li>
       </ol>
     </div>
     <div>
       <span class="eyebrow">Owner later (non-blocking)</span>
       <ul class="prio">
-        <li class="now"><span>Open Build 8 / zip on other PC</span><span class="muted">now</span></li>
+        <li class="now"><span>Team: zip self-update Build 9</span><span class="muted">now</span></li>
         <li><span>Submit winget manifests</span><span class="muted">later</span></li>
         <li><span>Lock Park D / on-PC looks</span><span class="muted">later</span></li>
         <li><span>Security 28.1 full score</span><span class="muted">later</span></li>
@@ -529,8 +529,8 @@ const TRACKER = {
       id: "42",
       title: "GitHub release channel and self-update",
       items: [
-        { id: "42.1", text: "Official self-update and downloads use merchanthasan2/AudoChocolatey Releases. Tag v* builds QuantumUpdater.exe. Portable EXE swaps the frozen app; *setup*.exe still uses /S. ADR 026.", status: "done", owner: "engine", parts: { plan: "done", build: "done", verify: "done", sec: "done", valid: "todo", pc: "todo", acc: "todo" } },
-        { id: "42.2", text: "Tagged v2.0.2 with QuantumUpdater-Windows.zip (full onedir). Prefer zip over any bare bootloader exe.", status: "done", owner: "engine", stage: "Tag release", with: "Manager" },
+        { id: "42.1", text: "Official self-update uses Releases zip (ADR 026 + 038 + 039). Prefers setup, then QuantumUpdater-Windows.zip, applies onedir via robocopy. Bare exe last.", status: "done", owner: "engine", parts: { plan: "done", build: "done", verify: "done", sec: "todo", valid: "todo", pc: "todo", acc: "todo" } },
+        { id: "42.2", text: "Tagged v2.0.2+ with QuantumUpdater-Windows.zip (full onedir). Prefer zip over any bare bootloader exe.", status: "done", owner: "engine", stage: "Tag release", with: "Manager" },
         { id: "42.3", text: "Winget package QuantumStep.QuantumUpdater: portable manifests + release Action prepare script (ADR 028). Not in community index until a public Release exists and the winget-pkgs PR merges.", status: "done", owner: "engine", parts: { plan: "done", build: "done", verify: "todo", sec: "todo", valid: "todo", pc: "todo", acc: "todo" } },
         { id: "42.4", text: "Owner later: after tag builds, submit manifests with wingetcreate submit (or PR to microsoft/winget-pkgs) so winget install QuantumStep.QuantumUpdater works on any PC.", status: "needs-owner", owner: "owner", stage: "Submit to winget", with: "Owner" },
         { id: "42.5", text: "Check for a newer Quantum Updater build before the app starts work. Preload in main.py, show on Getting ready, then start catalog scans. Offer Install so this PC can run the better build. Offline does not block. ADR 032.", status: "done", owner: "engine", parts: { plan: "done", build: "done", verify: "todo", sec: "todo", valid: "todo", pc: "todo", acc: "todo" } }

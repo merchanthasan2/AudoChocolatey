@@ -19,6 +19,12 @@ Two skills are already installed and must be used: `vibe-security` (raroque) and
 
 ## Results
 
+### Zip self-update (ADR 039) — 15 Nov 2026
+- **Seat:** Manager (provisional)
+- **Verdict:** Pass for source. Asset pick prefers official zip; apply only when frozen; unpack then robocopy over install dir via detached cmd; official URL checks unchanged.
+- **Scope:** `core/updater.py`, `core/test_updater_windows_zip.py`, `docs/ARCHITECTURE.md`.
+- **Middleware:** No new layer.
+
 ### Release packaging + upgrade timeout (ADR 037 / 038) — 15 Nov 2026
 - **Seat:** Manager (Security architect seat unavailable; provisional)
 - **Verdict:** Pass for source. Publishing a lone onedir bootloader was a launch defect (Python runtime missing). Fixed by shipping full zip. Streaming winget now times out and kills the process tree so a stuck upgrade cannot hang the UI forever.

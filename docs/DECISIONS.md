@@ -198,6 +198,12 @@
 - **Decision:** No new protective middle layer. `main.py` starts `preload_self_update_check` and waits up to 8s before opening the window. Getting ready includes a **Quantum Updater** row. Catalog bootstrap starts only after that check settles (or times out at 10s in the UI). Offline or failed checks do not hold the app. The install banner still offers the update; applying it remains user-confirmed via the existing Install path. Official Releases rules from ADR 026 stay.
 - **Consequences:** Tracker 42.5. A tagged Release is still required before an installed EXE can download a newer build.
 
+### ADR 039: Self-update applies QuantumUpdater-Windows.zip
+- **Status:** Accepted (2026-11-15). Manager provisional (Design Architect seat at model limit).
+- **Context:** Releases ship a full onedir zip. In-app update still preferred a bare `.exe`, which cannot replace a working install.
+- **Decision:** No new protective middle layer. `core/updater.py` prefers setup exe, then Windows zip, then any zip, then bare exe. Zip path unpacks, finds `QuantumUpdater.exe`, writes a detached `robocopy` swap over the installed folder, then relaunches. Architecture picture refreshed for Waves 2–5 + zip releases. Do not change live Park/cream CSS.
+- **Consequences:** Install from Releases and Update in-app use the same zip asset. Tracker continues without waiting on Park lock.
+
 ### ADR 038: Publish full onedir zip on GitHub Releases
 - **Status:** Accepted (2026-11-15).
 - **Context:** Release pipeline uploaded only `dist\...\QuantumUpdater.exe` from an onedir build. That bootloader needs `_internal`; alone it fails with Python errors and will not start.

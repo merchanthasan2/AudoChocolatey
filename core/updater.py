@@ -14,8 +14,12 @@ try:
     from core.build_info import VERSION as CURRENT_VERSION
 except Exception:
     CURRENT_VERSION = "2.0.0"
-# Official download channel: this GitHub repo's Releases (tag v* → Action builds EXE).
+# Official download channel: this GitHub repo's Releases (tag v* → Action builds zip).
 GITHUB_REPO = "merchanthasan2/AudoChocolatey"
+WINDOWS_ZIP_NAMES = (
+    "quantumupdater-windows.zip",
+    "quantumupdater-windows-build7.zip",
+)
 API_URL = f"https://api.github.com/repos/{GITHUB_REPO}/releases/latest"
 _UPDATE_HOSTS = frozenset({
     "github.com",
@@ -79,6 +83,21 @@ def get_human_size(bytes_num: int) -> str:
     if bytes_num < 1024 * 1024 * 1024:
         return f"{bytes_num / (1024.0 * 1024.0):.1f} MB"
     return f"{bytes_num / (1024.0 * 1024.0 * 1024.0):.2f} GB"
+
+
+def find_windows_onedir_root(extract_dir: str) -> Optional[str]:
+    """Return the folder that holds QuantumUpdater.exe (+ usually _internal)."""
+    if not extract_dir or not os.path.isdir(extract_dir):
+        return None
+    direct = os.path.join(extract_dir, "QuantumUpdater.exe")
+    if os.path.isfile(direct):
+        return extract_dir
+    for root, _dirs, files in os.walk(extract_dir):
+        for name in files:
+            if name.lower() == "quantumupdater.exe":
+                return root
+    return None
+
 
 class AppUpdater:
     """Cross-platform auto-updater engine for macOS and Windows.
@@ -162,20 +181,26 @@ class AppUpdater:
                     return a
 
         elif self.is_windows:
-            # 1. Look for NSIS setup installer (supports /S silent in-place update)
+            # 1. NSIS setup installer (supports /S silent in-place update)
             for a in assets:
                 name = a.get("name", "").lower()
                 if "setup" in name and name.endswith(".exe"):
                     return a
-            # 2. Look for portable or general exe
+            # 2. Full onedir zip (required — a lone bootloader .exe will not start)
             for a in assets:
                 name = a.get("name", "").lower()
-                if name.endswith(".exe"):
+                if name in WINDOWS_ZIP_NAMES or (
+                    name.endswith(".zip") and "windows" in name and "quantum" in name
+                ):
                     return a
-            # 3. Look for zip
             for a in assets:
                 name = a.get("name", "").lower()
                 if name.endswith(".zip"):
+                    return a
+            # 3. Last resort: any .exe (may be incomplete onedir bootloader)
+            for a in assets:
+                name = a.get("name", "").lower()
+                if name.endswith(".exe"):
                     return a
 
         return assets[0] if assets else None
@@ -234,7 +259,7 @@ class AppUpdater:
             if self.is_mac:
                 return self._apply_macos_update(tmp_file, tmp_dir, on_log)
             elif self.is_windows:
-                return self._apply_windows_update(tmp_file, on_log)
+                return self._apply_windows_update(tmp_file, on_log, staging_dir=tmp_dir)
             else:
                 if on_log:
                     on_log("[Quantum Auto-Updater]: Unsupported OS for automatic restart.")
@@ -307,24 +332,34 @@ class AppUpdater:
 
         return False
 
-    def _apply_windows_update(self, downloaded_file: str, on_log: Optional[Callable]) -> bool:
+    def _apply_windows_update(
+        self,
+        downloaded_file: str,
+        on_log: Optional[Callable],
+        staging_dir: Optional[str] = None,
+    ) -> bool:
         """Apply a Windows update from an official release asset.
 
         - ``*setup*.exe``: NSIS-style silent install (``/S``).
-        - Other ``.exe`` (portable ``QuantumUpdater.exe``): replace the running
-          frozen binary after this process exits, then relaunch.
+        - ``*.zip``: full onedir folder (exe + ``_internal``); preferred release asset.
+        - Other ``.exe``: replace only the running frozen binary (legacy / last resort).
         """
-        if not downloaded_file.lower().endswith(".exe"):
+        lower = downloaded_file.lower()
+        name = os.path.basename(downloaded_file).lower()
+
+        if lower.endswith(".zip"):
+            return self._apply_windows_zip(downloaded_file, on_log, staging_dir=staging_dir)
+
+        if not lower.endswith(".exe"):
             return False
 
-        name = os.path.basename(downloaded_file).lower()
         if "setup" in name:
             if on_log:
                 on_log("[Quantum Auto-Updater]: Running silent setup installer (/S)...")
             subprocess.Popen([downloaded_file, "/S"], start_new_session=True)
             os._exit(0)
 
-        # Portable build from GitHub Releases — only swap the frozen app EXE.
+        # Legacy portable single-file swap.
         if not getattr(sys, "frozen", False):
             if on_log:
                 on_log("[Quantum Auto-Updater]: Portable update only applies to the installed app file.")
@@ -337,7 +372,6 @@ class AppUpdater:
             return False
 
         script = os.path.join(tempfile.gettempdir(), "quantum_updater_swap.cmd")
-        # Absolute paths; caret-escape only what cmd needs for quotes.
         src_q = downloaded_file.replace('"', "")
         dest_q = dest.replace('"', "")
         script_q = script.replace('"', "")
@@ -355,6 +389,72 @@ class AppUpdater:
 
         if on_log:
             on_log("[Quantum Auto-Updater]: Replacing the app file and restarting...")
+        self._spawn_windows_swap_script(script)
+        os._exit(0)
+
+    def _apply_windows_zip(
+        self,
+        downloaded_file: str,
+        on_log: Optional[Callable],
+        staging_dir: Optional[str] = None,
+    ) -> bool:
+        if not getattr(sys, "frozen", False):
+            if on_log:
+                on_log("[Quantum Auto-Updater]: Zip update only applies to the installed app folder.")
+            return False
+
+        dest_exe = os.path.abspath(sys.executable)
+        if not dest_exe.lower().endswith(".exe"):
+            if on_log:
+                on_log("[Quantum Auto-Updater]: Refused update — unexpected app path.")
+            return False
+        dest_root = os.path.dirname(dest_exe)
+
+        base = staging_dir or tempfile.mkdtemp(prefix="quantum_updater_zip_")
+        extract_dir = os.path.join(base, "extracted")
+        os.makedirs(extract_dir, exist_ok=True)
+        try:
+            shutil.unpack_archive(downloaded_file, extract_dir)
+        except Exception as exc:
+            if on_log:
+                on_log(f"[Quantum Auto-Updater]: Could not unpack update zip: {exc}")
+            return False
+
+        staged_root = find_windows_onedir_root(extract_dir)
+        if not staged_root:
+            if on_log:
+                on_log("[Quantum Auto-Updater]: Update zip has no QuantumUpdater.exe.")
+            return False
+        staged_exe = os.path.join(staged_root, "QuantumUpdater.exe")
+        if not os.path.isfile(staged_exe):
+            if on_log:
+                on_log("[Quantum Auto-Updater]: Update zip is missing QuantumUpdater.exe.")
+            return False
+
+        script = os.path.join(tempfile.gettempdir(), "quantum_updater_zip_swap.cmd")
+        src_q = staged_root.replace('"', "")
+        dest_q = dest_root.replace('"', "")
+        exe_q = os.path.join(dest_root, "QuantumUpdater.exe").replace('"', "")
+        script_q = script.replace('"', "")
+        # robocopy exit 0–7 = copied with or without extras; 8+ = failure.
+        lines = [
+            "@echo off",
+            "setlocal",
+            "timeout /t 3 /nobreak >nul",
+            f'robocopy "{src_q}" "{dest_q}" /E /IS /IT /R:2 /W:1 /NFL /NDL /NJH /NJS /nc /ns /np',
+            "if errorlevel 8 exit /b 1",
+            f'start "" "{exe_q}"',
+            f'del "{script_q}"',
+        ]
+        with open(script, "w", encoding="utf-8", newline="\r\n") as fh:
+            fh.write("\n".join(lines) + "\n")
+
+        if on_log:
+            on_log("[Quantum Auto-Updater]: Replacing the app folder from the zip and restarting...")
+        self._spawn_windows_swap_script(script)
+        os._exit(0)
+
+    def _spawn_windows_swap_script(self, script: str) -> None:
         creation = getattr(subprocess, "CREATE_NEW_PROCESS_GROUP", 0) | getattr(
             subprocess, "DETACHED_PROCESS", 0
         )
@@ -364,4 +464,3 @@ class AppUpdater:
             creationflags=creation,
             close_fds=True,
         )
-        os._exit(0)
