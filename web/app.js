@@ -1487,6 +1487,8 @@ class QuantumUpdaterApp {
       catalog_import: ['path', 'confirmed'],
       app_repair_desktop: ['package_id', 'confirmed'],
       packaged_app_reset: ['package_full_name', 'confirmed'],
+      files_service_action: ['name', 'action', 'confirmed'],
+      files_optional_feature_set: ['name', 'enable', 'confirmed'],
     };
     const keys = order[cmd];
     if (keys) return keys.map((k) => args[k]);
@@ -6291,7 +6293,10 @@ class QuantumUpdaterApp {
     const extraEl = document.getElementById('files-extra-input');
     const path = pathEl ? String(pathEl.value || '').trim() : '';
     const extra = extraEl ? String(extraEl.value || '').trim() : '';
-    const needsConfirm = ['compress', 'mount', 'eject', 'format', 'context_restore', 'context_disable'];
+    const needsConfirm = [
+      'compress', 'mount', 'eject', 'format', 'context_restore', 'context_disable',
+      'svc_start', 'svc_stop', 'svc_restart', 'feat_enable', 'feat_disable',
+    ];
     if (needsConfirm.includes(kind) && !confirm('Run this file or admin action now?')) return;
     if (kind === 'format' && !confirm('Final warning: formatting erases the removable volume. Continue?')) return;
     this._setToolStatus(statusId, 'Working…');
@@ -6323,8 +6328,27 @@ class QuantumUpdaterApp {
         res = await this.invoke('shell_context_disable', { handler_id: handlerId, confirmed: true });
       } else if (kind === 'context_restore') res = await this.invoke('shell_context_restore', { confirmed: true });
       else if (kind === 'services') res = await this.invoke('files_services_list', {});
-      else if (kind === 'optional') res = await this.invoke('files_optional_features', {});
-      else if (kind === 'awake') res = await this.invoke('files_keep_awake_start', { display: true });
+      else if (kind === 'svc_start' || kind === 'svc_stop' || kind === 'svc_restart') {
+        const name = extra || path;
+        if (!name) {
+          this._setToolStatus(statusId, 'Enter a service name in the extra field (from Services list).');
+          return;
+        }
+        const action = kind === 'svc_start' ? 'start' : (kind === 'svc_stop' ? 'stop' : 'restart');
+        res = await this.invoke('files_service_action', { name, action, confirmed: true });
+      } else if (kind === 'optional') res = await this.invoke('files_optional_features', {});
+      else if (kind === 'feat_enable' || kind === 'feat_disable') {
+        const name = extra || path;
+        if (!name) {
+          this._setToolStatus(statusId, 'Enter a feature name in the extra field (from Optional features list).');
+          return;
+        }
+        res = await this.invoke('files_optional_feature_set', {
+          name,
+          enable: kind === 'feat_enable',
+          confirmed: true,
+        });
+      } else if (kind === 'awake') res = await this.invoke('files_keep_awake_start', { display: true });
       else if (kind === 'awake_off') res = await this.invoke('files_keep_awake_cancel', {});
       const text = res && res.ok
         ? (res.message || res.hex || res.status || res.preview || JSON.stringify(

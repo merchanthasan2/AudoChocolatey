@@ -24,6 +24,7 @@ Two skills are already installed and must be used: `vibe-security` (raroque) and
 - **Verdict:** Pass for source pending formal seat. Confirm gates on TCP/IP reset, firewall reset, format removable, compression, mount/eject, and context-menu disable/restore. Service denylist blocks protected names. Registry import blocked unless `allow_import`. System drive format refused.
 - **Scope:** `core/system_tools/*` wave-4/5 modules, `core/test_wave45_remaining.py`, `web_api.py`, Settings cards in `web/index.html` + `web/app.js`, ADR 036, tracker 33.x/34.x waiting rows.
 - **Middleware:** No new layer.
+- **Follow-up (15 Nov):** Manager wired Settings start/stop/restart service and enable/disable optional feature buttons (extra-field name + confirm) after [Wave 4/5 worker](da000787-67db-4048-a643-9b5a542d9293) noted list-only UI.
 
 ### Slice 31.3 / 31.4 / 31.11 Cleanup repair trio — 15 Nov 2026
 - **Seat:** Manager (provisional; Security architect pass pending)

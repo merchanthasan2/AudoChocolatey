@@ -1128,7 +1128,7 @@
               <p class="settings-card-desc">ZIP, checksums, compression, ISO mount, shortcuts, locks, ACLs, services, optional features, and admin helpers.</p>
               <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; align-items: center;">
                 <input type="text" class="glass-input" id="files-path-input" style="min-width: 220px; flex: 1;" placeholder="File or folder path under your profile" aria-label="Path">
-                <input type="text" class="glass-input" id="files-extra-input" style="width: 120px;" placeholder="E: or service" aria-label="Extra value">
+                <input type="text" class="glass-input" id="files-extra-input" style="width: 180px;" placeholder="E: / service name / feature name" aria-label="Extra value">
                 <button type="button" class="glass-btn btn-secondary btn-sm" onclick="app.filesAction('checksum')">Checksum</button>
                 <button type="button" class="glass-btn btn-secondary btn-sm" onclick="app.filesAction('signature')">Signature</button>
                 <button type="button" class="glass-btn btn-secondary btn-sm" onclick="app.filesAction('empty')">Find empty folders</button>
@@ -1147,7 +1147,12 @@
                 <button type="button" class="glass-btn btn-secondary btn-sm" onclick="app.filesAction('context_disable')">Disable menu</button>
                 <button type="button" class="glass-btn btn-secondary btn-sm" onclick="app.filesAction('context_restore')">Restore menus</button>
                 <button type="button" class="glass-btn btn-secondary btn-sm" onclick="app.filesAction('services')">Services</button>
+                <button type="button" class="glass-btn btn-secondary btn-sm" onclick="app.filesAction('svc_start')">Start service</button>
+                <button type="button" class="glass-btn btn-secondary btn-sm" onclick="app.filesAction('svc_stop')">Stop service</button>
+                <button type="button" class="glass-btn btn-secondary btn-sm" onclick="app.filesAction('svc_restart')">Restart service</button>
                 <button type="button" class="glass-btn btn-secondary btn-sm" onclick="app.filesAction('optional')">Optional features</button>
+                <button type="button" class="glass-btn btn-secondary btn-sm" onclick="app.filesAction('feat_enable')">Enable feature</button>
+                <button type="button" class="glass-btn btn-secondary btn-sm" onclick="app.filesAction('feat_disable')">Disable feature</button>
                 <button type="button" class="glass-btn btn-secondary btn-sm" onclick="app.filesAction('awake')">Keep awake</button>
                 <button type="button" class="glass-btn btn-secondary btn-sm" onclick="app.filesAction('awake_off')">Cancel keep-awake</button>
               </div>
