@@ -24,6 +24,10 @@ _EXPLICIT_TARGETING_SPLIT = re.compile(
 
 # Align winget catalog subprocess timeout with scan_orchestrator.CATALOG_BUDGET_S (60s).
 WINGET_CATALOG_QUERY_TIMEOUT_S = 60
+# Install/upgrade streaming can hang forever on MSI mutex / silent installer waits.
+# Cap so batch updates can skip a stuck package and continue.
+WINGET_STREAM_TIMEOUT_S = 600
+WINGET_STREAM_TIMEOUT_EXIT = -999
 
 
 class WingetEngine(BaseEngine):
@@ -148,18 +152,23 @@ class WingetEngine(BaseEngine):
             self.active_proc = None
 
     def _run_streaming_cmd(
-        self, 
-        args: List[str], 
+        self,
+        args: List[str],
         on_log: Optional[Callable[[str], None]] = None,
-        on_progress: Optional[Callable[[Optional[float], str], None]] = None
+        on_progress: Optional[Callable[[Optional[float], str], None]] = None,
+        timeout_s: int = WINGET_STREAM_TIMEOUT_S,
     ) -> int:
         """
         Run a command while streaming output in real-time completely hidden.
         Handles carriage-return (\\r) updates used by Winget progress bars.
+        Kills the process tree if winget stalls past timeout_s so batch upgrades continue.
         """
         cmd = [self._executable] + args
         if on_log:
             on_log(f"> {' '.join(cmd)}\n")
+
+        # Drop a leftover winget from a prior package so the next upgrade does not wait forever.
+        self.abort()
 
         try:
             startupinfo = None
@@ -182,13 +191,42 @@ class WingetEngine(BaseEngine):
                 bufsize=1
             )
             self.active_proc = proc
+            done = threading.Event()
+            box: Dict[str, Any] = {"code": -1, "error": None}
 
-            if proc.stdout:
-                stream_winget_stdout(proc.stdout, on_log=on_log, on_progress=on_progress)
-                proc.stdout.close()
+            def _reader() -> None:
+                try:
+                    if proc.stdout:
+                        stream_winget_stdout(proc.stdout, on_log=on_log, on_progress=on_progress)
+                        try:
+                            proc.stdout.close()
+                        except Exception:
+                            pass
+                    box["code"] = proc.wait()
+                except Exception as exc:
+                    box["error"] = exc
+                    box["code"] = -1
+                finally:
+                    done.set()
 
-            proc.wait()
-            return proc.returncode
+            reader = threading.Thread(target=_reader, name="winget-stream", daemon=True)
+            reader.start()
+            limit = max(30, int(timeout_s or WINGET_STREAM_TIMEOUT_S))
+            if not done.wait(limit):
+                if on_log:
+                    on_log(
+                        f"\n[Winget]: Timed out after {limit}s — stopping this package "
+                        "so the next update can run.\n"
+                    )
+                if on_progress:
+                    on_progress(None, f"Timed out after {limit}s")
+                self.abort()
+                done.wait(5)
+                return WINGET_STREAM_TIMEOUT_EXIT
+
+            if box["error"] is not None:
+                raise box["error"]
+            return int(box["code"])
         except Exception as e:
             if on_log:
                 on_log(f"\n[Error executing command]: {str(e)}\n")
@@ -515,7 +553,19 @@ class WingetEngine(BaseEngine):
             args,
             on_log=lambda line: self._merge_stream_log(line, captured, on_log),
             on_progress=on_progress,
+            timeout_s=WINGET_STREAM_TIMEOUT_S,
         )
+        if code == WINGET_STREAM_TIMEOUT_EXIT:
+            return OperationStatus(
+                package_id=package_id,
+                success=False,
+                message=(
+                    f"Upgrade timed out after {WINGET_STREAM_TIMEOUT_S // 60} minutes. "
+                    "Skipped so the next package can continue — retry this one alone."
+                ),
+                exit_code=code,
+                reason="timeout",
+            )
         # 0: Success, 3010: Success Reboot Required, -1978335189: Already latest, -1978335181: Reboot required
         success = (code in (0, 3010, -1978335189, -1978335181))
         if success:

@@ -1,5 +1,5 @@
 """Shown in the window so a packaged build can be told apart from an older one."""
 
 VERSION = "2.0.0"
-BUILD = 5
-LABEL = "2.0.0 · Build 5"
+BUILD = 7
+LABEL = "2.0.0 · Build 7"

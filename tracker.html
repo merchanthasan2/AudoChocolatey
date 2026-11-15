@@ -134,10 +134,10 @@ tr.grp td { background: #18243a; font-weight: 700; }
   <section class="resume" aria-label="Resume point">
     <div>
       <span class="next-pill">RESUME POINT</span>
-      <h2>Waves 2–5 shipping — Settings tools live</h2>
-      <p>Tracker Waves 3–5 engine rows through <code>34.17</code> are in source (ADR 036). Wave 4/5 advanced tools are on Settings. Owner later: on-PC checks and Release tag.</p>
+      <h2>Build 7 ready — upgrade hang fix</h2>
+      <p>Fresh <code>dist\QuantumUpdater\QuantumUpdater.exe</code> (2.0.0 · Build 7). Batch upgrades now time out a stuck winget package after 10 minutes and continue. Owner later: tag/release + Park lock.</p>
       <ol>
-        <li>Security architect pass on ADR 036; owner opens fresh <code>QuantumUpdater.exe</code> for Wave 4/5 buttons.</li>
+        <li>Close the stuck 2.0 app; open Build 7 from <code>dist\QuantumUpdater\</code>.</li>
         <li>Owner later: tag <code>v*</code> so self-update has a downloadable EXE.</li>
         <li>Owner later: <code>wingetcreate submit</code> for QuantumStep.QuantumUpdater.</li>
         <li>Then any PC: <code>winget install QuantumStep.QuantumUpdater</code>.</li>
@@ -146,7 +146,7 @@ tr.grp td { background: #18243a; font-weight: 700; }
     <div>
       <span class="eyebrow">Owner later (non-blocking)</span>
       <ul class="prio">
-        <li class="now"><span>Team: 42.5 + Wave 2</span><span class="muted">now</span></li>
+        <li class="now"><span>Open Build 7 on this PC</span><span class="muted">now</span></li>
         <li><span>Tag release for self-update download</span><span class="muted">later</span></li>
         <li><span>Submit winget manifests</span><span class="muted">later</span></li>
         <li><span>Lock Park D / on-PC looks</span><span class="muted">later</span></li>
@@ -314,7 +314,7 @@ const TRACKER = {
       items: [
         { id: "25.1", text: "Icons from program files on this PC", status: "checked", owner: "engine" },
         { id: "25.2", text: "Icons from publisher sites for Marketplace with 73 publisher homepages", status: "checked", owner: "product" },
-        { id: "25.3", text: "Rebuild and owner check", status: "waiting", owner: "owner" }
+        { id: "25.3", text: "Rebuild and owner check — Build 7 packaged (hang fix); owner open still pending", status: "waiting", owner: "owner" }
       ]
     },
     {
@@ -590,11 +590,11 @@ const NOTES = {
   GOV: "The team and this board.",
   "25": "Icons are built. You still need to look.",
   "28": "DisplayLink passed. Mid phase-36 and Run installer fixed. 36.8/36.9 Security pass after three mediums. No full app score yet.",
-  "29": "Build 5 is open on this PC. Your look at Installed + 36.1–36.8 stays pending.",
-  "35": "Fixes from your last test are in Build 5.",
+  "29": "Build 7 packaged. Your look at Installed + 36.1–36.8 stays pending.",
+  "35": "Upgrade hang fix + Waves 2–5 in Build 7.",
   "30": "Starts after cream theme, ready gate, and first speed wins.",
-  "36": "36.8 and 36.9 Security PASS. Build 5 has Installed fix + honest progress. Your look stays pending.",
-  "38": "The window title shows 2.0.0 · Build 5 (open).",
+  "36": "36.8 and 36.9 Security PASS. Build 7 has Installed fix + honest progress. Your look stays pending.",
+  "38": "The window title shows 2.0.0 · Build 7.",
   "39": "The pink Clean button starts the scan and opens the review.",
   "40": "DisplayLink is under USB devices as External in Build 3.",
   "41": "No-stop order. Park D mockups under design/mockups/directions/park/. Ready gate in source (41.2). Owner later: lock Park D, approve full set, then live theme. Speed + Wave 1 continue.",

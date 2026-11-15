@@ -198,6 +198,12 @@
 - **Decision:** No new protective middle layer. `main.py` starts `preload_self_update_check` and waits up to 8s before opening the window. Getting ready includes a **Quantum Updater** row. Catalog bootstrap starts only after that check settles (or times out at 10s in the UI). Offline or failed checks do not hold the app. The install banner still offers the update; applying it remains user-confirmed via the existing Install path. Official Releases rules from ADR 026 stay.
 - **Consequences:** Tracker 42.5. A tagged Release is still required before an installed EXE can download a newer build.
 
+### ADR 037: Cap stuck winget upgrades so batch updates continue
+- **Status:** Accepted (2026-11-15).
+- **Context:** Owner's 2.0 app froze on the second package during a multi-app update. `_run_streaming_cmd` waited on winget with no timeout.
+- **Decision:** No new protective middle layer. Streaming install/upgrade kills the winget process tree after 600s and returns a timeout notice so the batch moves to the next package. Clear any leftover active winget before each stream. Packaged as Build 7.
+- **Consequences:** Stuck packages show Retry; remaining updates keep going. Owner opens `dist\QuantumUpdater\QuantumUpdater.exe`.
+
 ### ADR 036: Wave 4/5 remaining engine tools
 - **Status:** Accepted (2026-11-15).
 - **Context:** Tracker phases 33–34 still had waiting engine rows (context menu, BSOD, TCP/IP, firewall, Wi-Fi, compression, ISO, services, optional features, etc.).
