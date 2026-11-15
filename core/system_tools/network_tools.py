@@ -343,3 +343,138 @@ def clock_sync_now(confirmed: bool = False) -> Dict[str, Any]:
         "message": "Clock sync requested." if proc.returncode == 0 else "Clock sync failed.",
         "detail": ((proc.stdout or "") + (proc.stderr or "")).strip()[:1000],
     }
+
+
+def _backup_dir() -> str:
+    root = os.path.join(os.environ.get("LOCALAPPDATA", ""), "QuantumUpdater", "net-backups")
+    os.makedirs(root, exist_ok=True)
+    return root
+
+
+def backup_adapter_config() -> Dict[str, Any]:
+    """33.7 — save netsh interface snapshot before TCP/IP reset."""
+    if os.name != "nt":
+        return {"ok": False, "error": "Windows only."}
+    import datetime
+
+    stamp = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
+    path = os.path.join(_backup_dir(), f"adapters-{stamp}.txt")
+    try:
+        proc = _run(["netsh", "interface", "ip", "show", "config"], timeout=90)
+        with open(path, "w", encoding="utf-8", newline="\n") as handle:
+            handle.write((proc.stdout or "") + (proc.stderr or ""))
+    except OSError as e:
+        return {"ok": False, "error": str(e)}
+    return {"ok": True, "backup": path, "message": "Adapter settings saved.", "detail": path}
+
+
+def reset_tcpip(confirmed: bool = False) -> Dict[str, Any]:
+    """33.7"""
+    if not confirmed:
+        return {"ok": False, "error": "Confirm required. Restart may be needed.", "needs_confirm": True}
+    if os.name != "nt":
+        return {"ok": False, "error": "Windows only."}
+    saved = backup_adapter_config()
+    if not saved.get("ok"):
+        return saved
+    try:
+        proc = _run(["netsh", "int", "ip", "reset"], timeout=120)
+    except subprocess.TimeoutExpired:
+        return {"ok": False, "error": "TCP/IP reset timed out."}
+    return {
+        "ok": proc.returncode == 0,
+        "message": "TCP/IP stack reset. Restart this PC to finish.",
+        "restart_required": True,
+        "backup": saved.get("backup"),
+        "detail": ((proc.stdout or "") + (proc.stderr or "")).strip()[:1500],
+    }
+
+
+def firewall_export(path: str = "") -> Dict[str, Any]:
+    """33.9 / 33.18 — export policy to .wfw"""
+    if os.name != "nt":
+        return {"ok": False, "error": "Windows only."}
+    import datetime
+
+    out = str(path or "").strip()
+    if not out:
+        stamp = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
+        out = os.path.join(_backup_dir(), f"firewall-{stamp}.wfw")
+    out = os.path.abspath(out)
+    if not out.lower().endswith(".wfw"):
+        return {"ok": False, "error": "Export path must end with .wfw"}
+    parent = os.path.dirname(out)
+    if parent:
+        os.makedirs(parent, exist_ok=True)
+    try:
+        proc = _run(["netsh", "advfirewall", "export", out], timeout=120)
+    except subprocess.TimeoutExpired:
+        return {"ok": False, "error": "Firewall export timed out."}
+    ok = proc.returncode == 0 and os.path.isfile(out)
+    return {
+        "ok": ok,
+        "path": out,
+        "message": "Firewall policy exported." if ok else "Firewall export failed.",
+        "detail": ((proc.stdout or "") + (proc.stderr or "")).strip()[:1000],
+    }
+
+
+def firewall_rules_preview() -> Dict[str, Any]:
+    """33.18 — read-only rule listing (truncated)."""
+    if os.name != "nt":
+        return {"ok": False, "error": "Windows only."}
+    try:
+        proc = _run(["netsh", "advfirewall", "firewall", "show", "rule", "name=all"], timeout=180)
+    except subprocess.TimeoutExpired:
+        return {"ok": False, "error": "Firewall listing timed out."}
+    text = ((proc.stdout or "") + (proc.stderr or "")).strip()
+    return {"ok": proc.returncode == 0, "detail": text[:12000], "truncated": len(text) > 12000}
+
+
+def firewall_restore_defaults(confirmed: bool = False) -> Dict[str, Any]:
+    """33.9 — export then reset local firewall policy."""
+    if not confirmed:
+        return {"ok": False, "error": "Confirm required. Custom rules will be removed.", "needs_confirm": True}
+    exported = firewall_export()
+    if not exported.get("ok"):
+        return exported
+    try:
+        proc = _run(["netsh", "advfirewall", "reset"], timeout=120)
+    except subprocess.TimeoutExpired:
+        return {"ok": False, "error": "Firewall reset timed out."}
+    return {
+        "ok": proc.returncode == 0,
+        "message": "Firewall restored to defaults." if proc.returncode == 0 else "Firewall reset failed.",
+        "backup": exported.get("path"),
+        "detail": ((proc.stdout or "") + (proc.stderr or "")).strip()[:1500],
+    }
+
+
+def wifi_survey() -> Dict[str, Any]:
+    """33.15 — nearby Wi-Fi BSSIDs (read-only)."""
+    if os.name != "nt":
+        return {"ok": False, "error": "Windows only.", "networks": []}
+    try:
+        proc = _run(["netsh", "wlan", "show", "networks", "mode=bssid"], timeout=90)
+    except subprocess.TimeoutExpired:
+        return {"ok": False, "error": "Wi-Fi survey timed out.", "networks": []}
+    text = (proc.stdout or "") + (proc.stderr or "")
+    if "There is no wireless interface" in text or "not supported" in text.lower():
+        return {"ok": True, "networks": [], "message": "No Wi-Fi adapter or survey not available.", "detail": text[:500]}
+    networks: List[Dict[str, str]] = []
+    current: Dict[str, str] = {}
+    for line in text.splitlines():
+        line = line.strip()
+        if line.startswith("SSID") and ":" in line:
+            if current:
+                networks.append(current)
+            current = {"ssid": line.split(":", 1)[1].strip()}
+        elif line.startswith("Signal") and ":" in line and current:
+            current["signal"] = line.split(":", 1)[1].strip()
+        elif line.startswith("Channel") and ":" in line and current:
+            current["channel"] = line.split(":", 1)[1].strip()
+        elif line.startswith("BSSID") and ":" in line and current:
+            current["bssid"] = line.split(":", 1)[1].strip()
+    if current:
+        networks.append(current)
+    return {"ok": True, "networks": networks[:100], "count": len(networks), "detail": text[:4000]}

@@ -1385,6 +1385,150 @@ class WebAPI(__import__("web_api_tools").SystemToolsAPI):
         from core.system_tools.file_tools import verify_file_signature
         return verify_file_signature(str(kwargs.get("path") or ""))
 
+    def net_backup_adapters(self, *args, **kwargs) -> Dict[str, Any]:
+        from core.system_tools.network_tools import backup_adapter_config
+        return backup_adapter_config()
+
+    def net_reset_tcpip(self, *args, **kwargs) -> Dict[str, Any]:
+        from core.system_tools.network_tools import reset_tcpip
+        return reset_tcpip(confirmed=bool(kwargs.get("confirmed", False)))
+
+    def net_firewall_export(self, *args, **kwargs) -> Dict[str, Any]:
+        from core.system_tools.network_tools import firewall_export
+        return firewall_export(str(kwargs.get("path") or ""))
+
+    def net_firewall_rules(self, *args, **kwargs) -> Dict[str, Any]:
+        from core.system_tools.network_tools import firewall_rules_preview
+        return firewall_rules_preview()
+
+    def net_firewall_reset(self, *args, **kwargs) -> Dict[str, Any]:
+        from core.system_tools.network_tools import firewall_restore_defaults
+        return firewall_restore_defaults(confirmed=bool(kwargs.get("confirmed", False)))
+
+    def net_wifi_survey(self, *args, **kwargs) -> Dict[str, Any]:
+        from core.system_tools.network_tools import wifi_survey
+        return wifi_survey()
+
+    def health_bsod_triage(self, *args, **kwargs) -> Dict[str, Any]:
+        from core.system_tools.bsod_triage import bsod_triage
+        return bsod_triage()
+
+    def net_sleep_wake(self, *args, **kwargs) -> Dict[str, Any]:
+        from core.system_tools.sleep_wake import sleep_wake_diagnostics
+        return sleep_wake_diagnostics()
+
+    def shell_context_list(self, *args, **kwargs) -> Dict[str, Any]:
+        from core.system_tools.shell_context import list_context_handlers
+        return list_context_handlers()
+
+    def shell_context_disable(self, *args, **kwargs) -> Dict[str, Any]:
+        from core.system_tools.shell_context import disable_context_handler
+        return disable_context_handler(str(kwargs.get("handler_id") or ""), confirmed=bool(kwargs.get("confirmed", False)))
+
+    def shell_context_restore(self, *args, **kwargs) -> Dict[str, Any]:
+        from core.system_tools.shell_context import restore_context_handlers
+        return restore_context_handlers(confirmed=bool(kwargs.get("confirmed", False)))
+
+    def files_compress_folder(self, *args, **kwargs) -> Dict[str, Any]:
+        from core.system_tools.folder_compression import compress_folder
+        return compress_folder(str(kwargs.get("folder") or kwargs.get("path") or ""), confirmed=bool(kwargs.get("confirmed", False)))
+
+    def files_disk_images_list(self, *args, **kwargs) -> Dict[str, Any]:
+        from core.system_tools.disk_images import list_mounted_images
+        return list_mounted_images()
+
+    def files_disk_image_mount(self, *args, **kwargs) -> Dict[str, Any]:
+        from core.system_tools.disk_images import mount_disk_image
+        return mount_disk_image(
+            str(kwargs.get("path") or ""),
+            read_only=bool(kwargs.get("read_only", True)),
+            confirmed=bool(kwargs.get("confirmed", False)),
+        )
+
+    def files_disk_image_eject(self, *args, **kwargs) -> Dict[str, Any]:
+        from core.system_tools.disk_images import eject_disk_image
+        return eject_disk_image(str(kwargs.get("path") or ""), confirmed=bool(kwargs.get("confirmed", False)))
+
+    def files_broken_shortcuts(self, *args, **kwargs) -> Dict[str, Any]:
+        from core.system_tools.shortcuts import find_broken_shortcuts
+        return find_broken_shortcuts(str(kwargs.get("root") or kwargs.get("path") or ""), limit=int(kwargs.get("limit") or 200))
+
+    def files_repair_shortcut(self, *args, **kwargs) -> Dict[str, Any]:
+        from core.system_tools.shortcuts import repair_broken_shortcut
+        return repair_broken_shortcut(str(kwargs.get("path") or ""), confirmed=bool(kwargs.get("confirmed", False)))
+
+    def files_lock_probe(self, *args, **kwargs) -> Dict[str, Any]:
+        from core.system_tools.file_locks import file_lock_probe
+        return file_lock_probe(str(kwargs.get("path") or ""))
+
+    def files_removable_volumes(self, *args, **kwargs) -> Dict[str, Any]:
+        from core.system_tools.format_volume import list_removable_volumes
+        return list_removable_volumes()
+
+    def files_format_removable(self, *args, **kwargs) -> Dict[str, Any]:
+        from core.system_tools.format_volume import format_removable_volume
+        return format_removable_volume(
+            str(kwargs.get("letter") or ""),
+            filesystem=str(kwargs.get("filesystem") or "NTFS"),
+            confirmed=bool(kwargs.get("confirmed", False)),
+        )
+
+    def files_privacy_open(self, *args, **kwargs) -> Dict[str, Any]:
+        from core.system_tools.privacy_settings import open_privacy_settings
+        return open_privacy_settings()
+
+    def files_acl_inspect(self, *args, **kwargs) -> Dict[str, Any]:
+        from core.system_tools.acl_tools import inspect_permissions
+        return inspect_permissions(str(kwargs.get("path") or ""))
+
+    def files_services_list(self, *args, **kwargs) -> Dict[str, Any]:
+        from core.system_tools.services_admin import list_manageable_services
+        return list_manageable_services(limit=int(kwargs.get("limit") or 150))
+
+    def files_service_action(self, *args, **kwargs) -> Dict[str, Any]:
+        from core.system_tools.services_admin import set_service_state
+        return set_service_state(
+            str(kwargs.get("name") or ""),
+            str(kwargs.get("action") or ""),
+            confirmed=bool(kwargs.get("confirmed", False)),
+        )
+
+    def files_optional_features(self, *args, **kwargs) -> Dict[str, Any]:
+        from core.system_tools.optional_features import list_optional_features
+        return list_optional_features(limit=int(kwargs.get("limit") or 120))
+
+    def files_optional_feature_set(self, *args, **kwargs) -> Dict[str, Any]:
+        from core.system_tools.optional_features import set_optional_feature
+        return set_optional_feature(
+            str(kwargs.get("name") or ""),
+            enable=bool(kwargs.get("enable", True)),
+            confirmed=bool(kwargs.get("confirmed", False)),
+        )
+
+    def files_reg_preview(self, *args, **kwargs) -> Dict[str, Any]:
+        from core.system_tools.reg_preview import preview_reg_file
+        return preview_reg_file(str(kwargs.get("path") or ""))
+
+    def files_reg_import(self, *args, **kwargs) -> Dict[str, Any]:
+        from core.system_tools.reg_preview import import_reg_file
+        return import_reg_file(
+            str(kwargs.get("path") or ""),
+            confirmed=bool(kwargs.get("confirmed", False)),
+            allow_import=bool(kwargs.get("allow_import", False)),
+        )
+
+    def files_keep_awake_start(self, *args, **kwargs) -> Dict[str, Any]:
+        from core.system_tools.stay_awake import keep_awake_start
+        return keep_awake_start(display=bool(kwargs.get("display", True)))
+
+    def files_keep_awake_cancel(self, *args, **kwargs) -> Dict[str, Any]:
+        from core.system_tools.stay_awake import keep_awake_cancel
+        return keep_awake_cancel()
+
+    def files_keep_awake_status(self, *args, **kwargs) -> Dict[str, Any]:
+        from core.system_tools.stay_awake import keep_awake_status
+        return keep_awake_status()
+
     def get_app_icons(self, *args, **kwargs) -> Dict[str, Optional[str]]:
         """Return data URLs for package icons. Missing icons are null, never an error."""
         ids = kwargs.get("ids")

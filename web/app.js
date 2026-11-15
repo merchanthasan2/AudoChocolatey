@@ -6231,6 +6231,7 @@ class QuantumUpdaterApp {
       else if (kind === 'defender_scan') res = await this.invoke('health_defender_scan', { confirmed: true });
       else if (kind === 'bitlocker') res = await this.invoke('health_bitlocker', {});
       else if (kind === 'hotfixes') res = await this.invoke('health_list_hotfixes', {});
+      else if (kind === 'bsod') res = await this.invoke('health_bsod_triage', {});
       const text = res && res.ok
         ? (res.message || JSON.stringify(res.status || res.disks || res.volumes || res.events || res.updates || res, null, 0).slice(0, 1200))
         : ((res && (res.error || res.message)) || 'Action failed.');
@@ -6248,7 +6249,7 @@ class QuantumUpdaterApp {
     const portEl = document.getElementById('net-port-input');
     const host = hostEl ? String(hostEl.value || '').trim() : '';
     const port = portEl ? Number(portEl.value || 0) : 0;
-    const needsConfirm = ['flush_dns', 'winsock', 'dhcp', 'proxy_reset', 'hosts_restore', 'clock_sync'];
+    const needsConfirm = ['flush_dns', 'winsock', 'dhcp', 'proxy_reset', 'hosts_restore', 'clock_sync', 'tcpip_reset', 'firewall_reset'];
     if (needsConfirm.includes(kind) && !confirm('Run this network action now?')) return;
     this._setToolStatus(statusId, 'Working…');
     try {
@@ -6268,8 +6269,15 @@ class QuantumUpdaterApp {
       else if (kind === 'trace') res = await this.invoke('net_traceroute', { host });
       else if (kind === 'port') res = await this.invoke('net_test_port', { host, port });
       else if (kind === 'dns') res = await this.invoke('net_dns_lookup', { name: host });
+      else if (kind === 'adapter_backup') res = await this.invoke('net_backup_adapters', {});
+      else if (kind === 'tcpip_reset') res = await this.invoke('net_reset_tcpip', { confirmed: true });
+      else if (kind === 'firewall_rules') res = await this.invoke('net_firewall_rules', {});
+      else if (kind === 'firewall_export') res = await this.invoke('net_firewall_export', {});
+      else if (kind === 'firewall_reset') res = await this.invoke('net_firewall_reset', { confirmed: true });
+      else if (kind === 'wifi') res = await this.invoke('net_wifi_survey', {});
+      else if (kind === 'sleep_wake') res = await this.invoke('net_sleep_wake', {});
       const text = res && res.ok
-        ? (res.message || res.detail || JSON.stringify(res.plans || res.listeners || res.addresses || res, null, 0).slice(0, 1200))
+        ? (res.message || res.detail || JSON.stringify(res.plans || res.listeners || res.addresses || res.networks || res.sections || res, null, 0).slice(0, 1200))
         : ((res && (res.error || res.message)) || 'Action failed.');
       this._setToolStatus(statusId, text);
     } catch (e) {
@@ -6280,7 +6288,12 @@ class QuantumUpdaterApp {
   async filesAction(kind) {
     const statusId = 'file-tools-status';
     const pathEl = document.getElementById('files-path-input');
+    const extraEl = document.getElementById('files-extra-input');
     const path = pathEl ? String(pathEl.value || '').trim() : '';
+    const extra = extraEl ? String(extraEl.value || '').trim() : '';
+    const needsConfirm = ['compress', 'mount', 'eject', 'format', 'context_restore', 'context_disable'];
+    if (needsConfirm.includes(kind) && !confirm('Run this file or admin action now?')) return;
+    if (kind === 'format' && !confirm('Final warning: formatting erases the removable volume. Continue?')) return;
     this._setToolStatus(statusId, 'Working…');
     try {
       let res = null;
@@ -6288,8 +6301,37 @@ class QuantumUpdaterApp {
       else if (kind === 'signature') res = await this.invoke('files_verify_signature', { path });
       else if (kind === 'empty') res = await this.invoke('files_empty_folders', { root: path || (window.pywebview ? '' : '') });
       else if (kind === 'processes') res = await this.invoke('files_processes', {});
+      else if (kind === 'compress') res = await this.invoke('files_compress_folder', { folder: path, confirmed: true });
+      else if (kind === 'mount') res = await this.invoke('files_disk_image_mount', { path, confirmed: true, read_only: true });
+      else if (kind === 'eject') res = await this.invoke('files_disk_image_eject', { path, confirmed: true });
+      else if (kind === 'shortcuts') res = await this.invoke('files_broken_shortcuts', { root: path });
+      else if (kind === 'lock') res = await this.invoke('files_lock_probe', { path });
+      else if (kind === 'acl') res = await this.invoke('files_acl_inspect', { path });
+      else if (kind === 'reg_preview') res = await this.invoke('files_reg_preview', { path });
+      else if (kind === 'removable') res = await this.invoke('files_removable_volumes', {});
+      else if (kind === 'format') res = await this.invoke('files_format_removable', { letter: extra || path, confirmed: true });
+      else if (kind === 'privacy') res = await this.invoke('files_privacy_open', {});
+      else if (kind === 'context_list') res = await this.invoke('shell_context_list', {});
+      else if (kind === 'context_disable') {
+        const handlerId = extra || (typeof window !== 'undefined' && window.prompt
+          ? window.prompt('Paste handler id from Context menus list (Registry::…):', '')
+          : '');
+        if (!handlerId) {
+          this._setToolStatus(statusId, 'Handler id required. Run Context menus first.');
+          return;
+        }
+        res = await this.invoke('shell_context_disable', { handler_id: handlerId, confirmed: true });
+      } else if (kind === 'context_restore') res = await this.invoke('shell_context_restore', { confirmed: true });
+      else if (kind === 'services') res = await this.invoke('files_services_list', {});
+      else if (kind === 'optional') res = await this.invoke('files_optional_features', {});
+      else if (kind === 'awake') res = await this.invoke('files_keep_awake_start', { display: true });
+      else if (kind === 'awake_off') res = await this.invoke('files_keep_awake_cancel', {});
       const text = res && res.ok
-        ? (res.message || res.hex || res.status || JSON.stringify(res.folders || res.processes || res, null, 0).slice(0, 1200))
+        ? (res.message || res.hex || res.status || res.preview || JSON.stringify(
+          res.folders || res.processes || res.handlers || res.services || res.features || res.volumes || res.shortcuts || res,
+          null,
+          0
+        ).slice(0, 1200))
         : ((res && (res.error || res.message)) || 'Action failed.');
       this._setToolStatus(statusId, text);
     } catch (e) {

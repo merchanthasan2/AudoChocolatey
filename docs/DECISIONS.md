@@ -198,6 +198,12 @@
 - **Decision:** No new protective middle layer. `main.py` starts `preload_self_update_check` and waits up to 8s before opening the window. Getting ready includes a **Quantum Updater** row. Catalog bootstrap starts only after that check settles (or times out at 10s in the UI). Offline or failed checks do not hold the app. The install banner still offers the update; applying it remains user-confirmed via the existing Install path. Official Releases rules from ADR 026 stay.
 - **Consequences:** Tracker 42.5. A tagged Release is still required before an installed EXE can download a newer build.
 
+### ADR 036: Wave 4/5 remaining engine tools
+- **Status:** Accepted (2026-11-15).
+- **Context:** Tracker phases 33–34 still had waiting engine rows (context menu, BSOD, TCP/IP, firewall, Wi-Fi, compression, ISO, services, optional features, etc.).
+- **Decision:** No new protective middle layer. Extend `network_tools.py` plus focused modules under `core/system_tools/` (`shell_context`, `bsod_triage`, `sleep_wake`, `folder_compression`, `disk_images`, `shortcuts`, `file_locks`, `format_volume`, `acl_tools`, `services_admin`, `optional_features`, `reg_preview`, `stay_awake`, `privacy_settings`) behind `web_api.py`. Extend Network, Files, and Health Settings cards only. Confirm gates on destructive actions. Service denylist blocks `wuauserv`, `WinDefend`, and related security/update services. Removable-only format never targets `SystemDrive`. `.reg` import off unless `allow_import=true`. BitLocker keys still never returned. Do not change live Park theme colours.
+- **Consequences:** Tracker 33.1–33.3, 33.7, 33.9, 33.15, 33.18 and 34.2–34.3, 34.6–34.8, 34.10–34.17 move to build/done. Owner later: on-PC checks.
+
 ### ADR 035: Waves 3–5 Settings toolkits
 - **Status:** Accepted (2026-11-15).
 - **Context:** Tracker Waves 3–5 need Windows health, network/power, and file tools without waiting on Park theme lock.

@@ -19,6 +19,12 @@ Two skills are already installed and must be used: `vibe-security` (raroque) and
 
 ## Results
 
+### Wave 4/5 remaining engine tools (ADR 036) — 15 Nov 2026
+- **Seat:** Manager (provisional; Security architect pass pending)
+- **Verdict:** Pass for source pending formal seat. Confirm gates on TCP/IP reset, firewall reset, format removable, compression, mount/eject, and context-menu disable/restore. Service denylist blocks protected names. Registry import blocked unless `allow_import`. System drive format refused.
+- **Scope:** `core/system_tools/*` wave-4/5 modules, `core/test_wave45_remaining.py`, `web_api.py`, Settings cards in `web/index.html` + `web/app.js`, ADR 036, tracker 33.x/34.x waiting rows.
+- **Middleware:** No new layer.
+
 ### Slice 31.3 / 31.4 / 31.11 Cleanup repair trio — 15 Nov 2026
 - **Seat:** Manager (provisional; Security architect pass pending)
 - **Verdict:** Pass for source pending formal seat. Duplicate recycle requires latest scan + confirm and keeps one file per hash group. Orphan remove requires confirm + registry backup before delete. Schedule allow-lists three category ids and daily|weekly; task command is fixed argv with `--scheduled-cleanup --no-elevate` only.

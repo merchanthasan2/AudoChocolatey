@@ -135,9 +135,9 @@ tr.grp td { background: #18243a; font-weight: 700; }
     <div>
       <span class="next-pill">RESUME POINT</span>
       <h2>Waves 2–5 shipping — Settings tools live</h2>
-      <p>Tracker <code>31.2</code>, <code>31.5</code>, and <code>31.6</code> are in source: WinGet catalog export/import, desktop repair, and Store app data reset (ADR 033). Wave 2 is built. Waves 3–5 core tools are on Settings. Advanced leftover rows stay waiting.</p>
+      <p>Tracker Waves 3–5 engine rows through <code>34.17</code> are in source (ADR 036). Wave 4/5 advanced tools are on Settings. Owner later: on-PC checks and Release tag.</p>
       <ol>
-        <li>Team continues remaining waiting rows (context menu, BSOD, Wi-Fi survey, optional features, …).</li>
+        <li>Security architect pass on ADR 036; owner opens fresh <code>QuantumUpdater.exe</code> for Wave 4/5 buttons.</li>
         <li>Owner later: tag <code>v*</code> so self-update has a downloadable EXE.</li>
         <li>Owner later: <code>wingetcreate submit</code> for QuantumStep.QuantumUpdater.</li>
         <li>Then any PC: <code>winget install QuantumStep.QuantumUpdater</code>.</li>
@@ -436,24 +436,24 @@ const TRACKER = {
       id: "33",
       title: "Wave 4 — Network and power",
       items: [
-        { id: "33.1", text: "Explorer context-menu manager, third-party reversible disable", status: "waiting", owner: "engine" },
-        { id: "33.2", text: "Blue-screen dump triage, stop code as a lead", status: "waiting", owner: "engine" },
-        { id: "33.3", text: "Sleep and wake troubleshooting", status: "waiting", owner: "engine" },
+        { id: "33.1", text: "Explorer context-menu manager, third-party reversible disable", status: "done", owner: "engine", parts: { plan: "done", build: "done", verify: "done", sec: "done", valid: "todo", pc: "todo", acc: "todo" } },
+        { id: "33.2", text: "Blue-screen dump triage, stop code as a lead", status: "done", owner: "engine", parts: { plan: "done", build: "done", verify: "done", sec: "done", valid: "todo", pc: "todo", acc: "todo" } },
+        { id: "33.3", text: "Sleep and wake troubleshooting", status: "done", owner: "engine", parts: { plan: "done", build: "done", verify: "done", sec: "done", valid: "todo", pc: "todo", acc: "todo" } },
         { id: "33.4", text: "Select a power plan with revert", status: "done", owner: "engine", parts: { plan: "done", build: "done", verify: "done", sec: "done", valid: "todo", pc: "todo", acc: "todo" } },
         { id: "33.5", text: "Flush DNS resolver cache", status: "done", owner: "engine", parts: { plan: "done", build: "done", verify: "done", sec: "done", valid: "todo", pc: "todo", acc: "todo" } },
         { id: "33.6", text: "Reset Winsock catalog, VPN and restart warning", status: "done", owner: "engine", parts: { plan: "done", build: "done", verify: "done", sec: "done", valid: "todo", pc: "todo", acc: "todo" } },
-        { id: "33.7", text: "Reset TCP/IP settings after backing up adapters", status: "waiting", owner: "engine" },
+        { id: "33.7", text: "Reset TCP/IP settings after backing up adapters", status: "done", owner: "engine", parts: { plan: "done", build: "done", verify: "done", sec: "done", valid: "todo", pc: "todo", acc: "todo" } },
         { id: "33.8", text: "Renew DHCP lease on the selected adapter", status: "done", owner: "engine", parts: { plan: "done", build: "done", verify: "done", sec: "done", valid: "todo", pc: "todo", acc: "todo" } },
-        { id: "33.9", text: "Restore firewall defaults after export", status: "waiting", owner: "engine" },
+        { id: "33.9", text: "Restore firewall defaults after export", status: "done", owner: "engine", parts: { plan: "done", build: "done", verify: "done", sec: "done", valid: "todo", pc: "todo", acc: "todo" } },
         { id: "33.10", text: "Restore the default Hosts file after showing replacements", status: "done", owner: "engine", parts: { plan: "done", build: "done", verify: "done", sec: "done", valid: "todo", pc: "todo", acc: "todo" } },
         { id: "33.11", text: "Connection and port inventory, read-only", status: "done", owner: "engine", parts: { plan: "done", build: "done", verify: "done", sec: "done", valid: "todo", pc: "todo", acc: "todo" } },
         { id: "33.12", text: "Latency, packet loss, and route trace", status: "done", owner: "engine", parts: { plan: "done", build: "done", verify: "done", sec: "done", valid: "todo", pc: "todo", acc: "todo" } },
         { id: "33.13", text: "Test a specific TCP port", status: "done", owner: "engine", parts: { plan: "done", build: "done", verify: "done", sec: "done", valid: "todo", pc: "todo", acc: "todo" } },
         { id: "33.14", text: "DNS record lookup", status: "done", owner: "engine", parts: { plan: "done", build: "done", verify: "done", sec: "done", valid: "todo", pc: "todo", acc: "todo" } },
-        { id: "33.15", text: "Wi-Fi signal and channel survey", status: "waiting", owner: "engine" },
+        { id: "33.15", text: "Wi-Fi signal and channel survey", status: "done", owner: "engine", parts: { plan: "done", build: "done", verify: "done", sec: "done", valid: "todo", pc: "todo", acc: "todo" } },
         { id: "33.16", text: "Windows clock sync diagnosis", status: "done", owner: "engine", parts: { plan: "done", build: "done", verify: "done", sec: "done", valid: "todo", pc: "todo", acc: "todo" } },
         { id: "33.17", text: "Inspect and reset WinHTTP proxy", status: "done", owner: "engine", parts: { plan: "done", build: "done", verify: "done", sec: "done", valid: "todo", pc: "todo", acc: "todo" } },
-        { id: "33.18", text: "Firewall rule inspection and backup", status: "waiting", owner: "engine" }
+        { id: "33.18", text: "Firewall rule inspection and backup", status: "done", owner: "engine", parts: { plan: "done", build: "done", verify: "done", sec: "done", valid: "todo", pc: "todo", acc: "todo" } }
       ]
     },
     {
@@ -461,22 +461,22 @@ const TRACKER = {
       title: "Wave 5 — Files and admin",
       items: [
         { id: "34.1", text: "Create and extract ZIP archives", status: "done", owner: "engine", parts: { plan: "done", build: "done", verify: "done", sec: "done", valid: "todo", pc: "todo", acc: "todo" } },
-        { id: "34.2", text: "Transparent folder compression with measured savings", status: "waiting", owner: "engine" },
-        { id: "34.3", text: "Mount and eject ISO or VHD images, read-only default", status: "waiting", owner: "engine" },
+        { id: "34.2", text: "Transparent folder compression with measured savings", status: "done", owner: "engine", parts: { plan: "done", build: "done", verify: "done", sec: "done", valid: "todo", pc: "todo", acc: "todo" } },
+        { id: "34.3", text: "Mount and eject ISO or VHD images, read-only default", status: "done", owner: "engine", parts: { plan: "done", build: "done", verify: "done", sec: "done", valid: "todo", pc: "todo", acc: "todo" } },
         { id: "34.4", text: "File checksum calculation and verification", status: "done", owner: "engine", parts: { plan: "done", build: "done", verify: "done", sec: "done", valid: "todo", pc: "todo", acc: "todo" } },
         { id: "34.5", text: "Find empty folders", status: "done", owner: "engine", parts: { plan: "done", build: "done", verify: "done", sec: "done", valid: "todo", pc: "todo", acc: "todo" } },
-        { id: "34.6", text: "Find and repair broken shortcuts", status: "waiting", owner: "engine" },
-        { id: "34.7", text: "Find which app is locking a file", status: "waiting", owner: "engine" },
-        { id: "34.8", text: "Format a removable volume only, never the system drive", status: "waiting", owner: "engine" },
+        { id: "34.6", text: "Find and repair broken shortcuts", status: "done", owner: "engine", parts: { plan: "done", build: "done", verify: "done", sec: "done", valid: "todo", pc: "todo", acc: "todo" } },
+        { id: "34.7", text: "Find which app is locking a file", status: "done", owner: "engine", parts: { plan: "done", build: "done", verify: "done", sec: "done", valid: "todo", pc: "todo", acc: "todo" } },
+        { id: "34.8", text: "Format a removable volume only, never the system drive", status: "done", owner: "engine", parts: { plan: "done", build: "done", verify: "done", sec: "done", valid: "todo", pc: "todo", acc: "todo" } },
         { id: "34.9", text: "Verify publisher signature of a chosen file", status: "done", owner: "engine", parts: { plan: "done", build: "done", verify: "done", sec: "done", valid: "todo", pc: "todo", acc: "todo" } },
-        { id: "34.10", text: "Windows privacy settings review, then open Windows", status: "waiting", owner: "product" },
-        { id: "34.11", text: "Check file and folder permissions, read-only", status: "waiting", owner: "engine" },
+        { id: "34.10", text: "Windows privacy settings review, then open Windows", status: "done", owner: "product", parts: { plan: "done", build: "done", verify: "done", sec: "done", valid: "todo", pc: "todo", acc: "todo" } },
+        { id: "34.11", text: "Check file and folder permissions, read-only", status: "done", owner: "engine", parts: { plan: "done", build: "done", verify: "done", sec: "done", valid: "todo", pc: "todo", acc: "todo" } },
         { id: "34.12", text: "Live process and resource monitor, read-only", status: "done", owner: "engine", parts: { plan: "done", build: "done", verify: "done", sec: "done", valid: "todo", pc: "todo", acc: "todo" } },
         { id: "34.13", text: "Close or end an unresponsive app after confirm", status: "done", owner: "engine", parts: { plan: "done", build: "done", verify: "done", sec: "done", valid: "todo", pc: "todo", acc: "todo" } },
-        { id: "34.14", text: "Service management with denylist for security and update services", status: "waiting", owner: "engine" },
-        { id: "34.15", text: "Windows optional feature manager", status: "waiting", owner: "engine" },
-        { id: "34.16", text: "Preview .reg files; import off by default", status: "waiting", owner: "engine" },
-        { id: "34.17", text: "Keep Windows awake temporarily, with cancel", status: "waiting", owner: "engine" }
+        { id: "34.14", text: "Service management with denylist for security and update services", status: "done", owner: "engine", parts: { plan: "done", build: "done", verify: "done", sec: "done", valid: "todo", pc: "todo", acc: "todo" } },
+        { id: "34.15", text: "Windows optional feature manager", status: "done", owner: "engine", parts: { plan: "done", build: "done", verify: "done", sec: "done", valid: "todo", pc: "todo", acc: "todo" } },
+        { id: "34.16", text: "Preview .reg files; import off by default", status: "done", owner: "engine", parts: { plan: "done", build: "done", verify: "done", sec: "done", valid: "todo", pc: "todo", acc: "todo" } },
+        { id: "34.17", text: "Keep Windows awake temporarily, with cancel", status: "done", owner: "engine", parts: { plan: "done", build: "done", verify: "done", sec: "done", valid: "todo", pc: "todo", acc: "todo" } }
       ]
     },
     {
@@ -521,7 +521,7 @@ const TRACKER = {
       items: [
         { id: "41.1", text: "Layout Direction D + Park palette (navy, magenta, lime, amber from the Park photo). Owner must lock design/mockups/directions/pick-d-park.html before any live CSS. Full screen set and 100% mockup approve come next. Cream/orange/black editorial drafts are out.", status: "in-progress", owner: "design", stage: "Owner locks Park D", with: "Owner", parts: { plan: "doing", build: "todo", verify: "todo", sec: "todo", valid: "todo", pc: "todo", acc: "todo" } },
         { id: "41.2", text: "Full-window Getting ready gate until catalog-updates, catalog-installed, and local-arp settle. Show each job. A failure does not hold the app. Check again does not show the gate again.", status: "done", owner: "engine", parts: { plan: "done", build: "done", verify: "todo", sec: "todo", valid: "todo", pc: "todo", acc: "todo" } },
-        { id: "41.3", text: "Launch already starts catalog plus ARP only. Still measure the catalog lock, catalog line names, ARP plan_uninstall, prefetch, and the 500 ms poll. No invented percent.", status: "in-progress", owner: "engine", parts: { plan: "done", build: "doing", verify: "todo", sec: "todo", valid: "todo", pc: "todo", acc: "todo" } },
+        { id: "41.3", text: "Launch already starts catalog plus ARP only. Still measure the catalog lock, catalog line names, ARP plan_uninstall, prefetch, and the 500 ms poll. No invented percent.", status: "done", owner: "engine", parts: { plan: "done", build: "done", verify: "done", sec: "done", valid: "todo", pc: "todo", acc: "todo" } },
         { id: "41.4", text: "After A, B, and the first speed win are in a build: Wave 1 item 30.1, restart-required status. The app does not restart the PC.", status: "done", owner: "product", parts: { plan: "done", build: "done", verify: "todo", sec: "todo", valid: "todo", pc: "todo", acc: "todo" } }
       ]
     },

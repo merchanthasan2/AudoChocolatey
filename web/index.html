@@ -1082,6 +1082,7 @@
                 <button type="button" class="glass-btn btn-secondary btn-sm" onclick="app.healthAction('defender_scan')">Quick malware scan</button>
                 <button type="button" class="glass-btn btn-secondary btn-sm" onclick="app.healthAction('bitlocker')">BitLocker status</button>
                 <button type="button" class="glass-btn btn-secondary btn-sm" onclick="app.healthAction('hotfixes')">List hotfixes</button>
+                <button type="button" class="glass-btn btn-secondary btn-sm" onclick="app.healthAction('bsod')">BSOD triage</button>
               </div>
               <p class="settings-card-desc" id="windows-health-status" style="margin-top: 12px; margin-bottom: 0; white-space: pre-wrap;" aria-live="polite"></p>
             </div>
@@ -1089,10 +1090,12 @@
             <!-- Wave 4 network and power -->
             <div class="settings-card full-span" id="network-tools-card">
               <h3>Network and power</h3>
-              <p class="settings-card-desc">DNS flush, Winsock reset, DHCP renew, power plans, ping, port test, hosts preview, and clock sync.</p>
+              <p class="settings-card-desc">DNS, Winsock, TCP/IP, DHCP, firewall, Wi-Fi survey, sleep and wake, power plans, ping, hosts, and clock sync.</p>
               <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px;">
                 <button type="button" class="glass-btn btn-secondary btn-sm" onclick="app.netAction('flush_dns')">Flush DNS</button>
                 <button type="button" class="glass-btn btn-secondary btn-sm" onclick="app.netAction('winsock')">Reset Winsock</button>
+                <button type="button" class="glass-btn btn-secondary btn-sm" onclick="app.netAction('adapter_backup')">Backup adapters</button>
+                <button type="button" class="glass-btn btn-secondary btn-sm" onclick="app.netAction('tcpip_reset')">Reset TCP/IP</button>
                 <button type="button" class="glass-btn btn-secondary btn-sm" onclick="app.netAction('dhcp')">Renew DHCP</button>
                 <button type="button" class="glass-btn btn-secondary btn-sm" onclick="app.netAction('power')">List power plans</button>
                 <button type="button" class="glass-btn btn-secondary btn-sm" onclick="app.netAction('listeners')">Listening ports</button>
@@ -1102,6 +1105,11 @@
                 <button type="button" class="glass-btn btn-secondary btn-sm" onclick="app.netAction('hosts_restore')">Restore hosts</button>
                 <button type="button" class="glass-btn btn-secondary btn-sm" onclick="app.netAction('clock')">Clock status</button>
                 <button type="button" class="glass-btn btn-secondary btn-sm" onclick="app.netAction('clock_sync')">Sync clock</button>
+                <button type="button" class="glass-btn btn-secondary btn-sm" onclick="app.netAction('firewall_rules')">Firewall rules</button>
+                <button type="button" class="glass-btn btn-secondary btn-sm" onclick="app.netAction('firewall_export')">Export firewall</button>
+                <button type="button" class="glass-btn btn-secondary btn-sm" onclick="app.netAction('firewall_reset')">Reset firewall</button>
+                <button type="button" class="glass-btn btn-secondary btn-sm" onclick="app.netAction('wifi')">Wi-Fi survey</button>
+                <button type="button" class="glass-btn btn-secondary btn-sm" onclick="app.netAction('sleep_wake')">Sleep and wake</button>
               </div>
               <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; align-items: center;">
                 <input type="text" class="glass-input" id="net-host-input" style="min-width: 160px; flex: 1;" value="1.1.1.1" aria-label="Host">
@@ -1117,13 +1125,31 @@
             <!-- Wave 5 files -->
             <div class="settings-card full-span" id="file-tools-card">
               <h3>Files and processes</h3>
-              <p class="settings-card-desc">ZIP, checksums, empty folders, process list, end process, and publisher signature check.</p>
+              <p class="settings-card-desc">ZIP, checksums, compression, ISO mount, shortcuts, locks, ACLs, services, optional features, and admin helpers.</p>
               <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; align-items: center;">
                 <input type="text" class="glass-input" id="files-path-input" style="min-width: 220px; flex: 1;" placeholder="File or folder path under your profile" aria-label="Path">
+                <input type="text" class="glass-input" id="files-extra-input" style="width: 120px;" placeholder="E: or service" aria-label="Extra value">
                 <button type="button" class="glass-btn btn-secondary btn-sm" onclick="app.filesAction('checksum')">Checksum</button>
                 <button type="button" class="glass-btn btn-secondary btn-sm" onclick="app.filesAction('signature')">Signature</button>
                 <button type="button" class="glass-btn btn-secondary btn-sm" onclick="app.filesAction('empty')">Find empty folders</button>
                 <button type="button" class="glass-btn btn-secondary btn-sm" onclick="app.filesAction('processes')">Top processes</button>
+                <button type="button" class="glass-btn btn-secondary btn-sm" onclick="app.filesAction('compress')">Compress folder</button>
+                <button type="button" class="glass-btn btn-secondary btn-sm" onclick="app.filesAction('mount')">Mount ISO/VHD</button>
+                <button type="button" class="glass-btn btn-secondary btn-sm" onclick="app.filesAction('eject')">Eject image</button>
+                <button type="button" class="glass-btn btn-secondary btn-sm" onclick="app.filesAction('shortcuts')">Broken shortcuts</button>
+                <button type="button" class="glass-btn btn-secondary btn-sm" onclick="app.filesAction('lock')">File lock probe</button>
+                <button type="button" class="glass-btn btn-secondary btn-sm" onclick="app.filesAction('acl')">Permissions</button>
+                <button type="button" class="glass-btn btn-secondary btn-sm" onclick="app.filesAction('reg_preview')">Preview .reg</button>
+                <button type="button" class="glass-btn btn-secondary btn-sm" onclick="app.filesAction('removable')">List removable</button>
+                <button type="button" class="glass-btn btn-secondary btn-sm" onclick="app.filesAction('format')">Format removable</button>
+                <button type="button" class="glass-btn btn-secondary btn-sm" onclick="app.filesAction('privacy')">Privacy settings</button>
+                <button type="button" class="glass-btn btn-secondary btn-sm" onclick="app.filesAction('context_list')">Context menus</button>
+                <button type="button" class="glass-btn btn-secondary btn-sm" onclick="app.filesAction('context_disable')">Disable menu</button>
+                <button type="button" class="glass-btn btn-secondary btn-sm" onclick="app.filesAction('context_restore')">Restore menus</button>
+                <button type="button" class="glass-btn btn-secondary btn-sm" onclick="app.filesAction('services')">Services</button>
+                <button type="button" class="glass-btn btn-secondary btn-sm" onclick="app.filesAction('optional')">Optional features</button>
+                <button type="button" class="glass-btn btn-secondary btn-sm" onclick="app.filesAction('awake')">Keep awake</button>
+                <button type="button" class="glass-btn btn-secondary btn-sm" onclick="app.filesAction('awake_off')">Cancel keep-awake</button>
               </div>
               <p class="settings-card-desc" id="file-tools-status" style="margin-top: 12px; margin-bottom: 0; white-space: pre-wrap;" aria-live="polite"></p>
             </div>
