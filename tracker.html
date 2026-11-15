@@ -134,22 +134,22 @@ tr.grp td { background: #18243a; font-weight: 700; }
   <section class="resume" aria-label="Resume point">
     <div>
       <span class="next-pill">RESUME POINT</span>
-      <h2>Zip self-update + architecture refresh</h2>
-      <p>ADR 039: in-app update prefers <code>QuantumUpdater-Windows.zip</code> and applies the full onedir folder. <code>docs/ARCHITECTURE.md</code> refreshed for Waves 2–5 + zip releases. Park D still owner-later for live CSS.</p>
+      <h2>Standing workflow on · WinUI Phase 1 plan approved</h2>
+      <p>Manager cycle recorded (user + repo rules). ADR 041: C# + WinUI 3 dual-track. Version stamp source is 2.0.3. Winget PR CLA agree posted. Python remains ship path until Phase 1 WinUI is on-PC accepted.</p>
       <ol>
-        <li>Rebuild / open Build 9 with zip self-update; download from <code>v2.0.3</code> when tagged.</li>
-        <li>Owner later: on-PC look at Build 9 + second-PC zip install.</li>
-        <li>Winget PR open: microsoft/winget-pkgs#480804 (await community merge).</li>
-        <li>Owner later: Park D lock.</li>
+        <li>Scaffold <code>src/QuantumUpdater</code> WinUI 3 shell (Getting ready / Updates / Installed).</li>
+        <li>Independent Design Architect review of ADR 041 (seat was provisional).</li>
+        <li>Winget PR https://github.com/microsoft/winget-pkgs/pull/480804 — watch validation after CLA.</li>
+        <li>Owner later: Park D lock; on-PC accept WinUI Phase 1.</li>
       </ol>
     </div>
     <div>
       <span class="eyebrow">Owner later (non-blocking)</span>
       <ul class="prio">
-        <li class="now"><span>Team: zip self-update Build 9</span><span class="muted">now</span></li>
-        <li><span>Submit winget manifests</span><span class="muted">later</span></li>
+        <li class="now"><span>Team: WinUI Phase 1 scaffold</span><span class="muted">now</span></li>
+        <li><span>Winget-pkgs merge after CLA/checks</span><span class="muted">later</span></li>
         <li><span>Lock Park D / on-PC looks</span><span class="muted">later</span></li>
-        <li><span>Security 28.1 full score</span><span class="muted">later</span></li>
+        <li><span>Design Architect independent re-check ADR 041</span><span class="muted">pending</span></li>
       </ul>
     </div>
   </section>
@@ -532,8 +532,20 @@ const TRACKER = {
         { id: "42.1", text: "Official self-update uses Releases zip (ADR 026 + 038 + 039). Prefers setup, then QuantumUpdater-Windows.zip, applies onedir via robocopy. Bare exe last.", status: "done", owner: "engine", parts: { plan: "done", build: "done", verify: "done", sec: "todo", valid: "todo", pc: "todo", acc: "todo" } },
         { id: "42.2", text: "Tagged v2.0.2+ with QuantumUpdater-Windows.zip (full onedir). Prefer zip over any bare bootloader exe.", status: "done", owner: "engine", stage: "Tag release", with: "Manager" },
         { id: "42.3", text: "Winget package QuantumStep.QuantumUpdater: portable manifests + release Action prepare script (ADR 028). Not in community index until a public Release exists and the winget-pkgs PR merges.", status: "done", owner: "engine", parts: { plan: "done", build: "done", verify: "todo", sec: "todo", valid: "todo", pc: "todo", acc: "todo" } },
-        { id: "42.4", text: "Submitted: https://github.com/microsoft/winget-pkgs/pull/480804 (QuantumStep.QuantumUpdater 2.0.3 zip). Await Microsoft merge; then winget install works.", status: "waiting", owner: "security", stage: "Await winget-pkgs merge", with: "Manager" },
+        { id: "42.4", text: "PR https://github.com/microsoft/winget-pkgs/pull/480804 — CLA posted; URLs Validation failed. Fix Publisher/License URLs then push update.", status: "waiting", owner: "engine", stage: "Fix winget URL validation", with: "Manager" },
         { id: "42.5", text: "Check for a newer Quantum Updater build before the app starts work. Preload in main.py, show on Getting ready, then start catalog scans. Offer Install so this PC can run the better build. Offline does not block. ADR 032.", status: "done", owner: "engine", parts: { plan: "done", build: "done", verify: "todo", sec: "todo", valid: "todo", pc: "todo", acc: "todo" } }
+      ]
+    },
+    {
+      id: "43",
+      title: "C# WinUI 3 shell (ADR 041)",
+      items: [
+        { id: "43.0", text: "Standing workflow: user-level team-workflow + repo TEAM.md / team-and-release rule. Seats: Manager (main), Design/Security/Workers via Task when available.", status: "done", owner: "manager", parts: { plan: "done", build: "done", verify: "done", sec: "na", valid: "na", pc: "na", acc: "done" } },
+        { id: "43.1", text: "Plan approved (Manager provisional): Phase 1 Getting ready, Updates, Installed, self-update; C# service layer mirrors web_api; Python stays reference. Independent Design Architect review pending.", status: "in-progress", owner: "design", stage: "Plan approved — build scaffold", with: "Manager", parts: { plan: "done", build: "todo", verify: "todo", sec: "todo", valid: "todo", pc: "todo", acc: "todo" } },
+        { id: "43.2", text: "Install .NET 8 SDK on this PC for WinUI scaffold.", status: "done", owner: "engine", parts: { plan: "done", build: "done", verify: "todo", sec: "na", valid: "na", pc: "todo", acc: "todo" } },
+        { id: "43.3", text: "Scaffold src/QuantumUpdater WinUI 3 shell created (manual). Build blocked until nuget.org restore succeeds on this PC.", status: "in-progress", owner: "engine", stage: "Build — restore packages", with: "Worker bees", parts: { plan: "done", build: "doing", verify: "todo", sec: "todo", valid: "todo", pc: "todo", acc: "todo" } },
+        { id: "43.4", text: "Wire winget list/upgrade behind C# service layer (confirm gates). Port behaviour from core/winget_engine.py — no design changes.", status: "waiting", owner: "engine", parts: { plan: "todo", build: "todo", verify: "todo", sec: "todo", valid: "todo", pc: "todo", acc: "todo" } },
+        { id: "43.5", text: "Version stamp must match release tag (2.0.3+). Source stamp fixed; rebuild packaged Python app when next ship needed.", status: "done", owner: "engine", parts: { plan: "done", build: "done", verify: "todo", sec: "todo", valid: "todo", pc: "todo", acc: "todo" } }
       ]
     }
   ]
@@ -584,21 +596,22 @@ const GROUPS = [
   ["Waiting on a check", ["25", "28", "29"]],
   ["Waves", ["30", "31", "32", "33", "34"]],
   ["From your test", ["36", "38", "39", "40"]],
-  ["Now", ["41"]]
+  ["Now", ["41", "43"]]
 ];
 const NOTES = {
-  GOV: "The team and this board.",
+  GOV: "The team and this board. Standing Manager workflow active.",
   "25": "Icons are built. You still need to look.",
   "28": "DisplayLink passed. Mid phase-36 and Run installer fixed. 36.8/36.9 Security pass after three mediums. No full app score yet.",
-  "29": "Build 7 packaged. Your look at Installed + 36.1–36.8 stays pending.",
-  "35": "Upgrade hang fix + Waves 2–5 in Build 7.",
+  "29": "Build 9 packaged. Your look at Installed + 36.1–36.8 stays pending.",
+  "35": "Upgrade hang fix + Waves 2–5 in Build 9 line.",
   "30": "Starts after cream theme, ready gate, and first speed wins.",
-  "36": "36.8 and 36.9 Security PASS. Build 7 has Installed fix + honest progress. Your look stays pending.",
-  "38": "The window title shows 2.0.0 · Build 9.",
+  "36": "36.8 and 36.9 Security PASS. Your look stays pending.",
+  "38": "Source stamp is 2.0.3 · Build 9. Rebuild EXE to show it in a packaged window.",
   "39": "The pink Clean button starts the scan and opens the review.",
   "40": "DisplayLink is under USB devices as External in Build 3.",
-  "41": "No-stop order. Park D mockups under design/mockups/directions/park/. Ready gate in source (41.2). Owner later: lock Park D, approve full set, then live theme. Speed + Wave 1 continue.",
-  "42": "ADR 026 in source. Owner later: commit/push/tag. Team does not wait."
+  "41": "Park D owner lock still pending for live CSS.",
+  "42": "Winget PR #480804 + zip self-update. CLA agree posted.",
+  "43": "ADR 041 WinUI 3. Plan approved provisional. Scaffold next. Independent Design review pending."
 };
 const AUDIT = [
   ["1", "Secrets and passwords", "Every change"],

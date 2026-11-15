@@ -20,6 +20,8 @@ dist/
 build/
 py-artifacts/
 _winget_sample.txt
+src/**/bin/
+src/**/obj/
 *.exe
 *.msi
 *.setup.exe

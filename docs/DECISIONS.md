@@ -198,6 +198,12 @@
 - **Decision:** No new protective middle layer. `main.py` starts `preload_self_update_check` and waits up to 8s before opening the window. Getting ready includes a **Quantum Updater** row. Catalog bootstrap starts only after that check settles (or times out at 10s in the UI). Offline or failed checks do not hold the app. The install banner still offers the update; applying it remains user-confirmed via the existing Install path. Official Releases rules from ADR 026 stay.
 - **Consequences:** Tracker 42.5. A tagged Release is still required before an installed EXE can download a newer build.
 
+### ADR 041: Migrate shell to C# + WinUI 3
+- **Status:** Accepted (2026-11-15). Owner accepted Manager recommendation. Design Architect seat at model limit — Manager provisional plan; independent Design review pending.
+- **Context:** Python + pywebview + WebView2 + PyInstaller onedir is heavy and does not feel like a proper Windows system utility.
+- **Decision:** Dual-track. **Target stack:** C# + WinUI 3. Protective middle layer: a single C# service layer (mirrors `web_api.py`) — no second ad-hoc bridge. Phase 1 screens: Getting ready, Updates, Installed, self-update. Packaging goal: MSIX when ready; portable folder/zip until then. Python app remains the behaviour reference and ship path until Phase 1 WinUI is owner-tested on this PC. Do not change live Park CSS. Folder: `src/QuantumUpdater/` (WinUI project).
+- **Consequences:** Tracker Phase 43. Install .NET SDK + WinUI workload before scaffold. Security reviews every verified WinUI slice.
+
 ### ADR 040: Winget community submit for 2.0.3
 - **Status:** Accepted (2026-11-15).
 - **Context:** Tagged Releases publish `QuantumUpdater-Windows.zip`. Tracker 42.4 needed a public winget-pkgs PR.

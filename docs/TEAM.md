@@ -1,15 +1,41 @@
 # How this team works
 
-The person in the chat is the Manager. Feature work follows this order every time.
+The person in the chat is the **Manager**. Feature work follows this order every time. Shared standing rules also live in the user-level Cursor rule `team-workflow`.
 
-1. The Design Architect goes first. They check the picture of the system and the flow of every screen, say if a protective middle layer is needed, and return mockups plus a short plan. The Manager picks any available model for this seat.
-2. The Manager reviews the plan. An approved plan is written into `tracker.html` and `docs/DECISIONS.md` before anyone builds.
-3. Two Worker bees each take one small step. They do not choose the design. The Manager picks any available model for each bee. If a seat hits a usage limit, reassign immediately — never idle.
-4. The Manager checks the result and sends it back if it does not match the plan.
-5. The Security and Code Architect checks that slice against `docs/SECURITY_AUDIT.md`, including the installed vibe-security skills. A full review happens before a release or before the owner is asked to try a new build of the Windows app on this PC.
-6. The Design Architect checks the finished slice against the plan, the mockups, and the picture.
-7. The Manager updates the development tracker.
+## Roles this session can create
 
-Before coding starts, open `tracker.html` in the browser.
+| Role | How created | Owns |
+|---|---|---|
+| Manager | Main chat (this session) | Outcome, plan approval, verify, tracker, owner handoff |
+| Design Architect | Task subagent `design-architect` (strong reasoning when available) | Plan, mockups/flows, design validation |
+| Security & Code Architect | Task subagent `security-architect` (strong reasoning when available) | Boundaries, ten audit checks, traceable findings |
+| Worker bee 1 | Task subagent `worker-bee` (fast model) | One small owned-file task |
+| Worker bee 2 | Second `worker-bee` in parallel | Separate small task; flag overlap |
 
-Older work on this tracker was finished before this cycle. Those rows stay marked built. Security and the final architect look apply from the next change.
+If Other Models / seat limits block architects, the Manager fills the seat the same turn, labels **same-session provisional**, and leaves independent architect review pending on the tracker. Never idle the queue.
+
+## Cycle
+
+1. Design Architect first — picture, screen flow, protective-layer need, mockups, short plan, testable outcomes.
+2. Manager approves — write into `tracker.html` and `docs/DECISIONS.md` before build.
+3. Two Worker bees — one small step each; no design choices.
+4. Manager verifies — match the plan; return or scoped fix.
+5. Security Architect — `docs/SECURITY_AUDIT.md` + `docs/Code_and_Application_Security_Audit_Prompt.md` + vibe-security skills.
+6. Design Architect validates finished work against plan/mockups/flows.
+7. Manager updates `tracker.html` (offline board in this folder). Reload in the browser.
+
+## Product-specific rules (Quantum Updater)
+
+- Product is the **Windows** app. A real test is a new `QuantumUpdater.exe` (full onedir / zip) opened on this PC. There is no website test copy.
+- Offline tracker: `tracker.html` in the project root. Update it in the same turn as any plan or status change.
+- Official releases: `merchanthasan2/AudoChocolatey` tags `v*` → `QuantumUpdater-Windows.zip`.
+- Do not wait on owner decisions; queue Owner later and keep building the recommended provisional path (`development-tracker` rule).
+- Park D live theme stays locked until owner approve; do not change live CSS for Park without that lock.
+- Active stack today: Python + pywebview + WebView2. Accepted direction: **C# + WinUI 3** migration (ADR 041) while Python remains the reference until Phase 1 WinUI is owner-tested.
+
+## Session start checklist
+
+1. Read this file, `tracker.html`, `docs/DECISIONS.md`, `docs/ARCHITECTURE.md`, `docs/SECURITY_AUDIT.md`.
+2. Confirm branch (`channel/windows` for Windows work). Preserve dirty work.
+3. Open `tracker.html` in the browser; confirm the task table is visible.
+4. Note winget PR / CLA / version stamp risks on the resume card.

@@ -1,0 +1,15 @@
+---
+description: Quantum Updater project cycle, test surface, and release paths
+alwaysApply: true
+---
+
+# Quantum Updater — project instructions
+
+Follow user-level `team-workflow` and this file.
+
+- Tracker: `tracker.html` (update same turn as plan/status). Decisions: `docs/DECISIONS.md`. Security: `docs/SECURITY_AUDIT.md` + `docs/Code_and_Application_Security_Audit_Prompt.md`. Picture: `docs/ARCHITECTURE.md`. Team: `docs/TEAM.md`.
+- Test: packaged Windows app on this PC (`dist\QuantumUpdater\` or Releases zip). No website staging copy.
+- Branch for Windows: `channel/windows`.
+- Release asset: `QuantumUpdater-Windows.zip` (full onedir). Never publish a lone onedir bootloader as the install file.
+- Accepted direction: C# + WinUI 3 (ADR 041). Python app stays reference until Phase 1 WinUI is accepted.
+- Owner later list for decisions; do not idle the queue.

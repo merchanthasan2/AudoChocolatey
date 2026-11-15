@@ -15,7 +15,7 @@ def write_build_stamp(root: str) -> str:
     build_no = current + 1
     with open(counter_path, "w", encoding="utf-8") as handle:
         handle.write(str(build_no))
-    version = "2.0.0"
+    version = os.environ.get("QUANTUM_VERSION", "2.0.3")
     label = f"{version} · Build {build_no}"
     info_path = os.path.join(root, "core", "build_info.py")
     with open(info_path, "w", encoding="utf-8") as handle:
