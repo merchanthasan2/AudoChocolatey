@@ -19,6 +19,13 @@ Two skills are already installed and must be used: `vibe-security` (raroque) and
 
 ## Results
 
+### Release packaging + upgrade timeout (ADR 037 / 038) — 15 Nov 2026
+- **Seat:** Manager (Security architect seat unavailable; provisional)
+- **Verdict:** Pass for source. Publishing a lone onedir bootloader was a launch defect (Python runtime missing). Fixed by shipping full zip. Streaming winget now times out and kills the process tree so a stuck upgrade cannot hang the UI forever.
+- **Scope:** `.github/workflows/release.yml`, `main.py` startup crash log, `core/winget_engine.py` stream timeout, `core/test_winget_stream_timeout.py`, tags `v2.0.1` / `v2.0.2`.
+- **Middleware:** No new layer.
+- **Follow-up:** Owner opens Build 8 / unzipped `QuantumUpdater-Windows.zip` on this PC and a second PC.
+
 ### Wave 4/5 remaining engine tools (ADR 036) — 15 Nov 2026
 - **Seat:** Manager (provisional; Security architect pass pending)
 - **Verdict:** Pass for source pending formal seat. Confirm gates on TCP/IP reset, firewall reset, format removable, compression, mount/eject, and context-menu disable/restore. Service denylist blocks protected names. Registry import blocked unless `allow_import`. System drive format refused.

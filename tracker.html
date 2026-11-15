@@ -314,7 +314,7 @@ const TRACKER = {
       items: [
         { id: "25.1", text: "Icons from program files on this PC", status: "checked", owner: "engine" },
         { id: "25.2", text: "Icons from publisher sites for Marketplace with 73 publisher homepages", status: "checked", owner: "product" },
-        { id: "25.3", text: "Rebuild and owner check — Build 7 packaged (hang fix); owner open still pending", status: "waiting", owner: "owner" }
+        { id: "25.3", text: "Rebuild and owner check — Build 8 packaged; owner open still pending", status: "waiting", owner: "owner" }
       ]
     },
     {
@@ -530,7 +530,7 @@ const TRACKER = {
       title: "GitHub release channel and self-update",
       items: [
         { id: "42.1", text: "Official self-update and downloads use merchanthasan2/AudoChocolatey Releases. Tag v* builds QuantumUpdater.exe. Portable EXE swaps the frozen app; *setup*.exe still uses /S. ADR 026.", status: "done", owner: "engine", parts: { plan: "done", build: "done", verify: "done", sec: "done", valid: "todo", pc: "todo", acc: "todo" } },
-        { id: "42.2", text: "Owner tags a milestone (for example v2.0.1) when a downloadable EXE is needed. Channel push is in progress from the team. Installed copies can then download updates.", status: "needs-owner", owner: "owner", stage: "Tag release", with: "Owner" },
+        { id: "42.2", text: "Tagged v2.0.2 with QuantumUpdater-Windows.zip (full onedir). Prefer zip over any bare bootloader exe.", status: "done", owner: "engine", stage: "Tag release", with: "Manager" },
         { id: "42.3", text: "Winget package QuantumStep.QuantumUpdater: portable manifests + release Action prepare script (ADR 028). Not in community index until a public Release exists and the winget-pkgs PR merges.", status: "done", owner: "engine", parts: { plan: "done", build: "done", verify: "todo", sec: "todo", valid: "todo", pc: "todo", acc: "todo" } },
         { id: "42.4", text: "Owner later: after tag builds, submit manifests with wingetcreate submit (or PR to microsoft/winget-pkgs) so winget install QuantumStep.QuantumUpdater works on any PC.", status: "needs-owner", owner: "owner", stage: "Submit to winget", with: "Owner" },
         { id: "42.5", text: "Check for a newer Quantum Updater build before the app starts work. Preload in main.py, show on Getting ready, then start catalog scans. Offer Install so this PC can run the better build. Offline does not block. ADR 032.", status: "done", owner: "engine", parts: { plan: "done", build: "done", verify: "todo", sec: "todo", valid: "todo", pc: "todo", acc: "todo" } }
