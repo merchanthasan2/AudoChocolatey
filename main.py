@@ -96,7 +96,24 @@ def get_web_root():
         base_dir = os.path.dirname(os.path.abspath(__file__))
     return os.path.join(base_dir, "web", "index.html")
 
+def run_scheduled_cleanup_cli() -> None:
+    from core.system_tools.scheduled_cleanup import run_scheduled_cleanup
+
+    result = run_scheduled_cleanup()
+    if not result.get("success"):
+        print(result.get("message") or "Scheduled cleanup failed.", file=sys.stderr)
+        sys.exit(1)
+    print(
+        result.get("freed_str") or "Scheduled cleanup finished.",
+        f"({result.get('files_removed', 0)} files)",
+    )
+
+
 def main():
+    if "--scheduled-cleanup" in sys.argv:
+        run_scheduled_cleanup_cli()
+        return
+
     # 1. Automatic UAC Elevation
     if "--no-elevate" not in sys.argv:
         elevate_if_needed()

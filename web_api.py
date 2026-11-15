@@ -1084,6 +1084,307 @@ class WebAPI(__import__("web_api_tools").SystemToolsAPI):
             confirmed = bool(args[0])
         return clear_print_queue_and_restart_spooler(confirmed=confirmed)
 
+    def duplicates_scan(self, *args, **kwargs) -> Dict[str, Any]:
+        """31.4: scan a folder tree for duplicate files."""
+        from core.system_tools.duplicates import scan_duplicates
+
+        root = str(kwargs.get("root") or "").strip()
+        if not root and args:
+            root = str(args[0] or "").strip()
+        min_bytes = int(kwargs.get("min_bytes") or kwargs.get("min_mb", 1) * 1024 * 1024)
+        if args and len(args) > 1 and "min_bytes" not in kwargs:
+            try:
+                min_bytes = int(float(args[1]) * 1024 * 1024)
+            except (TypeError, ValueError):
+                pass
+        return scan_duplicates(root, min_bytes=min_bytes)
+
+    def duplicates_recycle(self, *args, **kwargs) -> Dict[str, Any]:
+        """31.4: recycle selected duplicate paths from the latest scan. Requires confirmed=true."""
+        from core.system_tools.duplicates import recycle_duplicates
+
+        paths = kwargs.get("paths")
+        if paths is None and args:
+            paths = args[0]
+        if isinstance(paths, str):
+            paths = [paths]
+        if not isinstance(paths, list):
+            paths = []
+        confirmed = bool(kwargs.get("confirmed", False))
+        if len(args) > 1 and not confirmed:
+            confirmed = bool(args[1])
+        return recycle_duplicates([str(p) for p in paths if str(p).strip()], confirmed=confirmed)
+
+    def orphan_uninstallers_list(self, *args, **kwargs) -> Dict[str, Any]:
+        """31.11: ARP entries with missing or broken uninstall commands."""
+        from core.system_tools.orphan_install import list_broken_uninstallers
+
+        return list_broken_uninstallers()
+
+    def orphan_uninstall_remove(self, *args, **kwargs) -> Dict[str, Any]:
+        """31.11: remove one broken uninstall registry entry. Requires confirmed=true."""
+        from core.system_tools.orphan_install import remove_orphan_entry
+
+        entry_id = str(kwargs.get("entry_id") or "").strip()
+        if not entry_id and args:
+            entry_id = str(args[0] or "").strip()
+        confirmed = bool(kwargs.get("confirmed", False))
+        if len(args) > 1 and not confirmed:
+            confirmed = bool(args[1])
+        return remove_orphan_entry(entry_id, confirmed=confirmed)
+
+    def cleanup_schedule_list(self, *args, **kwargs) -> Dict[str, Any]:
+        """31.3: read saved scheduled cleanup settings."""
+        from core.system_tools.scheduled_cleanup import list_schedule
+
+        return list_schedule()
+
+    def cleanup_schedule_save(self, *args, **kwargs) -> Dict[str, Any]:
+        """31.3: save categories + cadence and register the Task Scheduler job."""
+        from core.system_tools.scheduled_cleanup import save_schedule
+
+        category_ids = kwargs.get("category_ids") or kwargs.get("categories")
+        if category_ids is None and args:
+            category_ids = args[0]
+        if not isinstance(category_ids, list):
+            category_ids = []
+        cadence = str(kwargs.get("cadence") or "").strip()
+        if not cadence and len(args) > 1:
+            cadence = str(args[1] or "").strip()
+        return save_schedule([str(x) for x in category_ids], cadence)
+
+    def cleanup_schedule_remove(self, *args, **kwargs) -> Dict[str, Any]:
+        """31.3: remove saved schedule and delete the Task Scheduler job."""
+        from core.system_tools.scheduled_cleanup import remove_schedule
+
+        return remove_schedule()
+
+    def catalog_export(self, *args, **kwargs) -> Dict[str, Any]:
+        """31.2: winget export installed apps with versions."""
+        from core.system_tools.catalog_export import export_catalog
+
+        path = str(kwargs.get("path") or "").strip()
+        if not path and args:
+            path = str(args[0] or "").strip()
+        return export_catalog(path)
+
+    def catalog_import(self, *args, **kwargs) -> Dict[str, Any]:
+        """31.2: winget import from export file. Requires confirmed=true."""
+        from core.system_tools.catalog_export import import_catalog
+
+        path = str(kwargs.get("path") or "").strip()
+        if not path and args:
+            path = str(args[0] or "").strip()
+        confirmed = bool(kwargs.get("confirmed", False))
+        if len(args) > 1 and not confirmed:
+            confirmed = bool(args[1])
+        return import_catalog(path, confirmed=confirmed)
+
+    def app_repair_desktop(self, *args, **kwargs) -> Dict[str, Any]:
+        """31.5: winget repair for one package id. Requires confirmed=true."""
+        from core.system_tools.app_repair import repair_desktop
+
+        package_id = str(kwargs.get("package_id") or "").strip()
+        if not package_id and args:
+            package_id = str(args[0] or "").strip()
+        confirmed = bool(kwargs.get("confirmed", False))
+        if len(args) > 1 and not confirmed:
+            confirmed = bool(args[1])
+        return repair_desktop(package_id, confirmed=confirmed)
+
+    def packaged_app_reset(self, *args, **kwargs) -> Dict[str, Any]:
+        """31.6: Reset-AppxPackage for one listed Store app. Requires confirmed=true."""
+        from core.system_tools.app_repair import reset_packaged_app
+
+        package_full_name = str(kwargs.get("package_full_name") or "").strip()
+        if not package_full_name and args:
+            package_full_name = str(args[0] or "").strip()
+        confirmed = bool(kwargs.get("confirmed", False))
+        if len(args) > 1 and not confirmed:
+            confirmed = bool(args[1])
+        return reset_packaged_app(package_full_name, confirmed=confirmed)
+
+    # ---- Wave 3 Windows health (32.x) ----
+    def health_open_windows_update(self, *args, **kwargs) -> Dict[str, Any]:
+        from core.system_tools.windows_health import open_windows_update_settings
+        return open_windows_update_settings()
+
+    def health_repair_wu(self, *args, **kwargs) -> Dict[str, Any]:
+        from core.system_tools.windows_health import repair_windows_update_components
+        return repair_windows_update_components(confirmed=bool(kwargs.get("confirmed", False) or (args[0] if args else False)))
+
+    def health_list_hotfixes(self, *args, **kwargs) -> Dict[str, Any]:
+        from core.system_tools.windows_health import list_uninstallable_updates
+        return list_uninstallable_updates()
+
+    def health_uninstall_hotfix(self, *args, **kwargs) -> Dict[str, Any]:
+        from core.system_tools.windows_health import uninstall_windows_update
+        kb = str(kwargs.get("kb_id") or kwargs.get("id") or (args[0] if args else "")).strip()
+        confirmed = bool(kwargs.get("confirmed", False) or (args[1] if len(args) > 1 else False))
+        return uninstall_windows_update(kb, confirmed=confirmed)
+
+    def health_sfc(self, *args, **kwargs) -> Dict[str, Any]:
+        from core.system_tools.windows_health import sfc_scan
+        repair = bool(kwargs.get("repair", False))
+        confirmed = bool(kwargs.get("confirmed", False))
+        return sfc_scan(repair=repair, confirmed=confirmed)
+
+    def health_dism(self, *args, **kwargs) -> Dict[str, Any]:
+        from core.system_tools.windows_health import dism_restore_health
+        return dism_restore_health(
+            confirmed=bool(kwargs.get("confirmed", False)),
+            scan_only=bool(kwargs.get("scan_only", False)),
+        )
+
+    def health_wmi(self, *args, **kwargs) -> Dict[str, Any]:
+        from core.system_tools.windows_health import wmi_verify
+        return wmi_verify(salvage=bool(kwargs.get("salvage", False)), confirmed=bool(kwargs.get("confirmed", False)))
+
+    def health_restore_point(self, *args, **kwargs) -> Dict[str, Any]:
+        from core.system_tools.windows_health import create_restore_point
+        return create_restore_point(
+            description=str(kwargs.get("description") or "Quantum Updater"),
+            confirmed=bool(kwargs.get("confirmed", False)),
+        )
+
+    def health_disk(self, *args, **kwargs) -> Dict[str, Any]:
+        from core.system_tools.windows_health import disk_health
+        return disk_health()
+
+    def health_volume(self, *args, **kwargs) -> Dict[str, Any]:
+        from core.system_tools.windows_health import volume_scan
+        return volume_scan(
+            drive=str(kwargs.get("drive") or "C:"),
+            repair=bool(kwargs.get("repair", False)),
+            confirmed=bool(kwargs.get("confirmed", False)),
+        )
+
+    def health_retrim(self, *args, **kwargs) -> Dict[str, Any]:
+        from core.system_tools.windows_health import ssd_retrim
+        return ssd_retrim(drive=str(kwargs.get("drive") or "C:"), confirmed=bool(kwargs.get("confirmed", False)))
+
+    def health_events(self, *args, **kwargs) -> Dict[str, Any]:
+        from core.system_tools.windows_health import list_windows_events
+        return list_windows_events(log_name=str(kwargs.get("log_name") or "System"), max_events=int(kwargs.get("max_events") or 50))
+
+    def health_events_export(self, *args, **kwargs) -> Dict[str, Any]:
+        from core.system_tools.windows_health import export_windows_events
+        return export_windows_events(log_name=str(kwargs.get("log_name") or "System"), path=str(kwargs.get("path") or ""))
+
+    def health_defender_status(self, *args, **kwargs) -> Dict[str, Any]:
+        from core.system_tools.windows_health import defender_status
+        return defender_status()
+
+    def health_defender_update(self, *args, **kwargs) -> Dict[str, Any]:
+        from core.system_tools.windows_health import update_defender_signatures
+        return update_defender_signatures(confirmed=bool(kwargs.get("confirmed", False)))
+
+    def health_defender_scan(self, *args, **kwargs) -> Dict[str, Any]:
+        from core.system_tools.windows_health import start_defender_scan
+        return start_defender_scan(full=bool(kwargs.get("full", False)), confirmed=bool(kwargs.get("confirmed", False)))
+
+    def health_bitlocker(self, *args, **kwargs) -> Dict[str, Any]:
+        from core.system_tools.windows_health import bitlocker_status
+        return bitlocker_status()
+
+    # ---- Wave 4 network/power ----
+    def net_flush_dns(self, *args, **kwargs) -> Dict[str, Any]:
+        from core.system_tools.network_tools import flush_dns
+        return flush_dns(confirmed=bool(kwargs.get("confirmed", False)))
+
+    def net_reset_winsock(self, *args, **kwargs) -> Dict[str, Any]:
+        from core.system_tools.network_tools import reset_winsock
+        return reset_winsock(confirmed=bool(kwargs.get("confirmed", False)))
+
+    def net_renew_dhcp(self, *args, **kwargs) -> Dict[str, Any]:
+        from core.system_tools.network_tools import renew_dhcp
+        return renew_dhcp(confirmed=bool(kwargs.get("confirmed", False)))
+
+    def net_power_plans(self, *args, **kwargs) -> Dict[str, Any]:
+        from core.system_tools.network_tools import list_power_plans
+        return list_power_plans()
+
+    def net_set_power_plan(self, *args, **kwargs) -> Dict[str, Any]:
+        from core.system_tools.network_tools import set_power_plan
+        return set_power_plan(str(kwargs.get("guid") or ""), confirmed=bool(kwargs.get("confirmed", False)))
+
+    def net_test_port(self, *args, **kwargs) -> Dict[str, Any]:
+        from core.system_tools.network_tools import test_tcp_port
+        return test_tcp_port(str(kwargs.get("host") or ""), int(kwargs.get("port") or 0))
+
+    def net_dns_lookup(self, *args, **kwargs) -> Dict[str, Any]:
+        from core.system_tools.network_tools import dns_lookup
+        return dns_lookup(str(kwargs.get("name") or ""))
+
+    def net_ping(self, *args, **kwargs) -> Dict[str, Any]:
+        from core.system_tools.network_tools import ping_host
+        return ping_host(str(kwargs.get("host") or ""), count=int(kwargs.get("count") or 4))
+
+    def net_traceroute(self, *args, **kwargs) -> Dict[str, Any]:
+        from core.system_tools.network_tools import traceroute
+        return traceroute(str(kwargs.get("host") or ""))
+
+    def net_listeners(self, *args, **kwargs) -> Dict[str, Any]:
+        from core.system_tools.network_tools import connection_inventory
+        return connection_inventory()
+
+    def net_proxy_status(self, *args, **kwargs) -> Dict[str, Any]:
+        from core.system_tools.network_tools import winhttp_proxy_status
+        return winhttp_proxy_status()
+
+    def net_proxy_reset(self, *args, **kwargs) -> Dict[str, Any]:
+        from core.system_tools.network_tools import winhttp_proxy_reset
+        return winhttp_proxy_reset(confirmed=bool(kwargs.get("confirmed", False)))
+
+    def net_hosts_preview(self, *args, **kwargs) -> Dict[str, Any]:
+        from core.system_tools.network_tools import hosts_file_preview
+        return hosts_file_preview()
+
+    def net_hosts_restore(self, *args, **kwargs) -> Dict[str, Any]:
+        from core.system_tools.network_tools import restore_default_hosts
+        return restore_default_hosts(confirmed=bool(kwargs.get("confirmed", False)))
+
+    def net_clock_status(self, *args, **kwargs) -> Dict[str, Any]:
+        from core.system_tools.network_tools import clock_sync_status
+        return clock_sync_status()
+
+    def net_clock_sync(self, *args, **kwargs) -> Dict[str, Any]:
+        from core.system_tools.network_tools import clock_sync_now
+        return clock_sync_now(confirmed=bool(kwargs.get("confirmed", False)))
+
+    # ---- Wave 5 files ----
+    def files_create_zip(self, *args, **kwargs) -> Dict[str, Any]:
+        from core.system_tools.file_tools import create_zip
+        return create_zip(str(kwargs.get("source_dir") or ""), str(kwargs.get("zip_path") or ""))
+
+    def files_extract_zip(self, *args, **kwargs) -> Dict[str, Any]:
+        from core.system_tools.file_tools import extract_zip
+        return extract_zip(str(kwargs.get("zip_path") or ""), str(kwargs.get("dest_dir") or ""), confirmed=bool(kwargs.get("confirmed", False)))
+
+    def files_checksum(self, *args, **kwargs) -> Dict[str, Any]:
+        from core.system_tools.file_tools import file_checksum
+        return file_checksum(str(kwargs.get("path") or ""), algo=str(kwargs.get("algo") or "sha256"))
+
+    def files_verify_checksum(self, *args, **kwargs) -> Dict[str, Any]:
+        from core.system_tools.file_tools import verify_checksum
+        return verify_checksum(str(kwargs.get("path") or ""), str(kwargs.get("expected") or ""), algo=str(kwargs.get("algo") or "sha256"))
+
+    def files_empty_folders(self, *args, **kwargs) -> Dict[str, Any]:
+        from core.system_tools.file_tools import find_empty_folders
+        return find_empty_folders(str(kwargs.get("root") or ""), limit=int(kwargs.get("limit") or 500))
+
+    def files_processes(self, *args, **kwargs) -> Dict[str, Any]:
+        from core.system_tools.file_tools import process_list
+        return process_list(limit=int(kwargs.get("limit") or 100))
+
+    def files_end_process(self, *args, **kwargs) -> Dict[str, Any]:
+        from core.system_tools.file_tools import end_process
+        return end_process(int(kwargs.get("pid") or 0), confirmed=bool(kwargs.get("confirmed", False)))
+
+    def files_verify_signature(self, *args, **kwargs) -> Dict[str, Any]:
+        from core.system_tools.file_tools import verify_file_signature
+        return verify_file_signature(str(kwargs.get("path") or ""))
+
     def get_app_icons(self, *args, **kwargs) -> Dict[str, Optional[str]]:
         """Return data URLs for package icons. Missing icons are null, never an error."""
         ids = kwargs.get("ids")

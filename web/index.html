@@ -972,6 +972,51 @@
               <p class="settings-card-desc" id="store-apps-status" style="margin-top: 12px; margin-bottom: 0;" aria-live="polite"></p>
             </div>
 
+            <!-- Duplicate files (31.4) -->
+            <div class="settings-card full-span" id="duplicate-files-card">
+              <h3>Duplicate files</h3>
+              <p class="settings-card-desc">Scan a folder for files that share size and contents. Recycle extra copies; one file in each group is always kept.</p>
+              <div style="display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-top: 12px;">
+                <input type="text" id="duplicates-root-path" class="glass-select" style="flex: 1; min-width: 200px;" placeholder="Folder to scan (e.g. Downloads)">
+                <button type="button" class="glass-btn btn-secondary btn-sm" id="btn-duplicates-scan" onclick="app.scanDuplicateFiles()">Scan</button>
+                <button type="button" class="glass-btn btn-primary btn-sm" id="btn-duplicates-recycle" onclick="app.recycleSelectedDuplicates()" disabled>Recycle selected</button>
+              </div>
+              <select id="duplicates-results" class="glass-select" multiple size="6" style="width: 100%; margin-top: 12px;" disabled></select>
+              <p class="settings-card-desc" id="duplicates-status" style="margin-top: 12px; margin-bottom: 0;" aria-live="polite"></p>
+            </div>
+
+            <!-- Orphan uninstallers (31.11) -->
+            <div class="settings-card full-span" id="orphan-uninstall-card">
+              <h3>Orphan uninstallers</h3>
+              <p class="settings-card-desc">Remove Add/Remove Programs entries whose uninstall command is missing or points at a file that no longer exists. Then run a leftover scan.</p>
+              <div style="display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-top: 12px;">
+                <button type="button" class="glass-btn btn-secondary btn-sm" id="btn-orphan-uninstall-load" onclick="app.loadOrphanUninstallers()">Load entries</button>
+                <select id="orphan-uninstall-select" class="glass-select" style="min-width: 220px; max-width: 100%; flex: 1;" disabled>
+                  <option value="">Load the list first</option>
+                </select>
+                <button type="button" class="glass-btn btn-primary btn-sm" id="btn-orphan-uninstall-remove" onclick="app.removeSelectedOrphanUninstaller()" disabled>Remove entry</button>
+              </div>
+              <p class="settings-card-desc" id="orphan-uninstall-status" style="margin-top: 12px; margin-bottom: 0;" aria-live="polite"></p>
+            </div>
+
+            <!-- Scheduled cleanup (31.3) -->
+            <div class="settings-card full-span" id="scheduled-cleanup-card">
+              <h3>Scheduled cleanup</h3>
+              <p class="settings-card-desc">Run selected cleanup categories on a daily or weekly schedule. The task runs Quantum Updater with no window.</p>
+              <div style="display: flex; flex-wrap: wrap; gap: 14px; align-items: center; margin-top: 12px;">
+                <label style="display: flex; align-items: center; gap: 6px;"><input type="checkbox" id="sched-cat-user-temp" value="user_temp"> User temp</label>
+                <label style="display: flex; align-items: center; gap: 6px;"><input type="checkbox" id="sched-cat-browser-caches" value="browser_caches"> Browser caches</label>
+                <label style="display: flex; align-items: center; gap: 6px;"><input type="checkbox" id="sched-cat-recycle-bin" value="recycle_bin"> Recycle Bin</label>
+                <select id="sched-cleanup-cadence" class="glass-select">
+                  <option value="daily">Daily</option>
+                  <option value="weekly">Weekly (Monday)</option>
+                </select>
+                <button type="button" class="glass-btn btn-primary btn-sm" id="btn-sched-cleanup-save" onclick="app.saveScheduledCleanup()">Save schedule</button>
+                <button type="button" class="glass-btn btn-secondary btn-sm" id="btn-sched-cleanup-remove" onclick="app.removeScheduledCleanup()">Remove schedule</button>
+              </div>
+              <p class="settings-card-desc" id="scheduled-cleanup-status" style="margin-top: 12px; margin-bottom: 0;" aria-live="polite"></p>
+            </div>
+
             <!-- Print queue (31.10) -->
             <div class="settings-card full-span" id="print-queue-card">
               <h3>Print queue</h3>
@@ -985,6 +1030,102 @@
                 <option value="">No jobs loaded</option>
               </select>
               <p class="settings-card-desc" id="print-queue-status" style="margin-top: 12px; margin-bottom: 0;" aria-live="polite"></p>
+            </div>
+
+            <!-- Catalog export/import (31.2) -->
+            <div class="settings-card full-span" id="catalog-export-card">
+              <h3>Catalog export and import</h3>
+              <p class="settings-card-desc">Export installed WinGet app ids (with versions) to a JSON file, or import that file on another PC or after a reset. Save under your profile or Downloads only.</p>
+              <ul class="settings-card-desc" style="margin-top: 8px; margin-bottom: 0; padding-left: 1.2rem;">
+                <li>Export does not include installers — ids and versions only.</li>
+                <li>Import may download apps again and can take a long time.</li>
+              </ul>
+              <div style="display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-top: 12px;">
+                <input type="text" class="glass-input" id="catalog-export-path" style="flex: 1; min-width: 220px;" value="Downloads\quantum-updater-apps.json" aria-label="Catalog JSON path">
+                <button type="button" class="glass-btn btn-secondary btn-sm" id="btn-catalog-export" onclick="app.exportAppCatalog()">Export</button>
+                <button type="button" class="glass-btn btn-primary btn-sm" id="btn-catalog-import" onclick="app.importAppCatalog()">Import</button>
+              </div>
+              <p class="settings-card-desc" id="catalog-export-status" style="margin-top: 12px; margin-bottom: 0;" aria-live="polite"></p>
+            </div>
+
+            <!-- App repair (31.5 / 31.6) -->
+            <div class="settings-card full-span" id="app-repair-card">
+              <h3>App repair</h3>
+              <p class="settings-card-desc">Repair a WinGet desktop app when the publisher supports it. Reset removes a Store app&apos;s local data — load Store apps above, pick one in that list, then use Reset app data here.</p>
+              <div style="display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-top: 12px;">
+                <input type="text" class="glass-input" id="app-repair-package-id" style="flex: 1; min-width: 220px;" placeholder="Publisher.AppName" aria-label="WinGet package id">
+                <button type="button" class="glass-btn btn-primary btn-sm" id="btn-app-repair-desktop" onclick="app.repairDesktopApp()">Repair desktop app</button>
+                <button type="button" class="glass-btn btn-secondary btn-sm" id="btn-packaged-app-reset" onclick="app.resetSelectedPackagedApp()">Reset app data (selected Store app)</button>
+              </div>
+              <p class="settings-card-desc" id="app-repair-status" style="margin-top: 12px; margin-bottom: 0;" aria-live="polite"></p>
+            </div>
+
+            <!-- Wave 3 Windows health -->
+            <div class="settings-card full-span" id="windows-health-card">
+              <h3>Windows health</h3>
+              <p class="settings-card-desc">Open Windows Update, repair update components, scan system files, check disks, Defender, and BitLocker status (never shows recovery keys).</p>
+              <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px;">
+                <button type="button" class="glass-btn btn-secondary btn-sm" onclick="app.healthAction('open_wu')">Open Windows Update</button>
+                <button type="button" class="glass-btn btn-secondary btn-sm" onclick="app.healthAction('repair_wu')">Repair Update components</button>
+                <button type="button" class="glass-btn btn-secondary btn-sm" onclick="app.healthAction('sfc')">SFC verify</button>
+                <button type="button" class="glass-btn btn-secondary btn-sm" onclick="app.healthAction('sfc_repair')">SFC repair</button>
+                <button type="button" class="glass-btn btn-secondary btn-sm" onclick="app.healthAction('dism_scan')">DISM scan</button>
+                <button type="button" class="glass-btn btn-secondary btn-sm" onclick="app.healthAction('dism_repair')">DISM restore</button>
+                <button type="button" class="glass-btn btn-secondary btn-sm" onclick="app.healthAction('wmi')">WMI verify</button>
+                <button type="button" class="glass-btn btn-secondary btn-sm" onclick="app.healthAction('restore')">Create restore point</button>
+                <button type="button" class="glass-btn btn-secondary btn-sm" onclick="app.healthAction('disk')">Disk health</button>
+                <button type="button" class="glass-btn btn-secondary btn-sm" onclick="app.healthAction('volume')">Scan C: volume</button>
+                <button type="button" class="glass-btn btn-secondary btn-sm" onclick="app.healthAction('retrim')">ReTrim C:</button>
+                <button type="button" class="glass-btn btn-secondary btn-sm" onclick="app.healthAction('events')">Recent System events</button>
+                <button type="button" class="glass-btn btn-secondary btn-sm" onclick="app.healthAction('defender')">Defender status</button>
+                <button type="button" class="glass-btn btn-secondary btn-sm" onclick="app.healthAction('defender_update')">Update Defender</button>
+                <button type="button" class="glass-btn btn-secondary btn-sm" onclick="app.healthAction('defender_scan')">Quick malware scan</button>
+                <button type="button" class="glass-btn btn-secondary btn-sm" onclick="app.healthAction('bitlocker')">BitLocker status</button>
+                <button type="button" class="glass-btn btn-secondary btn-sm" onclick="app.healthAction('hotfixes')">List hotfixes</button>
+              </div>
+              <p class="settings-card-desc" id="windows-health-status" style="margin-top: 12px; margin-bottom: 0; white-space: pre-wrap;" aria-live="polite"></p>
+            </div>
+
+            <!-- Wave 4 network and power -->
+            <div class="settings-card full-span" id="network-tools-card">
+              <h3>Network and power</h3>
+              <p class="settings-card-desc">DNS flush, Winsock reset, DHCP renew, power plans, ping, port test, hosts preview, and clock sync.</p>
+              <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px;">
+                <button type="button" class="glass-btn btn-secondary btn-sm" onclick="app.netAction('flush_dns')">Flush DNS</button>
+                <button type="button" class="glass-btn btn-secondary btn-sm" onclick="app.netAction('winsock')">Reset Winsock</button>
+                <button type="button" class="glass-btn btn-secondary btn-sm" onclick="app.netAction('dhcp')">Renew DHCP</button>
+                <button type="button" class="glass-btn btn-secondary btn-sm" onclick="app.netAction('power')">List power plans</button>
+                <button type="button" class="glass-btn btn-secondary btn-sm" onclick="app.netAction('listeners')">Listening ports</button>
+                <button type="button" class="glass-btn btn-secondary btn-sm" onclick="app.netAction('proxy')">WinHTTP proxy</button>
+                <button type="button" class="glass-btn btn-secondary btn-sm" onclick="app.netAction('proxy_reset')">Reset WinHTTP proxy</button>
+                <button type="button" class="glass-btn btn-secondary btn-sm" onclick="app.netAction('hosts')">Hosts preview</button>
+                <button type="button" class="glass-btn btn-secondary btn-sm" onclick="app.netAction('hosts_restore')">Restore hosts</button>
+                <button type="button" class="glass-btn btn-secondary btn-sm" onclick="app.netAction('clock')">Clock status</button>
+                <button type="button" class="glass-btn btn-secondary btn-sm" onclick="app.netAction('clock_sync')">Sync clock</button>
+              </div>
+              <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; align-items: center;">
+                <input type="text" class="glass-input" id="net-host-input" style="min-width: 160px; flex: 1;" value="1.1.1.1" aria-label="Host">
+                <input type="number" class="glass-input" id="net-port-input" style="width: 90px;" value="443" aria-label="Port">
+                <button type="button" class="glass-btn btn-primary btn-sm" onclick="app.netAction('ping')">Ping</button>
+                <button type="button" class="glass-btn btn-secondary btn-sm" onclick="app.netAction('trace')">Trace route</button>
+                <button type="button" class="glass-btn btn-secondary btn-sm" onclick="app.netAction('port')">Test port</button>
+                <button type="button" class="glass-btn btn-secondary btn-sm" onclick="app.netAction('dns')">DNS lookup</button>
+              </div>
+              <p class="settings-card-desc" id="network-tools-status" style="margin-top: 12px; margin-bottom: 0; white-space: pre-wrap;" aria-live="polite"></p>
+            </div>
+
+            <!-- Wave 5 files -->
+            <div class="settings-card full-span" id="file-tools-card">
+              <h3>Files and processes</h3>
+              <p class="settings-card-desc">ZIP, checksums, empty folders, process list, end process, and publisher signature check.</p>
+              <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; align-items: center;">
+                <input type="text" class="glass-input" id="files-path-input" style="min-width: 220px; flex: 1;" placeholder="File or folder path under your profile" aria-label="Path">
+                <button type="button" class="glass-btn btn-secondary btn-sm" onclick="app.filesAction('checksum')">Checksum</button>
+                <button type="button" class="glass-btn btn-secondary btn-sm" onclick="app.filesAction('signature')">Signature</button>
+                <button type="button" class="glass-btn btn-secondary btn-sm" onclick="app.filesAction('empty')">Find empty folders</button>
+                <button type="button" class="glass-btn btn-secondary btn-sm" onclick="app.filesAction('processes')">Top processes</button>
+              </div>
+              <p class="settings-card-desc" id="file-tools-status" style="margin-top: 12px; margin-bottom: 0; white-space: pre-wrap;" aria-live="polite"></p>
             </div>
 
             <!-- Diagnostics -->

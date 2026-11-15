@@ -1480,6 +1480,13 @@ class QuantumUpdaterApp {
       store_apps_reregister: ['package_full_name', 'confirmed'],
       print_job_cancel: ['printer', 'job_id', 'confirmed'],
       print_queue_clear: ['confirmed'],
+      duplicates_scan: ['root', 'min_mb'],
+      duplicates_recycle: ['paths', 'confirmed'],
+      orphan_uninstall_remove: ['entry_id', 'confirmed'],
+      cleanup_schedule_save: ['category_ids', 'cadence'],
+      catalog_import: ['path', 'confirmed'],
+      app_repair_desktop: ['package_id', 'confirmed'],
+      packaged_app_reset: ['package_full_name', 'confirmed'],
     };
     const keys = order[cmd];
     if (keys) return keys.map((k) => args[k]);
@@ -5847,6 +5854,254 @@ class QuantumUpdaterApp {
     }
   }
 
+  _setDuplicatesStatus(text) {
+    const el = document.getElementById('duplicates-status');
+    if (el) el.textContent = text || '';
+  }
+
+  _duplicateGroups = [];
+
+  async scanDuplicateFiles() {
+    const rootEl = document.getElementById('duplicates-root-path');
+    const listEl = document.getElementById('duplicates-results');
+    const scanBtn = document.getElementById('btn-duplicates-scan');
+    const recycleBtn = document.getElementById('btn-duplicates-recycle');
+    const root = rootEl && rootEl.value ? String(rootEl.value).trim() : '';
+    if (!root) {
+      this._setDuplicatesStatus('Enter a folder path to scan.');
+      return;
+    }
+    if (scanBtn) scanBtn.disabled = true;
+    this._setDuplicatesStatus('Scanning for duplicates…');
+    this._duplicateGroups = [];
+    try {
+      const res = await this.invoke('duplicates_scan', { root, min_mb: 1 });
+      if (!res || res.error) {
+        this._setDuplicatesStatus((res && res.error) || 'Scan failed.');
+        if (listEl) {
+          listEl.innerHTML = '';
+          listEl.disabled = true;
+        }
+        if (recycleBtn) recycleBtn.disabled = true;
+        return;
+      }
+      this._duplicateGroups = Array.isArray(res.groups) ? res.groups : [];
+      if (listEl) {
+        listEl.innerHTML = '';
+        this._duplicateGroups.forEach((group, gi) => {
+          (group.paths || []).forEach((path, pi) => {
+            const opt = document.createElement('option');
+            opt.value = path;
+            opt.dataset.group = String(gi);
+            opt.textContent = `${group.size_str || ''} — ${path}`;
+            if (pi === 0) opt.textContent += ' (keeping one by default)';
+            listEl.appendChild(opt);
+          });
+        });
+        listEl.disabled = this._duplicateGroups.length === 0;
+      }
+      const capNote = res.capped ? ' (scan capped)' : '';
+      this._setDuplicatesStatus(
+        `${this._duplicateGroups.length} duplicate group(s); ${res.files_scanned || 0} file(s) scanned${capNote}.`
+      );
+      if (recycleBtn) recycleBtn.disabled = this._duplicateGroups.length === 0;
+    } catch (e) {
+      this._setDuplicatesStatus(String(e.message || e));
+      if (recycleBtn) recycleBtn.disabled = true;
+    } finally {
+      if (scanBtn) scanBtn.disabled = false;
+    }
+  }
+
+  async recycleSelectedDuplicates() {
+    const listEl = document.getElementById('duplicates-results');
+    const recycleBtn = document.getElementById('btn-duplicates-recycle');
+    const selected = listEl
+      ? Array.from(listEl.selectedOptions || []).map((o) => o.value).filter(Boolean)
+      : [];
+    if (!selected.length) {
+      this._setDuplicatesStatus('Select duplicate files to recycle (not every file in a group).');
+      return;
+    }
+    const ok = window.confirm(
+      'Move the selected duplicate files to the Recycle Bin? At least one copy in each group must remain.'
+    );
+    if (!ok) return;
+    if (recycleBtn) recycleBtn.disabled = true;
+    this._setDuplicatesStatus('Moving files to the Recycle Bin…');
+    try {
+      const res = await this.invoke('duplicates_recycle', { paths: selected, confirmed: true });
+      if (res && res.success) {
+        this._setDuplicatesStatus(res.message || 'Duplicates recycled.');
+        await this.scanDuplicateFiles();
+      } else {
+        this._setDuplicatesStatus((res && res.message) || 'Recycle failed.');
+      }
+    } catch (e) {
+      this._setDuplicatesStatus(String(e.message || e));
+    } finally {
+      if (recycleBtn) recycleBtn.disabled = false;
+    }
+  }
+
+  _setOrphanUninstallStatus(text) {
+    const el = document.getElementById('orphan-uninstall-status');
+    if (el) el.textContent = text || '';
+  }
+
+  async loadOrphanUninstallers() {
+    const btn = document.getElementById('btn-orphan-uninstall-load');
+    const select = document.getElementById('orphan-uninstall-select');
+    const removeBtn = document.getElementById('btn-orphan-uninstall-remove');
+    if (btn) btn.disabled = true;
+    this._setOrphanUninstallStatus('Loading entries…');
+    try {
+      const res = await this.invoke('orphan_uninstallers_list', {});
+      const items = res && Array.isArray(res.items) ? res.items : [];
+      if (select) {
+        select.innerHTML = '';
+        if (!items.length) {
+          const empty = document.createElement('option');
+          empty.value = '';
+          empty.textContent = 'No broken uninstall entries found';
+          select.appendChild(empty);
+          select.disabled = true;
+          if (removeBtn) removeBtn.disabled = true;
+        } else {
+          items.forEach((row) => {
+            const opt = document.createElement('option');
+            opt.value = row.entry_id || '';
+            opt.textContent = `${row.name || 'Program'} — ${row.reason || ''}`.trim();
+            select.appendChild(opt);
+          });
+          select.disabled = false;
+          if (removeBtn) removeBtn.disabled = false;
+        }
+      }
+      this._setOrphanUninstallStatus(`${items.length} broken uninstall entr${items.length === 1 ? 'y' : 'ies'}.`);
+    } catch (e) {
+      this._setOrphanUninstallStatus(String(e.message || e));
+      if (removeBtn) removeBtn.disabled = true;
+    } finally {
+      if (btn) btn.disabled = false;
+    }
+  }
+
+  async removeSelectedOrphanUninstaller() {
+    const select = document.getElementById('orphan-uninstall-select');
+    const removeBtn = document.getElementById('btn-orphan-uninstall-remove');
+    const entryId = select && select.value ? String(select.value).trim() : '';
+    if (!entryId) {
+      this._setOrphanUninstallStatus('Select an entry to remove.');
+      return;
+    }
+    const label = select.selectedOptions && select.selectedOptions[0] ? select.selectedOptions[0].textContent : entryId;
+    const ok = window.confirm(
+      `Remove this broken uninstall registry entry?\n\n${label}\n\nRun a leftover scan afterward.`
+    );
+    if (!ok) return;
+    if (removeBtn) removeBtn.disabled = true;
+    this._setOrphanUninstallStatus('Removing registry entry…');
+    try {
+      const res = await this.invoke('orphan_uninstall_remove', { entry_id: entryId, confirmed: true });
+      if (res && res.success) {
+        const hint = res.suggest_leftovers_scan ? ' Run a leftover scan when convenient.' : '';
+        this._setOrphanUninstallStatus((res.message || 'Entry removed.') + hint);
+        await this.loadOrphanUninstallers();
+      } else {
+        this._setOrphanUninstallStatus((res && res.message) || 'Remove failed.');
+      }
+    } catch (e) {
+      this._setOrphanUninstallStatus(String(e.message || e));
+    } finally {
+      if (removeBtn) removeBtn.disabled = false;
+    }
+  }
+
+  _setScheduledCleanupStatus(text) {
+    const el = document.getElementById('scheduled-cleanup-status');
+    if (el) el.textContent = text || '';
+  }
+
+  _scheduledCleanupCategoryIds() {
+    const ids = [];
+    if (document.getElementById('sched-cat-user-temp')?.checked) ids.push('user_temp');
+    if (document.getElementById('sched-cat-browser-caches')?.checked) ids.push('browser_caches');
+    if (document.getElementById('sched-cat-recycle-bin')?.checked) ids.push('recycle_bin');
+    return ids;
+  }
+
+  async loadScheduledCleanupSettings() {
+    try {
+      const res = await this.invoke('cleanup_schedule_list', {});
+      if (!res) return;
+      const user = document.getElementById('sched-cat-user-temp');
+      const browser = document.getElementById('sched-cat-browser-caches');
+      const rb = document.getElementById('sched-cat-recycle-bin');
+      const cadence = document.getElementById('sched-cleanup-cadence');
+      const cats = new Set(res.categories || []);
+      if (user) user.checked = cats.has('user_temp');
+      if (browser) browser.checked = cats.has('browser_caches');
+      if (rb) rb.checked = cats.has('recycle_bin');
+      if (cadence && res.cadence) cadence.value = res.cadence;
+      if (res.configured) {
+        this._setScheduledCleanupStatus(
+          `Scheduled: ${(res.categories || []).join(', ')} (${res.cadence || ''}). Task registered: ${res.task_registered ? 'yes' : 'no'}.`
+        );
+      }
+    } catch (_) {
+      /* settings optional on first paint */
+    }
+  }
+
+  async saveScheduledCleanup() {
+    const saveBtn = document.getElementById('btn-sched-cleanup-save');
+    const categoryIds = this._scheduledCleanupCategoryIds();
+    const cadenceEl = document.getElementById('sched-cleanup-cadence');
+    const cadence = cadenceEl ? String(cadenceEl.value || 'daily') : 'daily';
+    if (!categoryIds.length) {
+      this._setScheduledCleanupStatus('Select at least one cleanup category.');
+      return;
+    }
+    const ok = window.confirm('Save this cleanup schedule and register the Windows scheduled task?');
+    if (!ok) return;
+    if (saveBtn) saveBtn.disabled = true;
+    this._setScheduledCleanupStatus('Saving schedule…');
+    try {
+      const res = await this.invoke('cleanup_schedule_save', { category_ids: categoryIds, cadence });
+      if (res && res.success) {
+        this._setScheduledCleanupStatus(res.message || 'Schedule saved.');
+        await this.loadScheduledCleanupSettings();
+      } else {
+        this._setScheduledCleanupStatus((res && res.message) || 'Save failed.');
+      }
+    } catch (e) {
+      this._setScheduledCleanupStatus(String(e.message || e));
+    } finally {
+      if (saveBtn) saveBtn.disabled = false;
+    }
+  }
+
+  async removeScheduledCleanup() {
+    const removeBtn = document.getElementById('btn-sched-cleanup-remove');
+    const ok = window.confirm('Remove the saved cleanup schedule and delete the scheduled task?');
+    if (!ok) return;
+    if (removeBtn) removeBtn.disabled = true;
+    try {
+      const res = await this.invoke('cleanup_schedule_remove', {});
+      if (res && res.success) {
+        this._setScheduledCleanupStatus(res.message || 'Schedule removed.');
+        await this.loadScheduledCleanupSettings();
+      } else {
+        this._setScheduledCleanupStatus((res && res.message) || 'Remove failed.');
+      }
+    } catch (e) {
+      this._setScheduledCleanupStatus(String(e.message || e));
+    } finally {
+      if (removeBtn) removeBtn.disabled = false;
+    }
+  }
+
   _setPrintQueueStatus(text) {
     const el = document.getElementById('print-queue-status');
     if (el) el.textContent = text || '';
@@ -5946,6 +6201,260 @@ class QuantumUpdaterApp {
     }
   }
 
+  _setToolStatus(id, text) {
+    const el = document.getElementById(id);
+    if (el) el.textContent = text || '';
+  }
+
+  async healthAction(kind) {
+    const statusId = 'windows-health-status';
+    const confirmHeavy = ['repair_wu', 'sfc_repair', 'dism_repair', 'restore', 'retrim', 'defender_update', 'defender_scan'];
+    if (confirmHeavy.includes(kind) && !confirm('Run this Windows health action now?')) return;
+    this._setToolStatus(statusId, 'Working…');
+    this.setIslandState(true, 'Windows health', null, 'Working');
+    try {
+      let res = null;
+      if (kind === 'open_wu') res = await this.invoke('health_open_windows_update', {});
+      else if (kind === 'repair_wu') res = await this.invoke('health_repair_wu', { confirmed: true });
+      else if (kind === 'sfc') res = await this.invoke('health_sfc', { repair: false });
+      else if (kind === 'sfc_repair') res = await this.invoke('health_sfc', { repair: true, confirmed: true });
+      else if (kind === 'dism_scan') res = await this.invoke('health_dism', { scan_only: true });
+      else if (kind === 'dism_repair') res = await this.invoke('health_dism', { scan_only: false, confirmed: true });
+      else if (kind === 'wmi') res = await this.invoke('health_wmi', {});
+      else if (kind === 'restore') res = await this.invoke('health_restore_point', { confirmed: true });
+      else if (kind === 'disk') res = await this.invoke('health_disk', {});
+      else if (kind === 'volume') res = await this.invoke('health_volume', { drive: 'C:' });
+      else if (kind === 'retrim') res = await this.invoke('health_retrim', { drive: 'C:', confirmed: true });
+      else if (kind === 'events') res = await this.invoke('health_events', { log_name: 'System' });
+      else if (kind === 'defender') res = await this.invoke('health_defender_status', {});
+      else if (kind === 'defender_update') res = await this.invoke('health_defender_update', { confirmed: true });
+      else if (kind === 'defender_scan') res = await this.invoke('health_defender_scan', { confirmed: true });
+      else if (kind === 'bitlocker') res = await this.invoke('health_bitlocker', {});
+      else if (kind === 'hotfixes') res = await this.invoke('health_list_hotfixes', {});
+      const text = res && res.ok
+        ? (res.message || JSON.stringify(res.status || res.disks || res.volumes || res.events || res.updates || res, null, 0).slice(0, 1200))
+        : ((res && (res.error || res.message)) || 'Action failed.');
+      this._setToolStatus(statusId, text);
+      this.setIslandState(false, res && res.ok ? 'Windows health done' : 'Windows health failed', res && res.ok ? 100 : 0, text);
+    } catch (e) {
+      this._setToolStatus(statusId, String(e.message || e));
+      this.setIslandState(false, 'Windows health failed', 0, String(e.message || e));
+    }
+  }
+
+  async netAction(kind) {
+    const statusId = 'network-tools-status';
+    const hostEl = document.getElementById('net-host-input');
+    const portEl = document.getElementById('net-port-input');
+    const host = hostEl ? String(hostEl.value || '').trim() : '';
+    const port = portEl ? Number(portEl.value || 0) : 0;
+    const needsConfirm = ['flush_dns', 'winsock', 'dhcp', 'proxy_reset', 'hosts_restore', 'clock_sync'];
+    if (needsConfirm.includes(kind) && !confirm('Run this network action now?')) return;
+    this._setToolStatus(statusId, 'Working…');
+    try {
+      let res = null;
+      if (kind === 'flush_dns') res = await this.invoke('net_flush_dns', { confirmed: true });
+      else if (kind === 'winsock') res = await this.invoke('net_reset_winsock', { confirmed: true });
+      else if (kind === 'dhcp') res = await this.invoke('net_renew_dhcp', { confirmed: true });
+      else if (kind === 'power') res = await this.invoke('net_power_plans', {});
+      else if (kind === 'listeners') res = await this.invoke('net_listeners', {});
+      else if (kind === 'proxy') res = await this.invoke('net_proxy_status', {});
+      else if (kind === 'proxy_reset') res = await this.invoke('net_proxy_reset', { confirmed: true });
+      else if (kind === 'hosts') res = await this.invoke('net_hosts_preview', {});
+      else if (kind === 'hosts_restore') res = await this.invoke('net_hosts_restore', { confirmed: true });
+      else if (kind === 'clock') res = await this.invoke('net_clock_status', {});
+      else if (kind === 'clock_sync') res = await this.invoke('net_clock_sync', { confirmed: true });
+      else if (kind === 'ping') res = await this.invoke('net_ping', { host });
+      else if (kind === 'trace') res = await this.invoke('net_traceroute', { host });
+      else if (kind === 'port') res = await this.invoke('net_test_port', { host, port });
+      else if (kind === 'dns') res = await this.invoke('net_dns_lookup', { name: host });
+      const text = res && res.ok
+        ? (res.message || res.detail || JSON.stringify(res.plans || res.listeners || res.addresses || res, null, 0).slice(0, 1200))
+        : ((res && (res.error || res.message)) || 'Action failed.');
+      this._setToolStatus(statusId, text);
+    } catch (e) {
+      this._setToolStatus(statusId, String(e.message || e));
+    }
+  }
+
+  async filesAction(kind) {
+    const statusId = 'file-tools-status';
+    const pathEl = document.getElementById('files-path-input');
+    const path = pathEl ? String(pathEl.value || '').trim() : '';
+    this._setToolStatus(statusId, 'Working…');
+    try {
+      let res = null;
+      if (kind === 'checksum') res = await this.invoke('files_checksum', { path });
+      else if (kind === 'signature') res = await this.invoke('files_verify_signature', { path });
+      else if (kind === 'empty') res = await this.invoke('files_empty_folders', { root: path || (window.pywebview ? '' : '') });
+      else if (kind === 'processes') res = await this.invoke('files_processes', {});
+      const text = res && res.ok
+        ? (res.message || res.hex || res.status || JSON.stringify(res.folders || res.processes || res, null, 0).slice(0, 1200))
+        : ((res && (res.error || res.message)) || 'Action failed.');
+      this._setToolStatus(statusId, text);
+    } catch (e) {
+      this._setToolStatus(statusId, String(e.message || e));
+    }
+  }
+
+  _setCatalogExportStatus(text) {
+    const el = document.getElementById('catalog-export-status');
+    if (el) el.textContent = text || '';
+  }
+
+  async exportAppCatalog() {
+    const pathEl = document.getElementById('catalog-export-path');
+    const path = pathEl && pathEl.value ? String(pathEl.value).trim() : 'Downloads\\quantum-updater-apps.json';
+    const btn = document.getElementById('btn-catalog-export');
+    const importBtn = document.getElementById('btn-catalog-import');
+    if (btn) btn.disabled = true;
+    if (importBtn) importBtn.disabled = true;
+    this._setCatalogExportStatus('Exporting installed apps…');
+    this.setIslandState(true, 'Exporting app catalog', null, 'Working');
+    try {
+      const res = await this.invoke('catalog_export', { path });
+      if (res && res.ok) {
+        this._setCatalogExportStatus(res.message || 'Catalog exported.');
+        this.setIslandState(false, 'Catalog exported', 100, res.message || 'Done');
+      } else {
+        const err = (res && (res.error || res.message)) || 'Export failed.';
+        this._setCatalogExportStatus(err);
+        this.setIslandState(false, 'Catalog export failed', 0, err);
+      }
+    } catch (e) {
+      const err = String(e.message || e);
+      this._setCatalogExportStatus(err);
+      this.setIslandState(false, 'Catalog export failed', 0, err);
+    } finally {
+      if (btn) btn.disabled = false;
+      if (importBtn) importBtn.disabled = false;
+    }
+  }
+
+  async importAppCatalog() {
+    const pathEl = document.getElementById('catalog-export-path');
+    const path = pathEl && pathEl.value ? String(pathEl.value).trim() : '';
+    if (!path) {
+      this._setCatalogExportStatus('Enter the path to a catalog JSON file first.');
+      return;
+    }
+    if (!confirm(
+      'Import apps from this catalog file?\n\n' +
+      'WinGet may download and install many packages. This can take a long time and needs network access.'
+    )) {
+      return;
+    }
+    if (!confirm('Final confirmation: start catalog import now?')) return;
+    const btn = document.getElementById('btn-catalog-import');
+    const exportBtn = document.getElementById('btn-catalog-export');
+    if (btn) btn.disabled = true;
+    if (exportBtn) exportBtn.disabled = true;
+    this._setCatalogExportStatus('Importing apps from catalog…');
+    this.setIslandState(true, 'Importing app catalog', null, 'Working');
+    try {
+      const res = await this.invoke('catalog_import', { path, confirmed: true });
+      if (res && res.ok) {
+        this._setCatalogExportStatus(res.message || 'Catalog import finished.');
+        this.setIslandState(false, 'Catalog import finished', 100, res.message || 'Done');
+      } else {
+        const err = (res && (res.error || res.message)) || 'Import failed.';
+        this._setCatalogExportStatus(err);
+        this.setIslandState(false, 'Catalog import failed', 0, err);
+      }
+    } catch (e) {
+      const err = String(e.message || e);
+      this._setCatalogExportStatus(err);
+      this.setIslandState(false, 'Catalog import failed', 0, err);
+    } finally {
+      if (btn) btn.disabled = false;
+      if (exportBtn) exportBtn.disabled = false;
+    }
+  }
+
+  _setAppRepairStatus(text) {
+    const el = document.getElementById('app-repair-status');
+    if (el) el.textContent = text || '';
+  }
+
+  async repairDesktopApp() {
+    const input = document.getElementById('app-repair-package-id');
+    const packageId = input && input.value ? String(input.value).trim() : '';
+    if (!packageId) {
+      this._setAppRepairStatus('Enter a WinGet package id first (for example Publisher.AppName).');
+      return;
+    }
+    if (!confirm(
+      `Repair "${packageId}" with WinGet?\n\n` +
+      'This works only when the app publisher supports repair.'
+    )) {
+      return;
+    }
+    const btn = document.getElementById('btn-app-repair-desktop');
+    if (btn) btn.disabled = true;
+    this._setAppRepairStatus('Repairing desktop app…');
+    this.setIslandState(true, 'Repairing desktop app', null, 'Working');
+    try {
+      const res = await this.invoke('app_repair_desktop', { package_id: packageId, confirmed: true });
+      if (res && res.ok) {
+        this._setAppRepairStatus(res.message || 'Desktop app repair finished.');
+        this.setIslandState(false, 'Desktop app repaired', 100, res.message || 'Done');
+      } else {
+        const err = (res && (res.error || res.message)) || 'Repair failed.';
+        this._setAppRepairStatus(err);
+        this.setIslandState(false, 'Desktop repair failed', 0, err);
+      }
+    } catch (e) {
+      const err = String(e.message || e);
+      this._setAppRepairStatus(err);
+      this.setIslandState(false, 'Desktop repair failed', 0, err);
+    } finally {
+      if (btn) btn.disabled = false;
+    }
+  }
+
+  async resetSelectedPackagedApp() {
+    const select = document.getElementById('store-apps-select');
+    const full = select && select.value ? String(select.value) : '';
+    if (!full) {
+      this._setAppRepairStatus('Load Store apps above and choose one before resetting.');
+      return;
+    }
+    const label = (select && select.options[select.selectedIndex])
+      ? select.options[select.selectedIndex].textContent
+      : full;
+    if (!confirm(
+      `Reset "${label}"?\n\n` +
+      'This removes that Store app\'s saved data on this PC. The app stays installed but may act like a fresh install.'
+    )) {
+      return;
+    }
+    if (!confirm('Final confirmation: reset that Store app\'s data now?')) return;
+    const btn = document.getElementById('btn-packaged-app-reset');
+    if (btn) btn.disabled = true;
+    this._setAppRepairStatus('Resetting Store app data…');
+    this.setIslandState(true, 'Resetting Store app', null, 'Working');
+    try {
+      const res = await this.invoke('packaged_app_reset', {
+        package_full_name: full,
+        confirmed: true,
+      });
+      if (res && res.ok) {
+        this._setAppRepairStatus(res.message || 'Store app data reset.');
+        this.setIslandState(false, 'Store app reset', 100, res.message || 'Done');
+      } else {
+        const err = (res && (res.error || res.message)) || 'Reset failed.';
+        this._setAppRepairStatus(err);
+        this.setIslandState(false, 'Store app reset failed', 0, err);
+      }
+    } catch (e) {
+      const err = String(e.message || e);
+      this._setAppRepairStatus(err);
+      this.setIslandState(false, 'Store app reset failed', 0, err);
+    } finally {
+      if (btn) btn.disabled = false;
+    }
+  }
+
   async clearPrintQueue() {
     if (!confirm(
       'Clear the whole print queue and restart the print spooler?\n\n' +
@@ -6005,6 +6514,7 @@ class QuantumUpdaterApp {
       if (badgeEl) badgeEl.textContent = 'PC Health: Good';
       const bentoEngine = document.getElementById('bento-engine-val');
       if (bentoEngine) bentoEngine.textContent = engineLabel;
+      await this.loadScheduledCleanupSettings();
     } catch (e) {
       console.warn('Diagnostics notice:', e);
     }

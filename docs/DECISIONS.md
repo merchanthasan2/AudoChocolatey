@@ -186,11 +186,29 @@
 
 ---
 
+### ADR 033: Catalog export/import and app repair (31.2 / 31.5 / 31.6)
+- **Status:** Accepted (2026-11-15). Manager filled Design Architect seat after Other Models limit.
+- **Context:** Wave 2 needs WinGet catalog backup (ids and versions), desktop `winget repair`, and Store app data reset without a new screen.
+- **Decision:** No new protective middle layer. `web_api.py` stays the middle. Settings cards after **Print queue**: **Catalog export and import** (`winget export` / `winget import` to a `.json` under the user profile or Downloads only) and **App repair** (WinGet repair by package id; **Reset app data** uses the existing Store app list). Import and reset require double UI confirm plus `confirmed=true`. Do not change live Park theme colours.
+- **Consequences:** Tracker 31.2, 31.5, and 31.6 move to build. Security checks path allow-list, package id regex, and listed-package-only reset.
+
 ### ADR 032: Check for Quantum Updater updates before the app starts (42.5)
 - **Status:** Accepted (2026-11-15).
 - **Context:** Self-update only ran 2.5s after bridge ready, after catalog scans had already started. Owner wants this PC to pick up a better build before the rest of the app runs.
 - **Decision:** No new protective middle layer. `main.py` starts `preload_self_update_check` and waits up to 8s before opening the window. Getting ready includes a **Quantum Updater** row. Catalog bootstrap starts only after that check settles (or times out at 10s in the UI). Offline or failed checks do not hold the app. The install banner still offers the update; applying it remains user-confirmed via the existing Install path. Official Releases rules from ADR 026 stay.
 - **Consequences:** Tracker 42.5. A tagged Release is still required before an installed EXE can download a newer build.
+
+### ADR 035: Waves 3–5 Settings toolkits
+- **Status:** Accepted (2026-11-15).
+- **Context:** Tracker Waves 3–5 need Windows health, network/power, and file tools without waiting on Park theme lock.
+- **Decision:** No new protective middle layer. Ship `windows_health.py`, `network_tools.py`, and `file_tools.py` behind `web_api.py` with Settings cards. Confirm gates on destructive actions. BitLocker never returns recovery keys. 32.1 opens Windows Update settings rather than replacing the Windows Update agent. Remaining advanced rows (context-menu manager, BSOD triage, Wi-Fi survey, optional features, etc.) stay waiting.
+- **Consequences:** Most Wave 3 and many Wave 4/5 rows move to built. Owner later: on-PC checks and a tagged Release for self-update downloads.
+
+### ADR 034: Scheduled cleanup, duplicate finder, orphan uninstall (31.3 / 31.4 / 31.11)
+- **Status:** Accepted (2026-11-15).
+- **Context:** Wave 2 repair slices need duplicate file recycling, broken ARP uninstall cleanup, and a scheduled cleanup task with saved categories.
+- **Decision:** No new protective middle layer. `web_api.py` stays the middle. **Duplicate files** scans a user-supplied folder (size then sha256, caps on files/groups) and recycles only paths from the latest scan while keeping one file per group (`confirmed=true`). **Orphan uninstallers** lists ARP entries with missing/broken uninstall targets, backs up the uninstall key, deletes it when confirmed, and returns `suggest_leftovers_scan`. **Scheduled cleanup** saves `user_temp` / `browser_caches` / `recycle_bin` + daily|weekly in `%LOCALAPPDATA%\QuantumUpdater\cleanup_schedule.json`, registers `QuantumUpdaterCleanup` via `schtasks` to run `QuantumUpdater.exe --scheduled-cleanup --no-elevate`; `main.py` handles that flag without UI or elevation loop. Settings cards hold the three flows. Do not change live Park theme colours.
+- **Consequences:** Tracker 31.3, 31.4, 31.11 move to build/done. Unit tests for the three modules.
 
 ### ADR 031: Clear stuck print jobs and restart spooler (31.10)
 - **Status:** Accepted (2026-11-15). Manager filled Design Architect seat after Other Models limit.

@@ -19,6 +19,19 @@ Two skills are already installed and must be used: `vibe-security` (raroque) and
 
 ## Results
 
+### Slice 31.3 / 31.4 / 31.11 Cleanup repair trio — 15 Nov 2026
+- **Seat:** Manager (provisional; Security architect pass pending)
+- **Verdict:** Pass for source pending formal seat. Duplicate recycle requires latest scan + confirm and keeps one file per hash group. Orphan remove requires confirm + registry backup before delete. Schedule allow-lists three category ids and daily|weekly; task command is fixed argv with `--scheduled-cleanup --no-elevate` only.
+- **Scope:** `core/system_tools/duplicates.py`, `orphan_install.py`, `scheduled_cleanup.py`, tests, `main.py` flag path, `web_api.py` bridge, Settings cards in `web/index.html` + `web/app.js`, ADR 034.
+- **Middleware:** No new layer.
+
+### Slice 31.2 / 31.5 / 31.6 Catalog export and app repair — 15 Nov 2026
+- **Seat:** Manager (Security architect seat hit Other Models limit; Manager check recorded)
+- **Verdict:** Pass for source. Unit tests green for export/import and repair/reset. Do not treat as owner-tested until a Build is opened on this PC.
+- **Scope:** `core/system_tools/catalog_export.py`, `core/system_tools/app_repair.py`, `core/test_catalog_export.py`, `core/test_app_repair.py`, `web_api.py` bridge methods, Settings cards in `web/index.html` + `web/app.js`, ADR 033.
+- **Checks:** (1) No secrets. (2) No new deps. (3) Fixed winget argv; catalog paths limited to profile/Downloads `.json`; package ids allow-listed; reset only after live AppX list match. (4) Import and reset require `confirmed=true` plus double UI confirms. (5) Status text is plain text. (8) Mocked subprocess tests. (9–10) N/A. Checks 6–7 N/A.
+- **Middleware:** No new layer.
+
 ### Slice 42.5 Early self-update check — 15 Nov 2026
 - **Seat:** Manager (Security architect seat hit Other Models limit; Manager check recorded)
 - **Verdict:** Pass for source. Still uses ADR 026 official asset rules. Preload only calls `check_for_updates`. Apply path unchanged (caller URL ignored). Failed/offline check does not block the app.
