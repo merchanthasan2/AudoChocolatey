@@ -2,6 +2,8 @@
 **Company:** Quantum Step ([quantumstep.in](https://quantumstep.in))  
 **Design Philosophy:** Modern Glassmorphism & Enterprise Clarity
 
+> **Live theme, 12 Nov 2026.** Cream, orange, and black replace teal, mint, and ocean. Token names and both light and dark values are in `docs/ARCHITECTURE.md`. The live screens are `design/mockups/cream/`. Section 3 below is the retired palette. Do not paint the Windows app from it.
+
 ---
 
 ## 1. Design Philosophy & Aesthetic Core

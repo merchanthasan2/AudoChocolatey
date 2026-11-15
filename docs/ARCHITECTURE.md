@@ -1,120 +1,213 @@
-# Architecture Documentation: Quantum Updater
-**Publisher:** Quantum Step ([quantumstep.in](https://quantumstep.in))  
-**Version:** 2.0.0  
-**Stack:** Tauri v2 (Rust) / Python pywebview Fallback + HTML5/CSS3/Vanilla JS (Chromium WebView2)
+# Quantum Updater — system picture
 
----
+**Product:** Quantum Updater for Windows  
+**Publisher:** Quantum Step (quantumstep.in)  
+**Version:** 2.0.0 · Build 5  
+**This picture:** the Windows app on this PC. Refreshed 2026-11-12 for the cream theme, the ready gate, and the speed slices.
 
-## 1. High-Level Architectural Overview
+The window is `main.py`. It asks for administrator once at start, then opens the screens in WebView2. The screens live in `web/`. The bridge is `web_api.py`. The work runs in `core/`. A test is a new `QuantumUpdater.exe` opened on this PC.
 
-Quantum Updater employs a **Decoupled Dual-Engine Architecture** pairing native system-level backend orchestration with a high-performance, hardware-accelerated Microsoft Edge WebView2 rendering shell.
+## Protective middle layer
+
+No new protective middle layer is needed.
+
+`web_api.py` is the middle. The screens call that bridge. The bridge is the only path that starts a program, a scan, or a delete. These checks already sit on that path:
+
+- An uninstall plan allows the app's own uninstaller and refuses a shell.
+- A download accepts only a normal package id.
+- Cleanup and leftover removal ask for consent before a delete.
+- Run installer starts only when that app's installer is already in its download folder.
+
+The cream theme is colour in `web/style.css`. It starts no program.
+
+The ready gate reads `scans_state` on the same bridge. It hides navigation until the startup jobs settle. It adds no new service and no new program start.
+
+The speed slices change when existing jobs start, and how a catalog call reports its lines. They stay on `web_api.py`.
+
+## Live colours
+
+Cream, orange, and black are the live theme. Gray shades are allowed. Teal, mint, and ocean are retired as brand colours.
+
+The cream files in `design/mockups/cream/` are the live direction. Direction A and Direction B in `design/mockups/index.html` are older studies.
+
+Light is the default window. Dark is the existing `html.dark-mode` switch: near-black surfaces, cream text, orange marks.
+
+Orange `#E06A1A` is a fill, a bar, and a nav mark. On cream, small text uses orange ink `#9A4010` or black `#1C1814`. Orange fill text is black. A percent stays a real count, as in slice 36.8.
+
+### Token names
+
+Set these on `:root` / `html.light-mode` and override them on `html.dark-mode`. Keep the semantic names the CSS already uses (`--theme-window`, `--primary`, `--btn-primary-bg`). Point the old accent names at these tokens so a leftover `var(--color-ocean)` cannot paint teal.
+
+| Token | Light | Dark | Use |
+|---|---|---|---|
+| `--color-cream` | `#F4EFE4` | `#F4EFE4` | Page text on dark. Window fill on light. |
+| `--color-cream-deep` | `#EBE3D4` | `#1C1916` | Sidebar. |
+| `--color-cream-card` | `#FFFBF3` | `#26221E` | Cards. |
+| `--color-ink` | `#1C1814` | `#F4EFE4` | Primary text. |
+| `--color-ink-soft` | `#5C5348` | `#D4C8B8` | Secondary text. |
+| `--color-ink-muted` | `#6E6458` | `#9A8E80` | Hints. Passes on cream. |
+| `--color-line` | `#DDD0BA` | `#3A342C` | Borders. |
+| `--color-orange` | `#E06A1A` | `#E06A1A` | Bars, nav mark, dark primary button. |
+| `--color-orange-ink` | `#9A4010` | `#F0A05A` | Orange as text. |
+| `--color-danger` | `#8E2F2F` | `#F0B4B0` | Uninstall and errors. |
+
+Light mapping: `--theme-window` = `--color-cream`. `--theme-panel` = `--color-cream-deep`. `--theme-card` = `--color-cream-card`. `--theme-text` = `--color-ink`. `--theme-link` and `--primary` = `--color-orange-ink`. `--progress-fill` = `--color-orange`. `--btn-primary-bg` = `--color-ink`. `--btn-primary-fg` = `--color-cream`.
+
+Dark mapping: `--theme-window` = `#12100E`. `--theme-panel` = `#1C1916`. `--theme-card` = `#26221E`. `--theme-text` = `--color-cream`. `--theme-link` and `--primary` = `--color-orange`. `--btn-primary-bg` = `--color-orange`. `--btn-primary-fg` = `--color-ink`.
+
+`html` background is `#04212A` today. That hex leaves with the teal theme.
+
+## Progress and status
+
+A long action shows a sentence. A percent appears only when the work counted something:
+
+- The installer printed a percent, or a downloaded amount and a total.
+- Cleanup counted finished categories against the categories the person chose.
+- A storage scan counted finished categories against the category list.
+- The ready gate counted startup jobs that have settled against the three startup jobs.
+
+When there is no count, the status says **Working**. The bar moves. It shows no number.
+
+A large-file scan shows the current folder and how many files it has checked.
+
+## System picture
 
 ```mermaid
-graph TD
-    subgraph UI ["Frontend Presentation Layer (Chromium WebView2)"]
-        HTML["index.html (Semantic Glass Layout)"]
-        CSS["style.css (Acrylic Glassmorphism Design System)"]
-        JS["app.js (State, Operation Queue, Reactive View Engine)"]
-    end
+flowchart TD
+  host["main.py · WebView2 · administrator at start"]
+  gate["Ready gate in web/app.js"]
+  screen["web/index.html · web/app.js · web/style.css"]
+  bridge["web_api.py"]
+  mgr["core/manager.py"]
+  scans["core/scan_orchestrator.py"]
+  catalog["core/winget_engine.py"]
+  arp["core/arp_inventory.py"]
+  facts["core/hardware_facts.py"]
+  tools["core/system_tools/"]
+  win["This PC"]
 
-    subgraph IPC ["Universal IPC Bridge"]
-        TauriIPC["window.__TAURI__.core.invoke()"]
-        PyBridge["window.pywebview.api.*()"]
-    end
-
-    subgraph Backend ["Native Execution Layer"]
-        Rust["src-tauri (Tauri v2 / Rust Core)"]
-        Python["web_api.py + core/ (Local Development Runtime)"]
-        Cleaner["core/mac_cleaner.py (System Storage & Cache Reclaimer)"]
-    end
-
-    subgraph System ["Operating System & Package Engines"]
-        AppleUpdate["Official Apple Software Update (/usr/sbin/softwareupdate)"]
-        Homebrew["Homebrew CLI (brew casks & formulae)"]
-        MacApps["macOS Applications (/Applications & plistlib)"]
-        Winget["Windows Package Manager (winget.exe)"]
-        Choco["Chocolatey CLI (choco.exe)"]
-    end
-
-    HTML --> CSS
-    HTML --> JS
-    JS --> TauriIPC
-    JS --> PyBridge
-    TauriIPC --> Rust
-    PyBridge --> Python
-    Python --> Cleaner
-    Rust --> AppleUpdate
-    Rust --> Homebrew
-    Rust --> Winget
-    Rust --> Choco
-    Python --> AppleUpdate
-    Python --> Homebrew
-    Python --> MacApps
-    Python --> Winget
-    Python --> Choco
-
+  host --> gate
+  gate --> screen
+  screen --> bridge
+  bridge --> mgr
+  bridge --> scans
+  mgr --> scans
+  scans --> catalog
+  scans --> arp
+  scans --> facts
+  scans --> tools
+  mgr --> catalog
+  catalog --> win
+  arp --> win
+  facts --> win
+  tools --> win
 ```
 
----
+The catalog program on this PC is the Windows package catalog. The screens say "catalog".
 
-## 2. Component Breakdown
+Scan lanes:
 
-### 2.1 Frontend Presentation Layer (`web/`)
-- **`index.html`**: Semantic document structure hosting the Top Glass Navigation Bar, Bento Grid, Floating Progress Island, Tab Panels (Updates, Explore, Installed, Console, Settings), the Cross-Tab Global Operation Dock, the Expandable Queue Drawer, and the Package Security Inspector Modal.
-- **`style.css`**: Complete Acrylic Frosted Glass design system. Employs hardware-accelerated backdrop filters (`backdrop-filter: blur(28px)`), specular 1px border lighting (`inset 0 1px 0 rgba(255, 255, 255, 0.12)`), radial mesh atmospheric orbs, and CSS custom properties for instant dark/light theme switching.
-- **`app.js`**: Universal application controller containing:
-  - **Universal Bridge Initializer**: Autodetects whether running inside native Tauri v2 (`window.__TAURI__`) or PyWebView (`window.pywebview`).
-  - **Sequential Operation Queue Manager**: Thread-safe client queue preventing concurrent installer invocations.
-  - **Curated Software Catalog**: Over 70 curated applications across 9 categories with direct CDN logos.
-  - **Live State Caches**: `installedSet`, `updates`, `selectedIds`, and `diagnostics`.
+| Lane | Jobs | When they start | Ready gate |
+|---|---|---|---|
+| Catalog | `catalog-updates`, then `catalog-installed` | `scans_start_all` via `BOOTSTRAP_JOB_IDS` | Yes. One catalog job at a time. `WingetEngine._query_lock` keeps a second catalog call waiting. |
+| Local | `local-arp`, `local-hardware` | ARP is in `BOOTSTRAP_JOB_IDS`. Hardware starts in `ScanStore.ensureDeferredJob` when About opens. | ARP yes. Hardware no. |
+| Disk | `cleanup_scan`, large files | Cleanup starts when Cleanup opens. | No. |
+| Polish | `startup`, `leftovers` | When that screen opens. `DEFERRED_MAINTENANCE_JOB_IDS`. | No. |
 
-### 2.2 Native Rust Backend (`src-tauri/`)
-- **`main.rs`**: Clean Windows executable entry point invoking `lib.rs::run()`.
-- **`lib.rs`**: Core Tauri commands:
-  - `get_diagnostics`: Gathers Windows version, architecture, engine availability, and elevation status via `windows_sys::Win32::UI::Shell::IsUserAnAdmin()`.
-  - `scan_updates`: Executes silent winget/choco upgrade scans using `parse_winget_tabular_output()`.
-  - `upgrade_packages`: Iterates through queued package IDs, streams progress events (`progress-update`, `log-line`), and handles Authenticode / SHA-256 verification output.
-  - `search_catalog`: Queries remote repositories with positional tabular parsing.
-  - `install_package`: Performs single-package verified installation.
-  - `get_installed`: Audits all installed programs from the system registry and package manager cache.
-  - `uninstall_package`: Triggers silent removal routines.
-- **`windows/manifest.xml`**: Embedded application manifest containing `<requestedExecutionLevel level="requireAdministrator" uiAccess="false"/>` ensuring single-prompt launch elevation.
+A saved result with `status` ready stays in place. `scan_start` leaves that job alone unless `force` is true. Check again uses force. A forced check does not show the ready gate again.
 
-### 2.3 Python Engine (`core/` & `web_api.py`)
-- **`core/winget_engine.py`**: Robust Python implementation of the Windows Package Manager engine with asynchronous streaming subprocess wrappers, ANSI code stripping, carriage-return (`\r`) progress decoding, and column-position table parsing.
-- **`core/choco_engine.py`**: Chocolatey engine interface.
-- **`core/manager.py`**: Central coordinator managing worker threads, engine switching, and process cancellation.
-- **`web_api.py`**: Thread-safe RPC bridge exposed to JavaScript through `pywebview`.
+An update card shows a speed, a size, or a percent only after the installer prints that number. Until then the card says "Updating…".
 
----
+About this computer lists graphics cards under Graphics. A DisplayLink USB device is an external USB device. Two interfaces of the same dock are one row.
 
-## 3. Critical Technical Design Patterns
+## Screen flow
 
-### 3.1 Silent Process Execution (`CREATE_NO_WINDOW`)
-To prevent disruptive black command-line window flashing when executing background tasks, all process spawning routines explicitly configure Windows creation flags:
-```rust
-const CREATE_NO_WINDOW: u32 = 0x08000000;
+```mermaid
+flowchart TD
+  open["Open Quantum Updater"] --> admin["Windows asks for administrator"]
+  admin --> cache{"Three startup jobs already have a result"}
+  cache -->|yes| updates["Updates"]
+  cache -->|no| gate["Getting ready"]
+  gate --> rows["Three rows: App updates, Programs from the catalog, Programs on this PC"]
+  rows --> count["Sentence: N of 3 checks finished"]
+  count --> settled{"Each job is Ready, Could not finish, or Stopped"}
+  settled --> updates
+  updates --> note["After unlock, Check again keeps the list and says: Showing the last list. Checking again."]
+  note --> one["Update one app or Update all"]
+  one --> running["Card says Updating…"]
+  running --> island["Status island shows a sentence. A percent appears only from a real count."]
 
-Command::new("winget")
-    .args(&[...])
-    .creation_flags(CREATE_NO_WINDOW)
-    ...
-```
-In Python:
-```python
-flags = 0x08000000 if os.name == 'nt' else 0
-startupinfo = subprocess.STARTUPINFO()
-startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
-startupinfo.wShowWindow = 0
+  updates --> market["Marketplace"]
+  updates --> inst["Installed"]
+  updates --> clean["Cleanup"]
+  updates --> startapps["Startup apps"]
+  updates --> large["Large files"]
+  updates --> left["Leftover folders"]
+  updates --> about["About this computer"]
+  updates --> settings["Settings"]
+  updates --> log["Activity log"]
 ```
 
-### 3.2 Multi-Table Fixed-Column Positional Parser
-Winget outputs formatted tables where columns align under header tokens (`Name`, `Id`, `Version`, `Available`, `Source`). Traditional whitespace splitting fails when:
-1. Application names contain spaces (e.g. `Windows Subsystem for Linux`).
-2. Packages belong to the "Explicit targeting required" secondary table (e.g. `Discord`).
-3. The `Source` column is blank for non-store packages.
+The gate covers the whole window. Sidebar items do not navigate. Install, update, uninstall, and clean stay disabled. The window can still close.
 
-The parser scans for table header rows, records character index positions (`id_pos`, `ver_pos`, `avail_pos`, `src_pos`), and extracts slices safely using column boundaries across all output tables.
+Row words:
 
-### 3.3 Asynchronous Sequential Operation Queue
-Because the Microsoft Windows Installer (MSI) service enforces an exclusive installation mutex (`_MSIExecute`), initiating concurrent installations results in immediate failure with Error 1618. Quantum Updater routes all install, update, and uninstall requests through an asynchronous sequential FIFO queue. The queue executes one job at a time, tracks progress reactively, and updates the cross-tab Global Operation Dock and Queue Drawer.
+| Job status | Row word |
+|---|---|
+| `queued` | Waiting |
+| `scanning` | Checking |
+| `ready` | Ready |
+| `failed` | Could not finish |
+| `cancelled` | Stopped |
+
+A failed startup job does not hold the window. The row says **Could not finish**. The matching screen explains the miss after unlock.
+
+The overall line is a real count of settled jobs, for example **1 of 3 checks finished**. The bar width follows that count. The line does not print a percent.
+
+Sidebar order after unlock: Updates, Marketplace, Installed, Cleanup, Startup apps, Large files, Leftover folders, Activity log, About this computer, Settings.
+
+## Parts
+
+| Part | Role |
+|---|---|
+| `main.py` | Window, WebView2, administrator at every start. |
+| `web/index.html`, `web/style.css`, `web/app.js` | Screens, cream tokens, ready gate. |
+| `web_api.py` | Bridge. `scans_start_all` starts `BOOTSTRAP_JOB_IDS` only. |
+| `core/manager.py` | One install or uninstall at a time. `prefetch_package` still runs from the queue in `web/app.js`. |
+| `core/scan_orchestrator.py` | Lanes, `BOOTSTRAP_JOB_IDS`, `DEFERRED_MAINTENANCE_JOB_IDS`, saved results. |
+| `core/winget_engine.py` | Catalog check and list use `_run_capture` under `_query_lock`. Install and update use `_run_streaming_cmd`. |
+| `core/arp_inventory.py` | `list_arp_entries` and `plan_uninstall`. The startup job calls both. |
+| `core/hardware_facts.py` | About this computer. `collect_windows_hardware`. |
+| `core/system_tools/` | Cleanup, startup, large files, leftovers. Deferred until that screen opens. |
+| `build_exe.py` | Packs `dist\QuantumUpdater\QuantumUpdater.exe`. |
+
+## Work slices
+
+These slices wait for Manager approval. Order is fixed.
+
+**A. Theme tokens.** `web/style.css` only, plus any hex in `web/index.html`. Map the table above. Search for `#073A4B`, `#108AB1`, `#06D7A0`, `#04212A`, `#6CD0EE`, `#4FC3E8`. Remove those fills. Test: light window is cream; dark window is near-black; an active nav mark is orange; a primary button label is readable.
+
+**B. Ready gate.** `web/index.html` holds the full-window panel. `web/app.js` `ScanStore.poll`, `applyReadinessGates`, and the tab click path. Startup jobs are `BOOTSTRAP_JOB_IDS`: `catalog-updates`, `catalog-installed`, `local-arp`. Leave `local-hardware`, `cleanup_scan`, `startup`, and `leftovers` on `ensureDeferredJob`. Copy matches the gate mockup. A later Check again does not show the gate.
+
+**C. Speed, measured.** See the investigation list below. Each change records a before and after duration from `core/scan_trace.py` (`winget_call`, `job_ended`). No invented percent.
+
+**D. Wave 1 first item.** Tracker `30.1`: restart-required status after updates and cleans. After A, B, and the first C win are in a build. The installer codes `3010` and `-1978335181` already mean restart in `core/winget_engine.py` `upgrade_package`. The screen says **Restart this PC to finish.** The app does not restart the PC. Same line on Cleanup when a clean reports that need.
+
+### Speed investigation
+
+1. `core/scan_orchestrator.py` `_catalog_worker_loop` runs one catalog job, then the next. `core/winget_engine.py` `_run_capture` holds `WingetEngine._query_lock`. A second winget query will wait. Keep that lock. Measure `catalog-updates` and `catalog-installed` `duration_s`. The gain is fewer extra calls, not a second process.
+2. `check_updates` and `list_installed` call `_run_capture`, which waits for the full table. The capture timeout is already `WINGET_CATALOG_QUERY_TIMEOUT_S` (60). `resume_catalog_after_install` already forces `catalog-updates` only. `_run_streaming_cmd` already reads installer lines. Stream catalog stdout only to set `current_item` on the gate row. That names the package. It does not invent a percent.
+3. `ScanOrchestrator._run_arp_inventory` calls `plan_uninstall` for every entry. Time `list_arp_entries` alone against the full loop. If the plan is the wait, build the plan when the person clicks Uninstall. `plan_uninstall` already exists.
+4. `web/app.js` queue still calls `prefetch_package` before an install or update (`prefetchStarted` near the queue runner). `web_api.py` `prefetch_package` and `core/manager.py` `prefetch_package` download ahead of `_run_streaming_cmd`. If the update then downloads again, skip prefetch on that path and record both durations.
+5. `ScanStore.poll` waits 500 ms while `summary.running > 0`, then 5000 ms. The gate needs status words, so 1000 ms is enough while the gate is up. Keep the installer stream for percents. Do not poll the same bar at 500 ms on top of that stream.
+6. Keep maintenance off the startup path. `scans_start_all` already starts `BOOTSTRAP_JOB_IDS` only. Do not put `cleanup_scan`, `startup`, or `leftovers` back on launch.
+
+## What this refresh changed
+
+The cream mockup is the live theme. Teal is retired.
+
+The screen flow starts at the ready gate when the three startup jobs have no result yet. About this computer stays off that gate.
+
+The picture names the catalog lock, the ARP plan loop, the prefetch call, and the poll interval as the speed work. Cleanup, startup apps, and leftovers stay off the gate.
+
+No new protective middle layer.

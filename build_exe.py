@@ -3,9 +3,43 @@ import os
 import sys
 import shutil
 
+def write_build_stamp(root: str) -> str:
+    """Give this packaged build a number the window can show."""
+    counter_path = os.path.join(root, "build_counter.txt")
+    current = 0
+    if os.path.isfile(counter_path):
+        try:
+            current = int(open(counter_path, encoding="utf-8").read().strip() or "0")
+        except ValueError:
+            current = 0
+    build_no = current + 1
+    with open(counter_path, "w", encoding="utf-8") as handle:
+        handle.write(str(build_no))
+    version = "2.0.0"
+    label = f"{version} · Build {build_no}"
+    info_path = os.path.join(root, "core", "build_info.py")
+    with open(info_path, "w", encoding="utf-8") as handle:
+        handle.write(
+            '"""Shown in the window so a packaged build can be told apart from an older one."""\n\n'
+            f'VERSION = "{version}"\n'
+            f"BUILD = {build_no}\n"
+            f'LABEL = "{label}"\n'
+        )
+    stamp_path = os.path.join(root, "web", "build-stamp.js")
+    with open(stamp_path, "w", encoding="utf-8") as handle:
+        handle.write(
+            "window.QUANTUM_BUILD = "
+            f'{{ version: "{version}", build: {build_no}, label: "{label}" }};\n'
+        )
+    return label
+
+
 def build(app_name: str = "QuantumUpdaterApp"):
+    root = os.path.dirname(os.path.abspath(__file__))
+    label = write_build_stamp(root)
     print("=" * 60)
     print(f"Building Quantum Updater Standalone Executable: {app_name}.exe")
+    print(label)
     print("Glassmorphic WebView2 Architecture (Windows)")
     print("=" * 60)
 
@@ -17,7 +51,10 @@ def build(app_name: str = "QuantumUpdaterApp"):
         except Exception as e:
             print(f"[Note]: Could not clean {target_out} ({e}), building in-place.")
 
-    icon_path = os.path.join(os.path.dirname(__file__), "src-tauri", "icons", "icon.ico")
+    icon_path = os.path.join(os.path.dirname(__file__), "brand", "quantum-updater.ico")
+    if not os.path.exists(icon_path):
+        print(f"[ERROR]: App icon not found at {icon_path}")
+        return None
 
     # Locate pywebview library directory to ensure all native runtimes (win-arm64, win-x64, win-x86) and DLLs are bundled
     import webview

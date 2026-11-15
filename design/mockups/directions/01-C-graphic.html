@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Direction C — Graphic Contrast · Updates</title>
+<meta name="viewport" content="width=1280">
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --cream: #F6ECD8;
+  --card: #FFF6E4;
+  --ink: #0E0C0A;
+  --muted: #5E5346;
+  --line: #0E0C0A;
+  --orange: #FF5A00;
+  --softline: #C9B79A;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { width: 1280px; height: 800px; overflow: hidden; background: var(--cream); }
+body { font-family: "DM Sans", sans-serif; color: var(--ink); font-size: 14px; }
+.win { width: 1280px; height: 800px; display: grid; grid-template-rows: 36px 1fr; border: 3px solid var(--ink); }
+.titlebar {
+  display: flex; align-items: center; justify-content: space-between; padding: 0 14px;
+  border-bottom: 3px solid var(--ink); font-family: "JetBrains Mono", monospace; font-size: 11px; font-weight: 500;
+}
+.shell { display: grid; grid-template-columns: 220px 1fr; min-height: 0; }
+.side { border-right: 3px solid var(--ink); padding: 18px 12px; background: var(--card); }
+.brand { font-family: "Archivo Black", sans-serif; font-size: 20px; line-height: 1; letter-spacing: -0.02em; margin-bottom: 22px; }
+.brand small { display: block; font-family: "DM Sans", sans-serif; font-size: 11px; font-weight: 500; color: var(--muted); margin-top: 8px; letter-spacing: 0; }
+.nav a {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 10px 8px; border-bottom: 1px solid var(--softline); color: var(--ink);
+  text-decoration: none; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; font-size: 12px;
+}
+.nav a.on { background: var(--ink); color: var(--cream); margin: 0 -12px; padding-left: 20px; padding-right: 20px; border: 0; }
+.badge { background: var(--orange); color: #fff; padding: 2px 7px; font-size: 11px; }
+.main { display: flex; flex-direction: column; min-width: 0; }
+.top {
+  display: flex; gap: 0; border-bottom: 3px solid var(--ink);
+}
+.search {
+  flex: 1; height: 48px; display: flex; align-items: center; padding: 0 18px;
+  font-family: "JetBrains Mono", monospace; font-size: 12px; color: var(--muted);
+  border-right: 3px solid var(--ink);
+}
+.top button {
+  height: 48px; padding: 0 18px; border: 0; background: var(--cream);
+  font: inherit; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; cursor: default;
+}
+.content { padding: 0; display: grid; grid-template-rows: auto auto 1fr; min-height: 0; }
+.hero {
+  display: grid; grid-template-columns: 1.4fr 1fr; border-bottom: 3px solid var(--ink);
+}
+.hero .l { padding: 22px 24px; }
+.hero h1 { font-family: "Archivo Black", sans-serif; font-size: 64px; line-height: 0.9; letter-spacing: -0.03em; }
+.hero p { margin-top: 10px; max-width: 360px; font-weight: 500; color: var(--muted); }
+.hero .r {
+  border-left: 3px solid var(--ink); background: var(--orange); color: #fff;
+  display: grid; place-content: center; gap: 8px; text-align: center; padding: 18px;
+}
+.hero .r b { font-family: "Archivo Black", sans-serif; font-size: 48px; line-height: 1; }
+.hero .r span { font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; font-size: 12px; }
+.bar {
+  display: flex; border-bottom: 3px solid var(--ink);
+}
+.bar button {
+  flex: 1; height: 46px; border: 0; border-right: 3px solid var(--ink);
+  background: var(--cream); font: inherit; font-weight: 800; text-transform: uppercase;
+  letter-spacing: 0.05em; cursor: default;
+}
+.bar button:last-child { border-right: 0; background: var(--ink); color: var(--cream); }
+.list { overflow: auto; }
+.row {
+  display: grid; grid-template-columns: 56px 1fr 160px 120px;
+  border-bottom: 3px solid var(--ink); min-height: 88px; align-items: center;
+}
+.mark {
+  height: 100%; display: grid; place-items: center; border-right: 3px solid var(--ink);
+  background: var(--orange); color: #fff; font-family: "Archivo Black", sans-serif; font-size: 22px;
+}
+.info { padding: 14px 18px; }
+.info h3 { font-size: 18px; font-weight: 700; }
+.info .sub { color: var(--muted); margin-top: 2px; font-size: 12.5px; }
+.ver {
+  font-family: "JetBrains Mono", monospace; font-size: 12px; font-weight: 500;
+  border-left: 3px solid var(--ink); height: 100%; display: grid; place-content: center; gap: 4px;
+}
+.ver b { font-size: 14px; }
+.act {
+  height: 100%; border-left: 3px solid var(--ink); display: grid; place-items: center;
+  font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; background: var(--card);
+}
+</style>
+</head>
+<body>
+<div class="win">
+  <div class="titlebar"><span>QUANTUM UPDATER</span><span>DIRECTION C · GRAPHIC CONTRAST</span></div>
+  <div class="shell">
+    <aside class="side">
+      <div class="brand">Quantum<small>Updater</small></div>
+      <nav class="nav">
+        <a class="on" href="#">Updates <span class="badge">2</span></a>
+        <a href="#">Market</a>
+        <a href="#">Installed</a>
+        <a href="#">Cleanup</a>
+        <a href="#">Startup</a>
+        <a href="#">Settings</a>
+      </nav>
+    </aside>
+    <section class="main">
+      <div class="top">
+        <div class="search">SEARCH PACKAGES &amp; TOOLS</div>
+        <button type="button">Sync</button>
+      </div>
+      <div class="content">
+        <div class="hero">
+          <div class="l">
+            <h1>UPDATES</h1>
+            <p>Poster energy for a package tool. Thick black rules, cream paper, orange as the only shout.</p>
+          </div>
+          <div class="r">
+            <b>2</b>
+            <span>Ready now</span>
+          </div>
+        </div>
+        <div class="bar">
+          <button type="button">Check again</button>
+          <button type="button">Update selected (2)</button>
+        </div>
+        <div class="list">
+          <div class="row">
+            <div class="mark">01</div>
+            <div class="info">
+              <h3>OBS Studio</h3>
+              <div class="sub">Open Broadcaster Software · 48.2 MB</div>
+            </div>
+            <div class="ver"><span>v32.2.2 →</span><b>v33.0.0</b></div>
+            <div class="act">Update</div>
+          </div>
+          <div class="row">
+            <div class="mark">02</div>
+            <div class="info">
+              <h3>Orca</h3>
+              <div class="sub">Microsoft · 4.1 MB</div>
+            </div>
+            <div class="ver"><span>v1.4.251 →</span><b>v1.4.253</b></div>
+            <div class="act">Update</div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+</div>
+</body>
+</html>

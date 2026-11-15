@@ -329,10 +329,11 @@ class ChocolateyEngine(BaseEngine):
     def uninstall_package(
         self, 
         package_id: str, 
-        on_log: Optional[Callable[[str], None]] = None
+        on_log: Optional[Callable[[str], None]] = None,
+        on_progress: Optional[Callable[[Optional[float], str], None]] = None,
     ) -> OperationStatus:
         args = ["uninstall", package_id, "-y"]
-        code = self._run_streaming_cmd(args, on_log=on_log)
+        code = self._run_streaming_cmd(args, on_log=on_log, on_progress=on_progress)
         success = (code == 0)
         msg = "Package uninstalled successfully." if success else f"Uninstall exited with code {code}."
         return OperationStatus(package_id=package_id, success=success, message=msg, exit_code=code)

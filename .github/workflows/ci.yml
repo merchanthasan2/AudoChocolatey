@@ -79,28 +79,3 @@ jobs:
           python -m py_compile core/manager.py
           python -m py_compile core/models.py
           python -m py_compile core/winget_engine.py
-
-  rust-tauri:
-    name: Rust & Tauri v2 Engine Check
-    runs-on: windows-latest
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
-
-      - name: Install Rust Stable
-        uses: dtolnay/rust-toolchain@stable
-
-      - name: Rust Cache
-        uses: Swatinem/rust-cache@v2
-        with:
-          workspaces: src-tauri -> target
-
-      - name: Cargo Check
-        working-directory: src-tauri
-        run: |
-          cargo check --verbose
-
-      - name: Cargo Test
-        working-directory: src-tauri
-        run: |
-          cargo test --verbose

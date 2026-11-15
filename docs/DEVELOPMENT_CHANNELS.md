@@ -23,11 +23,10 @@ To enable independent development and release cycles without cross-platform fric
                  ▼                                               ▼
 ┌─────────────────────────────────┐             ┌─────────────────────────────────┐
 │     channel/macos (Branch)      │             │    channel/windows (Branch)     │
-│ Native Cocoa/WebKit Host        │             │ Tauri v2 (Rust Core)            │
-│ Apple Silicon + Intel Universal │             │ Python pywebview Bridge         │
-│ IOKit & AVFoundation Hardware   │             │ Winget & Chocolatey Engines     │
-│ Storage Reclaimer & Deep Clean  │             │ Windows MSI Mutex Safe Queue    │
-│ build_dmg.sh & DMG Distribution │             │ NSIS Setup & Portable Exe       │
+│ Mac app, left untouched         │             │ Windows app we are building     │
+│ until Mac work starts again     │             │ Python window plus WebView2     │
+│                                 │             │ Winget and Chocolatey           │
+│                                 │             │ QuantumUpdater.exe              │
 └─────────────────────────────────┘             └─────────────────────────────────┘
 ```
 
@@ -36,34 +35,14 @@ To enable independent development and release cycles without cross-platform fric
 | Channel Branch | Primary Target OS | Core Engine & Backend | Packaging Output |
 |---|---|---|---|
 | `channel/macos` | macOS (11.0 Big Sur to 15.x Sequoia) | Native Objective-C Cocoa / WebKit host (`src-macos/main.m`), IOKit, AVFoundation, Homebrew, Apple Software Update | Universal 2 Binary (`arm64` + `x86_64`), `dist/QuantumUpdater_2.0.0_macOS.dmg`, `dist/QuantumUpdater_macOS_Update.zip` |
-| `channel/windows` | Windows 10 & 11 (x64 / ARM64) | Tauri v2 (`src-tauri/src/lib.rs`), Python WebAPI (`web_api.py`), Winget Engine, Chocolatey Engine | NSIS Installer (`QuantumUpdater_2.0.0_x64-setup.exe`), Portable executable |
+| `channel/windows` | Windows 10 and 11 | Python window (`main.py`, `web_api.py`), shared screens in `web/`, Winget and Chocolatey | `dist\QuantumUpdater\QuantumUpdater.exe` |
 | `main` | Production & Integration Trunk | Shared web frontend (`web/index.html`, `web/style.css`, `web/app.js`), documentation suite (`docs/`), CI/CD | Automated multi-target releases via GitHub Actions |
 
 ---
 
-## 2. Guaranteed Look & Feel Uniformity
+## 2. Shared look
 
-Both the macOS and Windows channels render the **exact same human-designed interface**:
-
-### A. Design Tokens & Color Harmony
-- **Dark Mode Canvas:** Apple Obsidian Charcoal substrate (`#161618`, `#121214`) with glassmorphic cards (`rgba(28, 28, 32, 0.78)`).
-- **Light Mode Canvas:** Apple Silver Snow substrate (`#f5f5f7`, `#ffffff`) with ultra-fine contrast.
-- **Vibrancy & Frosted Blur:** `backdrop-filter: blur(48px) saturate(200%)`.
-- **Specular Hairlines:** 0.5px border (`rgba(255, 255, 255, 0.08)`) with inset 0.5px top highlight (`inset 0 1px 0 rgba(255, 255, 255, 0.08)`).
-- **HIG System Accents:**
-  - Apple Blue (`#0A84FF`) - Focus, active navigation, selections.
-  - Apple Mint (`#30D158`) - Healthy system status, completed installs, battery integrity.
-  - Apple Amber (`#FF9F0A`) - Pending updates, review notices.
-  - Apple Red (`#FF453A`) - Critical patches, high-priority actions, uninstall triggers.
-
-### B. Typography Stack
-- **Headings & Brand Title:** `Outfit` (600, 700) with `-0.02em` tracking.
-- **UI Body & Labels:** Native Apple San Francisco (`-apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text"`) on macOS; `Plus Jakarta Sans` and `Inter` on Windows.
-- **Code, Versions & Hashes:** `JetBrains Mono` with tabular numerals enabled.
-
-### C. Zero-Emoji Standard
-- Zero Unicode emojis across the entire UI.
-- All icons are precision inline vector SVGs or authentic brand SVGs streamed from `cdn.simpleicons.org/{slug}`.
+Windows and Mac use the same screens, colours, type, and brand. The normal theme is Direction B (Deep Teal). Dark mode is Direction A (Graphite Prism). The emblem comes from `brand/`. App icons are the real program icon or the publisher's own icon. Each system adds only its own window material: WebView2 on Windows, and the Mac window material when that branch is picked up again. Mockups live in `design/mockups/`.
 
 ---
 
@@ -100,6 +79,8 @@ adaptPlatformUI() {
 
 ## 4. Development Workflow by Channel
 
+Mac stays on `channel/macos` and is not part of the current work. It starts after the Windows app is launch ready.
+
 ### To Develop on macOS:
 ```bash
 # 1. Switch to the macOS channel
@@ -117,10 +98,8 @@ open "dist/Quantum Updater.app"
 # 1. Switch to the Windows channel
 git checkout channel/windows
 
-# 2. Run with Tauri dev mode
-npm run tauri dev
-# OR run with Python pywebview backend
-python main.py --engine winget
+# 2. Build and start the Windows app
+python build_exe.py QuantumUpdater
 ```
 
 ### To Sync Shared UI Changes to Both Channels:

@@ -15,86 +15,8 @@ permissions:
   contents: write
 
 jobs:
-  build-tauri:
-    name: Build Tauri v2 Windows Installer & Binary
-    runs-on: windows-latest
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-
-      - name: Install Rust Stable
-        uses: dtolnay/rust-toolchain@stable
-
-      - name: Install Tauri CLI
-        run: npm install -g @tauri-apps/cli@^2.0.0
-
-      - name: Build Tauri Desktop Bundle
-        working-directory: src-tauri
-        run: |
-          npx @tauri-apps/cli build
-
-      - name: Collect Release Artifacts
-        shell: pwsh
-        run: |
-          New-Item -ItemType Directory -Force -Path release-artifacts
-          # Copy NSIS installer and standalone exe from target release bundle
-          Get-ChildItem -Path src-tauri\target\release\bundle\nsis\*.exe | Copy-Item -Destination release-artifacts\
-          if (Test-Path "src-tauri\target\release\quantum_updater.exe") {
-            Copy-Item -Path "src-tauri\target\release\quantum_updater.exe" -Destination "release-artifacts\QuantumUpdater-Portable.exe"
-          }
-
-      - name: Upload Release Binaries to GitHub
-        uses: softprops/action-gh-release@v2
-        if: startsWith(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch'
-        with:
-          tag_name: ${{ github.ref_name || inputs.tag_name }}
-          files: release-artifacts/*
-          draft: false
-          prerelease: false
-          generate_release_notes: true
-
-  build-tauri-macos:
-    name: Build Tauri v2 macOS DMG & Universal App
-    runs-on: macos-latest
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-
-      - name: Install Rust Stable
-        uses: dtolnay/rust-toolchain@stable
-        with:
-          targets: aarch64-apple-darwin, x86_64-apple-darwin
-
-      - name: Build Native Universal 2 DMG & Update Package
-        run: |
-          chmod +x build_dmg.sh
-          ./build_dmg.sh
-          mkdir -p macos-artifacts
-          cp dist/*.dmg macos-artifacts/
-          cp dist/*.zip macos-artifacts/
-
-      - name: Upload macOS Release Binaries to GitHub
-        uses: softprops/action-gh-release@v2
-        if: startsWith(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch'
-        with:
-          tag_name: ${{ github.ref_name || inputs.tag_name }}
-          files: macos-artifacts/*
-          draft: false
-          prerelease: false
-
-
-  build-pyinstaller:
-    name: Build Standalone Python Bundle
+  build-windows:
+    name: Build Windows app
     runs-on: windows-latest
     steps:
       - name: Checkout Code
@@ -111,18 +33,53 @@ jobs:
           pip install -r requirements.txt
           pip install pyinstaller
 
+      - name: Resolve release tag
+        id: meta
+        shell: pwsh
+        run: |
+          if ("${{ github.event_name }}" -eq "workflow_dispatch") {
+            $tag = "${{ inputs.tag_name }}"
+          } else {
+            $tag = "${{ github.ref_name }}"
+          }
+          if (-not $tag) { $tag = "v2.0.0" }
+          "tag=$tag" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+          Write-Host "Release tag: $tag"
+
       - name: Build Standalone PyInstaller Binary
         shell: pwsh
         run: |
-          python build_exe.py
+          python build_exe.py QuantumUpdater
           New-Item -ItemType Directory -Force -Path py-artifacts
-          if (Test-Path "dist\QuantumUpdater.exe") {
-            Copy-Item -Path "dist\QuantumUpdater.exe" -Destination "py-artifacts\QuantumUpdater-PyWebview.exe"
-          }
+          # Portable EXE — AppUpdater + winget (QuantumStep.QuantumUpdater) use this asset.
+          Copy-Item -Path "dist\QuantumUpdater\QuantumUpdater.exe" -Destination "py-artifacts\QuantumUpdater.exe"
+
+      - name: Prepare winget manifests
+        shell: pwsh
+        run: |
+          $tag = "${{ steps.meta.outputs.tag }}"
+          $ver = $tag.TrimStart("v")
+          .\tools\prepare_winget_release.ps1 -ExePath "py-artifacts\QuantumUpdater.exe" -Version $ver
+          New-Item -ItemType Directory -Force -Path winget-artifacts | Out-Null
+          Copy-Item -Path "manifests\w\QuantumStep\QuantumUpdater\$ver\*" -Destination "winget-artifacts\" -Force
+          Get-ChildItem winget-artifacts | Format-Table Name, Length
 
       - name: Upload PyInstaller Binary to GitHub Release
         uses: softprops/action-gh-release@v2
         if: startsWith(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch'
         with:
-          tag_name: ${{ github.ref_name || inputs.tag_name }}
-          files: py-artifacts/*
+          tag_name: ${{ steps.meta.outputs.tag }}
+          name: Quantum Updater ${{ steps.meta.outputs.tag }}
+          generate_release_notes: true
+          body: |
+            ## Install
+            After this package is accepted into the Windows Package Manager community repo:
+            ```
+            winget install QuantumStep.QuantumUpdater
+            ```
+            Direct download: `QuantumUpdater.exe` on this release.
+            Winget YAML for submission is attached as release assets (`QuantumStep.QuantumUpdater.*.yaml`).
+          files: |
+            py-artifacts/QuantumUpdater.exe
+            winget-artifacts/*
+          fail_on_unmatched_files: true

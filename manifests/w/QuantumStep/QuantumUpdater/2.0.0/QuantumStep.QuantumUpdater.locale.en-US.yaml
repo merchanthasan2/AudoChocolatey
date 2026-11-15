@@ -3,15 +3,20 @@ PackageVersion: 2.0.0
 PackageLocale: en-US
 Publisher: Quantum Step
 PublisherUrl: https://quantumstep.in
-PublisherSupportUrl: https://quantumstep.in/contact
+PublisherSupportUrl: https://github.com/merchanthasan2/AudoChocolatey/issues
 Author: Quantum Step
 PackageName: Quantum Updater
-PackageUrl: https://quantumstep.in/quantum-updater
-License: Proprietary / MIT
+PackageUrl: https://github.com/merchanthasan2/AudoChocolatey
+License: Proprietary
 LicenseUrl: https://quantumstep.in/license
 Copyright: Copyright (c) 2026 Quantum Step (quantumstep.in)
-ShortDescription: Modern Windows Software & Package Update Manager by Quantum Step with Frosted Glass UI and Dual-Engine Winget + Chocolatey support.
-Description: Quantum Updater is a high-performance Windows desktop application developed by Quantum Step (quantumstep.in) to inspect, update, and manage installed software packages and discover new applications across both Winget and Chocolatey ecosystems. Features single-prompt UAC elevation, real-time live streaming progress, and dark/light frosted glass UI.
+ShortDescription: Windows app and system updater by Quantum Step (winget + Chocolatey).
+Description: |-
+  Quantum Updater is a Windows desktop app from Quantum Step (quantumstep.in)
+  that checks, updates, installs, and cleans up software using winget and
+  Chocolatey. It includes system cleanup tools, startup management, and
+  about-this-PC details. Requires administrator on launch.
+Moniker: quantum-updater
 Tags:
   - quantum-step
   - quantum-updater
@@ -21,6 +26,6 @@ Tags:
   - chocolatey
   - software-manager
   - windows-tools
-ReleaseNotesUrl: https://quantumstep.in/quantum-updater/release-notes
+ReleaseNotesUrl: https://github.com/merchanthasan2/AudoChocolatey/releases
 ManifestType: defaultLocale
 ManifestVersion: 1.6.0

@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Park D · Marketplace</title>
+<meta name="viewport" content="width=1280">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700&family=Outfit:wght@450;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="_shell.css">
+<style>
+.grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.card h3 { font-size: 16px; }
+.card .sub { color: var(--muted); font-size: 12.5px; margin: 4px 0 12px; }
+.card .actions { display: flex; justify-content: flex-end; }
+</style>
+</head>
+<body>
+<div class="win">
+  <div class="titlebar"><span>Quantum Updater</span><span>Park D · Marketplace</span></div>
+  <div class="body">
+    <aside class="side">
+      <div class="brand">Quantum Updater<small>Keeps your apps current</small></div>
+      <div><div class="sec">Software</div>
+        <nav class="nav">
+          <a href="../01-D-park.html">Updates</a>
+          <a class="on" href="05-marketplace.html">Marketplace</a>
+          <a href="03-installed.html">Installed</a>
+        </nav>
+      </div>
+      <div><div class="sec">System</div>
+        <nav class="nav"><a href="04-settings.html">Settings</a></nav>
+      </div>
+    </aside>
+    <section class="main">
+      <div class="top"><div class="search">Search the catalog (Ctrl+K)</div><button class="ghost" type="button">Sync</button></div>
+      <div class="content">
+        <h1>Marketplace</h1>
+        <p class="lead">Find and install apps from the catalog.</p>
+        <div class="grid">
+          <div class="card"><h3>Visual Studio Code</h3><div class="sub">Microsoft · Editor</div><div class="actions"><button class="primary" type="button">Install</button></div></div>
+          <div class="card"><h3>7-Zip</h3><div class="sub">Igor Pavlov · Archive</div><div class="actions"><button class="primary" type="button">Install</button></div></div>
+          <div class="card"><h3>VLC</h3><div class="sub">VideoLAN · Media</div><div class="actions"><button class="primary" type="button">Install</button></div></div>
+          <div class="card"><h3>Notion</h3><div class="sub">Notion Labs · Notes</div><div class="actions"><button class="primary" type="button">Install</button></div></div>
+        </div>
+      </div>
+    </section>
+  </div>
+</div>
+</body>
+</html>

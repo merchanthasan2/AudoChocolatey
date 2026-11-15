@@ -1,6 +1,9 @@
 import threading
 import json
+import os
 import platform
+import shutil
+import subprocess
 import sys
 import time
 from typing import List, Dict, Any, Optional
@@ -8,13 +11,189 @@ from core.models import PackageInfo, SearchResult, OperationStatus
 from core.manager import PackageManager
 from core.admin import is_admin
 
-class WebAPI:
+_SERIAL_PLACEHOLDERS = frozenset({
+    "",
+    "0",
+    "none",
+    "not applicable",
+    "not specified",
+    "default string",
+    "system serial number",
+    "to be filled by o.e.m.",
+    "to be filled by o.e.m",
+})
+
+
+def _diag_format_bytes(size_bytes: int) -> str:
+    if size_bytes < 1024:
+        return f"{size_bytes} B"
+    if size_bytes < 1024 * 1024:
+        return f"{size_bytes / 1024:.1f} KB"
+    if size_bytes < 1024 * 1024 * 1024:
+        return f"{size_bytes / (1024 * 1024):.1f} MB"
+    return f"{size_bytes / (1024 * 1024 * 1024):.2f} GB"
+
+
+def _windows_registry_value(path: str, value_name: str) -> str:
+    if platform.system() != "Windows":
+        return ""
+    try:
+        import winreg
+    except ImportError:
+        return ""
+    try:
+        access = winreg.KEY_READ | getattr(winreg, "KEY_WOW64_64KEY", 0)
+        with winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE, path, 0, access) as key:
+            raw, _ = winreg.QueryValueEx(key, value_name)
+            if raw is None:
+                return ""
+            return str(raw).strip()
+    except OSError:
+        return ""
+
+
+def _normalize_serial(raw: str) -> str:
+    text = (raw or "").strip()
+    if text.casefold() in _SERIAL_PLACEHOLDERS:
+        return ""
+    return text
+
+
+def _windows_physical_memory_str() -> str:
+    if platform.system() != "Windows":
+        return ""
+    try:
+        import ctypes
+        from ctypes import wintypes
+
+        class MEMORYSTATUSEX(ctypes.Structure):
+            _fields_ = [
+                ("dwLength", wintypes.DWORD),
+                ("dwMemoryLoad", wintypes.DWORD),
+                ("ullTotalPhys", ctypes.c_ulonglong),
+                ("ullAvailPhys", ctypes.c_ulonglong),
+                ("ullTotalPageFile", ctypes.c_ulonglong),
+                ("ullAvailPageFile", ctypes.c_ulonglong),
+                ("ullTotalVirtual", ctypes.c_ulonglong),
+                ("ullAvailVirtual", ctypes.c_ulonglong),
+                ("ullAvailExtendedVirtual", ctypes.c_ulonglong),
+            ]
+
+        status = MEMORYSTATUSEX()
+        status.dwLength = ctypes.sizeof(MEMORYSTATUSEX)
+        if not ctypes.windll.kernel32.GlobalMemoryStatusEx(ctypes.byref(status)):
+            return ""
+        total = int(status.ullTotalPhys)
+        if total <= 0:
+            return ""
+        gib = (total + (1 << 30) - 1) >> 30
+        return f"{gib} GB"
+    except Exception:
+        return ""
+
+
+def _windows_storage_facts() -> Dict[str, Any]:
+    if platform.system() != "Windows":
+        return {
+            "storage_total_str": "",
+            "storage_free_str": "",
+            "storage_used_percent": 0,
+        }
+    system_drive = os.environ.get("SystemDrive", "C:")
+    root = f"{system_drive}\\"
+    try:
+        usage = shutil.disk_usage(root)
+    except OSError:
+        return {
+            "storage_total_str": "",
+            "storage_free_str": "",
+            "storage_used_percent": 0,
+        }
+    total = int(usage.total)
+    free = int(usage.free)
+    used = max(0, total - free)
+    used_pct = int(round((used / total) * 100)) if total > 0 else 0
+    return {
+        "storage_total_str": _diag_format_bytes(total),
+        "storage_free_str": _diag_format_bytes(free),
+        "storage_used_percent": used_pct,
+    }
+
+
+def _windows_nt_build_number() -> int:
+    build_raw = _windows_registry_value(
+        r"SOFTWARE\Microsoft\Windows NT\CurrentVersion",
+        "CurrentBuildNumber",
+    )
+    if not build_raw:
+        return 0
+    try:
+        return int(str(build_raw).split(".", 1)[0])
+    except ValueError:
+        return 0
+
+
+def _windows_product_display() -> str:
+    product = _windows_registry_value(
+        r"SOFTWARE\Microsoft\Windows NT\CurrentVersion",
+        "ProductName",
+    )
+    if product and _windows_nt_build_number() >= 22000 and product.startswith("Windows 10"):
+        product = "Windows 11" + product[len("Windows 10") :]
+    if product:
+        return product
+    release = (platform.release() or "").strip()
+    if release.isdigit() and int(release) >= 10:
+        return f"Windows {release}"
+    return release or "Windows"
+
+
+def _windows_hardware_facts() -> Dict[str, Any]:
+    from core.hardware_facts import collect_windows_hardware, flat_legacy_from_hardware
+
+    hardware = collect_windows_hardware(deadline=2.8)
+    return {**flat_legacy_from_hardware(hardware), "_hardware_struct": hardware}
+
+
+def _empty_hardware_facts() -> Dict[str, Any]:
+    return {
+        "model_name": "",
+        "model_id": "",
+        "serial_number": "",
+        "cpu": "",
+        "memory": "",
+        "os_display": "",
+        "os_info": "",
+        "arch": platform.machine() or "",
+        "storage_total_str": "",
+        "storage_free_str": "",
+        "storage_used_percent": 0,
+        "camera": "",
+        "display": "",
+    }
+
+
+class WebAPI(__import__("web_api_tools").SystemToolsAPI):
     """Python bridge exposed to JavaScript via pywebview."""
 
     def __init__(self, manager: PackageManager):
         self.manager = manager
         self._window = None
         self._last_progress_time = 0.0
+        self._register_tool_scan_jobs()
+
+    def _register_tool_scan_jobs(self) -> None:
+        orch = getattr(self.manager, "scan_orchestrator", None)
+        if orch is None:
+            return
+        from web_api_tools import register_system_tool_scan_jobs
+        from core.system_tools.cleanup import register_cleanup_scan_job
+
+        register_system_tool_scan_jobs(orch)
+        cleaner = getattr(self.manager, "cleaner", None)
+        engine = getattr(cleaner, "_engine", None) if cleaner else None
+        if engine is not None:
+            register_cleanup_scan_job(orch, engine)
 
     def set_window(self, window):
         self._window = window
@@ -27,20 +206,33 @@ class WebAPI:
                 pass
 
     def _on_log(self, text: str):
+        # Do not wait on the page here. The scan call is still outstanding, and a
+        # blocking script evaluation holds the result until the wait gives up.
         escaped = json.dumps(text)
-        self._eval_js(f"app.appendLog({escaped});")
+        script = f"app.appendLog({escaped});"
+
+        def send():
+            self._eval_js(script)
+
+        threading.Thread(target=send, daemon=True).start()
 
     def _on_progress(self, pct: Optional[float], ticker: str):
         now = time.time()
-        # Cap IPC evaluation to at most 16 calls per second unless completing
         if (now - self._last_progress_time < 0.06) and (pct not in (0.0, 1.0, None)):
             return
         self._last_progress_time = now
 
         p_val = pct if pct is not None else "null"
         escaped_ticker = json.dumps(ticker)
-        self._eval_js(f"app.setIslandProgress({p_val}, {escaped_ticker});")
-        self._eval_js(f"if (app.onProgressUpdate) app.onProgressUpdate({p_val}, {escaped_ticker});")
+        script = (
+            f"app.setIslandProgress({p_val}, {escaped_ticker});"
+            f"if (app.onProgressUpdate) app.onProgressUpdate({p_val}, {escaped_ticker});"
+        )
+
+        def send():
+            self._eval_js(script)
+
+        threading.Thread(target=send, daemon=True).start()
 
     def _estimate_package_size_bytes(self, pkg_id: str, pkg_name: str) -> int:
         pid = (pkg_id or "").lower().strip()
@@ -133,10 +325,85 @@ class WebAPI:
             "ete_seconds": ete_seconds
         }
 
+    def bridge_ping(self, *args, **kwargs) -> Dict[str, Any]:
+        from core.updater import CURRENT_VERSION
+
+        return {"ok": True, "version": CURRENT_VERSION}
+
+    def scans_start_all(self, *args, **kwargs) -> Dict[str, Any]:
+        orch = self.manager.scan_orchestrator
+        if orch is None:
+            return {"started": False}
+        force = bool(kwargs.get("force") or (args[0] if args else False))
+        orch.scans_start_all(force=force)
+        return {"started": True}
+
+    def scans_start_maintenance(self, *args, **kwargs) -> Dict[str, Any]:
+        orch = self.manager.scan_orchestrator
+        if orch is None:
+            return {"started": False}
+        job_ids = kwargs.get("job_ids")
+        if job_ids is None and args:
+            job_ids = args[0]
+        if isinstance(job_ids, str):
+            job_ids = [job_ids]
+        force = bool(kwargs.get("force"))
+        orch.scans_start_maintenance(job_ids, force=force)
+        return {"started": True, "job_ids": list(job_ids or [])}
+
+    def scan_start(self, job_id: str = "", *args, **kwargs) -> Dict[str, Any]:
+        if not job_id and args:
+            job_id = str(args[0])
+        if not job_id and kwargs.get("job_id"):
+            job_id = str(kwargs["job_id"])
+        orch = self.manager.scan_orchestrator
+        if orch is None or not job_id:
+            return {"started": False, "job_id": job_id}
+        force = bool(kwargs.get("force") or (args[1] if len(args) > 1 else False))
+        orch.scan_start(job_id, force=force)
+        return {"started": True, "job_id": job_id}
+
+    def scan_cancel(self, job_id: str = "", *args, **kwargs) -> Dict[str, Any]:
+        if not job_id and args:
+            job_id = str(args[0])
+        orch = self.manager.scan_orchestrator
+        if orch is None or not job_id:
+            return {"cancelled": False, "job_id": job_id}
+        orch.scan_cancel(job_id)
+        return {"cancelled": True, "job_id": job_id}
+
+    def scans_state(self, *args, **kwargs) -> Dict[str, Any]:
+        orch = self.manager.scan_orchestrator
+        if orch is None:
+            return {"jobs": {}, "summary": {"done": 0, "total": 0, "eta_s": 0, "running": 0}}
+        return orch.scans_state()
+
+    def scan_result(self, job_id: str = "", *args, **kwargs) -> Any:
+        if not job_id and args:
+            job_id = str(args[0])
+        orch = self.manager.scan_orchestrator
+        if orch is None or not job_id:
+            return None
+        return orch.scan_result(job_id)
+
     def scan_updates(self, *args, **kwargs) -> List[Dict[str, Any]]:
         """Scans system for available updates synchronously for JS call."""
-        if self.manager.is_busy and self.manager.cached_updates:
-            return [self._enrich_package_dict(p) for p in self.manager.cached_updates]
+        orch = self.manager.scan_orchestrator
+        if orch is not None:
+            rec = orch.wait_for_job("catalog-updates", budget_s=60.0)
+            if rec.get("status") == "ready":
+                packages = list(self.manager.cached_updates)
+            elif rec.get("cached"):
+                raw = orch.scan_result("catalog-updates") or []
+                packages = orch._dicts_to_packages(raw) if raw else list(self.manager.cached_updates)
+            else:
+                err = rec.get("error") or getattr(self.manager.current_engine, "last_error", "") or ""
+                raise RuntimeError(self._scan_failure_message(err or "update scan failed"))
+            if not packages:
+                err = getattr(self.manager.current_engine, "last_error", "") or ""
+                if err:
+                    raise RuntimeError(self._scan_failure_message(err))
+            return [self._enrich_package_dict(p) for p in packages]
 
         event = threading.Event()
         result_box = []
@@ -153,15 +420,29 @@ class WebAPI:
         self.manager.check_updates_async(
             on_log=self._on_log,
             on_success=on_success,
-            on_error=on_error
+            on_error=on_error,
         )
 
-        event.wait(timeout=180) # allow up to 3 mins for deep system audit
-
+        finished = event.wait(timeout=120)
         if error_box:
-            raise RuntimeError(str(error_box[0]))
+            raise RuntimeError(self._scan_failure_message(str(error_box[0])))
+        if not finished:
+            raise RuntimeError(
+                "The update scan took too long and was stopped. Use Scan for Updates to try again."
+            )
 
-        return [self._enrich_package_dict(p) for p in result_box]
+        packages = [self._enrich_package_dict(p) for p in result_box]
+        if not packages:
+            err = getattr(self.manager.current_engine, "last_error", "") or ""
+            if err:
+                raise RuntimeError(self._scan_failure_message(err))
+        return packages
+
+    def _scan_failure_message(self, detail: str) -> str:
+        text = (detail or "").lower()
+        if "timed out" in text or "timeout" in text:
+            return "The catalog did not answer in time. Use Scan for Updates to try again."
+        return "The update scan failed. Use Scan for Updates to try again."
 
     def upgrade_packages(self, package_ids: Optional[List[str]] = None, *args, **kwargs) -> List[Dict[str, Any]]:
         """Upgrades packages and returns list of OperationStatus dictionaries."""
@@ -200,7 +481,9 @@ class WebAPI:
                     "package_id": status.package_id,
                     "success": status.success,
                     "message": status.message,
-                    "exit_code": getattr(status, "exit_code", 0)
+                    "exit_code": getattr(status, "exit_code", 0),
+                    "reason": getattr(status, "reason", "") or "",
+                    "holders": list(getattr(status, "holders", None) or []),
                 })
             except Exception as e:
                 self._on_log(f"[Upgrade Exception {pid}]: {e}\n")
@@ -277,6 +560,28 @@ class WebAPI:
         return {"id": status.package_id, "success": status.success, "message": status.message}
 
     def get_installed(self, *args, **kwargs) -> List[Dict[str, Any]]:
+        orch = self.manager.scan_orchestrator
+        if orch is not None:
+            orch.scan_start("local-arp")
+            orch.scan_start("catalog-installed")
+            from core.scan_orchestrator import ScanOrchestrator
+
+            cat = orch.scan_result("catalog-installed") or []
+            arp = orch.scan_result("local-arp") or []
+            merged = ScanOrchestrator.merge_installed(cat, arp)
+            return [
+                {
+                    "id": row.get("id", ""),
+                    "name": row.get("name", ""),
+                    "installed_version": row.get("installed_version", ""),
+                    "source": row.get("source", ""),
+                    "origin": row.get("origin", "catalog"),
+                    "can_uninstall": row.get("can_uninstall", True),
+                    "engine": row.get("engine", "winget"),
+                }
+                for row in merged
+            ]
+
         event = threading.Event()
         result_box = []
 
@@ -291,34 +596,249 @@ class WebAPI:
             filter_query=None,
             on_log=self._on_log,
             on_success=on_success,
-            on_error=on_error
+            on_error=on_error,
         )
 
-        event.wait(timeout=60)
+        event.wait(timeout=180)
         return [
             {
                 "id": p.id,
                 "name": p.name,
-                "installed_version": p.installed_version
+                "installed_version": p.installed_version,
+                "source": p.source,
+                "origin": getattr(p, "origin", "catalog"),
+                "can_uninstall": getattr(p, "can_uninstall", True),
+                "engine": p.engine,
             }
             for p in result_box
         ]
 
-    def uninstall_package(self, package_id: str = "", *args, **kwargs) -> bool:
+    def prefetch_package(self, package_id: str = "", *args, **kwargs) -> Dict[str, Any]:
         if not package_id and args and isinstance(args[0], str):
             package_id = args[0]
+        if not package_id and kwargs.get("package_id"):
+            package_id = str(kwargs["package_id"])
+        if not package_id:
+            return {
+                "id": "",
+                "success": False,
+                "message": "Package id is required.",
+                "path": "",
+            }
+
+        status = self.manager.prefetch_package(package_id, on_log=self._on_log)
+        path = ""
+        if status.success:
+            path = os.path.join(
+                os.environ.get("LOCALAPPDATA", ""),
+                "QuantumUpdater",
+                "downloads",
+                package_id,
+            )
+        return {
+            "id": package_id,
+            "success": status.success,
+            "message": status.message,
+            "path": path,
+        }
+
+    def launch_downloaded_installer(self, package_id: str = "", *args, **kwargs) -> Dict[str, Any]:
+        if not package_id and args and isinstance(args[0], str):
+            package_id = args[0]
+        if not package_id and kwargs.get("package_id"):
+            package_id = str(kwargs["package_id"])
+        if not package_id and kwargs.get("packageId"):
+            package_id = str(kwargs["packageId"])
+        if not package_id:
+            return {
+                "success": False,
+                "message": "Package id is required.",
+                "path": "",
+            }
+
+        local_appdata = os.environ.get("LOCALAPPDATA", "")
+        downloads_root = os.path.join(local_appdata, "QuantumUpdater", "downloads")
+        dest_dir = os.path.join(downloads_root, package_id)
+        dest_real = os.path.realpath(dest_dir)
+        root_real = os.path.realpath(downloads_root)
+        dest_cmp = os.path.normcase(dest_real)
+        root_cmp = os.path.normcase(root_real)
+
+        try:
+            under_downloads = os.path.commonpath([dest_cmp, root_cmp]) == root_cmp
+        except ValueError:
+            under_downloads = False
+        if not under_downloads or dest_cmp == root_cmp:
+            return {
+                "success": False,
+                "message": "That package id is not allowed.",
+                "path": "",
+            }
+
+        if not os.path.isdir(dest_real):
+            return {
+                "success": False,
+                "message": "No downloaded installer folder was found for this package.",
+                "path": dest_real,
+            }
+
+        allowed = {".exe", ".msi", ".msix", ".appx", ".msixbundle"}
+        refused = {".bat", ".cmd", ".ps1", ".vbs", ".js", ".jse", ".wsf", ".wsh"}
+        preference = (".exe", ".msi", ".msix", ".appx", ".msixbundle")
+        matches: List[str] = []
+
+        try:
+            names = os.listdir(dest_real)
+        except OSError:
+            names = []
+        for name in names:
+            candidate = os.path.join(dest_real, name)
+            try:
+                cand_real = os.path.realpath(candidate)
+            except OSError:
+                continue
+            if not os.path.isfile(cand_real):
+                continue
+            cand_cmp = os.path.normcase(cand_real)
+            try:
+                stays = os.path.commonpath([cand_cmp, dest_cmp]) == dest_cmp
+            except ValueError:
+                stays = False
+            if not stays:
+                continue
+            ext = os.path.splitext(cand_real)[1].lower()
+            if ext in refused or ext not in allowed:
+                continue
+            matches.append(cand_real)
+
+        if not matches:
+            return {
+                "success": False,
+                "message": "No allowed installer was found in the download folder.",
+                "path": dest_real,
+            }
+
+        if len(matches) > 1:
+            names_list = ", ".join(os.path.basename(p) for p in matches)
+            return {
+                "success": False,
+                "message": (
+                    "More than one installer is in the download folder. "
+                    f"Remove the extras, then try again. Found: {names_list}."
+                ),
+                "path": dest_real,
+            }
+
+        chosen = matches[0]
+        # Prefer the preferred extension order when exactly one match already chosen.
+        for ext in preference:
+            for path in matches:
+                if os.path.splitext(path)[1].lower() == ext:
+                    chosen = path
+                    break
+            else:
+                continue
+            break
+
+        try:
+            ext = os.path.splitext(chosen)[1].lower()
+            if os.name == "nt" and ext != ".exe":
+                os.startfile(chosen)
+            else:
+                subprocess.Popen([chosen], shell=False)
+        except Exception as err:
+            return {
+                "success": False,
+                "message": str(err),
+                "path": chosen,
+            }
+
+        file_name = os.path.basename(chosen)
+        return {
+            "success": True,
+            "message": f"Started {file_name}.",
+            "path": chosen,
+        }
+
+    def uninstall_package(self, package_id: str = "", *args, **kwargs):
+        if not package_id and args and isinstance(args[0], str):
+            package_id = args[0]
+        if package_id.startswith("arp:"):
+            from core.arp_inventory import find_arp_entry, plan_uninstall
+
+            entry = find_arp_entry(package_id)
+            if not entry:
+                return {"success": False, "message": "Registry app not found."}
+            plan = plan_uninstall(entry)
+            if not plan:
+                return {
+                    "success": False,
+                    "message": "This app has no safe uninstall command.",
+                }
+            argv = [plan["exe"]] + list(plan.get("args") or [])
+            cwd = plan.get("cwd")
+            quiet_msi = os.path.basename(plan["exe"]).lower() == "msiexec.exe"
+            try:
+                self.manager._install_semaphore.acquire()
+                startupinfo = None
+                flags = 0
+                # A quiet Windows Installer can stay hidden. Any other uninstaller needs its window.
+                if os.name == "nt" and quiet_msi:
+                    startupinfo = subprocess.STARTUPINFO()
+                    startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+                    startupinfo.wShowWindow = 0
+                    flags = 0x08000000
+                proc = subprocess.run(
+                    argv,
+                    cwd=cwd,
+                    shell=False,
+                    capture_output=True,
+                    text=True,
+                    encoding="utf-8",
+                    errors="replace",
+                    timeout=1800,
+                    startupinfo=startupinfo,
+                    creationflags=flags,
+                )
+                ok = proc.returncode in (0, 3010)
+                detail = (proc.stdout or proc.stderr or "").strip()
+                if proc.returncode == 3010:
+                    msg = "Uninstall completed. Windows may ask for a restart."
+                elif ok:
+                    msg = "Uninstall completed successfully."
+                elif proc.returncode in (1602, 1223):
+                    msg = "Nothing was removed."
+                else:
+                    msg = detail or f"Uninstall exited with code {proc.returncode}."
+                return {"success": ok, "message": msg}
+            except subprocess.TimeoutExpired:
+                return {"success": False, "message": "Uninstall timed out."}
+            except Exception as exc:
+                return {"success": False, "message": str(exc)}
+            finally:
+                self.manager._install_semaphore.release()
+
         event = threading.Event()
-        def on_success(st): event.set()
-        def on_error(err): event.set()
+        result_box = []
+
+        def on_success(status: OperationStatus):
+            result_box.append(status)
+            event.set()
+
+        def on_error(err: Exception):
+            result_box.append(OperationStatus(package_id, False, str(err)))
+            event.set()
 
         self.manager.uninstall_package_async(
             package_id=package_id,
             on_log=self._on_log,
+            on_progress=self._on_progress,
             on_success=on_success,
             on_error=on_error
         )
         event.wait(timeout=180)
-        return True
+        status = result_box[0] if result_box else OperationStatus(package_id, False, "Uninstall timed out.")
+        return {"success": status.success, "message": status.message}
 
     def set_engine(self, engine_id: str = "", *args, **kwargs) -> bool:
         if not engine_id and args and isinstance(args[0], str):
@@ -335,6 +855,71 @@ class WebAPI:
         self.manager.save_settings()
         return True
 
+    def get_settings(self, *args, **kwargs) -> Dict[str, Any]:
+        return dict(self.manager.settings or {})
+
+    def cleanup_scan_start(self, *args, **kwargs) -> Dict[str, Any]:
+        cleaner = self.manager.cleaner
+        if cleaner and hasattr(cleaner, "scan_start"):
+            return cleaner.scan_start()
+        if cleaner:
+            result = cleaner.scan()
+            return {"started": True, "scan_id": result.get("scan_id"), "result": result, "status": "done"}
+        return {"started": False, "error": "Cleaner not available"}
+
+    def cleanup_scan_status(self, *args, **kwargs) -> Dict[str, Any]:
+        cleaner = self.manager.cleaner
+        if cleaner and hasattr(cleaner, "scan_status"):
+            return cleaner.scan_status()
+        return {"status": "idle"}
+
+    def cleanup_scan_cancel(self, *args, **kwargs) -> Dict[str, Any]:
+        cleaner = self.manager.cleaner
+        if cleaner and hasattr(cleaner, "scan_cancel"):
+            return cleaner.scan_cancel()
+        return {"cancelled": False}
+
+    def cleanup_get_plan(self, categories: Optional[List[str]] = None, *args, **kwargs) -> Dict[str, Any]:
+        if categories is None and args and isinstance(args[0], list):
+            categories = args[0]
+        if not categories and "categories" in kwargs:
+            categories = kwargs["categories"]
+        categories = categories or []
+        cleaner = self.manager.cleaner
+        if cleaner and hasattr(cleaner, "cleanup_get_plan"):
+            return cleaner.cleanup_get_plan(categories)
+        return {"error": "Cleaner not available", "token": None}
+
+    def cleanup_execute(self, token: str = "", *args, **kwargs) -> Dict[str, Any]:
+        if not token and args and isinstance(args[0], str):
+            token = args[0]
+        if not token:
+            token = kwargs.get("token", "")
+        cleaner = self.manager.cleaner
+        if cleaner and hasattr(cleaner, "cleanup_execute"):
+            return cleaner.cleanup_execute(token, kwargs.get("category_ids"))
+        return {"error": "Cleaner not available"}
+
+    def cleanup_inspect(self, category_id: str = "", *args, **kwargs) -> Dict[str, Any]:
+        if not category_id and args and isinstance(args[0], str):
+            category_id = args[0]
+        if not category_id:
+            category_id = kwargs.get("category_id") or kwargs.get("categoryId") or ""
+        cleaner = self.manager.cleaner
+        if cleaner and hasattr(cleaner, "inspect_category"):
+            return cleaner.inspect_category(category_id)
+        return {"category_id": category_id, "name": "Unknown", "files": [], "total_files": 0}
+
+    def cleanup_drives(self, *args, **kwargs) -> Dict[str, Any]:
+        from core.system_tools.drives import enumerate_cleanup_volumes, list_physical_drives
+
+        try:
+            volumes = enumerate_cleanup_volumes(include_external=True)
+            hardware = list_physical_drives()
+            return {"volumes": volumes, "physical_drives": hardware}
+        except Exception as exc:
+            return {"volumes": [], "physical_drives": [], "error": str(exc)}
+
     def scan_cleanup(self, *args, **kwargs) -> Dict[str, Any]:
         """Scan system cleanup targets for recoverable space."""
         if self.manager.cleaner:
@@ -349,20 +934,6 @@ class WebAPI:
             "disk_used_percent": 0,
             "categories": []
         }
-
-    def one_click_clean(self, *args, **kwargs) -> Dict[str, Any]:
-        """Perform one-click clean of all safe low-risk categories."""
-        if not self.manager.cleaner:
-            return {"total_freed_bytes": 0, "total_freed_str": "0 B", "files_removed": 0, "error": "Cleaner not available"}
-
-        categories = self.manager.cleaner.get_category_definitions()
-        safe_ids = [c["id"] for c in categories if c.get("risk") == "low"]
-
-        return self.manager.cleaner.clean(
-            category_ids=safe_ids,
-            on_progress=self._on_progress,
-            on_log=self._on_log
-        )
 
     def execute_cleanup(self, categories: Optional[List[str]] = None, *args, **kwargs) -> Dict[str, Any]:
         """Executes cleanup sequence across selected categories with live progress."""
@@ -381,16 +952,7 @@ class WebAPI:
 
     def inspect_cleanup_category(self, category_id: str = "", *args, **kwargs) -> Dict[str, Any]:
         """Inspect and trace specific files within a cleanup category."""
-        if not category_id and args and isinstance(args[0], str):
-            category_id = args[0]
-        if not category_id and "categoryId" in kwargs:
-            category_id = kwargs["categoryId"]
-        if not category_id and "category_id" in kwargs:
-            category_id = kwargs["category_id"]
-
-        if self.manager.cleaner and hasattr(self.manager.cleaner, "inspect_category"):
-            return self.manager.cleaner.inspect_category(category_id)
-        return {"category_id": category_id, "name": "Unknown", "files": [], "total_files": 0, "total_size_bytes": 0, "total_size_str": "0 B"}
+        return self.cleanup_inspect(category_id, *args, **kwargs)
 
     def get_cleanup_plan(self, categories: Optional[List[str]] = None, *args, **kwargs) -> Dict[str, Any]:
         """Generate structured cleanup plan requiring user consent."""
@@ -427,16 +989,19 @@ class WebAPI:
 
         if target and os.path.exists(target):
             try:
-                if os.path.isfile(target):
-                    subprocess.Popen(f'explorer.exe /select,"{os.path.abspath(target)}"')
+                real = os.path.realpath(target)
+                if any(ch in real for ch in ('"', "\n", "\r")):
+                    return {"success": False, "error": "That path cannot be opened."}
+                if os.path.isfile(real):
+                    subprocess.Popen(["explorer.exe", f"/select,{real}"], shell=False)
                 else:
-                    subprocess.Popen(f'explorer.exe "{os.path.abspath(target)}"')
-                return {"success": True, "path": target}
+                    subprocess.Popen(["explorer.exe", real], shell=False)
+                return {"success": True, "path": real}
             except Exception as e:
                 return {"success": False, "error": str(e)}
 
         try:
-            subprocess.Popen('explorer.exe shell:AppsFolder')
+            subprocess.Popen(["explorer.exe", "shell:AppsFolder"], shell=False)
             return {"success": True, "path": "shell:AppsFolder"}
         except Exception as e:
             return {"success": False, "error": str(e)}
@@ -446,15 +1011,102 @@ class WebAPI:
         return self.reveal_in_explorer(package_id, path, *args, **kwargs)
 
     def optimize_memory(self, *args, **kwargs) -> Dict[str, Any]:
-        """Compact memory and purge inactive RAM working sets."""
-        if self.manager.cleaner and hasattr(self.manager.cleaner, "optimize_memory"):
-            return self.manager.cleaner.optimize_memory()
-        return {"freed_bytes": 0, "freed_str": "0 B"}
+        """ADR 012: measure available RAM before/after EmptyWorkingSet trims."""
+        from core.memory_trim import optimize_ram_trim
+
+        return optimize_ram_trim()
+
+    def get_app_icons(self, *args, **kwargs) -> Dict[str, Optional[str]]:
+        """Return data URLs for package icons. Missing icons are null, never an error."""
+        ids = kwargs.get("ids")
+        if ids is None and args:
+            ids = args[0]
+        if isinstance(ids, str):
+            ids = [ids]
+        package_ids = [str(item) for item in (ids or []) if str(item).strip()]
+        homepages = kwargs.get("homepages")
+        if homepages is None and len(args) > 1:
+            homepages = args[1]
+        if not isinstance(homepages, dict):
+            homepages = {}
+        installed_meta = kwargs.get("installed_meta") or kwargs.get("meta")
+        if installed_meta is None and len(args) > 2:
+            installed_meta = args[2]
+        if not isinstance(installed_meta, dict):
+            installed_meta = {}
+        if not package_ids:
+            return {}
+
+        installed_inventory = [
+            {"id": p.id, "name": p.name}
+            for p in (getattr(self.manager, "cached_installed", None) or [])
+        ]
+
+        result_box: Dict[str, Optional[str]] = {}
+        done = threading.Event()
+
+        def worker() -> None:
+            try:
+                from core.app_icons import resolve_icons_batch
+
+                result_box.update(
+                    resolve_icons_batch(
+                        package_ids,
+                        homepages=homepages,
+                        installed_meta=installed_meta,
+                        installed_inventory=installed_inventory,
+                        network_workers=4,
+                    )
+                )
+            except Exception:
+                for pid in package_ids:
+                    result_box.setdefault(pid, None)
+            finally:
+                done.set()
+
+        threading.Thread(target=worker, daemon=True).start()
+        done.wait(timeout=180)
+        for pid in package_ids:
+            result_box.setdefault(pid, None)
+        return result_box
 
     def get_diagnostics(self, *args, **kwargs) -> Dict[str, Any]:
-        engines = self.manager.get_available_engines()
         os_sys = platform.system()
-        os_display = "macOS" if os_sys == "Darwin" else os_sys
+
+        engines: List[Dict[str, Any]] = []
+        hardware: Dict[str, Any] = {}
+        legacy_facts: Dict[str, Any] = {}
+        engine_box: Dict[str, Any] = {}
+
+        def load_engines() -> None:
+            try:
+                engine_box["engines"] = self.manager.get_available_engines()
+            except Exception:
+                engine_box["engines"] = []
+
+        engine_thread = threading.Thread(target=load_engines, daemon=True)
+        engine_thread.start()
+        if os_sys == "Windows":
+            from core.hardware_facts import collect_windows_hardware, flat_legacy_from_hardware
+
+            hw_started = time.perf_counter()
+            hardware = collect_windows_hardware(deadline=2.5)
+            legacy_facts = flat_legacy_from_hardware(hardware)
+            remaining = max(0.0, 2.9 - (time.perf_counter() - hw_started))
+            engine_thread.join(timeout=remaining)
+        else:
+            engine_thread.join(timeout=2.8)
+        engines = engine_box.get("engines") or []
+        if not engines:
+            engines = [
+                {
+                    "id": eng_id,
+                    "name": eng.name,
+                    "available": eng.is_available(),
+                    "version": "",
+                }
+                for eng_id, eng in self.manager.engines.items()
+            ]
 
         winget_eng = self.manager.engines.get("winget")
         choco_eng = self.manager.engines.get("choco")
@@ -464,22 +1116,32 @@ class WebAPI:
         diag = {
             "is_admin": is_admin(),
             "os_system": os_sys,
-            "os_display": os_display,
-            "os_info": f"{os_display} {platform.release()} ({platform.machine()})",
-            "arch": platform.machine(),
             "active_engine": self.manager.active_engine_id,
             "engines": engines,
         }
+        if os_sys == "Windows":
+            diag.update(legacy_facts)
+            diag["hardware"] = hardware
+            diag["os_system"] = "Windows"
+        else:
+            diag.update(_empty_hardware_facts())
+            if os_sys == "Darwin":
+                diag["os_display"] = "macOS"
+                diag["os_info"] = f"macOS {platform.release()} ({platform.machine()})"
 
         if os_sys == "Darwin":
             diag["brew_path"] = str(getattr(brew_eng, "_brew_path", "Not Located")) if brew_eng else "Not Installed"
             diag["brew_version"] = str(brew_eng.get_version() or "Not Available") if brew_eng else "Not Available"
             diag["apple_version"] = str(apple_eng.get_version() or "Current") if apple_eng else "Current"
         else:
+            ver_lookup = {
+                str(item.get("id") or ""): str(item.get("version") or "")
+                for item in engines
+            }
             diag["winget_path"] = str(getattr(winget_eng, "_executable", "Not Located")) if winget_eng else "Not Installed"
-            diag["winget_version"] = str(winget_eng.get_version() or "Not Available") if winget_eng else "Not Available"
+            diag["winget_version"] = ver_lookup.get("winget") or "Not Available"
             diag["choco_path"] = str(getattr(choco_eng, "_executable", "Not Located")) if choco_eng else "Not Installed"
-            diag["choco_version"] = str(choco_eng.get_version() or "Not Available") if choco_eng else "Not Available"
+            diag["choco_version"] = ver_lookup.get("choco") or "Not Available"
 
         return diag
 
@@ -490,19 +1152,22 @@ class WebAPI:
         return {"has_update": False, "current_version": "2.0.0"}
 
     def apply_self_update(self, download_url: str = "", *args, **kwargs) -> bool:
-        """Download and install the updated binary in-place without prompting."""
-        if not download_url and args and isinstance(args[0], str):
-            download_url = args[0]
-        if not download_url and "downloadUrl" in kwargs:
-            download_url = kwargs["downloadUrl"]
+        """Install the latest official release. The caller's URL is ignored."""
 
         def worker():
-            if hasattr(self.manager, "updater") and self.manager.updater:
-                self.manager.updater.download_and_apply(
-                    download_url=download_url,
-                    on_progress=self._on_progress,
-                    on_log=self._on_log
-                )
+            updater = getattr(self.manager, "updater", None)
+            if not updater:
+                return
+            info = updater.check_for_updates()
+            url = (info or {}).get("download_url") or ""
+            if not info.get("has_update"):
+                self._on_log("[Quantum Auto-Updater]: This copy is already current.\n")
+                return
+            updater.download_and_apply(
+                download_url=url,
+                on_progress=self._on_progress,
+                on_log=self._on_log,
+            )
 
         threading.Thread(target=worker, daemon=True).start()
         return True

@@ -83,6 +83,7 @@ webview.util.interop_dll_path = _patched_interop_dll_path
 
 import webview
 from core.admin import elevate_if_needed, is_admin
+from core.build_info import LABEL
 from core.manager import PackageManager
 from web_api import WebAPI
 
@@ -111,10 +112,10 @@ def main():
 
     # 4. Create Glassmorphism Desktop Window with Edge WebView2 / WebKit
     window = webview.create_window(
-        title="Quantum Updater • System & Package Manager",
+        title=f"Quantum Updater · {LABEL}",
         url=html_file,
-        width=1200,
-        height=780,
+        width=1120,
+        height=720,
         min_size=(960, 640),
         js_api=api,
         text_select=True

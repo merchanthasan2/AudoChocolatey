@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Park D · About</title>
+<meta name="viewport" content="width=1280">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700&family=Outfit:wght@450;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="_shell.css">
+<style>
+.grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.card h3 { font-size: 13px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); margin-bottom: 8px; }
+.card p { font-weight: 600; }
+.hero { display: flex; gap: 16px; align-items: center; }
+.hero .mark {
+  width: 56px; height: 56px; border-radius: 14px; background: var(--glow);
+  display: grid; place-items: center; color: #fff; font-family: Sora, sans-serif; font-weight: 700;
+}
+</style>
+</head>
+<body>
+<div class="win">
+  <div class="titlebar"><span>Quantum Updater</span><span>Park D · About</span></div>
+  <div class="body">
+    <aside class="side">
+      <div class="brand">Quantum Updater<small>Keeps your apps current</small></div>
+      <div><div class="sec">System</div>
+        <nav class="nav"><a class="on" href="07-about.html">About this computer</a><a href="04-settings.html">Settings</a></nav>
+      </div>
+    </aside>
+    <section class="main">
+      <div class="content">
+        <h1>About this computer</h1>
+        <p class="lead">Hardware from this PC. Starts when this screen opens — not on the ready gate.</p>
+        <div class="card hero">
+          <div class="mark">PC</div>
+          <div>
+            <strong style="font-size:18px">ASUS TUF Gaming A15</strong>
+            <div class="lead" style="margin:4px 0 0">Windows 11 · <span class="ok">System healthy</span></div>
+          </div>
+        </div>
+        <div class="grid">
+          <div class="card"><h3>Processor</h3><p>AMD Ryzen 7 4800H</p></div>
+          <div class="card"><h3>Memory</h3><p>16 GB</p></div>
+          <div class="card"><h3>Primary disk</h3><p>63 GB free of 453 GB</p></div>
+          <div class="card"><h3>Graphics</h3><p>Listed from this PC</p></div>
+        </div>
+      </div>
+    </section>
+  </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Park D · Cleanup</title>
+<meta name="viewport" content="width=1280">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700&family=Outfit:wght@450;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="_shell.css">
+<style>
+.list { display: grid; gap: 8px; }
+.card { display: grid; grid-template-columns: 1fr auto; gap: 8px; align-items: center; }
+.card .sub { color: var(--muted); font-size: 12.5px; margin-top: 2px; }
+.head { display: flex; justify-content: space-between; align-items: flex-end; gap: 16px; }
+</style>
+</head>
+<body>
+<div class="win">
+  <div class="titlebar"><span>Quantum Updater</span><span>Park D · Cleanup</span></div>
+  <div class="body">
+    <aside class="side">
+      <div class="brand">Quantum Updater<small>Keeps your apps current</small></div>
+      <div><div class="sec">Maintenance</div>
+        <nav class="nav"><a class="on" href="06-cleanup.html">Cleanup</a></nav>
+      </div>
+      <div><div class="sec">Software</div>
+        <nav class="nav"><a href="../01-D-park.html">Updates</a></nav>
+      </div>
+    </aside>
+    <section class="main">
+      <div class="content">
+        <div class="head">
+          <div><h1>System cleanup</h1><p class="lead">Safe categories only. Magenta is the clean action.</p></div>
+          <button class="primary" type="button">Clean selected</button>
+        </div>
+        <div class="list">
+          <div class="card"><div><strong>Temporary files</strong><div class="sub">SAFE TO CLEAN · %TEMP%</div></div><span class="ok">On</span></div>
+          <div class="card"><div><strong>Update downloads</strong><div class="sub">Windows-supported route</div></div><span class="ok">On</span></div>
+          <div class="card"><div><strong>Recycle Bin</strong><div class="sub">Wave 1</div></div><span class="ok">On</span></div>
+        </div>
+      </div>
+    </section>
+  </div>
+</div>
+</body>
+</html>

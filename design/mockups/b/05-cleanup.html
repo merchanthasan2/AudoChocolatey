@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><title>Quantum Updater - Cleanup - Direction B (Deep Teal Refined) mockup</title>
+<meta name="viewport" content="width=1280"><style>:root{--win:#04212A;--panel:#062B36;--card:#0A3442;--border:#164A5B;--text:#F2F8FA;--t2:#BFD9E2;--muted:#8FB3C0;--link:#6CD0EE;--prim-bg:#06D7A0;--prim-fg:#073A4B;--sec-bg:#0E3E4D;--sec-bd:#2A6577;--sec-fg:#F2F8FA;--dest-bd:#F04770;--dest-fg:#FF8FA9;--warn-bg:#FFD167;--warn-fg:#2B2000;--cau-bg:#F78C6A;--cau-fg:#2A1008;--inst-bg:#0A3442;--inst-bd:#164A5B;--inst-fg:#A9C6D0;--sel-bg:#0A3442;--track:#164A5B;--r1:10px;--r2:12px;--tile-bd:#164A5B;}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:1280px;height:800px;overflow:hidden;background:var(--win)}
+body{font-family:'Segoe UI Variable','Segoe UI Variable Text','Segoe UI',Tahoma,sans-serif;color:var(--text);font-size:14px;line-height:1.4}
+h1,h2,.t{font-family:'Segoe UI Variable Display','Segoe UI Variable','Segoe UI',Tahoma,sans-serif;font-weight:600}
+.win{width:1280px;height:800px;display:flex;flex-direction:column;background:var(--win)}
+.titlebar{height:36px;background:var(--win);display:flex;align-items:center;justify-content:space-between;padding-left:14px;flex:none;border-bottom:1px solid var(--border)}
+.titlebar .name{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:600;color:var(--t2)}
+.wc{display:flex;height:100%}
+.wc span{width:46px;display:flex;align-items:center;justify-content:center}
+.body{flex:1;display:flex;min-height:0}
+.side{width:248px;background:var(--panel);display:flex;flex-direction:column;padding:20px 12px 16px;flex:none}
+.brand{display:flex;align-items:center;gap:11px;padding:0 10px 24px}
+.brand .t{font-size:18px;line-height:1.15;color:var(--text)}
+.brand small{display:block;font-family:'Segoe UI Variable','Segoe UI',sans-serif;font-size:12px;font-weight:400;color:var(--muted);margin-top:2px}
+.nav{display:flex;flex-direction:column;gap:2px}
+.nav a{position:relative;display:flex;align-items:center;gap:12px;height:44px;padding:0 14px;border-radius:var(--r1);color:var(--t2);text-decoration:none;font-weight:500;font-size:14px}
+.nav a:hover{background:var(--card)}
+.nav a.on{background:var(--sel-bg);color:var(--text);font-weight:600}
+.nav a.on:before{content:"";position:absolute;left:0;top:9px;bottom:9px;width:3px;border-radius:2px;background:#06D7A0}
+.nav a .badge{margin-left:auto}
+.side .foot{margin-top:auto;background:var(--card);border:1px solid var(--border);border-radius:var(--r2);padding:14px}
+.foot .lbl{font-size:12px;color:var(--muted)}
+.foot .val{font-size:14px;font-weight:600;margin:3px 0 10px;color:var(--text)}
+.bar{height:8px;border-radius:4px;background:var(--track);overflow:hidden}
+.bar i{display:block;height:100%;background:#FFD167}
+.main{flex:1;padding:28px 36px 0;min-width:0;display:flex;flex-direction:column}
+.head{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:20px;gap:24px}
+.head h1{font-size:30px;line-height:1.15;color:var(--text)}
+.head p{color:var(--t2);font-size:14px;margin-top:6px}
+.actions{display:flex;gap:10px;align-items:center;flex:none}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:40px;padding:0 18px;border-radius:var(--r1);border:1px solid transparent;font-family:inherit;font-size:14px;font-weight:600;cursor:pointer;white-space:nowrap;text-decoration:none}
+.btn.sm{height:34px;padding:0 14px;font-size:13px}
+.btn.prim{background:var(--prim-bg);color:var(--prim-fg);border-color:var(--prim-bg)}
+.btn.prim:hover{filter:brightness(1.06)}
+.btn.sec{background:var(--sec-bg);color:var(--sec-fg);border-color:var(--sec-bd)}
+.btn.dest{background:transparent;color:var(--dest-fg);border-color:var(--dest-bd)}
+.btn.inst{background:var(--inst-bg);color:var(--inst-fg);border-color:var(--inst-bd);cursor:default}
+.btn.lockl{background:transparent;color:var(--muted);border-color:transparent;cursor:default;font-weight:500}
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--r2)}
+.chip{display:inline-flex;align-items:center;gap:6px;height:24px;padding:0 10px;border-radius:var(--r1);font-size:12px;font-weight:600;white-space:nowrap}
+.chip.warn{background:var(--warn-bg);color:var(--warn-fg)}
+.chip.cau{background:var(--cau-bg);color:var(--cau-fg)}
+.chip.neu{background:var(--sec-bg);color:var(--sec-fg);border:1px solid var(--sec-bd)}
+.ico{width:44px;height:44px;border-radius:var(--r1);flex:none;display:flex;align-items:center;justify-content:center}
+.ico.sq{background:var(--sec-bg);border:1px solid var(--sec-bd)}
+.muted{color:var(--muted)}
+.t2{color:var(--t2)}
+.row{display:flex;align-items:center;gap:16px;padding:16px 20px}
+.row .info{flex:1;min-width:0}
+.row .nm{font-family:'Segoe UI Variable Display','Segoe UI',sans-serif;font-size:17px;font-weight:600;line-height:1.25;color:var(--text)}
+.row .sub{color:var(--t2);font-size:13px;margin-top:3px}
+.list{display:flex;flex-direction:column;gap:10px}
+.ver{display:flex;align-items:center;gap:10px;font-size:15px;font-weight:600}
+.ver .old{color:var(--muted);font-weight:400}
+.ver .new{color:var(--text)}
+.link{color:var(--link);font-size:13px;font-weight:600;text-decoration:underline;text-underline-offset:3px}
+.note{display:flex;align-items:center;gap:10px;color:var(--muted);font-size:12px;margin-top:auto;padding:14px 0 18px}
+.tabs{display:flex;gap:6px;margin-bottom:16px}
+.tab{height:34px;padding:0 16px;border-radius:var(--r1);display:inline-flex;align-items:center;font-weight:500;font-size:13px;color:var(--t2);border:1px solid transparent}
+.tab.on{background:var(--sel-bg);color:var(--text);border-color:var(--border);font-weight:600;box-shadow:inset 0 -3px 0 #06D7A0}
+.search{display:flex;align-items:center;gap:10px;height:40px;width:300px;background:var(--card);border:1px solid var(--border);border-radius:var(--r1);padding:0 14px;color:var(--muted);font-size:13px}
+.cb{width:22px;height:22px;border-radius:5px;border:2px solid var(--sec-bd);background:var(--win);flex:none;display:flex;align-items:center;justify-content:center}
+.cb.on{background:#06D7A0;border-color:#06D7A0}
+.eyebrow{font-size:12px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--muted)}
+
+.head h1{display:flex;align-items:center;gap:12px}
+.head h1:before{content:"";width:5px;height:30px;border-radius:3px;background:#108AB1;display:block}
+.card{box-shadow:0 1px 0 rgba(0,0,0,.25)}
+.side{border-right:1px solid var(--border)}
+.logo-tile{background:#108AB1}
+</style></head><body>
+<div class="win">
+ <div class="titlebar"><div class="name"><div class="logo-tile" style="width:18px;height:18px;border-radius:8px;display:flex;align-items:center;justify-content:center"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#041820" stroke-width="3" stroke-linecap="round"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 5 5"/></svg></div><span>Quantum Updater</span></div>
+  <div class="wc"><span><svg width="11" height="11" viewBox="0 0 11 11" stroke="#B4C2CB" stroke-width="1.2"><path d="M0 5.5h11"/></svg></span>
+  <span><svg width="11" height="11" viewBox="0 0 11 11" fill="none" stroke="#B4C2CB" stroke-width="1.2"><rect x=".6" y=".6" width="9.8" height="9.8"/></svg></span>
+  <span><svg width="11" height="11" viewBox="0 0 11 11" stroke="#B4C2CB" stroke-width="1.2"><path d="M.6.6l9.8 9.8M10.4.6L.6 10.4"/></svg></span></div></div>
+ <div class="body">
+  <aside class="side">
+   <div class="brand"><div class="logo-tile" style="width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#041820" stroke-width="3" stroke-linecap="round"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 5 5"/></svg></div><div class="t">Quantum Updater<small>Keeps your apps current</small></div></div>
+   <nav class="nav"><a href="01-updates.html"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="m7 11 5 5 5-5"/><path d="M5 20h14"/></svg><span>Updates</span><span class="chip warn badge">2</span></a><a href="02-marketplace.html"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9l1.5-5h13L20 9"/><path d="M4 9h16v1a3 3 0 0 1-5.3 1.9A3 3 0 0 1 12 13a3 3 0 0 1-2.7-1.1A3 3 0 0 1 4 10z"/><path d="M5 14v6h14v-6"/></svg><span>Marketplace</span></a><a href="03-installed.html"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="4" width="7" height="7" rx="1.5"/><rect x="13" y="4" width="7" height="7" rx="1.5"/><rect x="4" y="13" width="7" height="7" rx="1.5"/><rect x="13" y="13" width="7" height="7" rx="1.5"/></svg><span>Installed</span></a><a href="04-about.html"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="5" width="16" height="11" rx="2"/><path d="M2 20h20"/></svg><span>About this computer</span></a><a href="05-cleanup.html" class="on"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 3l-7 8"/><path d="M10 10l4 4c-1 3-4 6-9 7 0-5 2-8 5-11z"/></svg><span>Cleanup</span></a></nav>
+   <div class="foot"><div class="lbl">Drive C:</div><div class="val">67 GB free of 453 GB</div><div class="bar"><i style="width:85.2%"></i></div></div>
+  </aside>
+  <main class="main">
+<div class="head"><div><h1>Cleanup</h1><p>Free up space with safe categories only. Nothing important is touched.</p></div>
+ <div class="actions"><a class="btn sec" href="#"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-3-6.7"/><path d="M21 3v6h-6"/></svg>Scan again</a><a class="btn prim" href="#"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 3l-7 8"/><path d="M10 10l4 4c-1 3-4 6-9 7 0-5 2-8 5-11z"/></svg>Clean 4.8 GB</a></div></div>
+<div style="display:grid;grid-template-columns:270px 1fr;gap:16px;align-items:start">
+ <div style="display:flex;flex-direction:column;gap:12px">
+  <div class="card" style="padding:20px;display:flex;flex-direction:column;align-items:center">
+   <svg width="150" height="150" viewBox="0 0 150 150" aria-hidden="true"><circle cx="75" cy="75" r="52" fill="none" stroke="var(--track)" stroke-width="16"/>
+   <circle cx="75" cy="75" r="52" fill="none" stroke="#FFD167" stroke-width="16" stroke-dasharray="278.4 326.7" transform="rotate(-90 75 75)"/>
+   <text x="75" y="73" text-anchor="middle" font-family="Segoe UI Variable Display,Segoe UI,sans-serif" font-size="28" font-weight="600" fill="var(--text)">67 GB</text>
+   <text x="75" y="94" text-anchor="middle" font-family="Segoe UI Variable,Segoe UI,sans-serif" font-size="12" fill="var(--t2)">free of 453 GB</text></svg>
+   <div style="display:flex;gap:16px;margin-top:12px;font-size:12px" class="t2">
+    <span style="display:flex;align-items:center;gap:6px"><i style="width:12px;height:12px;border-radius:3px;background:#FFD167;display:block"></i>Used</span>
+    <span style="display:flex;align-items:center;gap:6px"><i style="width:12px;height:12px;border-radius:3px;background:var(--track);display:block"></i>Free</span></div></div>
+  <div class="card" style="padding:18px 20px;background:var(--prim-bg);border-color:var(--prim-bg);color:var(--prim-fg)">
+   <div style="font-size:12px;font-weight:600;letter-spacing:.05em;text-transform:uppercase">You could free up</div>
+   <div class="t" style="font-size:34px;line-height:1.1;margin-top:4px">4.8 GB</div>
+   <div style="font-size:13px;font-weight:600;margin-top:2px">of 5.7 GB found</div></div>
+  <div class="card" style="padding:14px 16px;display:flex;gap:12px;align-items:flex-start;background:var(--panel)">
+   <div style="flex:none;margin-top:1px;color:var(--t2)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg></div>
+   <div><div style="font-weight:600;font-size:13.5px;color:var(--text)">Always left alone</div><div class="t2" style="font-size:12.5px;margin-top:3px">System files, installed programs and your own documents are never listed here.</div></div></div>
+ </div>
+ <div class="list" style="gap:8px">
+  <div class="card" style="padding:12px 16px;display:flex;align-items:center;gap:14px"><div class="cb on"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#073A4B" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg></div>
+ <div style="flex:1"><div class="t" style="font-size:16px;line-height:1.25;color:var(--text)">Temporary files</div><div class="t2" style="font-size:12.5px;margin-top:2px">Leftovers in your user and Windows temp folders</div></div>
+ <div class="t" style="font-size:15.5px;color:var(--text)">1.4 GB</div></div>
+  <div class="card" style="padding:12px 16px;display:flex;align-items:center;gap:14px"><div class="cb on"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#073A4B" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg></div>
+ <div style="flex:1"><div class="t" style="font-size:16px;line-height:1.25;color:var(--text)">Browser caches</div><div class="t2" style="font-size:12.5px;margin-top:2px">Saved web pages in Chrome and Edge. Logins stay.</div></div>
+ <div class="t" style="font-size:15.5px;color:var(--text)">2.1 GB</div></div>
+  <div class="card" style="padding:12px 16px;display:flex;align-items:center;gap:14px"><div class="cb on"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#073A4B" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg></div>
+ <div style="flex:1"><div class="t" style="font-size:16px;line-height:1.25;color:var(--text)">Installer download cache</div><div class="t2" style="font-size:12.5px;margin-top:2px">Installer files already used</div></div>
+ <div class="t" style="font-size:15.5px;color:var(--text)">0.6 GB</div></div>
+  <div class="card" style="padding:12px 16px;display:flex;align-items:center;gap:14px"><div class="cb on"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#073A4B" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg></div>
+ <div style="flex:1"><div class="t" style="font-size:16px;line-height:1.25;color:var(--text)">Crash reports and logs</div><div class="t2" style="font-size:12.5px;margin-top:2px">Old error reports from apps</div></div>
+ <div class="t" style="font-size:15.5px;color:var(--text)">0.4 GB</div></div>
+  <div class="card" style="padding:12px 16px;display:flex;align-items:center;gap:14px"><div class="cb on"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#073A4B" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg></div>
+ <div style="flex:1"><div class="t" style="font-size:16px;line-height:1.25;color:var(--text)">Thumbnail cache</div><div class="t2" style="font-size:12.5px;margin-top:2px">Picture previews. Rebuilt automatically.</div></div>
+ <div class="t" style="font-size:15.5px;color:var(--text)">0.3 GB</div></div>
+  <div class="card" style="padding:12px 16px;display:flex;align-items:center;gap:14px"><div class="cb"></div>
+   <div style="flex:1"><div class="t" style="font-size:16px;line-height:1.25;color:var(--text)">Recycle Bin</div><div class="t2" style="font-size:12.5px;margin-top:2px">Files you deleted. Review before emptying.</div></div>
+   <span class="chip cau">Check first</span><div class="t" style="font-size:15.5px;color:var(--text);width:60px;text-align:right">0.9 GB</div></div>
+ </div>
+</div>
+</main>
+ </div>
+</div></body></html>

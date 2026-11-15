@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Park D · Installed</title>
+<meta name="viewport" content="width=1280">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700&family=Outfit:wght@450;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="_shell.css">
+<style>
+.list { display: flex; flex-direction: column; gap: 10px; }
+.card .sub { color: var(--muted); font-size: 12.5px; margin-top: 2px; }
+.head { display: flex; justify-content: space-between; align-items: flex-end; gap: 16px; }
+</style>
+</head>
+<body>
+<div class="win">
+  <div class="titlebar"><span>Quantum Updater</span><span>Park D · Installed</span></div>
+  <div class="body">
+    <aside class="side">
+      <div class="brand">Quantum Updater<small>Keeps your apps current</small></div>
+      <div><div class="sec">Software</div>
+        <nav class="nav">
+          <a href="../01-D-park.html">Updates</a>
+          <a href="05-marketplace.html">Marketplace</a>
+          <a class="on" href="03-installed.html">Installed</a>
+        </nav>
+      </div>
+      <div><div class="sec">Maintenance</div>
+        <nav class="nav"><a href="#">Cleanup</a><a href="#">Startup apps</a></nav>
+      </div>
+      <div><div class="sec">System</div>
+        <nav class="nav"><a href="04-settings.html">Settings</a></nav>
+      </div>
+    </aside>
+    <section class="main">
+      <div class="top"><div class="search">Search installed apps</div></div>
+      <div class="content">
+        <div class="head">
+          <div><h1>Installed</h1><p class="lead">Apps on this PC. Rows stay full height — no overlap.</p></div>
+        </div>
+        <div class="list">
+          <div class="card row"><div class="icon">O</div><div><strong>OBS Studio</strong><div class="sub">v32.2.2 · winget</div></div><button class="btn-sm" type="button">Uninstall</button></div>
+          <div class="card row"><div class="icon">Or</div><div><strong>Orca</strong><div class="sub">v1.4.251 · winget</div></div><button class="btn-sm" type="button">Uninstall</button></div>
+          <div class="card row"><div class="icon">C</div><div><strong>Google Chrome</strong><div class="sub">v131.0 · winget</div></div><button class="btn-sm" type="button">Uninstall</button></div>
+        </div>
+      </div>
+    </section>
+  </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Direction D — Split Shell · Updates</title>
+<meta name="viewport" content="width=1280">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700&family=Instrument+Sans:wght@450;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --cream: #F4EEE3;
+  --panel: #E9E0D1;
+  --card: #FFFBF4;
+  --ink: #161310;
+  --muted: #6D6357;
+  --line: #D4C6B0;
+  --orange: #E5671A;
+  --side: #12100E;
+  --side-muted: #9A9084;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { width: 1280px; height: 800px; overflow: hidden; background: var(--cream); }
+body { font-family: "Instrument Sans", sans-serif; color: var(--ink); font-size: 14px; }
+.win { width: 1280px; height: 800px; display: flex; flex-direction: column; }
+.titlebar {
+  height: 34px; display: flex; align-items: center; justify-content: space-between;
+  padding: 0 16px; background: var(--side); color: var(--side-muted); font-size: 12px; font-weight: 600;
+}
+.body { flex: 1; display: flex; min-height: 0; }
+.side {
+  width: 248px; background: var(--side); color: #F4EEE3; padding: 22px 14px;
+  display: flex; flex-direction: column; gap: 20px;
+}
+.brand { font-family: Sora, sans-serif; font-size: 17px; font-weight: 700; letter-spacing: -0.02em; }
+.brand small { display: block; font-family: "Instrument Sans", sans-serif; font-size: 11px; font-weight: 500; color: var(--side-muted); margin-top: 5px; }
+.sec { font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: #6F675D; font-weight: 700; padding: 0 10px; }
+.nav { display: grid; gap: 2px; }
+.nav a {
+  position: relative; display: flex; align-items: center; justify-content: space-between;
+  height: 38px; padding: 0 12px; border-radius: 10px; color: var(--side-muted);
+  text-decoration: none; font-weight: 600;
+}
+.nav a.on { background: #1E1A16; color: #FFF8EC; }
+.nav a.on::before {
+  content: ""; position: absolute; left: 0; top: 10px; bottom: 10px; width: 3px;
+  border-radius: 2px; background: var(--orange);
+}
+.badge {
+  background: var(--orange); color: #fff; font-size: 11px; font-weight: 700;
+  min-width: 20px; height: 20px; border-radius: 999px; display: grid; place-items: center; padding: 0 6px;
+}
+.disk {
+  margin-top: auto; padding: 12px; border-radius: 12px; background: #1A1612;
+  border: 1px solid #2A241E;
+}
+.disk strong { display: block; font-size: 12px; margin-bottom: 8px; }
+.disk .track { height: 6px; border-radius: 999px; background: #2A241E; overflow: hidden; }
+.disk .track span { display: block; width: 85%; height: 100%; background: var(--orange); }
+.disk small { display: block; margin-top: 8px; color: var(--side-muted); font-size: 11px; }
+.main { flex: 1; display: flex; flex-direction: column; background: var(--cream); }
+.top {
+  height: 56px; display: flex; align-items: center; gap: 10px; padding: 0 24px;
+  border-bottom: 1px solid var(--line);
+}
+.search {
+  flex: 1; height: 36px; border-radius: 10px; border: 1px solid var(--line);
+  background: var(--card); padding: 0 14px; color: var(--muted); display: flex; align-items: center; font-weight: 500;
+}
+.ghost {
+  height: 34px; padding: 0 14px; border-radius: 10px; border: 1px solid var(--line);
+  background: var(--card); font: inherit; font-weight: 700; cursor: default;
+}
+.content { padding: 24px 28px; display: grid; gap: 16px; align-content: start; }
+.head { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; }
+.head h1 { font-family: Sora, sans-serif; font-size: 34px; font-weight: 700; letter-spacing: -0.03em; }
+.head p { color: var(--muted); margin-top: 6px; font-weight: 500; }
+.actions { display: flex; gap: 8px; }
+.primary {
+  height: 40px; padding: 0 16px; border: 0; border-radius: 10px;
+  background: var(--orange); color: #fff; font: inherit; font-weight: 700; cursor: default;
+}
+.island {
+  background: var(--card); border: 1px solid var(--line); border-left: 4px solid var(--orange);
+  border-radius: 12px; padding: 14px 16px; display: flex; justify-content: space-between; align-items: center; gap: 16px;
+}
+.island .track { width: 220px; height: 7px; border-radius: 999px; background: var(--panel); overflow: hidden; }
+.island .track span { display: block; width: 45%; height: 100%; background: var(--orange); }
+.list { display: grid; gap: 10px; }
+.row {
+  background: var(--card); border: 1px solid var(--line); border-radius: 14px;
+  padding: 14px 16px; display: grid; grid-template-columns: 42px 1fr auto; gap: 14px; align-items: center;
+}
+.icon {
+  width: 42px; height: 42px; border-radius: 11px; background: var(--panel);
+  display: grid; place-items: center; font-family: Sora, sans-serif; font-weight: 700; color: var(--orange);
+}
+.row h3 { font-size: 15px; font-weight: 700; }
+.row .sub { color: var(--muted); font-size: 12.5px; margin-top: 2px; }
+.ver { margin-top: 7px; font-size: 12px; color: var(--muted); font-weight: 600; }
+.ver b { color: var(--ink); }
+.btn-sm {
+  height: 34px; padding: 0 14px; border-radius: 9px; border: 1px solid var(--ink);
+  background: transparent; font: inherit; font-weight: 700; cursor: default;
+}
+</style>
+</head>
+<body>
+<div class="win">
+  <div class="titlebar"><span>Quantum Updater</span><span>Direction D · Split Shell</span></div>
+  <div class="body">
+    <aside class="side">
+      <div class="brand">Quantum Updater<small>Keeps your apps current</small></div>
+      <div>
+        <div class="sec">Software</div>
+        <nav class="nav" style="margin-top:8px">
+          <a class="on" href="#">Updates <span class="badge">2</span></a>
+          <a href="#">Marketplace</a>
+          <a href="#">Installed</a>
+        </nav>
+      </div>
+      <div>
+        <div class="sec">Maintenance</div>
+        <nav class="nav" style="margin-top:8px">
+          <a href="#">Cleanup</a>
+          <a href="#">Startup apps</a>
+          <a href="#">Large files</a>
+        </nav>
+      </div>
+      <div>
+        <div class="sec">System</div>
+        <nav class="nav" style="margin-top:8px"><a href="#">Settings</a></nav>
+      </div>
+      <div class="disk">
+        <strong>Local Disk (C:)</strong>
+        <div class="track"><span></span></div>
+        <small>85% used · SmartScreen &amp; UAC</small>
+      </div>
+    </aside>
+    <section class="main">
+      <div class="top">
+        <div class="search">Search packages &amp; tools (Ctrl+K)</div>
+        <button class="ghost" type="button">Sync</button>
+      </div>
+      <div class="content">
+        <div class="head">
+          <div>
+            <h1>Updates</h1>
+            <p>2 apps have a newer version ready</p>
+          </div>
+          <div class="actions">
+            <button class="ghost" type="button">Check again</button>
+            <button class="primary" type="button">Update selected (2)</button>
+          </div>
+        </div>
+        <div class="island">
+          <div>
+            <strong>Getting packages ready</strong>
+            <div style="color:var(--muted);font-size:12px;margin-top:3px;font-weight:500">Island progress while work runs</div>
+          </div>
+          <div class="track"><span></span></div>
+        </div>
+        <div class="list">
+          <div class="row">
+            <div class="icon">O</div>
+            <div>
+              <h3>OBS Studio</h3>
+              <div class="sub">Open Broadcaster Software</div>
+              <div class="ver">v32.2.2 → <b>v33.0.0</b> · 48.2 MB</div>
+            </div>
+            <button class="btn-sm" type="button">Update</button>
+          </div>
+          <div class="row">
+            <div class="icon">Or</div>
+            <div>
+              <h3>Orca</h3>
+              <div class="sub">Microsoft</div>
+              <div class="ver">v1.4.251 → <b>v1.4.253</b> · 4.1 MB</div>
+            </div>
+            <button class="btn-sm" type="button">Update</button>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+</div>
+</body>
+</html>

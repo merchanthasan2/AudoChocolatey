@@ -1,0 +1,20 @@
+---
+description: Quantum Updater development tracker and team records
+alwaysApply: true
+---
+
+# Development tracker
+
+`tracker.html` is the development tracker. Update it in the same turn as any plan, status, or finished slice. The table columns are the task, the stage, the owner, and the five parts: plan, build, manager check, security check, architect sign-off.
+
+Also record an approved plan in `docs/DECISIONS.md`. Record security results in `docs/SECURITY_AUDIT.md`. The team cycle is in `docs/TEAM.md`.
+
+`docs/ARCHITECTURE.md` is the system picture. It is out of date. The Design Architect must refresh the picture and the screen flow, and say if a protective middle layer is needed, before the next feature starts.
+
+This product is the Windows app Quantum Updater. A real test is a new `QuantumUpdater.exe` opened on this PC for the owner. There is no website test copy.
+
+The live board is `tracker.html` in this project folder. Update that file in the same turn as any plan or status change, then reload it in the browser.
+
+## No stopping for owner decisions (2026-11-12)
+
+Do not idle the queue waiting on the owner. Put decisions, commits, tags, mockup locks, and on-PC checks on an Owner later list in `tracker.html` and keep building the next slice. Prefer the recommended provisional path. Product progress is early (~20%); keep moving.

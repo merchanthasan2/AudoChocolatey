@@ -10,8 +10,8 @@
 d:\Vibe Code\Auto Chocolatey\
 ├── .github/
 │   └── workflows/
-│       ├── ci.yml                     # Continuous Integration (Rust, Python, Web lint)
-│       └── release.yml                # Continuous Delivery (NSIS installer & portable exe release)
+│       ├── ci.yml                     # Checks the screens and the Python app
+│       └── release.yml                # Builds QuantumUpdater.exe
 ├── docs/                              # Comprehensive Architectural & Product Docs
 │   ├── PRD.md                         # Product Requirements Document
 │   ├── ARCHITECTURE.md                # System Architecture & Dual-Engine IPC
@@ -19,15 +19,7 @@ d:\Vibe Code\Auto Chocolatey\
 │   ├── DECISIONS.md                   # Architecture Decision Records (ADRs)
 │   ├── PROJECTS.md                    # This document
 │   └── PROMPTS_LOG.md                 # Detailed Prompt History & Audit Log
-├── src-tauri/                         # Native Rust Tauri v2 Engine
-│   ├── Cargo.toml                     # Rust manifest (quantum_updater v2.0.0)
-│   ├── tauri.conf.json                # Tauri v2 bundle configuration
-│   ├── windows/manifest.xml           # UAC Administrator manifest
-│   ├── icons/                         # Windows application icon set
-│   └── src/
-│       ├── main.rs                    # Entry point
-│       └── lib.rs                     # Dual-engine orchestrator & IPC commands
-├── web/                               # Hardware-Accelerated Frontend
+├── web/                               # Shared screens. Same look for a future Mac app.
 │   ├── index.html                     # Semantic layout, Bento Grid, Global Dock
 │   ├── style.css                      # Master Glassmorphism design tokens
 │   └── app.js                         # Universal bridge, Queue Manager & state
@@ -41,9 +33,9 @@ d:\Vibe Code\Auto Chocolatey\
 │       ├── QuantumStep.QuantumUpdater.yaml
 │       ├── QuantumStep.QuantumUpdater.installer.yaml
 │       └── QuantumStep.QuantumUpdater.locale.en-US.yaml
-├── dist/                              # Output build artifacts
-│   ├── installer/                     # NSIS Setup Wizard executable
-│   └── portable/                      # Standalone zero-install executable
+├── brand/                             # Shared emblem
+├── design/                            # Approved mockups
+├── dist/QuantumUpdater/               # QuantumUpdater.exe after a build
 ├── Run_QuantumUpdater.vbs             # Headless elevated launcher
 ├── Run_QuantumUpdater.bat             # Silent PowerShell elevated launcher
 ├── web_api.py                         # Python pywebview RPC bridge
@@ -55,29 +47,14 @@ d:\Vibe Code\Auto Chocolatey\
 
 ## 2. Build Workflows
 
-### 2.1 Build Native Tauri v2 Production Release
-Prerequisites: Rust 1.80+, Microsoft C++ Build Tools (MSVC), Node.js.
 ```powershell
-# Navigate to project root
 cd "d:\Vibe Code\Auto Chocolatey"
-
-# Compile release binary and build NSIS installer
-npx @tauri-apps/cli build
-```
-Outputs:
-- **NSIS Setup Wizard**: `dist\installer\QuantumUpdater_2.0.0_x64-setup.exe`
-- **Portable Standalone**: `dist\portable\QuantumUpdater.exe`
-
-### 2.2 Local Development Mode (Tauri v2 Dev Server)
-```powershell
-npx @tauri-apps/cli dev
-```
-
-### 2.3 Standalone Python Runtime (PyWebView)
-```powershell
 pip install -r requirements.txt
-python main.py
+pip install pyinstaller
+python build_exe.py QuantumUpdater
 ```
+
+The app to open is `dist\QuantumUpdater\QuantumUpdater.exe`. Mac packaging stays on `channel/macos`.
 
 ---
 

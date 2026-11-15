@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Direction B — Soft Utility · Updates</title>
+<meta name="viewport" content="width=1280">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --cream: #F7F1E6;
+  --panel: #EFE6D7;
+  --card: #FFFCF5;
+  --ink: #1A1510;
+  --muted: #74685B;
+  --line: #D9CBB4;
+  --orange: #F06A18;
+  --soft: #FFE4C8;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { width: 1280px; height: 800px; overflow: hidden; background: var(--cream); }
+body { font-family: Manrope, sans-serif; color: var(--ink); font-size: 13.5px; }
+.win { width: 1280px; height: 800px; display: flex; flex-direction: column; }
+.titlebar {
+  height: 34px; display: flex; align-items: center; justify-content: space-between;
+  padding: 0 16px; border-bottom: 1px solid var(--line); font-size: 12px; font-weight: 700; color: var(--muted);
+}
+.body { flex: 1; display: flex; min-height: 0; }
+.side {
+  width: 248px; background: var(--panel); border-right: 1px solid var(--line);
+  padding: 18px 12px; display: flex; flex-direction: column;
+}
+.brand { padding: 6px 10px 18px; font-family: "Space Grotesk", sans-serif; font-size: 18px; font-weight: 700; }
+.brand small { display: block; font-family: Manrope, sans-serif; font-size: 11px; font-weight: 500; color: var(--muted); margin-top: 4px; }
+.sec { font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); font-weight: 700; padding: 12px 12px 6px; }
+.nav a {
+  position: relative; display: flex; align-items: center; justify-content: space-between;
+  height: 36px; padding: 0 12px; margin: 2px 0; border-radius: 999px; color: var(--muted);
+  text-decoration: none; font-weight: 600;
+}
+.nav a.on { background: var(--card); color: var(--ink); box-shadow: inset 0 0 0 1px var(--line); }
+.badge {
+  background: var(--orange); color: #fff; font-size: 11px; font-weight: 800;
+  min-width: 20px; height: 20px; border-radius: 999px; display: grid; place-items: center; padding: 0 6px;
+}
+.main { flex: 1; display: flex; flex-direction: column; }
+.top {
+  height: 58px; display: flex; align-items: center; gap: 10px; padding: 0 24px;
+  border-bottom: 1px solid var(--line); background: color-mix(in srgb, var(--cream) 70%, white);
+}
+.search {
+  flex: 1; height: 38px; border-radius: 999px; border: 1px solid var(--line);
+  background: var(--card); padding: 0 18px; color: var(--muted); display: flex; align-items: center; font-weight: 500;
+}
+.chip {
+  height: 34px; padding: 0 14px; border-radius: 999px; border: 1px solid var(--line);
+  background: var(--card); font: inherit; font-weight: 700; cursor: default;
+}
+.content { padding: 22px 26px; display: grid; gap: 16px; align-content: start; }
+.head { display: flex; justify-content: space-between; align-items: center; gap: 16px; }
+.head h1 { font-family: "Space Grotesk", sans-serif; font-size: 32px; font-weight: 700; letter-spacing: -0.03em; }
+.head p { color: var(--muted); margin-top: 4px; font-weight: 500; }
+.actions { display: flex; gap: 8px; }
+.primary {
+  height: 40px; padding: 0 18px; border: 0; border-radius: 999px;
+  background: var(--orange); color: #fff; font: inherit; font-weight: 800; cursor: default;
+}
+.island {
+  display: flex; align-items: center; gap: 14px; background: var(--soft);
+  border: 1px solid color-mix(in srgb, var(--orange) 28%, var(--line));
+  border-radius: 14px; padding: 12px 16px;
+}
+.island strong { font-size: 13px; }
+.island span { color: var(--muted); font-size: 12px; font-weight: 600; }
+.track { flex: 1; height: 8px; border-radius: 999px; background: #fff; overflow: hidden; }
+.track i { display: block; width: 62%; height: 100%; background: var(--orange); border-radius: 999px; }
+.toolbar {
+  display: flex; align-items: center; gap: 12px; background: var(--card);
+  border: 1px solid var(--line); border-radius: 12px; padding: 10px 14px;
+}
+.toolbar input {
+  flex: 1; border: 0; outline: 0; background: transparent; font: inherit; color: var(--muted);
+}
+.check { width: 16px; height: 16px; border-radius: 4px; border: 1.5px solid var(--orange); background: var(--orange); }
+.list { display: grid; gap: 8px; }
+.row {
+  display: grid; grid-template-columns: 18px 40px 1fr auto; gap: 12px; align-items: center;
+  background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 12px 14px;
+}
+.icon {
+  width: 40px; height: 40px; border-radius: 12px; background: var(--panel);
+  display: grid; place-items: center; font-weight: 800; color: var(--orange);
+}
+.row h3 { font-size: 15px; font-weight: 700; }
+.row .sub { color: var(--muted); font-size: 12px; margin-top: 2px; font-weight: 500; }
+.meta { display: flex; gap: 10px; margin-top: 6px; font-size: 11.5px; color: var(--muted); font-weight: 600; }
+.pill { background: var(--panel); color: var(--ink); padding: 2px 8px; border-radius: 999px; }
+.btn-sm {
+  height: 34px; padding: 0 14px; border-radius: 999px; border: 0;
+  background: var(--ink); color: var(--cream); font: inherit; font-weight: 700; cursor: default;
+}
+</style>
+</head>
+<body>
+<div class="win">
+  <div class="titlebar"><span>Quantum Updater</span><span>Direction B · Soft Utility</span></div>
+  <div class="body">
+    <aside class="side">
+      <div class="brand">Quantum Updater<small>Keeps your apps current</small></div>
+      <div class="sec">Software</div>
+      <nav class="nav">
+        <a class="on" href="#">Updates <span class="badge">2</span></a>
+        <a href="#">Marketplace</a>
+        <a href="#">Installed</a>
+      </nav>
+      <div class="sec">Maintenance</div>
+      <nav class="nav">
+        <a href="#">Cleanup</a>
+        <a href="#">Startup apps</a>
+        <a href="#">Large files</a>
+      </nav>
+      <div class="sec">System</div>
+      <nav class="nav"><a href="#">Settings</a></nav>
+    </aside>
+    <section class="main">
+      <div class="top">
+        <div class="search">Search packages &amp; tools (Ctrl+K)</div>
+        <button class="chip" type="button">Sync</button>
+      </div>
+      <div class="content">
+        <div class="head">
+          <div>
+            <h1>Updates</h1>
+            <p>2 apps have a newer version ready · Last check just now</p>
+          </div>
+          <div class="actions">
+            <button class="chip" type="button">Check again</button>
+            <button class="primary" type="button">Update selected (2)</button>
+          </div>
+        </div>
+        <div class="island">
+          <div>
+            <strong>Installing OBS Studio</strong><br>
+            <span>Speed island · live progress</span>
+          </div>
+          <div class="track"><i></i></div>
+          <strong>62%</strong>
+        </div>
+        <div class="toolbar">
+          <div class="check"></div>
+          <strong>Select all</strong>
+          <input value="Filter available updates..." readonly>
+        </div>
+        <div class="list">
+          <div class="row">
+            <div class="check"></div>
+            <div class="icon">O</div>
+            <div>
+              <h3>OBS Studio</h3>
+              <div class="sub">Open Broadcaster Software</div>
+              <div class="meta"><span class="pill">v32.2.2 → v33.0.0</span><span>48.2 MB</span><span>~6s</span></div>
+            </div>
+            <button class="btn-sm" type="button">Update</button>
+          </div>
+          <div class="row">
+            <div class="check"></div>
+            <div class="icon">Or</div>
+            <div>
+              <h3>Orca</h3>
+              <div class="sub">Microsoft</div>
+              <div class="meta"><span class="pill">v1.4.251 → v1.4.253</span><span>4.1 MB</span><span>~2s</span></div>
+            </div>
+            <button class="btn-sm" type="button">Update</button>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+</div>
+</body>
+</html>

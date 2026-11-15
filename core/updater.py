@@ -5,13 +5,48 @@ import platform
 import urllib.request
 import urllib.error
 import subprocess
+from urllib.parse import urlparse
 import shutil
 import tempfile
 from typing import Dict, Any, Optional, Callable
 
 CURRENT_VERSION = "2.0.0"
+# Official download channel: this GitHub repo's Releases (tag v* → Action builds EXE).
 GITHUB_REPO = "merchanthasan2/AudoChocolatey"
 API_URL = f"https://api.github.com/repos/{GITHUB_REPO}/releases/latest"
+_UPDATE_HOSTS = frozenset({
+    "github.com",
+    "objects.githubusercontent.com",
+    "release-assets.githubusercontent.com",
+    "github-releases.githubusercontent.com",
+})
+
+
+def is_official_asset(url: str) -> bool:
+    """True only for an https asset on this repo's GitHub release."""
+    if not url or not isinstance(url, str):
+        return False
+    if any(ch in url for ch in ("\r", "\n", "\\")) or ".." in url:
+        return False
+    parsed = urlparse(url.strip())
+    if parsed.scheme != "https":
+        return False
+    host = (parsed.hostname or "").lower()
+    if host != "github.com":
+        return False
+    prefix = f"/{GITHUB_REPO}/releases/download/"
+    if not parsed.path.startswith(prefix):
+        return False
+    name = parsed.path.rsplit("/", 1)[-1].lower()
+    return name.endswith((".exe", ".zip", ".dmg"))
+
+
+class _OfficialRedirect(urllib.request.HTTPRedirectHandler):
+    def redirect_request(self, req, fp, code, msg, headers, newurl):
+        host = (urlparse(newurl).hostname or "").lower()
+        if host not in _UPDATE_HOSTS:
+            raise urllib.error.URLError("Update redirect left the official download host")
+        return super().redirect_request(req, fp, code, msg, headers, newurl)
 
 def parse_semver(v: str) -> tuple:
     """Parse version string like 'v2.0.1' or '2.0.1' into a tuple of ints."""
@@ -149,9 +184,9 @@ class AppUpdater:
         on_log: Optional[Callable[[str], None]] = None
     ) -> bool:
         """Downloads the update package with progress feedback and executes in-place swap."""
-        if not download_url:
+        if not is_official_asset(download_url):
             if on_log:
-                on_log("[Quantum Auto-Updater]: No valid download URL provided.")
+                on_log("[Quantum Auto-Updater]: Refused a download that is not an official release.")
             return False
 
         if on_log:
@@ -166,8 +201,9 @@ class AppUpdater:
                 download_url,
                 headers={"User-Agent": f"QuantumUpdater/{self.current_version}"}
             )
+            opener = urllib.request.build_opener(_OfficialRedirect)
 
-            with urllib.request.urlopen(req, timeout=60) as resp, open(tmp_file, "wb") as out_f:
+            with opener.open(req, timeout=60) as resp, open(tmp_file, "wb") as out_f:
                 total_bytes = int(resp.headers.get("Content-Length", 0))
                 downloaded = 0
                 chunk_size = 64 * 1024
@@ -269,11 +305,60 @@ class AppUpdater:
         return False
 
     def _apply_windows_update(self, downloaded_file: str, on_log: Optional[Callable]) -> bool:
-        """Applies Windows in-place update using silent installer /S switch."""
-        if downloaded_file.endswith(".exe"):
+        """Apply a Windows update from an official release asset.
+
+        - ``*setup*.exe``: NSIS-style silent install (``/S``).
+        - Other ``.exe`` (portable ``QuantumUpdater.exe``): replace the running
+          frozen binary after this process exits, then relaunch.
+        """
+        if not downloaded_file.lower().endswith(".exe"):
+            return False
+
+        name = os.path.basename(downloaded_file).lower()
+        if "setup" in name:
             if on_log:
-                on_log("[Quantum Auto-Updater]: Executing silent NSIS in-place update (/S)...")
-            # Run installer with /S switch for zero-prompt background upgrade
+                on_log("[Quantum Auto-Updater]: Running silent setup installer (/S)...")
             subprocess.Popen([downloaded_file, "/S"], start_new_session=True)
             os._exit(0)
-        return False
+
+        # Portable build from GitHub Releases — only swap the frozen app EXE.
+        if not getattr(sys, "frozen", False):
+            if on_log:
+                on_log("[Quantum Auto-Updater]: Portable update only applies to the installed app file.")
+            return False
+
+        dest = os.path.abspath(sys.executable)
+        if not dest.lower().endswith(".exe"):
+            if on_log:
+                on_log("[Quantum Auto-Updater]: Refused update — unexpected app path.")
+            return False
+
+        script = os.path.join(tempfile.gettempdir(), "quantum_updater_swap.cmd")
+        # Absolute paths; caret-escape only what cmd needs for quotes.
+        src_q = downloaded_file.replace('"', "")
+        dest_q = dest.replace('"', "")
+        script_q = script.replace('"', "")
+        lines = [
+            "@echo off",
+            "setlocal",
+            "timeout /t 2 /nobreak >nul",
+            f'copy /y "{src_q}" "{dest_q}"',
+            f'if errorlevel 1 exit /b 1',
+            f'start "" "{dest_q}"',
+            f'del "{script_q}"',
+        ]
+        with open(script, "w", encoding="utf-8", newline="\r\n") as fh:
+            fh.write("\n".join(lines) + "\n")
+
+        if on_log:
+            on_log("[Quantum Auto-Updater]: Replacing the app file and restarting...")
+        creation = getattr(subprocess, "CREATE_NEW_PROCESS_GROUP", 0) | getattr(
+            subprocess, "DETACHED_PROCESS", 0
+        )
+        subprocess.Popen(
+            ["cmd.exe", "/c", script],
+            start_new_session=True,
+            creationflags=creation,
+            close_fds=True,
+        )
+        os._exit(0)

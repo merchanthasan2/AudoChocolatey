@@ -41,3 +41,178 @@
 - **Context:** Emojis across system utility software look amateurish, inconsistently rendered across Windows builds, and lack precise alignment.
 - **Decision:** Ban all emojis from code and layout. Replace every icon with tailored inline vector SVGs matching the Lucide / Heroicons standard (24x24 viewBox, stroke-based, 2px stroke-width).
 - **Consequences:** Professional, uniform, enterprise-grade aesthetic that renders identically across Windows 10, Windows 11, and high-DPI displays.
+
+---
+
+### ADR 006: Administrator at every start
+- **Status:** Accepted
+- **Context:** The 2026-11-08 security review recommended starting as a normal user and asking for administrator only when an install, update, or uninstall needs it. Machine-wide installs need that privilege.
+- **Decision:** Keep asking for administrator every time Quantum Updater opens. Confirmed by the owner on 2026-11-08. This continues ADR 004.
+- **Consequences:** One prompt at launch. Later tasks do not each ask again. A normal-user mode is not the default.
+
+---
+
+### ADR 007: Visual redesign gated on mockups
+- **Status:** Accepted (2026-11-08). Normal theme is Direction B, Deep Teal Refined. Dark mode is Direction A, Graphite Prism. The window uses the real Quantum Updater emblem from `brand/quantum-updater-icon.svg`.
+- **Context:** The owner rejected the current window's colours and unreadable button labels. The architect plan offered Direction A (Graphite Prism, recommended), Direction B (Deep Teal Refined), and Direction C (Paper Light).
+- **Decision:** On 2026-11-08 the owner asked to see A and B mockups side by side before choosing. Live screens do not change until a direction is picked and its mockups are approved.
+- **Consequences:** The designer produces two mockup sets. Implementation follows the architect's numbered sequence only after approval.
+
+---
+
+### ADR 008: Real app icons only
+- **Status:** Accepted (2026-11-08)
+- **Context:** Rows showed letter tiles (for example "OR" for Orca) or bundled one-colour silhouettes (OBS Studio). The owner requires each app's actual icon, on this PC and in Marketplace.
+- **Decision:** Apps on this PC: extract the icon from the app's own program file (the uninstall entry's DisplayIcon, or its main executable). Marketplace apps not installed: download the official icon from the publisher's own website (the catalog homepage) and cache it on this PC. If neither exists, show a plain empty tile.
+- **Consequences:** Letter tiles, bundled silhouette icons, and third-party icon services are removed. Icon downloads go only to the publisher's own domain over HTTPS.
+
+---
+
+### ADR 009: About this computer follows the approved mockup, with a hardware illustration library
+- **Status:** Accepted (2026-11-08)
+- **Context:** The owner approved `design/mockups/b/06-about-v2.html` and asked for the live page to match it exactly, with drawings for every kind of part so a user understands their PC.
+- **Decision:** The live page matches the B mockup in the normal theme and the A mockup in dark mode. A library of inline SVG drawings covers processors by vendor and family (Intel Core and Core Ultra, AMD Ryzen, Snapdragon, other ARM, Apple silicon), graphics (NVIDIA, AMD Radeon, Intel Arc and integrated), device types (laptop, desktop, MacBook, tablet), memory, storage (SSD, NVMe, hard disk), battery, display, and camera. The processor card shows the family and generation read from this PC.
+- **Consequences:** The engine must report processor vendor, family, generation, cores and threads, graphics adapters, battery, display, and camera. Each drawing needs a fallback when the part is not recognised: the generic drawing for that kind of part. Every graphics adapter is listed, built-in and dedicated.
+
+---
+
+### ADR 010: Physical drives only
+- **Status:** Accepted (2026-11-08)
+- **Context:** This PC shows a G: drive the same size as C:, which is a cloud drive's virtual volume, not a disk in the computer.
+- **Decision:** About this computer, Cleanup and the sidebar disk card show every physical drive. Internal drives always appear. USB and external drives appear while plugged in, labelled External. Cloud and virtual drives (Google Drive, OneDrive, Dropbox, network and RAM disks) are left out by checking the volume's backing physical disk and file system, not the letter. Cleanup scans internal drives only unless the user picks an external one.
+- **Consequences:** The engine reports each drive's bus type (internal, USB, external) and skips volumes with no physical disk behind them.
+
+---
+
+### ADR 011: Cleaning Windows-owned files through supported routes
+- **Status:** Accepted (2026-11-08)
+- **Context:** The architect found the delete guard blocks all of the Windows folder, so the Windows Update cache (4.27 GB on this PC), Windows Temp and crash dumps were counted and pre-ticked but never removed. The cleanup headline was false.
+- **Decision:** Clear the Windows Update download folder only after stopping the update services, then restart them. Remove Windows Temp files older than 7 days. Offer Windows' own component-store cleanup as an optional step that Windows performs. Each item shows its own size and consent line, needs administrator, and is refused while an update is installing or a restart is pending.
+- **Consequences:** Our code never deletes inside WinSxS, System32, SysWOW64 or Windows\Installer. Service stop needs a pending-reboot guard and a clear failure message if the services will not stop or restart.
+
+---
+
+### ADR 012: Optimize RAM measures a real trim
+- **Status:** Accepted (2026-11-08)
+- **Context:** Optimize RAM only trimmed Quantum Updater's own memory and displayed invented figures (150 MB in Python, 450 MB in the page). The architect recommended removing it; the owner chose to keep it and make it real.
+- **Decision:** The button asks every running process the app can open to release unused memory (EmptyWorkingSet on each process, skipping protected and system-critical processes). Available memory is measured before and after, and only the measured change is shown, including zero.
+- **Consequences:** Apps may page memory back in when next used; the result text says so in plain words. No estimated or fallback number is ever displayed.
+
+---
+
+### ADR 013: Large files removal
+- **Status:** Accepted (2026-11-08)
+- **Context:** The architect recommended Recycle Bin only for the Large files tool.
+- **Decision:** Move to Recycle Bin is the default and primary action. A secondary Delete permanently action exists behind an extra confirmation that lists the files and their total size and states it cannot be undone. Both refuse protected folders and reparse points.
+- **Consequences:** Every permanent delete is written to the activity history. Files on drives with no Recycle Bin can only be permanently deleted through that extra confirmation, or revealed.
+
+---
+
+### ADR 014: Windows Utility matrix boundary
+- **Status:** Accepted (2026-11-08)
+- **Context:** The owner supplied a 152-feature Windows utility matrix and asked for a plan before any build. The plan is `windows-utility-plan.html`.
+- **Decision:** Quantum Updater stays an updater plus trusted system tools. 80 features are in this product: 12 already covered, then Wave 1 Cleanup, Wave 2 App and shell repair, Wave 3 Windows health, Wave 4 Network and power, Wave 5 Files and admin, after the current System tools track. Drivers, backup, and a vulnerability feed wait for licensing (existing ADRs). Twelve features open the matching Windows screen. Forty-eight PowerToys/DevToys-class tools wait for a later companion product. Six are skipped: HDD defrag, lost-partition recovery, partition resize, file shred, free-space overwrite, Windows 11 readiness.
+- **Consequences:** Tracker phases 30–34 hold Waves 1–5. Held-out items are listed on the tracker but do not count in % and are not a live build queue. Mockups still gate layout. One owner decision at a time when a wave needs one.
+
+---
+
+### ADR 015: Leftover folders may remove folders and stale uninstall entries
+- **Status:** Accepted (2026-11-08)
+- **Context:** The architect recommended report-only for leftover folders until false positives were seen. The owner chose removal in this release.
+- **Decision:** Matching leftover folders under user AppData, Program Files, and ProgramData may be moved to the Recycle Bin, with administrator and a per-folder confirmation. Folders modified in the last 90 days, or with a running process, are refused. After the folder is gone, the leftover uninstall registry entry may be deleted, but only after exporting a backup of that entry to `%LOCALAPPDATA%\QuantumUpdater\registry-backups\`.
+- **Consequences:** The leftovers page needs Recycle Bin and Remove uninstall entry actions behind confirmations, plus Reveal. Never guess from folder names. Shared runtimes stay. Every removal is in the activity history and can be undone from Recycle Bin; registry backups are kept for restore.
+
+---
+
+### ADR 016: Team cycle and development tracker
+- **Status:** Accepted (2026-11-11)
+- **Context:** The owner set a standing team and asked that every change be written down before and after it is built.
+- **Decision:** The chat agent is the Manager. The Design Architect (Opus 5.5) plans first, including the system picture, the screen flow, and whether a protective middle layer is needed. The Manager approves and writes the plan into `tracker.html` and this log before a build. Two Worker bees (Haiku) do one small step each. The Manager checks. The Security and Code Architect checks the finished slice against `docs/SECURITY_AUDIT.md`. The Design Architect then checks it against the plan. The tracker is updated again. `tracker.html` is the development tracker.
+- **Consequences:** No feature starts until the picture and flow are current. Older tracker rows stay as built work from before this cycle. `docs/ARCHITECTURE.md` must be refreshed before the next feature. A test of this product is a new Windows build opened on this PC. `tracker.html` in the project folder is updated whenever the status changes.
+
+---
+
+### ADR 017: Windows branch holds the Windows app. Mac stays on its branch.
+- **Status:** Accepted (2026-11-11)
+- **Context:** The Windows folder still contained an old Rust app, an old Python window toolkit, and Mac build files. The notes described those as the current app. The owner asked to keep only what this Windows installer needs, and to leave Mac on its own branch. The look and materials should stay shared.
+- **Decision:** `channel/windows` is the Windows app: `main.py`, `web_api.py`, `core/`, and `dist\QuantumUpdater\QuantumUpdater.exe`. Remove the Rust app, the old window toolkit, the Mac host, and the launchers that pointed at the old programs. `channel/macos` is left as it is. Screens, colours, type, and the emblem stay shared in `web/`, `design/`, and `brand/`. Windows uses WebView2. Mac will add only its own window material when that work starts.
+- **Consequences:** ADR 001's Rust runtime is retired on this branch. A test is the Windows exe, not `python main.py`. Do not merge Mac host code onto this branch.
+
+---
+
+### ADR 018: Mac waits until the Windows app is ready to launch
+- **Status:** Accepted (2026-11-11)
+- **Context:** The owner said Mac work must wait. The current job is the Windows program on this PC.
+- **Decision:** Until Quantum Updater for Windows is launch ready, work only on the Windows app. Do not change `channel/macos`, do not add Mac host code, and do not start a Mac build. Shared screens, colours, type, and the emblem stay as they are. Mac starts only after the owner says the Windows app is launch ready.
+- **Consequences:** Open work is the Windows test notes, the owner’s look at Build 1, and the security check. The Mac branch stays as it was left.
+
+---
+
+### ADR 019: A DisplayLink USB device is not a graphics adapter
+- **Status:** Accepted (2026-11-11)
+- **Context:** On this PC, Windows files two DisplayLink USB interfaces next to the AMD and NVIDIA cards. About this computer counted all four as graphics adapters and called the USB ones dedicated.
+- **Decision:** A display-class device whose hardware id starts with USB, or whose name is DisplayLink, is an external USB device. It is not a graphics adapter. Two interfaces of the same dock are one row. Built-in and dedicated cards stay under Graphics.
+- **Consequences:** About this computer shows AMD and NVIDIA under Graphics, and one DisplayLink row under USB devices labelled External. The open Build 2 still shows the old list until the next program file.
+
+---
+
+### ADR 020: An update card shows only numbers the installer printed
+- **Status:** Accepted (2026-11-11)
+- **Context:** The update card drew a speed near 14 MB/s, a 54 MB total, and a percent that climbed to 94 even when the installer had not reported a transfer. The install card already uses the installer's own percent and downloaded-versus-total lines, and only then works out a speed from the change in those bytes. The Design Architect seat could not run because that model family is at its usage limit. The owner said to keep going and leave only their own checks pending.
+- **Decision:** An update card must not invent a speed, a size, a percent, or a time. Until the installer prints a percent or a downloaded-versus-total line, the card says "Updating…" and leaves speed and size empty. A size is shown on the card only when the catalog reported one. The saved update list already stays on screen while a new check runs, so that part is not rebuilt. What the person must close, a downloaded installer, the publisher page, listing every installed app, a full catalog search, and a beta choice stay as later slices.
+- **Consequences:** The open Build 2 still shows the invented speed. The next program file uses the real installer lines. No new program file is handed over until the security seat can check the DisplayLink slice.
+
+---
+
+### ADR 021: Worker bees use a cheaper seat than the architects
+- **Status:** Superseded by ADR 023 (2026-11-12)
+- **Context:** Opus is at its usage limit. The Design Architect and Security architect seats are running on Grok 4.7. The owner said the Worker bees do not need that seat.
+- **Decision:** Design Architect and Security architect stay on the strong seat (Opus 5.5 when it has room, otherwise Grok 4.7). Worker bees build on Grok 4.6. They do not use Grok 4.7.
+- **Consequences:** Named-model locks caused idle time when a seat hit a limit. Replaced by ADR 023.
+
+### ADR 023: Manager assigns any available model to org seats
+- **Status:** Accepted (2026-11-12)
+- **Context:** Architect seats hit usage limits and the queue sat idle instead of moving to another model. The owner directed that seats are roles, not model names.
+- **Decision:** The Manager chooses any available model for Design Architect, Worker bees, and Security from complexity and task type. On usage limit or failure before output, reassign that role immediately in the same turn. Never idle the queue for one named model.
+- **Consequences:** ADR 021 named locks no longer bind. Global rule `manager-model-assignment.mdc` and the personal store record the same policy.
+
+---
+
+### ADR 022: Phase 36 plan (11 Nov test notes)
+- **Status:** Accepted (2026-11-11)
+- **Context:** The Design Architect (Grok 4.7) refreshed `docs/ARCHITECTURE.md` and returned the phase 36 plan. Opus remains at its usage limit. The owner said to keep going and leave only their own checks pending.
+- **Decision:** No new protective middle layer. `web_api.py` stays the middle. 36.2 and 36.5 are already true in source. First two worker steps run together on Grok 4.6: (1) `web/app.js` show `Showing the last list. Checking again.` on `#updates-cache-note` while a check runs and cards already exist; (2) `core/scan_orchestrator.py` set `CATALOG_RETRY_SLEEP_S` to 0 and stop guessing a percent for `catalog-updates`. Later: no prefetch on upgrade, failed-update actions with Try again / Publisher page / Run installer on the bridge, Marketplace full-catalog wording, Allow a test version off by default, and real progress only. When Allow a test version is on and no test id exists, use the normal version and show `No test version is listed. The normal version will be used.`
+- **Consequences:** Workers build steps 1 and 2 now. 36.4, 36.6, 36.7, and 36.8 wait for the next pair after Manager check. Mockups: `design/mockups/b/01-updates.html`, `02-marketplace.html`, `13-settings-beta.html`.
+
+---
+
+### ADR 028: Winget package QuantumStep.QuantumUpdater
+- **Status:** Accepted (2026-11-15). In progress — not yet in the community index.
+- **Context:** Owner wants `winget install QuantumStep.QuantumUpdater` on any PC. Local manifests existed but pointed at a non-working quantumstep.in setup URL, and the package is not in microsoft/winget-pkgs yet (`winget show` finds nothing).
+- **Decision:** Ship a **portable** x64 `QuantumUpdater.exe` from GitHub Releases on `merchanthasan2/AudoChocolatey`. Package id stays `QuantumStep.QuantumUpdater`. Release Action builds the EXE, runs `tools/prepare_winget_release.ps1` for SHA256 + YAML, and attaches those files to the release. After a public tagged release exists, submit the YAML folder to `microsoft/winget-pkgs` (wingetcreate or PR). NSIS `*setup*.exe` remains optional later; portable is enough for first winget availability. Self-update (ADR 026) keeps using the same Releases channel.
+- **Consequences:** `winget install` works only after (1) a tagged Release with the EXE is public, and (2) the winget-pkgs PR is merged (can take days). Until then, any PC can still download the Release EXE. Owner later: commit/push, tag `v*`, then `wingetcreate submit` or open the PR.
+
+### ADR 027: Do not stop the queue for owner decisions
+- **Status:** Accepted (2026-11-12).
+- **Context:** Owner said development was pausing for decisions and actions only they can do. Product is about 20% complete.
+- **Decision:** Queue owner decisions, commits, tags, mockup locks, and on-PC looks under Owner later. Keep building the next slice on the recommended provisional path. Ask at most one question at the end of a turn; never idle waiting.
+- **Consequences:** Park D + Park palette is provisional until locked. Release publish waits for owner commit/tag. Tracker resume point lists Owner later without blocking the team.
+
+### ADR 026: Official downloads and self-update on this GitHub repo
+- **Status:** Accepted (2026-11-12). Owner chose option 1.
+- **Context:** Auto-update pointed at `quantumstep/quantum-updater` while the live remote is `merchanthasan2/AudoChocolatey`, so other PCs could not get builds. Owner asked for a free downloadable installable each milestone and auto-update wherever installed.
+- **Decision:** No new protective middle layer. Official channel is GitHub Releases on `merchanthasan2/AudoChocolatey`. Tag `v*` (or workflow_dispatch) runs `.github/workflows/release.yml`, which uploads `QuantumUpdater.exe`. `core/updater.py` only accepts https assets under that repo. Portable EXE replaces the frozen app file after exit; a future `*setup*.exe` still uses silent `/S`. Milestone cadence replaces “every 10%” (for example `v2.0.1` after an agreed slice). NSIS setup remains a later polish.
+- **Consequences:** Installed copies check this repo’s latest release. A release only appears after the change is pushed and tagged. Source runs do not self-replace Python.
+
+### ADR 025: Theme, ready gate, and measured speed
+- **Status:** Proposed (2026-11-12). Blocked on owner lock of Direction D + Park palette.
+- **Context:** Owner liked Direction D split-shell layout, but rejected cream/orange/black mockups as not matching the supplied Park photo (modern bright neon). Palette is sampled from `design/mockups/directions/the-park-reference.jpg`. Ready gate and measured speed still follow after mockup lock. [Design Architect](203d4207-230e-4780-a208-93e5f124930b) cream build plan is retained for gate/speed order only.
+- **Decision:** No new protective middle layer. `web_api.py` stays the middle. Layout direction is D (dark sidebar + bright workspace). Working palette tokens: navy `#0C1730`, magenta `#F43E53`, lime `#24D177`, amber `#FFAC5C`, lit cream workspace `#FFF6E8`. Review file: `design/mockups/directions/01-D-park.html`. After owner locks this look, Design builds the remaining screens. Live CSS starts only after the full mockup set is accepted. Then workers: theme tokens, ready gate for `catalog-updates`, `catalog-installed`, and `local-arp` only (`local-hardware` off the gate), measured speed, then tracker `30.1`. A failed startup job does not hold the gate. A later Check again does not show the gate again.
+- **Consequences:** Cream/orange/black editorial directions A–C are discarded for production. Older `design/mockups/cream/` drafts are superseded.
+
+### ADR 024: Slice 36.8 shows real status only
+- **Status:** Accepted (2026-11-12)
+- **Context:** Slices 36.1 to 36.7 are in Build 3/4. Slice 36.8 is open. Cleanup delete, uninstall, leftover moves, large-file recycle, large-file delete, and the large-file scan line already show a sentence. Remaining holes: island indeterminate CSS, check-again fake 0/10, install start at 0, scan jobs guessing percent from elapsed time, sidebar disk bar starting at 45%. (Numbered ADR 024 because ADR 023 already records Manager model assignment.)
+- **Decision:** No new protective middle layer. `web_api.py` stays the only path that starts a program, a scan, or a delete. A percent is shown only when the installer, the cleanup category count, or the storage-scan category count reported it. Otherwise the island says Working and the bar moves with no number. Words may say "Updating 2 of 5". That count is not drawn as a percent. A large-file scan shows the current folder and the files checked. The cream file `design/mockups/cream/01-shell-or-settings.html` is for review only. Do not change the live colours in this slice. Owner choices left pending with recommendation: cream stays review-only; sidebar unknown scan uses a moving mark and the job name.
+- **Consequences:** Workers finish the remaining 36.8 holes. They do not change consent, path checks, or the uninstall plan. `core/progress.py` stays for its unit test. The screen stops reading guessed percents.
+

@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Direction D · Park palette — review</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700&family=Outfit:wght@450;500;600&display=swap" rel="stylesheet">
+<style>
+:root { --bg:#08101F; --card:#0C1730; --cream:#FFF6E8; --magenta:#F43E53; --lime:#24D177; --amber:#FFAC5C; --muted:#8FA0BF; }
+* { box-sizing: border-box; }
+body { margin:0; font-family:Outfit,sans-serif; background:var(--bg); color:var(--cream); padding:32px 24px 56px; }
+.wrap { max-width:1100px; margin:0 auto; display:grid; gap:22px; }
+h1 { font-family:Sora,sans-serif; margin:0; letter-spacing:-0.03em; font-size:clamp(26px,4vw,36px); }
+.lead { color:var(--muted); margin:0; max-width:640px; line-height:1.5; }
+.note { border:1px solid rgba(244,62,83,.4); background:rgba(244,62,83,.12); border-radius:12px; padding:12px 16px; font-size:14px; }
+.grid { display:grid; grid-template-columns: 1.2fr .8fr; gap:16px; }
+@media (max-width:900px){ .grid { grid-template-columns:1fr; } }
+.panel { background:var(--card); border:1px solid rgba(255,255,255,.08); border-radius:16px; overflow:hidden; }
+.panel header { padding:14px 16px; border-bottom:1px solid rgba(255,255,255,.08); }
+.panel header h2 { margin:0; font-family:Sora,sans-serif; font-size:16px; }
+.panel header p { margin:6px 0 0; color:var(--muted); font-size:13px; }
+.frame { aspect-ratio:16/10; background:#000; position:relative; overflow:hidden; }
+.frame iframe { position:absolute; inset:0; width:1280px; height:800px; border:0; transform-origin:top left; pointer-events:none; }
+.ref img { width:100%; display:block; }
+.swatches { display:flex; flex-wrap:wrap; gap:10px; }
+.swatch { display:flex; align-items:center; gap:8px; background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.08); border-radius:999px; padding:6px 12px 6px 8px; font-size:13px; font-weight:600; }
+.dot { width:18px; height:18px; border-radius:50%; }
+.actions a { display:inline-block; margin-top:8px; text-decoration:none; font-weight:700; background:linear-gradient(135deg,#F43E53,#FFAC5C); color:#fff; padding:10px 16px; border-radius:999px; }
+</style>
+<script>
+function fit(){document.querySelectorAll('.frame').forEach(f=>{const i=f.querySelector('iframe'); if(!i)return; const s=Math.min(f.clientWidth/1280,f.clientHeight/800); i.style.transform='scale('+s+')';});}
+addEventListener('load',fit); addEventListener('resize',fit);
+</script>
+</head>
+<body>
+<div class="wrap">
+  <div>
+    <h1>Direction D + Park palette</h1>
+    <p class="lead">Layout you liked (split shell). Colours from your Park photo: deep navy, electric magenta, lime, amber window glow. Cream/orange/black editorial is out for this pass.</p>
+  </div>
+  <div class="note">Reply <b>yes</b> to lock this direction and palette, or say what to push (brighter workspace, more magenta, darker navy, less glow). After lock we build the remaining screens in this look only.</div>
+  <div class="swatches">
+    <div class="swatch"><span class="dot" style="background:#0C1730"></span>Navy #0C1730</div>
+    <div class="swatch"><span class="dot" style="background:#F43E53"></span>Magenta #F43E53</div>
+    <div class="swatch"><span class="dot" style="background:#24D177"></span>Lime #24D177</div>
+    <div class="swatch"><span class="dot" style="background:#FFAC5C"></span>Amber #FFAC5C</div>
+    <div class="swatch"><span class="dot" style="background:#FFF6E8"></span>Lit cream #FFF6E8</div>
+  </div>
+  <div class="grid">
+    <div class="panel">
+      <header>
+        <h2>Updates mockup</h2>
+        <p>Interactive HTML · open full size below</p>
+      </header>
+      <div class="frame"><iframe src="01-D-park.html" title="D Park"></iframe></div>
+      <div style="padding:12px 16px"><a class="actions" href="01-D-park.html" target="_blank" style="color:#fff">Open full size</a></div>
+    </div>
+    <div class="panel">
+      <header>
+        <h2>Your reference</h2>
+        <p>The Park — source palette</p>
+      </header>
+      <div class="ref"><img src="the-park-reference.jpg" alt="The Park colour reference"></div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

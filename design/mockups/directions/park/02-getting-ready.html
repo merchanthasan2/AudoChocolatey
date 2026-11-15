@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Park D · Getting ready</title>
+<meta name="viewport" content="width=1280">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700&family=Outfit:wght@450;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="_shell.css">
+<style>
+.stage { flex: 1; display: flex; align-items: center; justify-content: center; padding: 32px; background:
+  radial-gradient(80% 60% at 100% 0%, rgba(255,172,92,0.28), transparent 55%), var(--work); }
+.panel { width: 640px; background: var(--work-card); border: 1px solid var(--line); border-radius: 16px; padding: 28px; box-shadow: 0 16px 40px rgba(12,23,48,0.1); }
+.kicker { color: var(--magenta); font-size: 12px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; }
+.panel h1 { margin: 8px 0; }
+.summary { display: flex; justify-content: space-between; gap: 12px; font-size: 13px; font-weight: 700; margin: 16px 0 8px; }
+.summary span { color: var(--muted); font-weight: 500; }
+.track { height: 8px; border-radius: 999px; background: var(--work-panel); overflow: hidden; margin-bottom: 18px; }
+.track i { display: block; height: 100%; width: 33%; background: var(--glow); }
+ol { list-style: none; display: grid; gap: 8px; }
+li { display: grid; grid-template-columns: 1fr auto; gap: 4px 16px; padding: 12px 14px; border: 1px solid var(--line); border-radius: 12px; background: var(--work); }
+li em { font-style: normal; font-weight: 700; color: var(--magenta); }
+li.ready em { color: var(--lime); }
+li.wait em { color: var(--muted); font-weight: 600; }
+li small { grid-column: 1 / -1; color: var(--muted); font-size: 13px; }
+.foot { margin-top: 16px; color: var(--muted); font-size: 12px; }
+</style>
+</head>
+<body>
+<div class="win">
+  <div class="titlebar"><span>Quantum Updater</span><span>Park D · Getting ready</span></div>
+  <div class="stage">
+    <section class="panel">
+      <p class="kicker">Startup</p>
+      <h1>Getting ready</h1>
+      <p class="lead">Checking this PC. You can use the app when these checks finish.</p>
+      <div class="summary"><b>1 of 3 checks finished</b><span>Working</span></div>
+      <div class="track"><i></i></div>
+      <ol>
+        <li class="ready"><strong>Programs on this PC</strong><em>Ready</em><small>Uninstall entries are listed.</small></li>
+        <li><strong>App updates</strong><em>Checking</em><small>Reading the catalog. No invented percent.</small></li>
+        <li class="wait"><strong>Programs from the catalog</strong><em>Waiting</em><small>Starts after App updates.</small></li>
+      </ol>
+      <p class="foot">Navigation stays locked. A failed check says Could not finish, and the app still opens.</p>
+    </section>
+  </div>
+</div>
+</body>
+</html>

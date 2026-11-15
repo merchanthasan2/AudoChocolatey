@@ -7,33 +7,32 @@
   <link rel="icon" type="image/svg+xml" href="quantum-updater-icon.svg">
   <link rel="alternate icon" type="image/png" href="icon.png">
   <link rel="stylesheet" href="style.css">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 </head>
 <body class="light-mode platform-windows">
-  <div class="app-shell mac-split-view">
-    <!-- ================= QUANTUM PRECISION SIDEBAR ================= -->
-    <aside class="mac-sidebar" id="mac-sidebar">
+  <div class="app-shell prism-split-view">
+    <!-- ================= QUANTUM PRISM SIDEBAR (Windows) ================= -->
+    <aside class="prism-sidebar" id="prism-sidebar">
       <!-- Native Windows Window Drag Region -->
-      <div class="traffic-lights-spacer" title="Window Drag Region"></div>
+      <div class="traffic-lights-spacer" title="Window Drag Region">
+        <div class="window-title-brand" aria-label="Quantum Updater">
+          <img class="window-title-emblem" src="quantum-updater-icon.svg" width="18" height="18" alt="" onerror="this.src='icon.png'">
+          <span>Quantum Updater</span>
+        </div>
+      </div>
 
       <!-- App Branding Header with Real Quantum Step Logo -->
-      <div class="mac-sidebar-brand" id="brand-link" title="Quantum Step Creation (quantumstep.in)">
+      <div class="prism-sidebar-brand" id="brand-link" title="Quantum Step Creation (quantumstep.in)">
         <div class="brand-monogram">
-          <img src="quantum-updater-icon.svg" class="brand-logo-img" alt="Quantum Step Logo" onerror="this.src='icon.png'">
+          <img src="quantum-updater-icon.svg" class="brand-logo-img" alt="Quantum Updater" width="36" height="36" onerror="this.src='icon.png'">
         </div>
         <div class="brand-meta">
-          <div class="brand-name-row">
-            <span class="brand-name">Quantum</span>
-            <span class="brand-version-pill">v2.0</span>
-          </div>
-          <span class="brand-subtitle">Quantum Step Creation</span>
+          <span class="brand-name">Quantum Updater</span>
+          <span class="brand-subtitle">Keeps your apps current</span>
         </div>
       </div>
 
       <!-- Navigation Hierarchy -->
-      <nav class="mac-sidebar-nav">
+      <nav class="prism-sidebar-nav">
         <!-- Section: Software -->
         <div class="sidebar-section-header">
           <span class="section-label">Software</span>
@@ -46,9 +45,10 @@
               <path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"></path>
               <path d="M16 21h5v-5"></path>
             </svg>
-            <span class="item-title">App &amp; System Updates</span>
+            <span class="item-title">Updates</span>
           </div>
           <div class="sidebar-item-right">
+            <span class="nav-scan-slot" id="nav-scan-updates" aria-hidden="true"></span>
             <span class="nav-counter" id="nav-update-count" style="display: none;">0</span>
             <span class="shortcut-pill">Ctrl+1</span>
           </div>
@@ -64,6 +64,7 @@
             <span class="item-title">Marketplace</span>
           </div>
           <div class="sidebar-item-right">
+            <span class="nav-scan-slot" id="nav-scan-explore" aria-hidden="true"></span>
             <span class="shortcut-pill">Ctrl+2</span>
           </div>
         </button>
@@ -76,9 +77,10 @@
               <rect x="14" y="14" width="7" height="7" rx="1.5"></rect>
               <rect x="3" y="14" width="7" height="7" rx="1.5"></rect>
             </svg>
-            <span class="item-title">Installed Applications</span>
+            <span class="item-title">Installed</span>
           </div>
           <div class="sidebar-item-right">
+            <span class="nav-scan-slot" id="nav-scan-installed" aria-hidden="true"></span>
             <span class="shortcut-pill">Ctrl+3</span>
           </div>
         </button>
@@ -94,11 +96,42 @@
               <path d="M5 3v4"></path>
               <path d="M19 17v4"></path>
             </svg>
-            <span class="item-title">Free Up Disk Space</span>
+            <span class="item-title">System cleanup</span>
           </div>
           <div class="sidebar-item-right">
+            <span class="nav-scan-slot" id="nav-scan-cleanup" aria-hidden="true"></span>
             <span class="nav-counter" id="nav-cleanup-badge" style="display: none;">0</span>
             <span class="shortcut-pill">Ctrl+4</span>
+          </div>
+        </button>
+
+        <button class="sidebar-item pill-btn" data-tab="startup-apps" id="tab-btn-startup-apps">
+          <div class="sidebar-item-left">
+            <svg class="sf-icon" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 3 4 14h7l-1 8 10-14h-7l0-5"/></svg>
+            <span class="item-title">Startup apps</span>
+          </div>
+          <div class="sidebar-item-right">
+            <span class="nav-scan-slot" id="nav-scan-startup-apps" aria-hidden="true"></span>
+          </div>
+        </button>
+
+        <button class="sidebar-item pill-btn" data-tab="large-files" id="tab-btn-large-files">
+          <div class="sidebar-item-left">
+            <svg class="sf-icon" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3v5h5"/><path d="M5 20h14a2 2 0 0 0 2-2V7l-5-5H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2z"/></svg>
+            <span class="item-title">Large files</span>
+          </div>
+          <div class="sidebar-item-right">
+            <span class="nav-scan-slot" id="nav-scan-large-files" aria-hidden="true"></span>
+          </div>
+        </button>
+
+        <button class="sidebar-item pill-btn" data-tab="leftover-folders" id="tab-btn-leftover-folders">
+          <div class="sidebar-item-left">
+            <svg class="sf-icon" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h16"/><path d="M6 20V9l4-4 4 4v11"/></svg>
+            <span class="item-title">Leftover folders</span>
+          </div>
+          <div class="sidebar-item-right">
+            <span class="nav-scan-slot" id="nav-scan-leftover-folders" aria-hidden="true"></span>
           </div>
         </button>
 
@@ -126,9 +159,10 @@
               <line x1="8" y1="21" x2="16" y2="21"></line>
               <line x1="12" y1="17" x2="12" y2="21"></line>
             </svg>
-            <span class="item-title">About This Computer</span>
+            <span class="item-title">About this computer</span>
           </div>
           <div class="sidebar-item-right">
+            <span class="nav-scan-slot" id="nav-scan-specs" aria-hidden="true"></span>
             <span class="shortcut-pill">Ctrl+I</span>
           </div>
         </button>
@@ -139,7 +173,7 @@
               <circle cx="12" cy="12" r="3"></circle>
               <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
             </svg>
-            <span class="item-title">Settings &amp; Options</span>
+            <span class="item-title">Settings</span>
           </div>
           <div class="sidebar-item-right">
             <span class="shortcut-pill">Ctrl+,</span>
@@ -147,8 +181,14 @@
         </button>
       </nav>
 
+      <div class="sidebar-scan-summary-card" id="sidebar-scan-summary-card">
+        <p class="sidebar-scan-summary-title" id="sidebar-scan-summary">Checking your PC</p>
+        <p class="sidebar-scan-summary-sub" id="sidebar-scan-summary-sub">Starting background checks…</p>
+        <button type="button" class="glass-btn btn-secondary btn-sm sidebar-scan-rescan" id="sidebar-scan-rescan-btn" onclick="app.scanStore && app.scanStore.rescanAll()">Rescan all</button>
+      </div>
+
       <!-- Sidebar Bottom Telemetry Widget -->
-      <div class="mac-sidebar-footer">
+      <div class="prism-sidebar-footer">
         <div class="sidebar-telemetry-card">
           <div class="telemetry-row header">
             <div class="telemetry-badge">
@@ -158,11 +198,11 @@
             <span class="telemetry-val" id="sidebar-disk-pct">NTFS</span>
           </div>
           <div class="disk-progress-track">
-            <div class="disk-progress-fill" id="sidebar-disk-bar" style="width: 45%;"></div>
+            <div class="disk-progress-fill" id="sidebar-disk-bar" style="width: 0%;"></div>
           </div>
           <div class="telemetry-row subtext">
             <span id="sidebar-disk-free">Storage Telemetry</span>
-            <span class="security-chip-pill">x64 / ARM64</span>
+            <span class="security-chip-pill" id="sidebar-arch-chip">x64</span>
           </div>
         </div>
 
@@ -174,9 +214,9 @@
     </aside>
 
     <!-- ================= MAIN WORKSPACE & UNIFIED TOOLBAR ================= -->
-    <div class="mac-main-viewport">
-      <!-- Unified macOS Window Toolbar -->
-      <header class="mac-unified-toolbar">
+    <div class="prism-main-viewport">
+      <!-- Unified Windows toolbar -->
+      <header class="prism-unified-toolbar">
         <div class="toolbar-left">
           <button class="mac-icon-btn" id="sidebar-toggle-btn" title="Toggle Sidebar (Ctrl+B)" onclick="app.toggleSidebar()">
             <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"></rect><path d="M9 3v18"></path></svg>
@@ -198,6 +238,7 @@
 
         <!-- Right Controls & Sync Action -->
         <div class="toolbar-right">
+          <span class="app-build-chip" data-build-label>2.0.0 · not a packaged build</span>
           <button class="header-sync-btn" id="btn-sync" onclick="app.scanUpdates()" title="Sync and Check for Updates">
             <svg id="sync-icon-svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
               <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/>
@@ -211,7 +252,7 @@
           </button>
 
           <!-- Theme Toggle -->
-          <button class="mac-icon-btn theme-toggle-btn" id="theme-toggle-btn" title="Toggle Light/Dark Theme">
+          <button class="mac-icon-btn theme-toggle-btn" id="theme-toggle-btn" title="Toggle graphite dark theme">
             <svg class="sun-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
             <svg class="moon-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
           </button>
@@ -243,8 +284,26 @@
 
         <!-- ================= TAB 1: UPDATES ================= -->
         <section class="tab-pane active" id="tab-updates">
-          <!-- Clean TL;DR Bento Bar -->
-          <div class="bento-hud-grid">
+          <header class="mockup-page-head" id="updates-page-head">
+            <div class="mockup-page-head-text">
+              <h1 class="mockup-page-title">Updates</h1>
+              <p class="mockup-page-summary" id="updates-page-summary">Check for newer versions of your installed applications.</p>
+              <p class="updates-cache-note" id="updates-cache-note" hidden></p>
+            </div>
+            <div class="mockup-page-actions">
+              <button class="glass-btn btn-secondary" id="btn-scan" onclick="app.scanUpdates()">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-3-6.7"/><path d="M21 3v6h-6"/></svg>
+                <span>Check again</span>
+              </button>
+              <button class="glass-btn btn-primary" id="btn-update-action" onclick="app.startUpdateAction()" disabled>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="m7 11 5 5 5-5"/><path d="M5 20h14"/></svg>
+                <span id="btn-update-text">Update all</span>
+              </button>
+            </div>
+          </header>
+
+          <!-- Legacy bento metrics (hidden; IDs kept for app.js) -->
+          <div class="bento-hud-grid updates-bento-legacy" aria-hidden="true">
             <!-- Capsule 1: Updates Available -->
             <div class="bento-hud-card accent-amber" id="bento-card-updates" onclick="app.scanUpdates()" style="cursor: pointer;">
               <div class="bento-hud-eyebrow">
@@ -303,22 +362,19 @@
             <div class="island-status-ticker" id="island-status-ticker">Ready to scan or update installed applications.</div>
           </div>
 
-          <!-- Action Control Glass Bar -->
-          <div class="action-bar-glass">
+          <div id="restart-required-banner" class="restart-required-banner" hidden role="status">
+            <strong>Restart this PC to finish.</strong>
+            <span id="restart-required-detail">An update or clean asked Windows to restart. This app will not restart the PC for you.</span>
+            <button type="button" class="glass-btn btn-secondary btn-sm" id="restart-required-dismiss" onclick="app.dismissRestartRequired()">Dismiss</button>
+          </div>
+
+          <div class="action-bar-glass updates-secondary-bar">
             <div class="action-left">
               <label class="custom-checkbox-container" title="Select or Deselect All Updates">
                 <input type="checkbox" id="check-select-all" onchange="app.toggleSelectAll(this.checked)">
                 <span class="checkmark"></span>
-                <span class="checkbox-label">Select All</span>
+                <span class="checkbox-label">Select all</span>
               </label>
-              <button class="glass-btn btn-primary" id="btn-scan" onclick="app.scanUpdates()">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"></path><path d="M16 21h5v-5"></path></svg>
-                <span>Scan for Updates</span>
-              </button>
-              <button class="glass-btn btn-success" id="btn-update-action" onclick="app.startUpdateAction()" disabled>
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
-                <span id="btn-update-text">Update All Packages</span>
-              </button>
             </div>
             <div class="action-right">
               <div class="glass-search-input">
@@ -342,20 +398,16 @@
 
         <!-- ================= TAB 2: MARKETPLACE ================= -->
         <section class="tab-pane" id="tab-explore">
-          <div class="explore-hero-card">
-            <div class="explore-header-row">
-              <div>
-                <div class="cleaner-badge-tag" style="margin-bottom: 6px;">
-                  <span class="status-dot status-dot-pulse"></span>
-                  <span>Ecosystem Marketplace</span>
-                </div>
-                <h2>Software Marketplace</h2>
-                <p>Browse curated software, 1-click starter bundles, developer runtimes, and essential tools with verified installation.</p>
-              </div>
-              <div class="explore-header-stats">
-                <span class="catalog-count-badge" id="explore-count-badge">80+ Curated Apps</span>
-              </div>
+          <header class="mockup-page-head">
+            <div class="mockup-page-head-text">
+              <h1 class="mockup-page-title">Marketplace</h1>
+              <p class="mockup-page-summary" id="explore-page-summary">Browse curated software and install verified applications.</p>
             </div>
+            <div class="mockup-page-actions">
+              <span class="catalog-count-badge" id="explore-count-badge">80+ Curated Apps</span>
+            </div>
+          </header>
+          <div class="explore-hero-card explore-hero-body">
 
             <!-- 1-Click Starter Bundles Grid -->
             <div class="marketplace-bundles-section">
@@ -369,9 +421,9 @@
                   </div>
                   <h4>Essential Windows Starter</h4>
                   <p>Chrome, Spotify, VLC, PowerToys, WhatsApp &amp; Telegram.</p>
-                  <button class="mac-bundle-install-btn" onclick="app.installBundle('essentials')">
+                  <button class="mac-bundle-install-btn" onclick="app.openBundle('essentials')">
                     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                    <span>Install Pack</span>
+                    <span>Choose apps</span>
                   </button>
                 </div>
 
@@ -383,9 +435,9 @@
                   </div>
                   <h4>Developer Workstation</h4>
                   <p>VS Code, Docker, Windows Terminal, Git, Node.js &amp; Python 3.</p>
-                  <button class="mac-bundle-install-btn" onclick="app.installBundle('dev')">
+                  <button class="mac-bundle-install-btn" onclick="app.openBundle('dev')">
                     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                    <span>Install Pack</span>
+                    <span>Choose apps</span>
                   </button>
                 </div>
 
@@ -397,9 +449,9 @@
                   </div>
                   <h4>Creative Studio</h4>
                   <p>Blender, Figma, Audacity, HandBrake &amp; GIMP.</p>
-                  <button class="mac-bundle-install-btn" onclick="app.installBundle('creator')">
+                  <button class="mac-bundle-install-btn" onclick="app.openBundle('creator')">
                     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                    <span>Install Pack</span>
+                    <span>Choose apps</span>
                   </button>
                 </div>
 
@@ -411,9 +463,9 @@
                   </div>
                   <h4>Privacy &amp; Security</h4>
                   <p>Bitwarden, Brave, 7-Zip &amp; Tor Browser.</p>
-                  <button class="mac-bundle-install-btn" onclick="app.installBundle('privacy')">
+                  <button class="mac-bundle-install-btn" onclick="app.openBundle('privacy')">
                     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                    <span>Install Pack</span>
+                    <span>Choose apps</span>
                   </button>
                 </div>
               </div>
@@ -463,7 +515,7 @@
             <div class="explore-toolbar">
               <div class="search-input-wrapper">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-                <input type="text" id="input-explore-search" placeholder="Filter apps by name, description, or vendor..." oninput="app.onExploreSearchInput(this.value)" onkeydown="if(event.key==='Enter') app.searchRepositoryCatalog()">
+                <input type="text" id="input-explore-search" placeholder="Search the full catalog" oninput="app.onExploreSearchInput(this.value)" onkeydown="if(event.key==='Enter') app.searchRepositoryCatalog()">
               </div>
 
               <div class="explore-toolbar-actions">
@@ -477,9 +529,9 @@
                   </select>
                 </div>
 
-                <button class="glass-btn btn-primary" onclick="app.searchRepositoryCatalog()" title="Search full live Homebrew repository">
+                <button class="glass-btn btn-primary" onclick="app.searchRepositoryCatalog()">
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-                  <span>Search Online</span>
+                  <span>Search the full catalog</span>
                 </button>
               </div>
             </div>
@@ -493,19 +545,19 @@
 
         <!-- ================= TAB 3: INSTALLED ================= -->
         <section class="tab-pane" id="tab-installed">
-          <div class="installed-hero-card">
-            <div class="installed-header-row">
-              <div>
-                <h2>Installed Applications</h2>
-                <p>Audit installed desktop applications, Windows packages, and developer runtimes on this computer.</p>
-              </div>
-              <div class="installed-actions">
-                <button class="glass-btn btn-primary" onclick="app.loadInstalled()">
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"></path><path d="M16 21h5v-5"></path></svg>
-                  <span>Audit Installed Apps</span>
-                </button>
-              </div>
+          <header class="mockup-page-head">
+            <div class="mockup-page-head-text">
+              <h1 class="mockup-page-title">Installed</h1>
+              <p class="mockup-page-summary">Applications registered on this computer.</p>
             </div>
+            <div class="mockup-page-actions">
+              <button class="glass-btn btn-secondary" onclick="app.loadInstalled()">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"></path><path d="M16 21h5v-5"></path></svg>
+                  <span>Refresh list</span>
+                </button>
+            </div>
+          </header>
+          <div class="installed-hero-card installed-filter-bar">
             <div class="glass-search-input full-width">
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
               <input type="text" id="input-filter-installed" placeholder="Filter installed applications by name or package ID..." oninput="app.filterInstalled(this.value)">
@@ -525,6 +577,35 @@
 
         <!-- ================= TAB 4: CLEANUP ================= -->
         <section class="tab-pane" id="tab-cleanup">
+          <header class="mockup-page-head cleanup-page-head">
+            <div class="mockup-page-head-text">
+              <h1 class="mockup-page-title">Cleanup</h1>
+              <p class="mockup-page-summary">Review reclaimable files and free disk space safely.</p>
+            </div>
+            <div class="mockup-page-actions">
+              <button class="glass-btn btn-secondary btn-sm" id="btn-scan-cleanup" onclick="app.scanCleanup()" title="Analyze storage and scan caches">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                <span>Scan storage</span>
+              </button>
+              <button class="glass-btn btn-primary btn-sm btn-clean-now" id="btn-one-click-clean" onclick="app.openCleanupConsentModal('purge')" title="Review and clean the categories you selected">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                <span>Clean selected</span>
+              </button>
+            </div>
+          </header>
+          <p class="cleanup-stale-note" id="cleanup-stale-note" hidden>Cleanup plan is from cache — run Scan storage for a fresh plan before cleaning.</p>
+          <div class="cleanup-scan-progress card-surface" id="cleanup-scan-progress" hidden>
+            <div class="cleanup-scan-progress-meta">
+              <span id="cleanup-scan-title">Scanning storage</span>
+              <span id="cleanup-scan-eta"></span>
+            </div>
+            <div class="cleanup-scan-bar prog-track"><i></i></div>
+            <div class="cleanup-scan-detail">
+              <span id="cleanup-scan-folder"></span>
+              <span id="cleanup-scan-bytes"></span>
+            </div>
+          </div>
+          <div class="cleanup-disks-grid" id="cleanup-disks-grid" style="display: none;"></div>
           <!-- Bento HUD Telemetry Grid -->
           <div class="bento-hud-grid cleaner-bento-grid">
             <!-- Bento Card 1: Reclaimable Storage -->
@@ -594,19 +675,11 @@
               <span class="cleaner-selection-pill" id="cleanup-selected-count">All safe categories selected</span>
             </div>
             <div class="action-bar-right">
-              <button class="cleaner-text-btn" onclick="app.toggleAllCleanup(true)">Select Recommended</button>
-              <button class="cleaner-text-btn" onclick="app.toggleAllCleanup(false)">Toggle All</button>
-              <button class="glass-btn btn-secondary btn-sm" id="btn-scan-cleanup" onclick="app.scanCleanup()" title="Analyze storage and scan caches">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-                <span>Scan Storage</span>
-              </button>
+              <button class="cleaner-text-btn" onclick="app.selectRecommendedCleanup()">Select Recommended</button>
+              <button class="cleaner-text-btn" onclick="app.toggleAllCleanup()">Toggle All</button>
               <button class="glass-btn btn-secondary btn-sm" id="btn-optimize-ram" onclick="app.optimizeMemory()" title="Purge inactive cache pages and compact Windows RAM working sets">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 19v-3"></path><path d="M10 19v-3"></path><path d="M14 19v-3"></path><path d="M18 19v-3"></path><rect x="2" y="6" width="20" height="10" rx="2"></rect></svg>
                 <span>Optimize RAM</span>
-              </button>
-              <button class="glass-btn btn-cta btn-clean-now" id="btn-one-click-clean" onclick="app.oneClickClean()" title="Clean all safe caches in one click">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                <span>Clean Disk Space Now</span>
               </button>
             </div>
           </div>
@@ -615,8 +688,8 @@
           <div class="cleaner-breakdown-section">
             <div class="cleaner-section-header">
               <div class="header-left">
-                <h3>Storage Breakdown</h3>
-                <span class="section-hint">Select items to purge safely. Personal files, photos, and code are never touched.</span>
+                <h3>System cleanup breakdown</h3>
+                <span class="section-hint">Select items to purge safely. Missing-folder rows are reports only and are not deleted by Clean.</span>
               </div>
               <div class="header-right">
                 <button class="glass-btn btn-secondary btn-sm" id="btn-purge-cleanup" onclick="app.openCleanupConsentModal('purge')">
@@ -634,6 +707,54 @@
                 <p>Click "Scan Storage" or "Clean Disk Space Now" to inspect and optimize cache files.</p>
               </div>
             </div>
+          </div>
+        </section>
+
+
+        <!-- ================= TAB: STARTUP APPS ================= -->
+        <section class="tab-pane" id="tab-startup-apps">
+          <header class="mockup-page-head">
+            <div class="mockup-page-head-text">
+              <h1 class="mockup-page-title">Startup apps</h1>
+              <p class="mockup-page-summary" id="startup-apps-summary">Apps and tasks that can run when you sign in.</p>
+            </div>
+          </header>
+          <div class="tool-page-list" id="startup-apps-list">
+            <p class="tool-page-hint">Waiting for startup scan…</p>
+          </div>
+        </section>
+
+        <!-- ================= TAB: LARGE FILES ================= -->
+        <section class="tab-pane" id="tab-large-files">
+          <header class="mockup-page-head">
+            <div class="mockup-page-head-text">
+              <h1 class="mockup-page-title">Large files</h1>
+              <p class="mockup-page-summary">Find large files on your drives. Recycle Bin is the default action.</p>
+            </div>
+            <div class="mockup-page-actions">
+              <button type="button" class="glass-btn btn-primary btn-sm" onclick="app.largeFilesStartScan()">Start scan</button>
+            </div>
+          </header>
+          <div class="tool-filters-row">
+            <input type="text" class="glass-input tool-filter-input" id="large-files-root" placeholder="Folder (optional)" aria-label="Root folder">
+            <input type="number" class="glass-input tool-filter-input" id="large-files-min" value="500" min="50" aria-label="Minimum size MB">
+            <label class="tool-filter-label">Minimum size (MB)</label>
+          </div>
+          <div class="tool-page-list" id="large-files-list">
+            <p class="tool-page-hint">Run a scan to list large files.</p>
+          </div>
+        </section>
+
+        <!-- ================= TAB: LEFTOVER FOLDERS ================= -->
+        <section class="tab-pane" id="tab-leftover-folders">
+          <header class="mockup-page-head">
+            <div class="mockup-page-head-text">
+              <h1 class="mockup-page-title">Leftover folders</h1>
+              <p class="mockup-page-summary">Program folders left on disk after uninstall.</p>
+            </div>
+          </header>
+          <div class="tool-page-list" id="leftover-folders-list">
+            <p class="tool-page-hint">Waiting for leftover scan…</p>
           </div>
         </section>
 
@@ -657,194 +778,27 @@
               </div>
             </div>
             <div class="console-terminal-body" id="console-output">
-              <div class="terminal-line system">[Quantum Updater]: macOS Universal engine initialized. Ready.</div>
+              <div class="terminal-line system">[Quantum Updater]: Windows desktop engine initialized. Ready.</div>
             </div>
           </div>
         </section>
 
         <!-- ================= TAB: ABOUT THIS COMPUTER (SPECS) ================= -->
         <section class="tab-pane" id="tab-specs">
-          <div class="specs-view-container">
-            <!-- Hardware Overview Hero Card -->
-            <div class="specs-hero-card">
-              <div class="specs-hero-visual">
-                <div class="specs-mac-icon-circle">
-                  <svg class="specs-mac-svg" width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
-                    <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
-                    <line x1="8" y1="21" x2="16" y2="21"></line>
-                    <line x1="12" y1="17" x2="12" y2="21"></line>
-                  </svg>
-                </div>
-              </div>
-              <div class="specs-hero-info">
-                <div class="specs-badge-row">
-                  <span class="specs-chip-badge">Genuine Hardware</span>
-                  <span class="specs-status-badge"><span class="status-dot-mini"></span> System Healthy</span>
-                </div>
-                <h2 class="specs-model-title" id="spec-hero-model">MacBook Pro (16-inch, 2019)</h2>
-                <p class="specs-os-subtitle" id="spec-hero-os">macOS Sequoia &bull; Genuine Mac Hardware</p>
-                
-                <div class="specs-quick-actions">
-                  <button class="glass-btn btn-secondary btn-sm" onclick="app.copySerialNumber()">
-                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
-                    <span>Copy Serial Number</span>
-                  </button>
-                  <button class="glass-btn btn-secondary btn-sm" onclick="app.copyAllSystemSpecs()">
-                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="4 17 10 11 4 5"></polyline><line x1="12" y1="19" x2="20" y2="19"></line></svg>
-                    <span>Copy All System Info</span>
-                  </button>
-                  <button class="glass-btn btn-primary btn-sm" onclick="app.switchTab('cleanup')">
-                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3z"></path></svg>
-                    <span>Free Up Storage</span>
-                  </button>
-                </div>
-              </div>
+          <header class="mockup-page-head">
+            <div class="mockup-page-head-text">
+              <h1 class="mockup-page-title">About this computer</h1>
+              <p class="mockup-page-summary">Hardware and system details from this PC.</p>
             </div>
-
-            <!-- Hardware Specifications Bento Grid -->
-            <div class="specs-grid">
-              <!-- Computer Name & Model -->
-              <div class="specs-card">
-                <div class="specs-card-header">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg>
-                  <span>Model &amp; Identity</span>
-                </div>
-                <div class="specs-card-content">
-                  <div class="spec-item">
-                    <span class="spec-label">Model Name</span>
-                    <strong class="spec-val" id="spec-detail-model">MacBook Pro (16-inch, 2019)</strong>
-                  </div>
-                  <div class="spec-item">
-                    <span class="spec-label">Model Identifier</span>
-                    <span class="spec-val-mono" id="spec-detail-model-id">MacBookPro16,1</span>
-                  </div>
-                  <div class="spec-item">
-                    <span class="spec-label">Serial Number</span>
-                    <div class="spec-serial-wrapper">
-                      <span class="spec-val-mono highlight" id="spec-detail-serial">C02D14LAMD6N</span>
-                      <button class="spec-copy-btn" onclick="app.copySerialNumber()" title="Copy Serial Number">
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Processor & Architecture -->
-              <div class="specs-card">
-                <div class="specs-card-header">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="16" height="16" rx="2" ry="2"></rect><rect x="9" y="9" width="6" height="6"></rect><line x1="9" y1="1" x2="9" y2="4"></line><line x1="15" y1="1" x2="15" y2="4"></line><line x1="9" y1="20" x2="9" y2="23"></line><line x1="15" y1="20" x2="15" y2="23"></line><line x1="20" y1="9" x2="23" y2="9"></line><line x1="20" y1="14" x2="23" y2="14"></line><line x1="1" y1="9" x2="4" y2="9"></line><line x1="1" y1="14" x2="4" y2="14"></line></svg>
-                  <span>Processor &amp; Platform</span>
-                </div>
-                <div class="specs-card-content">
-                  <div class="spec-item">
-                    <span class="spec-label">Processor</span>
-                    <strong class="spec-val" id="spec-detail-cpu">Intel Core i7 @ 2.6 GHz</strong>
-                  </div>
-                  <div class="spec-item">
-                    <span class="spec-label">Architecture</span>
-                    <span class="spec-val" id="spec-detail-arch">Universal 2 (Apple Silicon &amp; Intel)</span>
-                  </div>
-                  <div class="spec-item">
-                    <span class="spec-label">Platform Type</span>
-                    <span class="spec-val" id="spec-detail-platform">Apple Mac Platform</span>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Memory & Storage -->
-              <div class="specs-card">
-                <div class="specs-card-header">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="5" rx="9" ry="3"></ellipse><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"></path><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"></path></svg>
-                  <span>Memory &amp; Storage</span>
-                </div>
-                <div class="specs-card-content">
-                  <div class="spec-item">
-                    <span class="spec-label">Memory (RAM)</span>
-                    <strong class="spec-val highlight-blue" id="spec-detail-memory">16 GB</strong>
-                  </div>
-                  <div class="spec-item">
-                    <span class="spec-label">Primary Disk</span>
-                    <span class="spec-val" id="spec-detail-storage">Loading storage...</span>
-                  </div>
-                  <div class="specs-storage-bar-wrapper">
-                    <div class="specs-storage-track">
-                      <div class="specs-storage-fill" id="spec-detail-storage-bar" style="width: 20%;"></div>
-                    </div>
-                    <span class="specs-storage-hint" id="spec-detail-storage-hint">Macintosh HD &bull; APFS</span>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Battery Health & Power Telemetry (MacBook USP) -->
-              <div class="specs-card">
-                <div class="specs-card-header">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="6" width="18" height="12" rx="2"></rect><line x1="23" y1="11" x2="23" y2="13"></line></svg>
-                  <span>Battery Health &amp; Power</span>
-                </div>
-                <div class="specs-card-content">
-                  <div class="spec-item">
-                    <span class="spec-label">Battery Health</span>
-                    <strong class="spec-val highlight-mint" id="spec-detail-battery-health">Checking...</strong>
-                  </div>
-                  <div class="spec-item">
-                    <span class="spec-label">Cycle Count</span>
-                    <span class="spec-val-mono" id="spec-detail-battery-cycles">-- Cycles</span>
-                  </div>
-                  <div class="spec-item">
-                    <span class="spec-label">Power Source</span>
-                    <span class="spec-val" id="spec-detail-battery-power">Detecting power supply...</span>
-                  </div>
-                  <div class="spec-item">
-                    <span class="spec-label">Operating Temperature</span>
-                    <span class="spec-val" id="spec-detail-battery-temp">--</span>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Vampire Background Daemons (CleanMyMac Killer) -->
-              <div class="specs-card">
-                <div class="specs-card-header">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
-                  <span>Background Daemons (Vampire Hunter)</span>
-                </div>
-                <div class="specs-card-content">
-                  <div class="spec-item">
-                    <span class="spec-label">Active Background Daemons</span>
-                    <strong class="spec-val highlight-blue" id="spec-detail-daemons-count">Scanning...</strong>
-                  </div>
-                  <div class="spec-item">
-                    <span class="spec-label">Sleep Battery Impact</span>
-                    <span class="spec-val" id="spec-detail-daemons-impact">Nominal</span>
-                  </div>
-                  <div id="spec-daemons-preview" style="margin-top: 8px; display: flex; flex-direction: column; gap: 4px;">
-                    <!-- Populated dynamically -->
-                  </div>
-                </div>
-              </div>
-
-              <!-- Camera & Display -->
-              <div class="specs-card">
-                <div class="specs-card-header">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
-                  <span>Camera &amp; Display</span>
-                </div>
-                <div class="specs-card-content">
-                  <div class="spec-item">
-                    <span class="spec-label">Camera</span>
-                    <strong class="spec-val" id="spec-detail-camera">FaceTime HD Camera (Built-in)</strong>
-                  </div>
-                  <div class="spec-item">
-                    <span class="spec-label">Display &amp; Graphics</span>
-                    <span class="spec-val" id="spec-detail-display">Retina Display</span>
-                  </div>
-                  <div class="spec-item">
-                    <span class="spec-label">Operating System</span>
-                    <span class="spec-val highlight-mint" id="spec-detail-os">macOS</span>
-                  </div>
-                </div>
-              </div>
+            <div class="mockup-page-actions">
+              <button type="button" class="glass-btn btn-secondary btn-sm" onclick="app.loadInitialDiagnostics()">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-3-6.7"/><path d="M21 3v6h-6"/></svg>
+                <span>Refresh</span>
+              </button>
             </div>
+          </header>
+          <div id="about-computer-root" class="about-computer" aria-live="polite">
+            <p class="about-loading muted-copy">Reading this PC&hellip;</p>
           </div>
         </section>
 
@@ -884,6 +838,16 @@
                   <span class="slider"></span>
                 </label>
               </div>
+              <div class="settings-toggle-row">
+                <div class="toggle-info">
+                  <strong>Allow a test version</strong>
+                  <span>Off unless you turn this on. A test version can be less stable.</span>
+                </div>
+                <label class="switch">
+                  <input type="checkbox" id="pref-allow-beta" onchange="app.savePreference('allow_beta', this.checked)">
+                  <span class="slider"></span>
+                </label>
+              </div>
             </div>
 
             <!-- Application Updates & Release Feed -->
@@ -900,12 +864,12 @@
                   </div>
                   <div>
                     <h3 style="margin-bottom: 2px;">Application Updates &amp; Self-Updater</h3>
-                    <p class="settings-card-desc" style="margin-bottom: 0;">Automatic in-place updates for macOS &amp; Windows without manual file redownloads.</p>
+                    <p class="settings-card-desc" style="margin-bottom: 0;">Automatic in-place updates on Windows without manual file redownloads.</p>
                   </div>
                 </div>
                 <div class="update-status-badge" id="app-update-status-badge">
                   <span class="status-dot healthy"></span>
-                  <span id="app-version-display">v2.0.0 &bull; Up to Date</span>
+                  <span id="app-version-display" data-build-label>2.0.0 · not a packaged build</span>
                 </div>
               </div>
 
@@ -914,7 +878,7 @@
                   <div class="update-meta-box">
                     <div class="meta-row">
                       <span class="meta-title">Installed Version</span>
-                      <span class="meta-data mono">2.0.0</span>
+                      <span class="meta-data mono" data-build-label>2.0.0 · not a packaged build</span>
                     </div>
                     <div class="meta-row">
                       <span class="meta-title">Release Channel</span>
@@ -985,7 +949,7 @@
 
             <!-- Diagnostics -->
             <div class="settings-card full-span">
-              <h3>macOS Diagnostics &amp; Environment</h3>
+              <h3>Windows Diagnostics &amp; Environment</h3>
               <p class="settings-card-desc">Runtime elevation status, operating system architecture, and binary paths.</p>
               <div class="diagnostics-table" id="diagnostics-container">
                 <!-- Dynamically populated -->
@@ -996,7 +960,7 @@
             <div class="settings-card full-span brand-about-card">
               <div class="about-card-inner">
                 <div style="display: flex; align-items: center; gap: 16px;">
-                  <img src="quantum-step-logo.svg" alt="Quantum Step Creation Emblem" style="width: 52px; height: 52px; border-radius: 50%; box-shadow: 0 0 16px rgba(0, 229, 255, 0.35); flex-shrink: 0;">
+                  <img src="quantum-step-logo.svg" alt="Quantum Step Creation Emblem" style="width: 52px; height: 52px; border-radius: 50%; flex-shrink: 0;">
                   <div>
                     <div class="about-card-title-row">
                       <h3 class="about-card-heading">Quantum Updater &bull; Windows Edition</h3>
@@ -1085,7 +1049,7 @@
       <div class="modal-security-strip">
         <div class="sec-strip-pill">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
-          <span>Gatekeeper Verified</span>
+          <span>SmartScreen Verified</span>
         </div>
         <div class="sec-strip-pill">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
@@ -1128,7 +1092,7 @@
             <span>Cryptographic Integrity &bull; Apple Security Architecture</span>
           </div>
           <p class="sec-box-desc">
-            This application binary is cryptographically verified against the official package repository. Before installation or updating, Quantum Updater enforces SHA-256 hash checks and Apple Gatekeeper Hardened Runtime verification. Corrupted or altered payloads are automatically rejected.
+            This application binary is cryptographically verified against the official package repository. Before installation or updating, Quantum Updater enforces SHA-256 hash checks and Windows code-signing verification. Corrupted or altered payloads are automatically rejected.
           </p>
           <div class="sec-hash-row">
             <span class="sec-hash-label">SHA-256:</span>
@@ -1316,6 +1280,29 @@
     </div>
   </div>
 
+  <!-- Startup ready gate (ADR 025): blocks nav until bootstrap jobs settle -->
+  <div id="startup-ready-gate" class="startup-ready-gate" hidden aria-hidden="true">
+    <div class="startup-ready-panel" role="dialog" aria-labelledby="startup-ready-title" aria-live="polite">
+      <p class="startup-ready-kicker">Startup</p>
+      <h2 id="startup-ready-title">Getting ready</h2>
+      <p class="startup-ready-lead">Checking this PC. You can use the app when these checks finish.</p>
+      <div class="startup-ready-summary">
+        <strong id="startup-ready-count">0 of 3 checks finished</strong>
+        <span id="startup-ready-phase">Working</span>
+      </div>
+      <div class="startup-ready-track" aria-hidden="true"><i id="startup-ready-fill"></i></div>
+      <ol id="startup-ready-jobs" class="startup-ready-jobs">
+        <li data-job="local-arp"><strong>Programs on this PC</strong><em>Waiting</em><small>Uninstall entries on this PC.</small></li>
+        <li data-job="catalog-updates"><strong>App updates</strong><em>Waiting</em><small>Reading the catalog. No invented percent.</small></li>
+        <li data-job="catalog-installed"><strong>Programs from the catalog</strong><em>Waiting</em><small>Starts after App updates when needed.</small></li>
+      </ol>
+      <p class="startup-ready-foot">Navigation stays locked. If a check fails, that row says Could not finish, and the app still opens.</p>
+    </div>
+  </div>
+
+  <script src="hardware-art.js"></script>
+  <script src="build-stamp.js"></script>
   <script src="app.js"></script>
 </body>
 </html>
+

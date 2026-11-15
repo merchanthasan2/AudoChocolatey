@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><title>Quantum Updater - Settings - Direction B (Deep Teal Refined) mockup</title>
+<meta name="viewport" content="width=1280"><style>:root{--win:#04212A;--panel:#062B36;--card:#0A3442;--border:#164A5B;--text:#F2F8FA;--t2:#BFD9E2;--muted:#8FB3C0;--prim-bg:#06D7A0;--prim-fg:#073A4B;--sec-bg:#0E3E4D;--sec-bd:#2A6577;--r1:10px;--r2:12px;}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:1280px;height:800px;overflow:hidden;background:var(--win)}
+body{font-family:'Segoe UI Variable','Segoe UI Variable Text','Segoe UI',Tahoma,sans-serif;color:var(--text);font-size:14px;line-height:1.4}
+h1,.t{font-family:'Segoe UI Variable Display','Segoe UI Variable','Segoe UI',Tahoma,sans-serif;font-weight:600}
+.win{width:1280px;height:800px;display:flex;flex-direction:column;background:var(--win)}
+.titlebar{height:36px;display:flex;align-items:center;padding-left:14px;border-bottom:1px solid var(--border);font-size:12px;font-weight:600;color:var(--t2)}
+.body{flex:1;display:flex;min-height:0}
+.side{width:248px;background:var(--panel);border-right:1px solid var(--border);padding:20px 12px;display:flex;flex-direction:column}
+.brand{padding:0 10px 24px;font-size:18px}
+.brand small{display:block;font-size:12px;font-weight:400;color:var(--muted);margin-top:2px}
+.nav a{position:relative;display:flex;align-items:center;height:44px;padding:0 14px;border-radius:var(--r1);color:var(--t2);text-decoration:none;font-weight:500}
+.nav a.on{background:var(--card);color:var(--text);font-weight:600}
+.nav a.on:before{content:"";position:absolute;left:0;top:9px;bottom:9px;width:3px;border-radius:2px;background:#06D7A0}
+.main{flex:1;padding:28px 36px}
+.head h1{display:flex;align-items:center;gap:12px;font-size:30px}
+.head h1:before{content:"";width:5px;height:30px;border-radius:3px;background:#108AB1}
+.head p{color:var(--t2);margin:6px 0 20px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--r2);padding:20px 22px;max-width:640px}
+.card h2{font-size:18px;margin-bottom:4px}
+.card .lead{color:var(--t2);font-size:13px;margin-bottom:16px}
+.row{display:flex;align-items:center;justify-content:space-between;gap:24px;padding:14px 0;border-top:1px solid var(--border)}
+.row strong{display:block;font-size:15px}
+.row span{display:block;color:var(--t2);font-size:13px;margin-top:3px}
+.sw{width:46px;height:26px;border-radius:13px;background:var(--sec-bg);border:1px solid var(--sec-bd);position:relative;flex:none}
+.sw i{position:absolute;top:2px;left:2px;width:20px;height:20px;border-radius:50%;background:var(--t2)}
+</style></head><body>
+<div class="win">
+ <div class="titlebar">Quantum Updater</div>
+ <div class="body">
+  <aside class="side">
+   <div class="brand t">Quantum Updater<small>Keeps your apps current</small></div>
+   <nav class="nav">
+    <a href="01-updates.html">Updates</a>
+    <a href="02-marketplace.html">Marketplace</a>
+    <a href="03-installed.html">Installed</a>
+    <a class="on" href="13-settings-beta.html">Settings</a>
+   </nav>
+  </aside>
+  <main class="main">
+   <div class="head"><h1>Settings</h1><p>Choices for install and update.</p></div>
+   <div class="card">
+    <h2 class="t">Install and update</h2>
+    <p class="lead">The test-version choice stays off until you turn it on.</p>
+    <div class="row">
+     <div><strong>Allow a test version</strong><span>Off unless you turn this on. A test version can be less stable.</span></div>
+     <div class="sw" role="switch" aria-checked="false" aria-label="Allow a test version"><i></i></div>
+    </div>
+   </div>
+  </main>
+ </div>
+</div>
+</body></html>

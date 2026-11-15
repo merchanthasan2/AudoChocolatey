@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Direction A — Editorial Bold · Updates</title>
+<meta name="viewport" content="width=1280">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --cream: #F3EBDD;
+  --panel: #E8DCC8;
+  --card: #FFF8EC;
+  --ink: #14110E;
+  --muted: #6A5F52;
+  --line: #CDBBA0;
+  --orange: #E35A12;
+  --black: #14110E;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { width: 1280px; height: 800px; overflow: hidden; background: var(--cream); }
+body { font-family: "IBM Plex Sans", sans-serif; color: var(--ink); font-size: 14px; }
+.win { width: 1280px; height: 800px; display: flex; flex-direction: column; }
+.titlebar {
+  height: 34px; display: flex; align-items: center; justify-content: space-between;
+  padding: 0 16px; border-bottom: 1px solid var(--line); font-size: 12px; font-weight: 600; color: var(--muted);
+}
+.body { flex: 1; display: flex; min-height: 0; }
+.side {
+  width: 236px; background: var(--panel); border-right: 1px solid var(--line);
+  padding: 22px 14px; display: flex; flex-direction: column; gap: 22px;
+}
+.brand { font-family: Fraunces, serif; font-size: 22px; line-height: 1.1; letter-spacing: -0.03em; }
+.brand small { display: block; font-family: "IBM Plex Sans", sans-serif; font-size: 11px; font-weight: 500; color: var(--muted); margin-top: 6px; letter-spacing: 0; }
+.nav { display: grid; gap: 2px; }
+.nav a {
+  position: relative; display: flex; align-items: center; justify-content: space-between;
+  height: 38px; padding: 0 12px 0 14px; border-radius: 8px; color: var(--muted);
+  text-decoration: none; font-weight: 500;
+}
+.nav a.on { background: var(--card); color: var(--ink); font-weight: 600; }
+.nav a.on::before {
+  content: ""; position: absolute; left: 0; top: 9px; bottom: 9px; width: 3px;
+  border-radius: 2px; background: var(--orange);
+}
+.badge {
+  font-family: "IBM Plex Mono", monospace; font-size: 11px; font-weight: 500;
+  background: var(--orange); color: #fff; min-width: 20px; height: 20px;
+  border-radius: 999px; display: grid; place-items: center; padding: 0 6px;
+}
+.main { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+.top {
+  height: 56px; display: flex; align-items: center; gap: 12px;
+  padding: 0 28px; border-bottom: 1px solid var(--line);
+}
+.search {
+  flex: 1; height: 36px; border-radius: 999px; border: 1px solid var(--line);
+  background: var(--card); padding: 0 16px; color: var(--muted); font-size: 13px;
+  display: flex; align-items: center;
+}
+.ghost {
+  height: 34px; padding: 0 14px; border-radius: 8px; border: 1px solid var(--line);
+  background: transparent; font: inherit; font-weight: 600; color: var(--ink); cursor: default;
+}
+.content { padding: 28px 36px; display: grid; gap: 22px; align-content: start; }
+.head { display: flex; align-items: flex-end; justify-content: space-between; gap: 24px; }
+.head h1 {
+  font-family: Fraunces, serif; font-size: 56px; line-height: 0.95;
+  letter-spacing: -0.04em; font-weight: 700;
+}
+.head p { color: var(--muted); margin-top: 10px; font-size: 15px; max-width: 340px; }
+.actions { display: flex; gap: 10px; align-items: center; }
+.primary {
+  height: 42px; padding: 0 18px; border: 0; border-radius: 10px;
+  background: var(--black); color: var(--cream); font: inherit; font-weight: 600; cursor: default;
+}
+.island {
+  background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+  padding: 14px 16px; display: grid; gap: 8px;
+}
+.island .meta { display: flex; justify-content: space-between; font-size: 12px; color: var(--muted); font-weight: 600; }
+.track { height: 6px; border-radius: 999px; background: var(--panel); overflow: hidden; }
+.track span { display: block; width: 38%; height: 100%; background: var(--orange); }
+.list { display: grid; gap: 10px; }
+.row {
+  background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+  padding: 16px 18px; display: grid; grid-template-columns: 44px 1fr auto; gap: 14px; align-items: center;
+}
+.icon {
+  width: 44px; height: 44px; border-radius: 10px; background: var(--panel);
+  border: 1px solid var(--line); display: grid; place-items: center;
+  font-family: Fraunces, serif; font-weight: 700; color: var(--orange);
+}
+.row h3 { font-size: 16px; font-weight: 600; }
+.row .sub { color: var(--muted); font-size: 12.5px; margin-top: 3px; }
+.ver {
+  font-family: "IBM Plex Mono", monospace; font-size: 12px; color: var(--muted);
+  display: flex; gap: 8px; align-items: center; margin-top: 8px;
+}
+.ver b { color: var(--ink); background: var(--panel); padding: 2px 8px; border-radius: 999px; font-weight: 500; }
+.btn-sm {
+  height: 36px; padding: 0 14px; border-radius: 9px; border: 1px solid var(--ink);
+  background: var(--cream); font: inherit; font-weight: 600; cursor: default;
+}
+.tag { font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--orange); font-weight: 700; margin-bottom: 4px; }
+</style>
+</head>
+<body>
+<div class="win">
+  <div class="titlebar"><span>Quantum Updater</span><span>Direction A · Editorial Bold</span></div>
+  <div class="body">
+    <aside class="side">
+      <div class="brand">Quantum Updater<small>Keeps your apps current</small></div>
+      <nav class="nav">
+        <a class="on" href="#">Updates <span class="badge">2</span></a>
+        <a href="#">Marketplace</a>
+        <a href="#">Installed</a>
+        <a href="#">Cleanup</a>
+        <a href="#">Startup apps</a>
+        <a href="#">Settings</a>
+      </nav>
+    </aside>
+    <section class="main">
+      <div class="top">
+        <div class="search">Search packages &amp; tools (Ctrl+K)</div>
+        <button class="ghost" type="button">Sync</button>
+      </div>
+      <div class="content">
+        <div class="head">
+          <div>
+            <div class="tag">Ready to apply</div>
+            <h1>Updates</h1>
+            <p>2 apps have a newer version ready. Black runs the action; orange marks the pulse.</p>
+          </div>
+          <div class="actions">
+            <button class="ghost" type="button">Check again</button>
+            <button class="primary" type="button">Update selected (2)</button>
+          </div>
+        </div>
+        <div class="island">
+          <div class="meta"><span>Batch progress</span><span>38%</span></div>
+          <div class="track"><span></span></div>
+        </div>
+        <div class="list">
+          <div class="row">
+            <div class="icon">O</div>
+            <div>
+              <h3>OBS Studio</h3>
+              <div class="sub">Open Broadcaster Software · winget</div>
+              <div class="ver">v32.2.2 <span>→</span> <b>v33.0.0</b> · 48.2 MB</div>
+            </div>
+            <button class="btn-sm" type="button">Update</button>
+          </div>
+          <div class="row">
+            <div class="icon">Or</div>
+            <div>
+              <h3>Orca</h3>
+              <div class="sub">Microsoft · winget</div>
+              <div class="ver">v1.4.251 <span>→</span> <b>v1.4.253</b> · 4.1 MB</div>
+            </div>
+            <button class="btn-sm" type="button">Update</button>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+</div>
+</body>
+</html>

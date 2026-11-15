@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Quantum Updater — Pick a visual direction</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700&family=Instrument+Sans:wght@450;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #14110E;
+  --card: #1E1A16;
+  --cream: #F4EEE3;
+  --orange: #E5671A;
+  --muted: #A89B8C;
+  --line: #2E2822;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0; font-family: "Instrument Sans", sans-serif; background: var(--bg); color: var(--cream);
+  padding: 36px 28px 64px;
+}
+.wrap { max-width: 1200px; margin: 0 auto; display: grid; gap: 28px; }
+h1 { font-family: Sora, sans-serif; font-size: clamp(28px, 4vw, 40px); letter-spacing: -0.03em; margin: 0; }
+.lead { color: var(--muted); max-width: 640px; margin: 0; line-height: 1.5; }
+.note {
+  border: 1px solid color-mix(in srgb, var(--orange) 40%, var(--line));
+  background: color-mix(in srgb, var(--orange) 12%, var(--card));
+  border-radius: 12px; padding: 12px 16px; font-size: 14px;
+}
+.grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
+@media (max-width: 900px) { .grid { grid-template-columns: 1fr; } }
+.card {
+  background: var(--card); border: 1px solid var(--line); border-radius: 16px; overflow: hidden;
+  display: grid; grid-template-rows: auto 1fr;
+}
+.card header { padding: 16px 18px 12px; display: grid; gap: 6px; }
+.card .code {
+  font-family: Sora, sans-serif; font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--orange); font-weight: 700;
+}
+.card h2 { font-family: Sora, sans-serif; font-size: 20px; margin: 0; letter-spacing: -0.02em; }
+.card p { margin: 0; color: var(--muted); font-size: 14px; line-height: 1.45; }
+.frame {
+  border-top: 1px solid var(--line); background: #0c0a08; aspect-ratio: 16 / 10;
+  position: relative; overflow: hidden;
+}
+.frame iframe {
+  position: absolute; inset: 0; width: 1280px; height: 800px;
+  transform-origin: top left; border: 0; pointer-events: none;
+  transform: scale(0.42);
+}
+.actions { padding: 12px 18px 16px; display: flex; gap: 10px; }
+.actions a {
+  text-decoration: none; font-weight: 700; font-size: 13px; border-radius: 999px; padding: 8px 14px;
+}
+.actions .open { background: var(--cream); color: var(--bg); }
+.actions .pick { background: var(--orange); color: #fff; }
+.palette { display: flex; gap: 8px; margin-top: 4px; }
+.swatch { width: 18px; height: 18px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.15); }
+</style>
+<script>
+function fitFrames() {
+  document.querySelectorAll('.frame').forEach(function (frame) {
+    var iframe = frame.querySelector('iframe');
+    if (!iframe) return;
+    var scale = Math.min(frame.clientWidth / 1280, frame.clientHeight / 800);
+    iframe.style.transform = 'scale(' + scale + ')';
+  });
+}
+window.addEventListener('load', fitFrames);
+window.addEventListener('resize', fitFrames);
+</script>
+</head>
+<body>
+<div class="wrap">
+  <div>
+    <h1>Pick one direction</h1>
+    <p class="lead">Four single-screen Updates mockups, same cream / orange / black palette, different layout energy. Choose A, B, C, or D. After you pick, we build the full mockup set for every screen. No live app redesign until that full set is approved.</p>
+  </div>
+  <div class="note">Palette locked for this round: cream paper, orange pulse, black structure. Teal and mint are out. Reply with A, B, C, or D.</div>
+  <div class="grid">
+    <article class="card">
+      <header>
+        <div class="code">Direction A</div>
+        <h2>Editorial Bold</h2>
+        <p>Magazine-scale title, black primary CTA, orange only as rail and progress. Quiet luxury utility.</p>
+        <div class="palette">
+          <span class="swatch" style="background:#F3EBDD"></span>
+          <span class="swatch" style="background:#E35A12"></span>
+          <span class="swatch" style="background:#14110E"></span>
+        </div>
+      </header>
+      <div class="frame"><iframe src="01-A-editorial.html" title="Direction A"></iframe></div>
+      <div class="actions">
+        <a class="open" href="01-A-editorial.html" target="_blank">Open full size</a>
+      </div>
+    </article>
+    <article class="card">
+      <header>
+        <div class="code">Direction B</div>
+        <h2>Soft Utility</h2>
+        <p>Pill nav and orange primary actions. Dense list, island progress strip, familiar product density.</p>
+        <div class="palette">
+          <span class="swatch" style="background:#F7F1E6"></span>
+          <span class="swatch" style="background:#F06A18"></span>
+          <span class="swatch" style="background:#1A1510"></span>
+        </div>
+      </header>
+      <div class="frame"><iframe src="01-B-soft-utility.html" title="Direction B"></iframe></div>
+      <div class="actions">
+        <a class="open" href="01-B-soft-utility.html" target="_blank">Open full size</a>
+      </div>
+    </article>
+    <article class="card">
+      <header>
+        <div class="code">Direction C</div>
+        <h2>Graphic Contrast</h2>
+        <p>Poster rules, thick black frames, orange shout block. The wildest cut — loud and modern.</p>
+        <div class="palette">
+          <span class="swatch" style="background:#F6ECD8"></span>
+          <span class="swatch" style="background:#FF5A00"></span>
+          <span class="swatch" style="background:#0E0C0A"></span>
+        </div>
+      </header>
+      <div class="frame"><iframe src="01-C-graphic.html" title="Direction C"></iframe></div>
+      <div class="actions">
+        <a class="open" href="01-C-graphic.html" target="_blank">Open full size</a>
+      </div>
+    </article>
+    <article class="card">
+      <header>
+        <div class="code">Direction D</div>
+        <h2>Split Shell</h2>
+        <p>Near-black sidebar + cream workspace. Closest to today’s shell, remapped to cream / orange / black.</p>
+        <div class="palette">
+          <span class="swatch" style="background:#F4EEE3"></span>
+          <span class="swatch" style="background:#E5671A"></span>
+          <span class="swatch" style="background:#12100E"></span>
+        </div>
+      </header>
+      <div class="frame"><iframe src="01-D-split-shell.html" title="Direction D"></iframe></div>
+      <div class="actions">
+        <a class="open" href="01-D-split-shell.html" target="_blank">Open full size</a>
+      </div>
+    </article>
+  </div>
+</div>
+</body>
+</html>

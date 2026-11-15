@@ -1,13 +1,11 @@
-' VBScript launcher to start Quantum Updater elevated with ZERO command prompt window flash
-' Official Utility by Quantum Step (https://quantumstep.in)
+' Starts Quantum Updater elevated, without a command window.
+' Quantum Step (https://quantumstep.in)
 Set fso = CreateObject("Scripting.FileSystemObject")
 currentDir = fso.GetParentFolderName(WScript.ScriptFullName)
-exePath = currentDir & "\dist\portable\QuantumUpdater.exe"
+exePath = currentDir & "\dist\QuantumUpdater\QuantumUpdater.exe"
 If Not fso.FileExists(exePath) Then
-    exePath = currentDir & "\src-tauri\target\release\quantum_updater.exe"
-End If
-If Not fso.FileExists(exePath) Then
-    exePath = currentDir & "\dist\portable\WinPackageHub.exe"
+    MsgBox "QuantumUpdater.exe was not found. Build it with: python build_exe.py QuantumUpdater", 48, "Quantum Updater"
+    WScript.Quit 1
 End If
 
 Set objShell = CreateObject("Shell.Application")

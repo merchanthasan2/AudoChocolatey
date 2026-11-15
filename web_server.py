@@ -1,4 +1,5 @@
 import os
+import re
 import sys
 import json
 import traceback
@@ -12,10 +13,7 @@ class QuantumWebHandler(SimpleHTTPRequestHandler):
         super().__init__(*args, directory=web_dir, **kwargs)
 
     def do_OPTIONS(self):
-        self.send_response(200)
-        self.send_header("Access-Control-Allow-Origin", "*")
-        self.send_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
-        self.send_header("Access-Control-Allow-Headers", "Content-Type")
+        self.send_response(204)
         self.end_headers()
 
     def do_POST(self):
@@ -28,7 +26,10 @@ class QuantumWebHandler(SimpleHTTPRequestHandler):
                 args = payload.get("args", {})
 
                 api: WebAPI = self.server.web_api
-                if not hasattr(api, cmd):
+                if not isinstance(cmd, str) or not re.fullmatch(r"[A-Za-z][A-Za-z0-9_]*", cmd) or cmd.startswith("_"):
+                    resp_data = {"error": "That command is not available."}
+                    status_code = 403
+                elif not hasattr(api, cmd):
                     resp_data = {"error": f"Unknown API method: {cmd}"}
                     status_code = 404
                 else:
@@ -48,7 +49,6 @@ class QuantumWebHandler(SimpleHTTPRequestHandler):
                 self.send_response(status_code)
                 self.send_header("Content-Type", "application/json")
                 self.send_header("Content-Length", str(len(out_bytes)))
-                self.send_header("Access-Control-Allow-Origin", "*")
                 self.end_headers()
                 self.wfile.write(out_bytes)
             except Exception as e:
@@ -57,7 +57,6 @@ class QuantumWebHandler(SimpleHTTPRequestHandler):
                 self.send_response(500)
                 self.send_header("Content-Type", "application/json")
                 self.send_header("Content-Length", str(len(err_data)))
-                self.send_header("Access-Control-Allow-Origin", "*")
                 self.end_headers()
                 self.wfile.write(err_data)
         else:
@@ -77,7 +76,7 @@ class QuantumWebHandler(SimpleHTTPRequestHandler):
 def run(port: int = 8089):
     manager = PackageManager()
     api = WebAPI(manager)
-    server_address = ("", port)
+    server_address = ("127.0.0.1", port)
     httpd = HTTPServer(server_address, QuantumWebHandler)
     httpd.web_api = api
     print(f"[Quantum Web Server]: Active at http://localhost:{port}/ with Live WebAPI Bridge")

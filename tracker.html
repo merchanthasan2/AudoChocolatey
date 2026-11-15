@@ -1,0 +1,784 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Development tracker</title>
+<style>
+:root {
+  --bg: #0c1322; --surface: #131c30; --sunk: #0f1728; --ink: #e6eaf4; --muted: #9ba6c0; --line: #253150;
+  --accent: #79a3ff; --orange: #ff9a4d;
+  --st-pending: #9aa3b8; --st-progress: #79a3ff; --st-parked: #b79cf0; --st-blocked: #ff7b70;
+  --st-built: #f0b545; --st-deployed: #3fd0bd; --st-done: #6fd17f;
+  --display: "Segoe UI", system-ui, sans-serif;
+  --body: "Segoe UI", system-ui, sans-serif;
+  --mono: ui-monospace, Consolas, monospace;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--body); font-size: 15px; line-height: 1.5; padding: 28px 16px 64px; }
+.wrap { max-width: 1180px; margin: 0 auto; display: grid; gap: 34px; }
+h1, h2, h3 { font-family: var(--display); margin: 0; letter-spacing: -0.02em; }
+h1 { font-size: clamp(30px, 5vw, 44px); line-height: 1.05; }
+h2 { font-size: 22px; }
+h3 { font-size: 16px; }
+p { margin: 0; }
+.brand { display: flex; gap: 16px; align-items: center; }
+.brand img { width: 52px; height: 52px; border-radius: 12px; border: 1px solid var(--line); background: var(--sunk); }
+.eyebrow { font-size: 12px; text-transform: uppercase; letter-spacing: 0.09em; color: var(--muted); font-weight: 700; }
+.muted { color: var(--muted); }
+.meta { display: flex; flex-wrap: wrap; gap: 6px 18px; color: var(--muted); font-size: 14px; }
+.meta b { color: var(--ink); }
+code { font-family: var(--mono); font-size: 0.86em; background: var(--sunk); padding: 1px 5px; border-radius: 4px; }
+section { display: grid; gap: 14px; min-width: 0; }
+.sec-head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 6px 16px; }
+.safety { display: flex; gap: 10px; border: 1px solid color-mix(in srgb, var(--st-done) 40%, var(--line)); background: color-mix(in srgb, var(--st-done) 8%, var(--surface)); border-radius: 10px; padding: 10px 14px; font-size: 14px; }
+.resume { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); border: 1px solid var(--line); background: var(--surface); border-radius: 12px; overflow: hidden; }
+.resume > div { padding: 18px 20px; display: grid; gap: 10px; align-content: start; }
+.resume > div + div { border-left: 1px solid var(--line); background: var(--sunk); }
+.next-pill { justify-self: start; font-family: var(--mono); font-size: 11px; font-weight: 700; letter-spacing: 0.08em; color: #1a1006; background: var(--orange); padding: 3px 8px; border-radius: 999px; }
+.resume ol { margin: 0; padding-left: 20px; display: grid; gap: 6px; }
+.prio { margin: 0; padding: 0; list-style: none; display: grid; gap: 8px; counter-reset: p; }
+.prio li { counter-increment: p; display: grid; grid-template-columns: 26px 1fr auto; gap: 8px; align-items: baseline; }
+.prio li::before { content: counter(p); font-family: var(--mono); font-weight: 600; font-size: 12px; width: 22px; height: 22px; display: inline-grid; place-items: center; border-radius: 50%; border: 1px solid var(--line); background: var(--surface); }
+.prio li.now::before { background: var(--orange); border-color: var(--orange); color: #1a1006; }
+.team { display: grid; grid-template-columns: 1.1fr 1fr; gap: 16px; }
+.org, .cycle { display: grid; gap: 8px; }
+.role, .cycle li { background: var(--surface); border: 1px solid var(--line); border-left: 3px solid var(--c, var(--line)); border-radius: 10px; padding: 10px 12px; }
+.role b, .who-tag { display: inline-block; }
+.role span, .cycle li { color: var(--muted); font-size: 13.5px; }
+.cycle { margin: 0; padding: 0; list-style: none; }
+.cycle li { color: var(--ink); display: flex; justify-content: space-between; gap: 8px; align-items: center; }
+.who-tag { font-size: 11px; font-weight: 700; color: var(--c); border: 1px solid color-mix(in srgb, var(--c) 40%, transparent); border-radius: 999px; padding: 2px 8px; white-space: nowrap; }
+.org-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.chip { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; font-size: 12.5px; font-weight: 700; padding: 2px 9px 2px 7px; border-radius: 999px; color: var(--c); background: color-mix(in srgb, var(--c) 13%, transparent); border: 1px solid color-mix(in srgb, var(--c) 30%, transparent); }
+.chip::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--c); }
+.summary { display: grid; gap: 12px; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 18px 20px; }
+.total { display: grid; grid-template-columns: auto 1fr; gap: 16px; align-items: center; }
+.pct { font-size: 48px; font-weight: 800; letter-spacing: -0.03em; color: var(--accent); font-variant-numeric: tabular-nums; }
+.pct small { font-size: 24px; }
+.meter { height: 10px; border-radius: 6px; background: var(--sunk); overflow: hidden; }
+.meter span { display: block; height: 100%; background: var(--accent); }
+.sub, .how { display: flex; flex-wrap: wrap; gap: 8px 16px; color: var(--muted); font-size: 13px; }
+.bar { display: flex; height: 14px; border-radius: 7px; overflow: hidden; background: var(--sunk); }
+.bar span { display: block; height: 100%; background: var(--c); }
+.legend, .who-row { display: flex; flex-wrap: wrap; gap: 8px 10px; align-items: center; }
+.legend button, .who-row button, .phase, .tabs button, .btn { font: inherit; cursor: pointer; }
+.legend button, .who-row button { background: none; border: 0; padding: 0; color: inherit; display: inline-flex; align-items: center; gap: 6px; }
+.legend button[aria-pressed="true"] .chip { outline: 2px solid var(--c); outline-offset: 1px; }
+.who-row button[aria-pressed="true"] { outline: 2px solid var(--accent); border-radius: 999px; }
+.n { font-family: var(--mono); font-weight: 600; }
+.big { display: flex; flex-wrap: wrap; gap: 8px 28px; }
+.big div { display: grid; }
+.big strong { font-size: 30px; line-height: 1.1; font-variant-numeric: tabular-nums; }
+.big span { font-size: 13px; color: var(--muted); }
+.phases { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; }
+.phase { text-align: left; color: inherit; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 12px 13px; display: grid; gap: 8px; }
+.phase[aria-pressed="true"], .tabs button[aria-selected="true"] { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
+.phase .top { display: flex; justify-content: space-between; gap: 8px; align-items: center; }
+.phase .pid { font-family: var(--mono); font-weight: 600; font-size: 13px; }
+.phase .pname { font-weight: 700; }
+.phase .pnote { font-size: 12.5px; color: var(--muted); }
+.mini { display: flex; height: 5px; border-radius: 3px; overflow: hidden; background: var(--sunk); }
+.mini span { background: var(--c); }
+.count { font-family: var(--mono); font-size: 12px; color: var(--muted); }
+.group-label { grid-column: 1 / -1; font-size: 12px; text-transform: uppercase; letter-spacing: 0.09em; color: var(--muted); font-weight: 700; margin-top: 8px; }
+.tabs { display: flex; gap: 8px; }
+.tabs button { background: var(--sunk); color: var(--ink); border: 1px solid var(--line); border-radius: 999px; padding: 6px 12px; }
+.tabs button[aria-selected="true"] { background: var(--ink); color: var(--bg); }
+.filters { display: flex; flex-wrap: wrap; gap: 10px; align-items: end; }
+.field { display: grid; gap: 4px; font-size: 12.5px; color: var(--muted); font-weight: 700; }
+select, input[type="search"] { font: inherit; font-size: 14px; color: var(--ink); background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 7px 10px; }
+input[type="search"] { width: min(260px, 100%); }
+.toggle { display: flex; align-items: center; gap: 6px; font-size: 14px; color: var(--ink); padding-bottom: 8px; }
+.btn { background: var(--surface); color: var(--ink); border: 1px solid var(--line); border-radius: 8px; padding: 8px 12px; }
+.parts-legend { display: flex; flex-wrap: wrap; gap: 10px 14px; align-items: center; color: var(--muted); font-size: 13px; }
+.dot { width: 18px; height: 18px; border-radius: 50%; display: inline-grid; place-items: center; font-size: 11px; font-weight: 700; color: var(--c); border: 1.5px solid var(--c); }
+.dot.done { background: var(--c); color: #102016; }
+.dot.doing { background: color-mix(in srgb, var(--c) 25%, transparent); }
+.dot.na { border-style: dashed; color: var(--muted); }
+.tbl-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); }
+table { width: 100%; border-collapse: collapse; min-width: 980px; }
+th, td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--line); vertical-align: top; font-size: 13.5px; }
+th { color: var(--muted); font-size: 12px; letter-spacing: 0.04em; background: var(--sunk); position: sticky; top: 0; }
+td.id { font-family: var(--mono); white-space: nowrap; color: var(--muted); }
+td.task { min-width: 240px; }
+tr.grp td { background: #18243a; font-weight: 700; }
+.with { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
+.with i { width: 8px; height: 8px; border-radius: 50%; background: var(--c); display: block; }
+.pt { text-align: center; width: 52px; }
+.held { background: var(--surface); border: 1px dashed var(--line); border-radius: 12px; padding: 14px 16px; color: var(--muted); }
+.held b { color: var(--ink); }
+.held ul { margin: 6px 0 0; }
+@media (max-width: 800px) {
+  .resume, .team, .total, .org-row { grid-template-columns: 1fr; }
+  .resume > div + div { border-left: 0; border-top: 1px solid var(--line); }
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="brand">
+      <img src="web/quantum-updater-icon.svg" alt="">
+      <div>
+        <p class="eyebrow">Quantum Updater · Windows app</p>
+        <h1>Development tracker</h1>
+      </div>
+    </div>
+    <p class="meta"><span>Updated <b id="stamp"></b></span><span>File <code>tracker.html</code> in this project folder</span></p>
+    <p class="safety">This board is a file on this PC. A test means opening the Windows app on this PC. There is no website copy.</p>
+  </header>
+
+  <section class="resume" aria-label="Resume point">
+    <div>
+      <span class="next-pill">RESUME POINT</span>
+      <h2>Winget path ready — publish when you can</h2>
+      <p>ADR 028: <code>QuantumStep.QuantumUpdater</code> manifests + release Action are in source. Not on winget yet (community PR needed after a public GitHub Release). Team keeps building Wave 2; owner actions stay queued.</p>
+      <ol>
+        <li>Team continues Wave 2 / theme / cleanup polish.</li>
+        <li>Owner later: commit/push, tag <code>v*</code>, wait for Action EXE.</li>
+        <li>Owner later: <code>wingetcreate submit</code> (or winget-pkgs PR) for QuantumStep.QuantumUpdater.</li>
+        <li>Then any PC: <code>winget install QuantumStep.QuantumUpdater</code>.</li>
+      </ol>
+    </div>
+    <div>
+      <span class="eyebrow">Owner later (non-blocking)</span>
+      <ul class="prio">
+        <li class="now"><span>Team continues Wave 2</span><span class="muted">now</span></li>
+        <li><span>Commit / push / tag release</span><span class="muted">later</span></li>
+        <li><span>Submit winget manifests</span><span class="muted">later</span></li>
+        <li><span>Lock Park D / on-PC looks</span><span class="muted">later</span></li>
+      </ul>
+    </div>
+  </section>
+
+  <section aria-labelledby="team-h">
+    <div class="sec-head"><h2 id="team-h">Team and work cycle</h2><span class="muted">From 11 Nov 2026</span></div>
+    <div class="team">
+      <div class="org">
+        <div class="role" style="--c:var(--orange)"><b>You</b><span>You decide and you accept the work.</span></div>
+        <div class="role" style="--c:var(--st-deployed)"><b>Manager</b><span>Agrees the plan, checks the result, and keeps this board.</span></div>
+        <div class="org-row">
+          <div class="role" style="--c:var(--accent)"><b>Design Architect</b><span>Plan, screens, and the picture of the app.</span></div>
+          <div class="role" style="--c:var(--st-parked)"><b>Security architect</b><span>Checks every finished step for bugs and weak spots.</span></div>
+          <div class="role" style="--c:var(--st-built)"><b>Worker bee 1</b><span>Builds one small step.</span></div>
+          <div class="role" style="--c:var(--st-built)"><b>Worker bee 2</b><span>Builds a different small step at the same time.</span></div>
+        </div>
+      </div>
+      <ol class="cycle">
+        <li>Plan and screens <span class="who-tag" style="--c:var(--accent)">Design Architect</span></li>
+        <li>Agree the plan and write it here <span class="who-tag" style="--c:var(--st-deployed)">Manager</span></li>
+        <li>Build one small step <span class="who-tag" style="--c:var(--st-built)">Worker bees</span></li>
+        <li>Check the result <span class="who-tag" style="--c:var(--st-deployed)">Manager</span></li>
+        <li>Security check <span class="who-tag" style="--c:var(--st-parked)">Security architect</span></li>
+        <li>Check it against the plan <span class="who-tag" style="--c:var(--accent)">Design Architect</span></li>
+        <li>Try the Windows app on this PC <span class="who-tag" style="--c:var(--orange)">You</span></li>
+        <li>Accept <span class="who-tag" style="--c:var(--orange)">You</span></li>
+      </ol>
+    </div>
+  </section>
+
+  <section aria-labelledby="sum-h">
+    <div class="sec-head"><h2 id="sum-h">Where the work stands</h2><span class="muted">Click a status or a person to filter the task list.</span></div>
+    <div class="summary">
+      <div class="total" id="total"></div>
+      <div class="big" id="big"></div>
+      <div class="bar" id="bar"></div>
+      <div class="legend" id="legend"></div>
+      <div class="who-row" id="whorow"></div>
+    </div>
+  </section>
+
+  <section aria-labelledby="ph-h">
+    <div class="sec-head"><h2 id="ph-h">Phases</h2><span class="muted">Click a phase to show only its tasks.</span></div>
+    <div class="phases" id="phases"></div>
+  </section>
+
+  <section aria-labelledby="tk-h" id="tasks">
+    <div class="sec-head"><h2 id="tk-h">Task register</h2><span class="muted" id="shown"></span></div>
+    <div class="tabs" role="tablist">
+      <button type="button" id="v-pipe" aria-selected="true">Stage and ownership</button>
+      <button type="button" id="v-detail" aria-selected="false">Evidence and waiting</button>
+    </div>
+    <div class="filters">
+      <label class="field">Phase<select id="f-phase"></select></label>
+      <label class="field">Status<select id="f-status"></select></label>
+      <label class="field">With<select id="f-with"></select></label>
+      <label class="field">Search<input type="search" id="f-q" placeholder="Task, phase, person"></label>
+      <label class="toggle"><input type="checkbox" id="f-hide"> Hide complete</label>
+      <button class="btn" id="f-reset" type="button">Show all</button>
+    </div>
+    <div class="parts-legend" id="partslegend"></div>
+    <div class="tbl-wrap"><table><thead id="thead"></thead><tbody id="tbody"></tbody></table></div>
+    <p class="muted">The seven parts follow the team cycle: Plan, Build, Verify, Security, Validate, On this PC, Accept. Work finished before 11 Nov 2026 still needs the new security check and the Design Architect check.</p>
+  </section>
+
+  <section aria-labelledby="ow-h">
+    <div class="sec-head"><h2 id="ow-h">Decisions already made</h2></div>
+    <div class="tbl-wrap"><table><thead><tr><th></th><th>Decision</th></tr></thead><tbody id="dec"></tbody></table></div>
+  </section>
+
+  <section aria-labelledby="place-h">
+    <div class="sec-head"><h2 id="place-h">Where the app is</h2></div>
+    <div class="tbl-wrap"><table><thead><tr><th>Place</th><th>What is there</th><th>Not there yet</th></tr></thead>
+    <tbody>
+      <tr><td>This PC</td><td>The Windows app <code>dist\QuantumUpdater\QuantumUpdater.exe</code>, built 8 Nov 2026.</td><td>Your look at that build is still open. The later fixes are in the source and need a new build before you can see them.</td></tr>
+      <tr><td>A website</td><td>None. This product is not published as a site.</td><td>It stays a Windows app on this PC.</td></tr>
+    </tbody></table></div>
+  </section>
+
+  <section aria-labelledby="au-h">
+    <div class="sec-head"><h2 id="au-h">Security and code checks</h2><span class="muted">Not started yet</span></div>
+    <div class="tbl-wrap"><table><thead><tr><th>#</th><th>Check</th><th>When</th><th>Status</th></tr></thead><tbody id="audit"></tbody></table></div>
+  </section>
+
+  <section aria-labelledby="held-h">
+    <h2 id="held-h">Held out of this app</h2>
+    <div class="held" id="held"></div>
+  </section>
+</div>
+<script>
+const TRACKER = {
+  updated: "12 Nov 2026, 17:50",
+  ownerDecisions: [
+    "Live colours are Cream, Orange, and Black. Dark is near-black with orange marks. Teal is retired.",
+    "Real application icons everywhere they appear in the product",
+    "About page exactly like the approved mockup with a hardware illustration library",
+    "Every physical drive shown; cloud volumes never; external drives labelled",
+    "Windows-owned files cleaned only through the supported Windows route",
+    "Optimize RAM stays and becomes a real, measured trim",
+    "Large files: Recycle Bin by default, Delete permanently behind an extra confirmation",
+    "Windows Utility matrix: 80 in this product (12 already + Waves 1 to 5). Drivers/backup/vuln after licensing. 12 open Windows. 48 later companion. 6 skipped.",
+    "Leftover folders: Recycle Bin per folder (AppData, Program Files, ProgramData), then remove stale uninstall entries after a registry backup",
+    "Team cycle from 11 Nov 2026: Design Architect plans first, Manager writes it here, two Worker bees build, Manager checks, Security checks, Design Architect checks again"
+  ],
+  later: "Held out of this product (not in the % bar): after licensing 6 (drivers, backup, vulnerability feed); open Windows 12; later companion 48 (PowerToys/DevToys-class); skipped 6 (partition recovery, disk resize, HDD defrag, dishonest wipes, Windows 11 readiness). Full names live in windows-utility-plan.html.",
+  heldOut: [
+    { title: "After licensing (6)", items: ["Device driver updates", "Driver package export", "Roll back a device driver", "Versioned file backup and restore", "Full system image backup", "Installed software vulnerability inventory"] },
+    { title: "Open Windows (12)", items: ["Microsoft Store app updates", "Previous Windows installation cleanup", "Rebuild the Windows Search index", "Repair an incorrect default app association", "Apply a system restore point", "Reinstall current Windows version for repair", "Repair a PC that will not boot", "RAM error testing", "Recover deleted files", "Create bootable Windows installation media", "Create a Windows recovery USB", "Offline malware scan"] },
+    { title: "Not this product (6)", items: ["HDD defragmentation", "Recover a lost partition", "Resize a disk partition", "Selected file overwrite and delete", "Overwrite free space on a selected volume", "Windows 11 readiness check"] }
+  ],
+  phases: [
+    {
+      id: "GOV",
+      title: "Team and this board",
+      items: [
+        { id: "GOV.1", text: "Rebuild this board to match the register: filters, stages, owners, and the seven parts.", status: "done", owner: "manager" }
+      ]
+    },
+    {
+      id: "16-19",
+      title: "Phase 16-19 (earlier)",
+      items: [
+        { id: "16-19.1", text: "Update scan, installed list from catalog plus this PC registry, exact installed match, parallel downloads, cleanup categories", status: "checked", owner: "owner" }
+      ]
+    },
+    {
+      id: "21",
+      title: "Phase 21 — Scan reliability",
+      items: [
+        { id: "21.1", text: "Scan no longer silently returns nothing; shows Scan did not finish with the reason", status: "checked", owner: "owner" }
+      ]
+    },
+    {
+      id: "22",
+      title: "Phase 22 — About this computer",
+      items: [
+        { id: "22.1", text: "About this computer reads this PC (not a Mac); owner confirmed ASUS TUF Gaming A15 shows", status: "done", owner: "product" }
+      ]
+    },
+    {
+      id: "23",
+      title: "Phase 23 — Marketplace installed state",
+      items: [
+        { id: "23.1", text: "Marketplace shows disabled Installed for apps on this PC", status: "checked", owner: "owner" }
+      ]
+    },
+    {
+      id: "24",
+      title: "Phase 24 — Visual redesign",
+      items: [
+        { id: "24.1", text: "Mockups A and B", status: "done", owner: "designer" },
+        { id: "24.2", text: "Owner approved B normal theme and A dark mode", status: "done", owner: "owner" },
+        { id: "24.3", text: "Live window restyle", status: "done", owner: "product" },
+        { id: "24.4", text: "Unreadable panels on Updates fixed", status: "done", owner: "product" },
+        { id: "24.5", text: "Readability sweep of every page", status: "checked", owner: "product" },
+        { id: "24.6", text: "Real emblem in title bar and exe icon", status: "done", owner: "engine" }
+      ]
+    },
+    {
+      id: "25",
+      title: "Phase 25 — Real app icons (ADR 008)",
+      items: [
+        { id: "25.1", text: "Icons from program files on this PC", status: "checked", owner: "engine" },
+        { id: "25.2", text: "Icons from publisher sites for Marketplace with 73 publisher homepages", status: "checked", owner: "product" },
+        { id: "25.3", text: "Rebuild and owner check", status: "waiting", owner: "owner" }
+      ]
+    },
+    {
+      id: "26",
+      title: "Phase 26 — About this computer v2 (ADR 009, 010)",
+      items: [
+        { id: "26.1", text: "Mockup approved", status: "done", owner: "designer" },
+        { id: "26.2", text: "Hardware facts: Ryzen 7 4800H 8C/16T, both GPUs, serial, battery, 144 Hz display, cameras", status: "done", owner: "engine" },
+        { id: "26.3", text: "Hardware drawing library, 77 drawings, TUF as gaming laptop, dual GPU and physical drives", status: "done", owner: "designer" },
+        { id: "26.4", text: "Live page build from the approved mockup", status: "done", owner: "product" }
+      ]
+    },
+    {
+      id: "27",
+      title: "Phase 27 — System tools revamp",
+      items: [
+        { id: "27.1", text: "Architect diagnosis", status: "done", owner: "architect" },
+        { id: "27.2", text: "Cleanup safety: top Clean asks first, no fake RAM numbers, headline 3.73 GB (Windows-owned 4.27 GB held out)", status: "done", owner: "product" },
+        { id: "27.3", text: "Windows-owned files via supported route", status: "done", owner: "engine" },
+        { id: "27.4", text: "Optimize RAM made real: measured trim of every app, real result only", status: "done", owner: "engine" },
+        { id: "27.5", text: "Plan: launch scans, progress, per-section readiness, cache between launches", status: "done", owner: "architect" },
+        { id: "27.5a", text: "Trace every scan on this PC to find the 5-minute cause", status: "done", owner: "engine" },
+        { id: "27.5b", text: "Scan orchestrator: parallel lanes, time budgets, cancel, saved results so the window fills in about 2 s", status: "done", owner: "engine" },
+        { id: "27.5c", text: "Sections unlock as their scan finishes; real progress, time left, sidebar status", status: "done", owner: "product" },
+        { id: "27.6", text: "Startup apps backend (disable via Windows flag, never delete)", status: "done", owner: "engine" },
+        { id: "27.7", text: "Large files: Recycle Bin default, Delete permanently behind extra confirmation", status: "done", owner: "engine" },
+        { id: "27.8", text: "Leftover folders: Recycle Bin per folder, then remove stale uninstall entries after a registry backup", status: "done", owner: "engine" },
+        { id: "27.9", text: "Mockups: Cleanup states, readiness, sidebar, Startup apps, Large files, Leftover folders", status: "done", owner: "designer" },
+        { id: "27.10", text: "Owner decision D1: Windows-owned files route", status: "done", owner: "owner" },
+        { id: "27.11", text: "Owner decision D2: Optimize RAM approach", status: "done", owner: "owner" },
+        { id: "27.12", text: "Owner decision D3: Recycle Bin by default, Delete permanently behind an extra confirmation", status: "done", owner: "owner" },
+        { id: "27.13", text: "Owner decision D4: Recycle leftover folders and remove stale uninstall entries after backup", status: "done", owner: "owner" }
+      ]
+    },
+    {
+      id: "28",
+      title: "Phase 28 — Security and code audit",
+      items: [
+        { id: "28.1", text: "Security and code audit after manager checks", status: "waiting", owner: "security" }
+      ]
+    },
+    {
+      id: "29",
+      title: "Phase 29 — Rebuild and owner test",
+      items: [
+        { id: "29.1", text: "Rebuild executable from latest checked work", status: "done", owner: "engine" },
+        { id: "29.2", text: "Owner on-screen checks: scan list, Marketplace Installed, uninstall, About this computer, readable buttons, real icons, emblem", status: "waiting", owner: "owner" }
+      ]
+    },
+    {
+      id: "35",
+      title: "Phase 35 — Bugs from owner testing",
+      items: [
+        { id: "35.1", text: "OBS Studio update fails while OBS is closed. Installer exit 6: another program has OBS files open. On this PC Chrome has obs-virtualcam-module64.dll loaded. The card must name that program. The app must not close it.", status: "done", owner: "engine" },
+        { id: "35.2", text: "A failed update shows a fake transfer (Interrupted, 94%, made-up speed) and the words status notice, instead of the installer's real reason", status: "done", owner: "product" },
+        { id: "35.3", text: "About this computer shows memory speed as Not reported by this PC. The speed is a 2-byte SMBIOS value; the reader takes one byte and drops anything under 200. Show the configured speed other apps already show. This PC: DDR4 3200.", status: "done", owner: "engine" },
+        { id: "35.4", text: "Storage still lists two Google Drive volumes: G: happy143@gmail.com and H: mumbaiipn@gmail.com. About uses every fixed drive. Keep C: OS and D: 1Tb SSD980. Drop cloud volumes (Google Drive, OneDrive, Dropbox).", status: "done", owner: "engine" },
+        { id: "35.5", text: "Battery health stays Not reported. The reader only asks Windows for charge percent. This PC: design 90006 mWh, full charge 64185 mWh, health 71%. Cycle count from Windows is 0. Show health from those capacities.", status: "done", owner: "engine" },
+        { id: "35.6", text: "Startup apps is unreadable. 33 rows, 14 of them raw MicrosoftEdgeAutoLaunch hashes, every subtitle says Starts with Windows for you, and the switch is an empty checkbox because the toggle style is missing. Show a human name, a distinct subtitle, and a labelled on/off switch. Follow the approved startup mockup.", status: "done", owner: "product" },
+        { id: "35.7", text: "System cleanup does not scan or clean. Scan progress watches a different scanner than the one that runs, so the page stays blank. Clean stays disabled on a saved scan, and the delete runs on an engine that never scanned. Show the scan, then Clean must delete the selected categories after confirm.", status: "done", owner: "product" },
+        { id: "35.8", text: "Installed stays empty after launch. The registry list is ready, but the page is only drawn when the list is still empty, and startup waits on the slow catalog scan before painting. Show this PC's apps as soon as the registry scan finishes.", status: "done", owner: "product" },
+        { id: "35.9", text: "Marketplace shows no app icons. The curated list paints before the desktop bridge is ready, the miss is cached, and the real icons are never requested. Every app must show its own icon: the program file when it is installed, the publisher icon otherwise.", status: "done", owner: "product" },
+        { id: "35.10", text: "Spotify install failed. Winget log 19:31: the installer cannot run from an administrator context (0x8A150056). Retry that install as the signed-in user and show that reason on the card.", status: "done", owner: "engine" },
+        { id: "35.11", text: "An install card shows only Installing and a spinner. Show real completion, download speed, and downloaded versus total size from the installer output. Do not invent a speed.", status: "done", owner: "product" }
+      ]
+    },
+    {
+      id: "30",
+      title: "Wave 1 — Finish Cleanup (after current System tools)",
+      items: [
+        { id: "30.1", text: "Restart-required status after updates and cleans", status: "done", owner: "product", parts: { plan: "done", build: "done", verify: "todo", sec: "todo", valid: "todo", pc: "todo", acc: "todo" } },
+        { id: "30.2", text: "Empty Recycle Bin with count and size preview", status: "done", owner: "engine", parts: { plan: "done", build: "done", verify: "done", sec: "todo", valid: "todo", pc: "todo", acc: "todo" } },
+        { id: "30.3", text: "Browser history and cookies, separate opt-in from cache, per profile", status: "done", owner: "engine", parts: { plan: "done", build: "done", verify: "done", sec: "todo", valid: "todo", pc: "todo", acc: "todo" } },
+        { id: "30.4", text: "Explorer thumbnail cache cleanup", status: "done", owner: "engine", parts: { plan: "done", build: "done", verify: "done", sec: "todo", valid: "todo", pc: "todo", acc: "todo" } },
+        { id: "30.5", text: "DirectX shader cache cleanup, with rebuild warning", status: "done", owner: "engine", parts: { plan: "done", build: "done", verify: "done", sec: "todo", valid: "todo", pc: "todo", acc: "todo" } },
+        { id: "30.6", text: "Windows Error Reporting queues and archives (leave Event Logs)", status: "done", owner: "engine", parts: { plan: "done", build: "done", verify: "done", sec: "todo", valid: "todo", pc: "todo", acc: "todo" } },
+        { id: "30.7", text: "Delivery Optimization cache, skip if servicing is active", status: "done", owner: "engine", parts: { plan: "done", build: "done", verify: "done", sec: "todo", valid: "todo", pc: "todo", acc: "todo" } }
+      ]
+    },
+    {
+      id: "31",
+      title: "Wave 2 — App and shell repair",
+      items: [
+        { id: "31.1", text: "Catalog source refresh and recovery reset", status: "waiting", owner: "engine" },
+        { id: "31.2", text: "Installed app list export and reinstall (IDs only)", status: "waiting", owner: "engine" },
+        { id: "31.3", text: "Scheduled cleanup, user-chosen categories and cadence", status: "waiting", owner: "engine" },
+        { id: "31.4", text: "Duplicate file finder, Recycle Bin default", status: "waiting", owner: "engine" },
+        { id: "31.5", text: "Repair an installed desktop app where supported", status: "waiting", owner: "engine" },
+        { id: "31.6", text: "Repair or reset a packaged app (reset wipes that app data)", status: "waiting", owner: "engine" },
+        { id: "31.7", text: "Reset Microsoft Store cache for this user", status: "done", owner: "engine", parts: { plan: "done", build: "done", verify: "todo", sec: "todo", valid: "todo", pc: "todo", acc: "todo" } },
+        { id: "31.8", text: "Re-register an installed Store app for this account", status: "waiting", owner: "engine" },
+        { id: "31.9", text: "Rebuild Explorer icon cache", status: "done", owner: "engine", parts: { plan: "done", build: "done", verify: "todo", sec: "todo", valid: "todo", pc: "todo", acc: "todo" } },
+        { id: "31.10", text: "Clear stuck print jobs and restart spooler", status: "waiting", owner: "engine" },
+        { id: "31.11", text: "Remove a broken or orphaned installation, then leftover scan", status: "waiting", owner: "engine" }
+      ]
+    },
+    {
+      id: "32",
+      title: "Wave 3 — Windows health",
+      items: [
+        { id: "32.1", text: "Windows Update scan and install, separate from app updates", status: "waiting", owner: "engine" },
+        { id: "32.2", text: "Windows Update component repair, targeted", status: "waiting", owner: "engine" },
+        { id: "32.3", text: "Uninstall an eligible Windows update, with security warning", status: "waiting", owner: "engine" },
+        { id: "32.4", text: "Protected system file scan and repair (SFC)", status: "waiting", owner: "engine" },
+        { id: "32.5", text: "Component-store integrity repair (DISM RestoreHealth)", status: "waiting", owner: "engine" },
+        { id: "32.6", text: "WMI repository verify, then salvage only if needed", status: "waiting", owner: "engine" },
+        { id: "32.7", text: "Create a system restore point", status: "waiting", owner: "engine" },
+        { id: "32.8", text: "Disk and SSD health, read-only", status: "waiting", owner: "engine" },
+        { id: "32.9", text: "Online file-system scan", status: "waiting", owner: "engine" },
+        { id: "32.10", text: "Repair file-system errors after confirm", status: "waiting", owner: "engine" },
+        { id: "32.11", text: "SSD ReTrim when the volume supports it", status: "waiting", owner: "engine" },
+        { id: "32.12", text: "View and export Windows events", status: "waiting", owner: "engine" },
+        { id: "32.13", text: "On-demand malware scan via Windows Security", status: "waiting", owner: "engine" },
+        { id: "32.14", text: "BitLocker status audit, never print recovery keys", status: "waiting", owner: "engine" },
+        { id: "32.15", text: "Defender status and intelligence updates", status: "waiting", owner: "engine" }
+      ]
+    },
+    {
+      id: "33",
+      title: "Wave 4 — Network and power",
+      items: [
+        { id: "33.1", text: "Explorer context-menu manager, third-party reversible disable", status: "waiting", owner: "engine" },
+        { id: "33.2", text: "Blue-screen dump triage, stop code as a lead", status: "waiting", owner: "engine" },
+        { id: "33.3", text: "Sleep and wake troubleshooting", status: "waiting", owner: "engine" },
+        { id: "33.4", text: "Select a power plan with revert", status: "waiting", owner: "engine" },
+        { id: "33.5", text: "Flush DNS resolver cache", status: "waiting", owner: "engine" },
+        { id: "33.6", text: "Reset Winsock catalog, VPN and restart warning", status: "waiting", owner: "engine" },
+        { id: "33.7", text: "Reset TCP/IP settings after backing up adapters", status: "waiting", owner: "engine" },
+        { id: "33.8", text: "Renew DHCP lease on the selected adapter", status: "waiting", owner: "engine" },
+        { id: "33.9", text: "Restore firewall defaults after export", status: "waiting", owner: "engine" },
+        { id: "33.10", text: "Restore the default Hosts file after showing replacements", status: "waiting", owner: "engine" },
+        { id: "33.11", text: "Connection and port inventory, read-only", status: "waiting", owner: "engine" },
+        { id: "33.12", text: "Latency, packet loss, and route trace", status: "waiting", owner: "engine" },
+        { id: "33.13", text: "Test a specific TCP port", status: "waiting", owner: "engine" },
+        { id: "33.14", text: "DNS record lookup", status: "waiting", owner: "engine" },
+        { id: "33.15", text: "Wi-Fi signal and channel survey", status: "waiting", owner: "engine" },
+        { id: "33.16", text: "Windows clock sync diagnosis", status: "waiting", owner: "engine" },
+        { id: "33.17", text: "Inspect and reset WinHTTP proxy", status: "waiting", owner: "engine" },
+        { id: "33.18", text: "Firewall rule inspection and backup", status: "waiting", owner: "engine" }
+      ]
+    },
+    {
+      id: "34",
+      title: "Wave 5 — Files and admin",
+      items: [
+        { id: "34.1", text: "Create and extract ZIP archives", status: "waiting", owner: "engine" },
+        { id: "34.2", text: "Transparent folder compression with measured savings", status: "waiting", owner: "engine" },
+        { id: "34.3", text: "Mount and eject ISO or VHD images, read-only default", status: "waiting", owner: "engine" },
+        { id: "34.4", text: "File checksum calculation and verification", status: "waiting", owner: "engine" },
+        { id: "34.5", text: "Find empty folders", status: "waiting", owner: "engine" },
+        { id: "34.6", text: "Find and repair broken shortcuts", status: "waiting", owner: "engine" },
+        { id: "34.7", text: "Find which app is locking a file", status: "waiting", owner: "engine" },
+        { id: "34.8", text: "Format a removable volume only, never the system drive", status: "waiting", owner: "engine" },
+        { id: "34.9", text: "Verify publisher signature of a chosen file", status: "waiting", owner: "engine" },
+        { id: "34.10", text: "Windows privacy settings review, then open Windows", status: "waiting", owner: "product" },
+        { id: "34.11", text: "Check file and folder permissions, read-only", status: "waiting", owner: "engine" },
+        { id: "34.12", text: "Live process and resource monitor, read-only", status: "waiting", owner: "engine" },
+        { id: "34.13", text: "Close or end an unresponsive app after confirm", status: "waiting", owner: "engine" },
+        { id: "34.14", text: "Service management with denylist for security and update services", status: "waiting", owner: "engine" },
+        { id: "34.15", text: "Windows optional feature manager", status: "waiting", owner: "engine" },
+        { id: "34.16", text: "Preview .reg files; import off by default", status: "waiting", owner: "engine" },
+        { id: "34.17", text: "Keep Windows awake temporarily, with cancel", status: "waiting", owner: "engine" }
+      ]
+    },
+    {
+      id: "36",
+      title: "From your test on 11 Nov — updates, uninstall, Marketplace",
+      items: [
+        { id: "36.1", text: "Show the saved update list right away, in a short block at the top, then refresh it. Do not make the owner wait for a full search before any apps appear.", status: "done", owner: "product" },
+        { id: "36.2", text: "While an app is updating, show real speed, how much is downloaded, and the total size. Do not invent a speed.", status: "done", owner: "product" },
+        { id: "36.3", text: "Updates must not feel slow. Find what makes them wait and remove that wait.", status: "done", owner: "engine" },
+        { id: "36.4", text: "When an update fails, say what the person must close. Do not close it for them. If the installer is already downloaded, let them run it. Also offer the publisher's own page.", status: "done", owner: "engine" },
+        { id: "36.5", text: "Uninstall must list every app on this PC, not only the short known list. Each app uses its own uninstaller.", status: "done", owner: "product" },
+        { id: "36.6", text: "Marketplace only shows a short curated shelf, about 77 apps, which is a tiny slice of what Windows can install. Let the owner search the full catalog. Keep the shelf as a starting point.", status: "done", owner: "product" },
+        { id: "36.7", text: "Add a clear choice to allow a test version (a beta) when installing or updating. Off unless the owner turns it on.", status: "done", owner: "product" },
+        { id: "36.8", text: "Every long action shows real status and progress: install, uninstall, update, scans, delete, and cleanup. No silent waits.", status: "done", owner: "product", parts: { plan: "done", build: "done", verify: "done", sec: "done", valid: "done", pc: "todo", acc: "due" } },
+        { id: "36.9", text: "Installed list rows overlap into an unreadable stack. Cards must not shrink in the flex list; each app is one clear row with Uninstall.", status: "done", owner: "product", parts: { plan: "done", build: "done", verify: "done", sec: "done", valid: "done", pc: "todo", acc: "due" } }
+      ]
+    },
+    {
+      id: "38",
+      title: "Make the window feel like a Windows program",
+      items: [
+        { id: "38.1", text: "Tighten the window so it reads as a Windows program. Smaller type, a short sidebar, lists that fill the window, and no extra site header.", status: "done", owner: "product" }
+      ]
+    },
+    {
+      id: "39",
+      title: "Pink Clean button does nothing",
+      items: [
+        { id: "39.1", text: "The pink Clean selected button must answer the click. If the storage scan is not finished, start it and show the moving bar. When the scan finishes, open the review. The review was opening invisible, so the click looked dead.", status: "done", owner: "product" }
+      ]
+    },
+    {
+      id: "40",
+      title: "DisplayLink is a USB device, not a graphics card",
+      items: [
+        { id: "40.1", text: "DisplayLink USB devices are not graphics adapters. On About this computer they sit under USB devices and are labelled External. Two interfaces of the same dock count as one device. AMD and NVIDIA stay under Graphics.", status: "done", owner: "product" }
+      ]
+    },
+    {
+      id: "41",
+      title: "Cream theme, ready gate, and speed",
+      items: [
+        { id: "41.1", text: "Layout Direction D + Park palette (navy, magenta, lime, amber from the Park photo). Owner must lock design/mockups/directions/pick-d-park.html before any live CSS. Full screen set and 100% mockup approve come next. Cream/orange/black editorial drafts are out.", status: "in-progress", owner: "design", stage: "Owner locks Park D", with: "Owner", parts: { plan: "doing", build: "todo", verify: "todo", sec: "todo", valid: "todo", pc: "todo", acc: "todo" } },
+        { id: "41.2", text: "Full-window Getting ready gate until catalog-updates, catalog-installed, and local-arp settle. Show each job. A failure does not hold the app. Check again does not show the gate again.", status: "done", owner: "engine", parts: { plan: "done", build: "done", verify: "todo", sec: "todo", valid: "todo", pc: "todo", acc: "todo" } },
+        { id: "41.3", text: "Launch already starts catalog plus ARP only. Still measure the catalog lock, catalog line names, ARP plan_uninstall, prefetch, and the 500 ms poll. No invented percent.", status: "in-progress", owner: "engine", parts: { plan: "done", build: "doing", verify: "todo", sec: "todo", valid: "todo", pc: "todo", acc: "todo" } },
+        { id: "41.4", text: "After A, B, and the first speed win are in a build: Wave 1 item 30.1, restart-required status. The app does not restart the PC.", status: "done", owner: "product", parts: { plan: "done", build: "done", verify: "todo", sec: "todo", valid: "todo", pc: "todo", acc: "todo" } }
+      ]
+    },
+    {
+      id: "42",
+      title: "GitHub release channel and self-update",
+      items: [
+        { id: "42.1", text: "Official self-update and downloads use merchanthasan2/AudoChocolatey Releases. Tag v* builds QuantumUpdater.exe. Portable EXE swaps the frozen app; *setup*.exe still uses /S. ADR 026.", status: "done", owner: "engine", parts: { plan: "done", build: "done", verify: "done", sec: "done", valid: "todo", pc: "todo", acc: "todo" } },
+        { id: "42.2", text: "Owner commits and pushes this wiring, then tags a milestone (for example v2.0.1) when a downloadable EXE is needed. Installed copies can then check for updates.", status: "needs-owner", owner: "owner", stage: "Commit and tag", with: "Owner" },
+        { id: "42.3", text: "Winget package QuantumStep.QuantumUpdater: portable manifests + release Action prepare script (ADR 028). Not in community index until a public Release exists and the winget-pkgs PR merges.", status: "done", owner: "engine", parts: { plan: "done", build: "done", verify: "todo", sec: "todo", valid: "todo", pc: "todo", acc: "todo" } },
+        { id: "42.4", text: "Owner later: after tag builds, submit manifests with wingetcreate submit (or PR to microsoft/winget-pkgs) so winget install QuantumStep.QuantumUpdater works on any PC.", status: "needs-owner", owner: "owner", stage: "Submit to winget", with: "Owner" }
+      ]
+    }
+  ]
+};
+
+
+
+const ROLE = {
+  owner: "You", manager: "Manager", architect: "Design Architect", designer: "Design Architect", design: "Design Architect",
+  engine: "Worker bee", product: "Worker bee", security: "Security architect"
+};
+const ROLES = {
+  "You": "--orange", "Manager": "--st-deployed", "Design Architect": "--accent",
+  "Security architect": "--st-parked", "Worker bee": "--st-built", "Nobody (done)": "--st-done"
+};
+const STATUS = {
+  checked: { label: "You confirmed", c: "--st-done" },
+  done: { label: "Built, check pending", c: "--st-built" },
+  "in-progress": { label: "In progress", c: "--st-progress" },
+  planning: { label: "Being planned", c: "--accent" },
+  waiting: { label: "Not started", c: "--st-pending" },
+  "needs-owner": { label: "Needs you", c: "--orange" },
+  blocked: { label: "Stuck", c: "--st-blocked" }
+};
+const ORDER = ["checked", "done", "in-progress", "planning", "waiting", "needs-owner", "blocked"];
+const PART_KEYS = ["plan", "build", "verify", "sec", "valid", "pc", "acc"];
+const PART_LABEL = { plan: "Plan", build: "Build", verify: "Verify", sec: "Security", valid: "Validate", pc: "On PC", acc: "Accept" };
+const PART_STATE = {
+  done: { sym: "✓", c: "--st-done", label: "Done" },
+  doing: { sym: "…", c: "--st-progress", label: "In progress" },
+  due: { sym: "!", c: "--st-built", label: "Due now" },
+  todo: { sym: "", c: "--st-pending", label: "Not yet" },
+  parked: { sym: "‖", c: "--st-parked", label: "Parked" },
+  na: { sym: "–", c: "--st-pending", label: "Not needed" }
+};
+const STAGE_FOR = {
+  plan: ["Needs a plan", "Design Architect"],
+  build: ["Ready to build", "Worker bee"],
+  verify: ["Manager check", "Manager"],
+  sec: ["Security check", "Security architect"],
+  valid: ["Architect sign-off", "Design Architect"],
+  pc: ["Try it on this PC", "You"],
+  acc: ["Your acceptance", "You"]
+};
+const GROUPS = [
+  ["Team", ["GOV"]],
+  ["Already built", ["16-19", "21", "22", "23", "24", "26", "27", "35"]],
+  ["Waiting on a check", ["25", "28", "29"]],
+  ["Waves", ["30", "31", "32", "33", "34"]],
+  ["From your test", ["36", "38", "39", "40"]],
+  ["Now", ["41"]]
+];
+const NOTES = {
+  GOV: "The team and this board.",
+  "25": "Icons are built. You still need to look.",
+  "28": "DisplayLink passed. Mid phase-36 and Run installer fixed. 36.8/36.9 Security pass after three mediums. No full app score yet.",
+  "29": "Build 5 is open on this PC. Your look at Installed + 36.1–36.8 stays pending.",
+  "35": "Fixes from your last test are in Build 5.",
+  "30": "Starts after cream theme, ready gate, and first speed wins.",
+  "36": "36.8 and 36.9 Security PASS. Build 5 has Installed fix + honest progress. Your look stays pending.",
+  "38": "The window title shows 2.0.0 · Build 5 (open).",
+  "39": "The pink Clean button starts the scan and opens the review.",
+  "40": "DisplayLink is under USB devices as External in Build 3.",
+  "41": "No-stop order. Park D mockups under design/mockups/directions/park/. Ready gate in source (41.2). Owner later: lock Park D, approve full set, then live theme. Speed + Wave 1 continue.",
+  "42": "ADR 026 in source. Owner later: commit/push/tag. Team does not wait."
+};
+const AUDIT = [
+  ["1", "Secrets and passwords", "Every change"],
+  ["2", "Known flaws in libraries", "Every change"],
+  ["3", "Unsafe code", "Every change"],
+  ["4", "Who can do what", "Before a new build is handed to you"],
+  ["5", "What people send in, and what the screen shows", "Every change"],
+  ["6", "The live app", "Not used. This is a Windows app, not a website."],
+  ["7", "Where it is hosted", "Not used. It stays on this PC."],
+  ["8", "Messy or repeated code", "Every change"],
+  ["9", "Limits and surprise bills", "Before a public release"],
+  ["10", "Records and backups", "Before a public release"]
+];
+
+const $ = (s) => document.querySelector(s);
+const esc = (s) => String(s == null ? "" : s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const chip = (st) => `<span class="chip" style="--c:var(${STATUS[st].c})">${STATUS[st].label}</span>`;
+
+function blank() { return { plan: "todo", build: "todo", verify: "todo", sec: "todo", valid: "todo", pc: "todo", acc: "todo" }; }
+function baseParts(status) {
+  if (status === "checked") return { plan: "done", build: "done", verify: "done", sec: "due", valid: "todo", pc: "todo", acc: "done" };
+  if (status === "done") return { plan: "done", build: "done", verify: "done", sec: "due", valid: "todo", pc: "todo", acc: "todo" };
+  if (status === "in-progress") return Object.assign(blank(), { plan: "done", build: "doing" });
+  if (status === "planning") return Object.assign(blank(), { plan: "doing" });
+  if (status === "needs-owner") return Object.assign(blank(), { plan: "done", acc: "due" });
+  if (status === "blocked") return Object.assign(blank(), { plan: "due" });
+  return blank();
+}
+function derive(item) {
+  const p = Object.assign(baseParts(item.status), item.parts || {});
+  if (item.status === "waiting") return { p, stage: "Not started", who: ROLE[item.owner] || "Worker bee" };
+  const k = PART_KEYS.find((key) => p[key] !== "done" && p[key] !== "na");
+  if (!k) return { p, stage: "Complete", who: "Nobody (done)" };
+  let [stage, who] = STAGE_FOR[k];
+  if (k === "build" && p.build === "doing") stage = "Being built";
+  if (k === "verify" && p.verify === "doing") stage = "Being checked";
+  if (item.stage) stage = item.stage;
+  if (item.with) who = item.with;
+  return { p, stage, who };
+}
+
+const rows = [];
+TRACKER.phases.forEach((ph) => {
+  ph.items.forEach((it) => rows.push(Object.assign({ phase: ph.id, phaseTitle: ph.title }, it, derive(it))));
+});
+const phaseById = Object.fromEntries(TRACKER.phases.map((p) => [p.id, p]));
+
+const PART_SCORE = { done: 1, doing: 0.5, due: 0, todo: 0, parked: 0 };
+function scoreOf(list) {
+  let got = 0, max = 0;
+  list.forEach((r) => PART_KEYS.forEach((k) => {
+    if (r.p[k] === "na") return;
+    max += 1; got += PART_SCORE[r.p[k]] || 0;
+  }));
+  return max ? got / max : 0;
+}
+const pctText = (x) => (Math.round(x * 1000) / 10).toFixed(1).replace(/\.0$/, "");
+function phaseState(list) {
+  if (list.some((r) => r.status === "in-progress" || r.status === "planning")) return "in-progress";
+  if (list.every((r) => r.status === "waiting")) return "waiting";
+  if (list.every((r) => r.status === "done" || r.status === "checked")) return "done";
+  if (list.some((r) => r.status === "waiting")) return "in-progress";
+  return "done";
+}
+
+const DEFAULTS = { phase: "", status: "", who: "", q: "", hide: false, view: "pipe" };
+let state = Object.assign({}, DEFAULTS);
+try { const s = JSON.parse(localStorage.getItem("qu-tracker") || "null"); if (s) state = Object.assign({}, state, s); } catch (e) {}
+const save = () => { try { localStorage.setItem("qu-tracker", JSON.stringify(state)); } catch (e) {} };
+const dot = (k, s) => `<span class="dot ${s}" style="--c:var(${PART_STATE[s].c})" title="${PART_LABEL[k]}: ${PART_STATE[s].label}">${PART_STATE[s].sym}</span>`;
+const withTag = (who) => `<span class="with" style="--c:var(${ROLES[who] || "--muted"})"><i></i>${esc(who)}</span>`;
+
+function renderSummary() {
+  const total = rows.length;
+  const totalPct = scoreOf(rows);
+  const built = rows.filter((r) => r.status === "done" || r.status === "checked").length;
+  const progress = rows.filter((r) => r.status === "in-progress" || r.status === "planning").length;
+  const todo = rows.filter((r) => r.status === "waiting").length;
+  const secDue = rows.filter((r) => r.p.sec === "due").length;
+  const accepted = rows.filter((r) => r.p.acc === "done").length;
+  $("#total").innerHTML = `<div class="pct">${pctText(totalPct)}<small>%</small></div><div><div class="meter"><span style="width:${(totalPct * 100).toFixed(1)}%"></span></div><div class="sub"><span>Total complete across this app</span><span>Built: <b>${pctText(built / total)}%</b> of tasks</span><span>Accepted by you: <b>${pctText(accepted / total)}%</b></span></div><div class="how">Each task has 7 parts. A finished part counts full. A part in progress counts half. A part that is not needed is left out.</div></div>`;
+  $("#big").innerHTML = `<div><strong>${total}</strong><span>tasks tracked</span></div><div><strong>${built}</strong><span>built</span></div><div><strong>${progress}</strong><span>in progress</span></div><div><strong>${todo}</strong><span>not started</span></div><div><strong>${secDue}</strong><span>waiting for the security check</span></div><div><strong>${accepted}</strong><span>accepted by you</span></div>`;
+  const counts = {};
+  ORDER.forEach((k) => { counts[k] = rows.filter((r) => r.status === k).length; });
+  $("#bar").innerHTML = ORDER.filter((k) => counts[k]).map((k) => `<span style="--c:var(${STATUS[k].c});width:${(counts[k] / total) * 100}%"></span>`).join("");
+  $("#legend").innerHTML = ORDER.filter((k) => counts[k]).map((k) => `<button type="button" data-st="${esc(k)}" aria-pressed="${state.status === k}"><span class="chip" style="--c:var(${STATUS[k].c})">${STATUS[k].label} <span class="n">${counts[k]}</span></span></button>`).join("");
+  $("#legend").querySelectorAll("button").forEach((b) => b.addEventListener("click", () => { state.status = state.status === b.dataset.st ? "" : b.dataset.st; sync(true); }));
+  const wc = {};
+  rows.forEach((r) => { wc[r.who] = (wc[r.who] || 0) + 1; });
+  $("#whorow").innerHTML = `<span class="muted">Who has the work now:</span>` + Object.keys(ROLES).filter((k) => wc[k]).map((k) => `<button type="button" data-who="${esc(k)}" aria-pressed="${state.who === k}">${withTag(k)} <span class="n">${wc[k]}</span></button>`).join("");
+  $("#whorow").querySelectorAll("button").forEach((b) => b.addEventListener("click", () => { state.who = state.who === b.dataset.who ? "" : b.dataset.who; sync(true); }));
+}
+
+function renderPhases() {
+  let html = "";
+  GROUPS.forEach(([name, ids]) => {
+    html += `<div class="group-label">${esc(name)}</div>`;
+    ids.forEach((id) => {
+      const ph = phaseById[id];
+      if (!ph) return;
+      const list = rows.filter((r) => r.phase === id);
+      const st = phaseState(list);
+      const built = list.filter((r) => r.status === "done" || r.status === "checked").length;
+      const counts = {};
+      ORDER.forEach((k) => { counts[k] = list.filter((r) => r.status === k).length; });
+      html += `<button type="button" class="phase" data-ph="${esc(id)}" aria-pressed="${state.phase === id}"><div class="top"><span class="pid">${esc(id)}</span>${chip(st)}</div><div class="pname">${esc(ph.title)}</div><div class="pnote">${esc(NOTES[id] || "")}</div><div class="mini">${ORDER.filter((k) => counts[k]).map((k) => `<span style="--c:var(${STATUS[k].c});width:${(counts[k] / (list.length || 1)) * 100}%"></span>`).join("")}</div><div class="count">${pctText(scoreOf(list))}% · ${built} of ${list.length} built</div></button>`;
+    });
+  });
+  $("#phases").innerHTML = html;
+  $("#phases").querySelectorAll(".phase").forEach((b) => b.addEventListener("click", () => { state.phase = state.phase === b.dataset.ph ? "" : b.dataset.ph; sync(true); }));
+}
+
+function renderFilters() {
+  $("#f-phase").innerHTML = `<option value="">All phases</option>` + TRACKER.phases.map((p) => `<option value="${esc(p.id)}">${esc(p.title)}</option>`).join("");
+  $("#f-status").innerHTML = `<option value="">All statuses</option>` + ORDER.map((k) => `<option value="${esc(k)}">${STATUS[k].label}</option>`).join("");
+  $("#f-with").innerHTML = `<option value="">Everyone</option>` + Object.keys(ROLES).map((k) => `<option value="${esc(k)}">${esc(k)}</option>`).join("");
+  $("#partslegend").innerHTML = `<b>Parts:</b>` + ["done", "doing", "due", "todo", "parked", "na"].map((s) => `<span class="dot ${s}" style="--c:var(${PART_STATE[s].c})">${PART_STATE[s].sym}</span> ${PART_STATE[s].label}`).join("");
+}
+
+function renderTable() {
+  const q = state.q.trim().toLowerCase();
+  const pipe = state.view === "pipe";
+  const list = rows.filter((r) =>
+    (!state.phase || r.phase === state.phase) &&
+    (!state.status || r.status === state.status) &&
+    (!state.who || r.who === state.who) &&
+    (!state.hide || r.stage !== "Complete") &&
+    (!q || (r.id + " " + r.text + " " + r.phaseTitle + " " + r.who + " " + r.stage).toLowerCase().includes(q)));
+  const cols = pipe ? 12 : 7;
+  $("#thead").innerHTML = pipe
+    ? `<tr><th>ID</th><th>Task</th><th>Stage</th><th>With</th>${PART_KEYS.map((k) => `<th class="pt">${PART_LABEL[k]}</th>`).join("")}<th>Status</th></tr>`
+    : `<tr><th>ID</th><th>Task</th><th>Status</th><th>Stage</th><th>With</th><th>Evidence</th><th>Waiting on</th></tr>`;
+  $("#shown").textContent = `${list.length} of ${rows.length} tasks shown`;
+  if (!list.length) { $("#tbody").innerHTML = `<tr><td colspan="${cols}">No task matches. Click Show all.</td></tr>`; return; }
+  let html = "";
+  TRACKER.phases.forEach((ph) => {
+    const sub = list.filter((r) => r.phase === ph.id);
+    if (!sub.length) return;
+    html += `<tr class="grp"><td colspan="${cols}">${esc(ph.title)} <span class="n">${pctText(scoreOf(rows.filter((r) => r.phase === ph.id)))}%</span></td></tr>`;
+    sub.forEach((r) => {
+      const wait = r.stage === "Complete" ? "Nothing" : r.who;
+      html += pipe
+        ? `<tr><td class="id">${esc(r.id)}</td><td class="task">${esc(r.text)}</td><td>${esc(r.stage)}</td><td>${withTag(r.who)}</td>${PART_KEYS.map((k) => `<td class="pt">${dot(k, r.p[k])}</td>`).join("")}<td>${chip(r.status)}</td></tr>`
+        : `<tr><td class="id">${esc(r.id)}</td><td class="task">${esc(r.text)}</td><td>${chip(r.status)}</td><td>${esc(r.stage)}</td><td>${withTag(r.who)}</td><td>${esc(r.text)}</td><td>${esc(wait)}</td></tr>`;
+    });
+  });
+  $("#tbody").innerHTML = html;
+}
+
+function renderRest() {
+  $("#stamp").textContent = TRACKER.updated;
+  $("#dec").innerHTML = TRACKER.ownerDecisions.map((d, i) => `<tr><td class="id">${i + 1}</td><td>${esc(d)}</td></tr>`).join("");
+  $("#audit").innerHTML = AUDIT.map((r) => `<tr><td class="id">${esc(r[0])}</td><td>${esc(r[1])}</td><td>${esc(r[2])}</td><td><span class="chip" style="--c:var(--st-pending)">Not started</span></td></tr>`).join("");
+  $("#held").innerHTML = `<p>${esc(TRACKER.later)}</p>` + (TRACKER.heldOut || []).map((g) => `<p><b>${esc(g.title)}</b></p><ul>${g.items.map((n) => `<li>${esc(n)}</li>`).join("")}</ul>`).join("");
+}
+
+function sync(jump) {
+  $("#f-phase").value = state.phase;
+  $("#f-status").value = state.status;
+  $("#f-with").value = state.who;
+  $("#f-q").value = state.q;
+  $("#f-hide").checked = state.hide;
+  $("#v-pipe").setAttribute("aria-selected", String(state.view === "pipe"));
+  $("#v-detail").setAttribute("aria-selected", String(state.view !== "pipe"));
+  save();
+  renderSummary();
+  renderPhases();
+  renderTable();
+  if (jump) { const el = $("#tasks"); if (el) el.scrollIntoView({ behavior: "smooth", block: "start" }); }
+}
+renderFilters();
+renderRest();
+$("#f-phase").addEventListener("change", (e) => { state.phase = e.target.value; sync(false); });
+$("#f-status").addEventListener("change", (e) => { state.status = e.target.value; sync(false); });
+$("#f-with").addEventListener("change", (e) => { state.who = e.target.value; sync(false); });
+$("#f-q").addEventListener("input", (e) => { state.q = e.target.value; save(); renderTable(); });
+$("#f-hide").addEventListener("change", (e) => { state.hide = e.target.checked; sync(false); });
+$("#f-reset").addEventListener("click", () => { state = Object.assign({}, DEFAULTS, { view: state.view }); sync(false); });
+$("#v-pipe").addEventListener("click", () => { state.view = "pipe"; sync(false); });
+$("#v-detail").addEventListener("click", () => { state.view = "detail"; sync(false); });
+sync(false);
+</script>
+</body>
+</html>

@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="en" class="states"><head><meta charset="utf-8"><title>Quantum Updater - Readiness and scan gating - Direction B (Deep Teal Refined) mockup</title>
+<meta name="viewport" content="width=1280"><style>:root{--win:#04212A;--panel:#062B36;--card:#0A3442;--border:#164A5B;--text:#F2F8FA;--t2:#BFD9E2;--muted:#8FB3C0;--link:#6CD0EE;--prim-bg:#06D7A0;--prim-fg:#073A4B;--sec-bg:#0E3E4D;--sec-bd:#2A6577;--sec-fg:#F2F8FA;--dest-bd:#F04770;--dest-fg:#FF8FA9;--warn-bg:#FFD167;--warn-fg:#2B2000;--cau-bg:#F78C6A;--cau-fg:#2A1008;--inst-bg:#0A3442;--inst-bd:#164A5B;--inst-fg:#A9C6D0;--sel-bg:#0A3442;--track:#164A5B;--r1:10px;--r2:12px;--tile-bd:#164A5B;--panel2:#062B36;}
+*{box-sizing:border-box;margin:0;padding:0}
+html.states,html.states body{width:100%;height:auto;overflow:visible;background:#0a0e11}
+.states body{font-family:'Segoe UI Variable','Segoe UI Variable Text','Segoe UI',Tahoma,sans-serif;color:var(--text);font-size:14px;line-height:1.4}
+h1,h2,h3,.t{font-family:'Segoe UI Variable Display','Segoe UI Variable','Segoe UI',Tahoma,sans-serif;font-weight:600}
+.state-sec{width:1280px;margin:0 auto;padding:28px 0 8px}
+.state-cap{font-size:12px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:#8798A3;margin-bottom:10px;padding:0 4px}
+.state-cap span{color:#B4C2CB}
+.motion-note{max-width:1280px;margin:0 auto 24px;padding:12px 16px;font-size:12px;color:#8798A3;background:#161D23;border:1px solid #2C3943;border-radius:8px}
+.win{width:1280px;height:800px;display:flex;flex-direction:column;background:var(--win);border:1px solid var(--border)}
+.titlebar{height:36px;background:var(--win);display:flex;align-items:center;justify-content:space-between;padding-left:14px;flex:none;border-bottom:1px solid var(--border)}
+.titlebar .name{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:600;color:var(--t2)}
+.wc{display:flex;height:100%}
+.wc span{width:46px;display:flex;align-items:center;justify-content:center}
+.body{flex:1;display:flex;min-height:0}
+.side{width:248px;background:var(--panel);display:flex;flex-direction:column;padding:20px 12px 16px;flex:none;border-right:1px solid var(--border)}
+.side.collapsed{width:72px;padding:20px 8px 16px}
+.side.collapsed .brand .t,.side.collapsed .brand small,.side.collapsed .nav span.txt,.side.collapsed .nav .nav-grp-lbl,.side.collapsed .foot .lbl,.side.collapsed .foot .val,.side.collapsed .foot .bar,.side.collapsed .sum-card .txt{display:none}
+.side.collapsed .brand{justify-content:center;padding:0 0 20px}
+.side.collapsed .nav a{justify-content:center;padding:0}
+.side.collapsed .nav a .badge,.side.collapsed .st-ico{margin-left:0}
+.brand{display:flex;align-items:center;gap:11px;padding:0 10px 24px}
+.brand .t{font-size:18px;line-height:1.15;color:var(--text)}
+.brand small{display:block;font-size:12px;font-weight:400;color:var(--muted);margin-top:2px}
+.nav{display:flex;flex-direction:column;gap:2px}
+.nav-grp{margin-top:14px;padding-top:12px;border-top:1px solid var(--border)}
+.nav-grp-lbl{font-size:11px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);padding:0 14px 8px}
+.nav a{position:relative;display:flex;align-items:center;gap:12px;height:44px;padding:0 14px;border-radius:var(--r1);color:var(--t2);text-decoration:none;font-weight:500;font-size:14px}
+.nav a:hover{background:var(--card)}
+.nav a.on{background:var(--sel-bg);color:var(--text);font-weight:600}
+.nav a.on:before{content:"";position:absolute;left:0;top:9px;bottom:9px;width:3px;border-radius:2px;background:#06D7A0}
+.nav a .badge{margin-left:auto}
+.st-ico{margin-left:auto;flex:none;display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:var(--t2)}
+.st-ico .pct{min-width:34px;text-align:right;font-variant-numeric:tabular-nums}
+.sum-card{margin-top:auto;background:var(--card);border:1px solid var(--border);border-radius:var(--r2);padding:14px}
+.sum-card .ttl{font-size:13px;font-weight:600;color:var(--text)}
+.sum-card .sub{font-size:12px;color:var(--t2);margin-top:4px}
+.sum-card .acts{margin-top:10px}
+.foot{margin-top:12px;background:var(--card);border:1px solid var(--border);border-radius:var(--r2);padding:14px}
+.foot .lbl{font-size:12px;color:var(--muted)}
+.foot .val{font-size:14px;font-weight:600;margin:3px 0 10px;color:var(--text)}
+.bar{height:8px;border-radius:4px;background:var(--track);overflow:hidden}
+.bar i{display:block;height:100%;background:#FFD167}
+.main{flex:1;padding:24px 36px 20px;min-width:0;display:flex;flex-direction:column;overflow:hidden}
+.head{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:16px;gap:24px;flex:none}
+.head h1{font-size:28px;line-height:1.15;color:var(--text)}
+.head p{color:var(--t2);font-size:14px;margin-top:6px}
+.actions{display:flex;gap:10px;align-items:center;flex:none;flex-wrap:wrap}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:40px;padding:0 18px;border-radius:var(--r1);border:1px solid transparent;font-family:inherit;font-size:14px;font-weight:600;cursor:pointer;white-space:nowrap;text-decoration:none}
+.btn.sm{height:34px;padding:0 14px;font-size:13px}
+.btn.prim{background:var(--prim-bg);color:var(--prim-fg);border-color:var(--prim-bg)}
+.btn.sec{background:var(--sec-bg);color:var(--sec-fg);border-color:var(--sec-bd)}
+.btn.dest{background:transparent;color:var(--dest-fg);border-color:var(--dest-bd)}
+.btn.inst{background:var(--inst-bg);color:var(--inst-fg);border-color:var(--inst-bd);cursor:default;opacity:.95}
+.btn.dis{background:var(--inst-bg);color:var(--inst-fg);border-color:var(--inst-bd);cursor:default;opacity:.65}
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--r2)}
+.chip{display:inline-flex;align-items:center;gap:6px;height:24px;padding:0 10px;border-radius:var(--r1);font-size:12px;font-weight:600;white-space:nowrap}
+.chip.warn{background:var(--warn-bg);color:var(--warn-fg)}
+.chip.cau{background:var(--cau-bg);color:var(--cau-fg)}
+.chip.neu{background:var(--sec-bg);color:var(--sec-fg);border:1px solid var(--sec-bd)}
+.chip.ok{background:var(--sec-bg);color:var(--text);border:1px solid var(--sec-bd)}
+.muted{color:var(--muted)}
+.t2{color:var(--t2)}
+.cb{width:22px;height:22px;border-radius:5px;border:2px solid var(--sec-bd);background:var(--win);flex:none;display:flex;align-items:center;justify-content:center}
+.cb.on{background:#06D7A0;border-color:#06D7A0}
+.toggle{width:44px;height:24px;border-radius:12px;background:var(--track);border:1px solid var(--sec-bd);position:relative;flex:none}
+.toggle.on{background:#06D7A0;border-color:#06D7A0}
+.toggle i{position:absolute;top:3px;left:3px;width:16px;height:16px;border-radius:50%;background:var(--text)}
+.toggle.on i{left:23px;background:var(--prim-fg)}
+.toggle.off-read{opacity:.55}
+.prog-strip{padding:14px 18px;display:flex;flex-direction:column;gap:10px;margin-bottom:14px;flex:none}
+.prog-meta{display:flex;align-items:center;justify-content:space-between;gap:16px;font-size:13px;color:var(--t2)}
+.prog-meta strong{color:var(--text);font-weight:600}
+.prog-track{height:10px;border-radius:5px;background:var(--track);overflow:hidden;border:1px solid var(--border)}
+.prog-track i{display:block;height:100%;background:#06D7A0;width:var(--p,50%)}
+.prog-track.warn i{background:#FFD167}
+.prog-detail{display:flex;flex-wrap:wrap;gap:16px;font-size:12px;color:var(--muted)}
+.ring-sm{width:28px;height:28px;flex:none}
+.list{display:flex;flex-direction:column;gap:8px;flex:1;min-height:0;overflow:hidden}
+.row{display:flex;align-items:center;gap:14px;padding:12px 16px}
+.row .info{flex:1;min-width:0}
+.row .nm{font-size:16px;font-weight:600;color:var(--text)}
+.row .sub{color:var(--t2);font-size:12.5px;margin-top:2px}
+.ico{width:44px;height:44px;border-radius:var(--r1);flex:none;display:flex;align-items:center;justify-content:center;background:var(--sec-bg);border:1px solid var(--sec-bd)}
+.ico.empty{background:var(--win);border-style:dashed}
+.dialog-mask{position:absolute;inset:0;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;z-index:5}
+.dialog{width:480px;background:var(--card);border:1px solid var(--border);border-radius:var(--r2);padding:22px 24px;box-shadow:0 8px 24px rgba(0,0,0,.35)}
+.dialog h2{font-size:20px;margin-bottom:8px}
+.dialog ul{margin:12px 0 18px;padding-left:0;list-style:none}
+.dialog li{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-size:14px;color:var(--t2)}
+.dialog li span:last-child{color:var(--text);font-weight:600}
+.drive-tabs{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap}
+.dtab{height:36px;padding:0 14px;border-radius:var(--r1);border:1px solid var(--border);background:var(--sec-bg);color:var(--t2);font-size:13px;font-weight:600;display:inline-flex;align-items:center;gap:8px}
+.dtab.on{background:var(--sel-bg);color:var(--text);border-color:var(--sec-bd);box-shadow:inset 0 -3px 0 #06D7A0}
+.grp-hd{padding:10px 16px 6px;font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+.consent{font-size:12px;color:var(--t2);margin-top:4px;padding-left:36px}
+.filters{display:flex;gap:10px;margin-bottom:12px;flex-wrap:wrap}
+.fsel{height:36px;padding:0 12px;border-radius:var(--r1);border:1px solid var(--border);background:var(--sec-bg);color:var(--text);font-size:13px}
+.readiness-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:16px}
+.rdy-card{padding:16px}
+.rdy-card h3{font-size:15px;margin-bottom:6px}
+.statline{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px}
+.statbox{padding:14px 16px}
+.eyebrow{font-size:12px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--muted)}
+.link{color:var(--link);font-weight:600;text-decoration:underline;text-underline-offset:3px;font-size:13px}
+.body-rel{position:relative;flex:1;display:flex;min-height:0}
+.head h1{display:flex;align-items:center;gap:12px}.head h1:before{content:"";width:5px;height:30px;border-radius:3px;background:#108AB1;display:block}.card{box-shadow:0 1px 0 rgba(0,0,0,.25)}.logo-tile{background:#108AB1}</style></head><body>
+<p class="motion-note">Reduced motion: progress rings and strips stay static; the numeric percent and labels remain visible (no spinning animation).</p>
+<section class="state-sec" id="state-1"><div class="state-cap">State 1 <span>&middot; All areas scanning (on launch)</span></div>
+<div class="win"><div class="titlebar"><div class="name"><div class="logo-tile" style="width:18px;height:18px;border-radius:8px;display:flex;align-items:center;justify-content:center"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#041820" stroke-width="3" stroke-linecap="round"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 5 5"/></svg></div><span>Quantum Updater</span></div>
+  <div class="wc"><span><svg width="11" height="11" viewBox="0 0 11 11" stroke="#B4C2CB" stroke-width="1.2"><path d="M0 5.5h11"/></svg></span>
+  <span><svg width="11" height="11" viewBox="0 0 11 11" fill="none" stroke="#B4C2CB" stroke-width="1.2"><rect x=".6" y=".6" width="9.8" height="9.8"/></svg></span>
+  <span><svg width="11" height="11" viewBox="0 0 11 11" stroke="#B4C2CB" stroke-width="1.2"><path d="M.6.6l9.8 9.8M10.4.6L.6 10.4"/></svg></span></div></div>
+ <div class="body-rel">
+  <aside class="side">
+   <div class="brand"><div class="logo-tile" style="width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#041820" stroke-width="3" stroke-linecap="round"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 5 5"/></svg></div><div class="t">Quantum Updater<small>Keeps your apps current</small></div></div>
+   <nav class="nav">
+   <a href="01-updates.html" class="on"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="m7 11 5 5 5-5"/><path d="M5 20h14"/></svg><span class="txt">Updates</span><span class="st-ico"><svg class="ring-sm" width="28" height="28" viewBox="0 0 28 28" aria-hidden="true"><circle cx="14.0" cy="14.0" r="11.5" fill="none" stroke="var(--track)" stroke-width="3"/><circle cx="14.0" cy="14.0" r="11.5" fill="none" stroke="#06D7A0" stroke-width="3" stroke-dasharray="30.3 72.3" transform="rotate(-90 14.0 14.0)"/><text x="14.0" y="18.0" text-anchor="middle" font-size="9" font-weight="600" fill="var(--text)">42%</text></svg></span></a>
+   <a href="02-marketplace.html"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9l1.5-5h13L20 9"/><path d="M4 9h16v1a3 3 0 0 1-5.3 1.9A3 3 0 0 1 12 13a3 3 0 0 1-2.7-1.1A3 3 0 0 1 4 10z"/><path d="M5 14v6h14v-6"/></svg><span class="txt">Marketplace</span></a>
+   <a href="03-installed.html"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="4" width="7" height="7" rx="1.5"/><rect x="13" y="4" width="7" height="7" rx="1.5"/><rect x="4" y="13" width="7" height="7" rx="1.5"/><rect x="13" y="13" width="7" height="7" rx="1.5"/></svg><span class="txt">Installed</span></a>
+   <a href="04-about.html"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="5" width="16" height="11" rx="2"/><path d="M2 20h20"/></svg><span class="txt">About this computer</span></a>
+   <a href="05-cleanup.html"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 3l-7 8"/><path d="M10 10l4 4c-1 3-4 6-9 7 0-5 2-8 5-11z"/></svg><span class="txt">Cleanup</span></a>
+   </nav>
+   
+   
+   <div class="foot"><div class="lbl">Drive C:</div><div class="val">67 GB free of 453 GB</div><div class="bar"><i style="width:85%"></i></div></div>
+  </aside>
+  <main class="main"><div class="head"><div><h1>Updates</h1><p>Checking installed apps. Marketplace and cleanup run in the background.</p></div>
+ <div class="actions"><a class="btn dest sm" href="#">Cancel</a></div></div>
+ <div class="readiness-grid"><div class="card rdy-card"><h3>Updates</h3><div class="prog-meta" style="margin-top:10px"><span>Listing versions <strong>64%</strong></span><span>About 25 s left</span></div><div class="prog-track" style="--p:64%;margin-top:8px"><i></i></div></div><div class="card rdy-card"><h3>Marketplace</h3><div class="prog-meta" style="margin-top:10px"><span>Reading catalog <strong>41%</strong></span><span>About 40 s left</span></div><div class="prog-track" style="--p:41%;margin-top:8px"><i></i></div></div><div class="card rdy-card"><h3>Cleanup</h3><div class="prog-meta" style="margin-top:10px"><span>Drive C: <strong>22%</strong></span><span>About 2 min left</span></div><div class="prog-track" style="--p:22%;margin-top:8px"><i></i></div></div></div>
+ <div class="btn inst" style="width:100%;justify-content:center">Update all (waiting for scan)</div></main>
+ </div></div></section>
+<section class="state-sec" id="state-2"><div class="state-cap">State 2 <span>&middot; Updates scanning</span></div>
+<div class="win"><div class="titlebar"><div class="name"><div class="logo-tile" style="width:18px;height:18px;border-radius:8px;display:flex;align-items:center;justify-content:center"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#041820" stroke-width="3" stroke-linecap="round"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 5 5"/></svg></div><span>Quantum Updater</span></div>
+  <div class="wc"><span><svg width="11" height="11" viewBox="0 0 11 11" stroke="#B4C2CB" stroke-width="1.2"><path d="M0 5.5h11"/></svg></span>
+  <span><svg width="11" height="11" viewBox="0 0 11 11" fill="none" stroke="#B4C2CB" stroke-width="1.2"><rect x=".6" y=".6" width="9.8" height="9.8"/></svg></span>
+  <span><svg width="11" height="11" viewBox="0 0 11 11" stroke="#B4C2CB" stroke-width="1.2"><path d="M.6.6l9.8 9.8M10.4.6L.6 10.4"/></svg></span></div></div>
+ <div class="body-rel">
+  <aside class="side">
+   <div class="brand"><div class="logo-tile" style="width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#041820" stroke-width="3" stroke-linecap="round"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 5 5"/></svg></div><div class="t">Quantum Updater<small>Keeps your apps current</small></div></div>
+   <nav class="nav">
+   <a href="01-updates.html" class="on"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="m7 11 5 5 5-5"/><path d="M5 20h14"/></svg><span class="txt">Updates</span><span class="st-ico"><svg class="ring-sm" width="28" height="28" viewBox="0 0 28 28" aria-hidden="true"><circle cx="14.0" cy="14.0" r="11.5" fill="none" stroke="var(--track)" stroke-width="3"/><circle cx="14.0" cy="14.0" r="11.5" fill="none" stroke="#06D7A0" stroke-width="3" stroke-dasharray="30.3 72.3" transform="rotate(-90 14.0 14.0)"/><text x="14.0" y="18.0" text-anchor="middle" font-size="9" font-weight="600" fill="var(--text)">42%</text></svg></span></a>
+   <a href="02-marketplace.html"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9l1.5-5h13L20 9"/><path d="M4 9h16v1a3 3 0 0 1-5.3 1.9A3 3 0 0 1 12 13a3 3 0 0 1-2.7-1.1A3 3 0 0 1 4 10z"/><path d="M5 14v6h14v-6"/></svg><span class="txt">Marketplace</span></a>
+   <a href="03-installed.html"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="4" width="7" height="7" rx="1.5"/><rect x="13" y="4" width="7" height="7" rx="1.5"/><rect x="4" y="13" width="7" height="7" rx="1.5"/><rect x="13" y="13" width="7" height="7" rx="1.5"/></svg><span class="txt">Installed</span></a>
+   <a href="04-about.html"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="5" width="16" height="11" rx="2"/><path d="M2 20h20"/></svg><span class="txt">About this computer</span></a>
+   <a href="05-cleanup.html"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 3l-7 8"/><path d="M10 10l4 4c-1 3-4 6-9 7 0-5 2-8 5-11z"/></svg><span class="txt">Cleanup</span></a>
+   </nav>
+   
+   
+   <div class="foot"><div class="lbl">Drive C:</div><div class="val">67 GB free of 453 GB</div><div class="bar"><i style="width:85%"></i></div></div>
+  </aside>
+  <main class="main"><div class="head"><div><h1>Updates</h1><p>Listing installed apps and available versions.</p></div><div class="actions"><a class="btn dest sm" href="#">Cancel</a></div></div>
+ <div class="card prog-strip"><div class="prog-meta"><span>Updates scan <strong>64%</strong></span><span>Stage: <strong>Reading version info</strong></span><span>About <strong>25 s</strong> left</span></div><div class="prog-track" style="--p:64%"><i></i></div></div>
+ <div class="list"><div class="card row" style="opacity:.7"><div class="ico empty"></div><div class="info"><div class="nm">Reading installed apps</div></div><span class="muted">Scanning</span></div></div></main>
+ </div></div></section>
+<section class="state-sec" id="state-3"><div class="state-cap">State 3 <span>&middot; Updates cached and refreshing</span></div>
+<div class="win"><div class="titlebar"><div class="name"><div class="logo-tile" style="width:18px;height:18px;border-radius:8px;display:flex;align-items:center;justify-content:center"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#041820" stroke-width="3" stroke-linecap="round"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 5 5"/></svg></div><span>Quantum Updater</span></div>
+  <div class="wc"><span><svg width="11" height="11" viewBox="0 0 11 11" stroke="#B4C2CB" stroke-width="1.2"><path d="M0 5.5h11"/></svg></span>
+  <span><svg width="11" height="11" viewBox="0 0 11 11" fill="none" stroke="#B4C2CB" stroke-width="1.2"><rect x=".6" y=".6" width="9.8" height="9.8"/></svg></span>
+  <span><svg width="11" height="11" viewBox="0 0 11 11" stroke="#B4C2CB" stroke-width="1.2"><path d="M.6.6l9.8 9.8M10.4.6L.6 10.4"/></svg></span></div></div>
+ <div class="body-rel">
+  <aside class="side">
+   <div class="brand"><div class="logo-tile" style="width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#041820" stroke-width="3" stroke-linecap="round"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 5 5"/></svg></div><div class="t">Quantum Updater<small>Keeps your apps current</small></div></div>
+   <nav class="nav">
+   <a href="01-updates.html" class="on"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="m7 11 5 5 5-5"/><path d="M5 20h14"/></svg><span class="txt">Updates</span><span class="st-ico"><svg class="ring-sm" width="28" height="28" viewBox="0 0 28 28" aria-hidden="true"><circle cx="14.0" cy="14.0" r="11.5" fill="none" stroke="var(--track)" stroke-width="3"/><circle cx="14.0" cy="14.0" r="11.5" fill="none" stroke="#06D7A0" stroke-width="3" stroke-dasharray="30.3 72.3" transform="rotate(-90 14.0 14.0)"/><text x="14.0" y="18.0" text-anchor="middle" font-size="9" font-weight="600" fill="var(--text)">42%</text></svg></span></a>
+   <a href="02-marketplace.html"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9l1.5-5h13L20 9"/><path d="M4 9h16v1a3 3 0 0 1-5.3 1.9A3 3 0 0 1 12 13a3 3 0 0 1-2.7-1.1A3 3 0 0 1 4 10z"/><path d="M5 14v6h14v-6"/></svg><span class="txt">Marketplace</span></a>
+   <a href="03-installed.html"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="4" width="7" height="7" rx="1.5"/><rect x="13" y="4" width="7" height="7" rx="1.5"/><rect x="4" y="13" width="7" height="7" rx="1.5"/><rect x="13" y="13" width="7" height="7" rx="1.5"/></svg><span class="txt">Installed</span></a>
+   <a href="04-about.html"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="5" width="16" height="11" rx="2"/><path d="M2 20h20"/></svg><span class="txt">About this computer</span></a>
+   <a href="05-cleanup.html"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 3l-7 8"/><path d="M10 10l4 4c-1 3-4 6-9 7 0-5 2-8 5-11z"/></svg><span class="txt">Cleanup</span></a>
+   </nav>
+   
+   
+   <div class="foot"><div class="lbl">Drive C:</div><div class="val">67 GB free of 453 GB</div><div class="bar"><i style="width:85%"></i></div></div>
+  </aside>
+  <main class="main"><div class="head"><div><h1>Updates</h1><p>Last scan 2 h ago, refreshing.</p></div><div class="actions"><a class="btn dest sm" href="#">Cancel</a><a class="btn sec" href="#">Check again</a></div></div>
+ <div class="card prog-strip"><div class="prog-meta"><span>Refreshing <strong>30%</strong></span></div><div class="prog-track" style="--p:30%"><i></i></div></div>
+ <div class="card row"><div class="info"><div class="nm">OBS Studio</div><div class="sub">Cached: update available</div></div><a class="btn inst sm" href="#">Update</a></div></main>
+ </div></div></section>
+<section class="state-sec" id="state-4"><div class="state-cap">State 4 <span>&middot; Updates ready</span></div>
+<div class="win"><div class="titlebar"><div class="name"><div class="logo-tile" style="width:18px;height:18px;border-radius:8px;display:flex;align-items:center;justify-content:center"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#041820" stroke-width="3" stroke-linecap="round"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 5 5"/></svg></div><span>Quantum Updater</span></div>
+  <div class="wc"><span><svg width="11" height="11" viewBox="0 0 11 11" stroke="#B4C2CB" stroke-width="1.2"><path d="M0 5.5h11"/></svg></span>
+  <span><svg width="11" height="11" viewBox="0 0 11 11" fill="none" stroke="#B4C2CB" stroke-width="1.2"><rect x=".6" y=".6" width="9.8" height="9.8"/></svg></span>
+  <span><svg width="11" height="11" viewBox="0 0 11 11" stroke="#B4C2CB" stroke-width="1.2"><path d="M.6.6l9.8 9.8M10.4.6L.6 10.4"/></svg></span></div></div>
+ <div class="body-rel">
+  <aside class="side">
+   <div class="brand"><div class="logo-tile" style="width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#041820" stroke-width="3" stroke-linecap="round"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 5 5"/></svg></div><div class="t">Quantum Updater<small>Keeps your apps current</small></div></div>
+   <nav class="nav">
+   <a href="01-updates.html" class="on"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="m7 11 5 5 5-5"/><path d="M5 20h14"/></svg><span class="txt">Updates</span><span class="chip warn badge">2</span><span class="st-ico"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#06D7A0" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg><span class="pct"></span></span></a>
+   <a href="02-marketplace.html"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9l1.5-5h13L20 9"/><path d="M4 9h16v1a3 3 0 0 1-5.3 1.9A3 3 0 0 1 12 13a3 3 0 0 1-2.7-1.1A3 3 0 0 1 4 10z"/><path d="M5 14v6h14v-6"/></svg><span class="txt">Marketplace</span></a>
+   <a href="03-installed.html"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="4" width="7" height="7" rx="1.5"/><rect x="13" y="4" width="7" height="7" rx="1.5"/><rect x="4" y="13" width="7" height="7" rx="1.5"/><rect x="13" y="13" width="7" height="7" rx="1.5"/></svg><span class="txt">Installed</span></a>
+   <a href="04-about.html"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="5" width="16" height="11" rx="2"/><path d="M2 20h20"/></svg><span class="txt">About this computer</span></a>
+   <a href="05-cleanup.html"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 3l-7 8"/><path d="M10 10l4 4c-1 3-4 6-9 7 0-5 2-8 5-11z"/></svg><span class="txt">Cleanup</span></a>
+   </nav>
+   
+   
+   <div class="foot"><div class="lbl">Drive C:</div><div class="val">67 GB free of 453 GB</div><div class="bar"><i style="width:85%"></i></div></div>
+  </aside>
+  <main class="main"><div class="head"><div><h1>Updates</h1><p>2 apps have a newer version ready.</p></div>
+ <div class="actions"><a class="btn sec" href="#">Check again</a><a class="btn prim" href="#">Update all (2)</a></div></div>
+ <div class="list"><div class="card row"><div class="ico empty"></div><div class="info"><div class="nm">OBS Studio</div></div><a class="btn sec sm" href="#">Update</a></div>
+ <div class="card row"><div class="ico empty"></div><div class="info"><div class="nm">Orca</div></div><a class="btn sec sm" href="#">Update</a></div></div></main>
+ </div></div></section>
+<section class="state-sec" id="state-5"><div class="state-cap">State 5 <span>&middot; Updates failed</span></div>
+<div class="win"><div class="titlebar"><div class="name"><div class="logo-tile" style="width:18px;height:18px;border-radius:8px;display:flex;align-items:center;justify-content:center"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#041820" stroke-width="3" stroke-linecap="round"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 5 5"/></svg></div><span>Quantum Updater</span></div>
+  <div class="wc"><span><svg width="11" height="11" viewBox="0 0 11 11" stroke="#B4C2CB" stroke-width="1.2"><path d="M0 5.5h11"/></svg></span>
+  <span><svg width="11" height="11" viewBox="0 0 11 11" fill="none" stroke="#B4C2CB" stroke-width="1.2"><rect x=".6" y=".6" width="9.8" height="9.8"/></svg></span>
+  <span><svg width="11" height="11" viewBox="0 0 11 11" stroke="#B4C2CB" stroke-width="1.2"><path d="M.6.6l9.8 9.8M10.4.6L.6 10.4"/></svg></span></div></div>
+ <div class="body-rel">
+  <aside class="side">
+   <div class="brand"><div class="logo-tile" style="width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#041820" stroke-width="3" stroke-linecap="round"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 5 5"/></svg></div><div class="t">Quantum Updater<small>Keeps your apps current</small></div></div>
+   <nav class="nav">
+   <a href="01-updates.html" class="on"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="m7 11 5 5 5-5"/><path d="M5 20h14"/></svg><span class="txt">Updates</span><span class="st-ico"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#FFD167" stroke-width="2" stroke-linecap="round"><path d="M12 9v4"/><path d="M12 17h.01"/><path d="M10.3 4.5h3.4L21 19.5H3L10.3 4.5z"/></svg></span></a>
+   <a href="02-marketplace.html"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9l1.5-5h13L20 9"/><path d="M4 9h16v1a3 3 0 0 1-5.3 1.9A3 3 0 0 1 12 13a3 3 0 0 1-2.7-1.1A3 3 0 0 1 4 10z"/><path d="M5 14v6h14v-6"/></svg><span class="txt">Marketplace</span></a>
+   <a href="03-installed.html"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="4" width="7" height="7" rx="1.5"/><rect x="13" y="4" width="7" height="7" rx="1.5"/><rect x="4" y="13" width="7" height="7" rx="1.5"/><rect x="13" y="13" width="7" height="7" rx="1.5"/></svg><span class="txt">Installed</span></a>
+   <a href="04-about.html"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="5" width="16" height="11" rx="2"/><path d="M2 20h20"/></svg><span class="txt">About this computer</span></a>
+   <a href="05-cleanup.html"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 3l-7 8"/><path d="M10 10l4 4c-1 3-4 6-9 7 0-5 2-8 5-11z"/></svg><span class="txt">Cleanup</span></a>
+   </nav>
+   
+   
+   <div class="foot"><div class="lbl">Drive C:</div><div class="val">67 GB free of 453 GB</div><div class="bar"><i style="width:85%"></i></div></div>
+  </aside>
+  <main class="main"><div class="head"><div><h1>Updates</h1><p>Could not finish checking for updates.</p></div><div class="actions"><a class="btn prim" href="#">Retry</a></div></div>
+ <div class="card" style="padding:16px 18px"><div class="nm">Network blocked</div><p class="t2" style="font-size:13px;margin-top:6px">Could not reach the version source. Check your connection and proxy settings.</p></div></main>
+ </div></div></section>
+<section class="state-sec" id="state-6"><div class="state-cap">State 6 <span>&middot; Marketplace scanning</span></div>
+<div class="win"><div class="titlebar"><div class="name"><div class="logo-tile" style="width:18px;height:18px;border-radius:8px;display:flex;align-items:center;justify-content:center"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#041820" stroke-width="3" stroke-linecap="round"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 5 5"/></svg></div><span>Quantum Updater</span></div>
+  <div class="wc"><span><svg width="11" height="11" viewBox="0 0 11 11" stroke="#B4C2CB" stroke-width="1.2"><path d="M0 5.5h11"/></svg></span>
+  <span><svg width="11" height="11" viewBox="0 0 11 11" fill="none" stroke="#B4C2CB" stroke-width="1.2"><rect x=".6" y=".6" width="9.8" height="9.8"/></svg></span>
+  <span><svg width="11" height="11" viewBox="0 0 11 11" stroke="#B4C2CB" stroke-width="1.2"><path d="M.6.6l9.8 9.8M10.4.6L.6 10.4"/></svg></span></div></div>
+ <div class="body-rel">
+  <aside class="side">
+   <div class="brand"><div class="logo-tile" style="width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#041820" stroke-width="3" stroke-linecap="round"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 5 5"/></svg></div><div class="t">Quantum Updater<small>Keeps your apps current</small></div></div>
+   <nav class="nav">
+   <a href="01-updates.html"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="m7 11 5 5 5-5"/><path d="M5 20h14"/></svg><span class="txt">Updates</span></a>
+   <a href="02-marketplace.html" class="on"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9l1.5-5h13L20 9"/><path d="M4 9h16v1a3 3 0 0 1-5.3 1.9A3 3 0 0 1 12 13a3 3 0 0 1-2.7-1.1A3 3 0 0 1 4 10z"/><path d="M5 14v6h14v-6"/></svg><span class="txt">Marketplace</span><span class="st-ico"><svg class="ring-sm" width="28" height="28" viewBox="0 0 28 28" aria-hidden="true"><circle cx="14.0" cy="14.0" r="11.5" fill="none" stroke="var(--track)" stroke-width="3"/><circle cx="14.0" cy="14.0" r="11.5" fill="none" stroke="#06D7A0" stroke-width="3" stroke-dasharray="30.3 72.3" transform="rotate(-90 14.0 14.0)"/><text x="14.0" y="18.0" text-anchor="middle" font-size="9" font-weight="600" fill="var(--text)">42%</text></svg></span></a>
+   <a href="03-installed.html"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="4" width="7" height="7" rx="1.5"/><rect x="13" y="4" width="7" height="7" rx="1.5"/><rect x="4" y="13" width="7" height="7" rx="1.5"/><rect x="13" y="13" width="7" height="7" rx="1.5"/></svg><span class="txt">Installed</span></a>
+   <a href="04-about.html"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="5" width="16" height="11" rx="2"/><path d="M2 20h20"/></svg><span class="txt">About this computer</span></a>
+   <a href="05-cleanup.html"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 3l-7 8"/><path d="M10 10l4 4c-1 3-4 6-9 7 0-5 2-8 5-11z"/></svg><span class="txt">Cleanup</span></a>
+   </nav>
+   
+   
+   <div class="foot"><div class="lbl">Drive C:</div><div class="val">67 GB free of 453 GB</div><div class="bar"><i style="width:85%"></i></div></div>
+  </aside>
+  <main class="main"><div class="head"><div><h1>Marketplace</h1><p>Checking which apps are already on this PC.</p></div><div class="actions"><a class="btn dest sm" href="#">Cancel</a></div></div>
+ <div class="card prog-strip"><div class="prog-meta"><span>Marketplace scan <strong>41%</strong></span><span>Stage: <strong>Matching installs</strong></span><span>About <strong>40 s</strong> left</span></div><div class="prog-track" style="--p:41%"><i></i></div></div>
+ <div class="card row"><div class="ico empty"></div><div class="info"><div class="nm">Visual Studio Code</div></div><span class="chip neu">Checking</span></div></main>
+ </div></div></section>
+<section class="state-sec" id="state-7"><div class="state-cap">State 7 <span>&middot; Marketplace ready</span></div>
+<div class="win"><div class="titlebar"><div class="name"><div class="logo-tile" style="width:18px;height:18px;border-radius:8px;display:flex;align-items:center;justify-content:center"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#041820" stroke-width="3" stroke-linecap="round"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 5 5"/></svg></div><span>Quantum Updater</span></div>
+  <div class="wc"><span><svg width="11" height="11" viewBox="0 0 11 11" stroke="#B4C2CB" stroke-width="1.2"><path d="M0 5.5h11"/></svg></span>
+  <span><svg width="11" height="11" viewBox="0 0 11 11" fill="none" stroke="#B4C2CB" stroke-width="1.2"><rect x=".6" y=".6" width="9.8" height="9.8"/></svg></span>
+  <span><svg width="11" height="11" viewBox="0 0 11 11" stroke="#B4C2CB" stroke-width="1.2"><path d="M.6.6l9.8 9.8M10.4.6L.6 10.4"/></svg></span></div></div>
+ <div class="body-rel">
+  <aside class="side">
+   <div class="brand"><div class="logo-tile" style="width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#041820" stroke-width="3" stroke-linecap="round"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 5 5"/></svg></div><div class="t">Quantum Updater<small>Keeps your apps current</small></div></div>
+   <nav class="nav">
+   <a href="01-updates.html"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="m7 11 5 5 5-5"/><path d="M5 20h14"/></svg><span class="txt">Updates</span></a>
+   <a href="02-marketplace.html" class="on"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9l1.5-5h13L20 9"/><path d="M4 9h16v1a3 3 0 0 1-5.3 1.9A3 3 0 0 1 12 13a3 3 0 0 1-2.7-1.1A3 3 0 0 1 4 10z"/><path d="M5 14v6h14v-6"/></svg><span class="txt">Marketplace</span><span class="st-ico"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#06D7A0" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg><span class="pct"></span></span></a>
+   <a href="03-installed.html"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="4" width="7" height="7" rx="1.5"/><rect x="13" y="4" width="7" height="7" rx="1.5"/><rect x="4" y="13" width="7" height="7" rx="1.5"/><rect x="13" y="13" width="7" height="7" rx="1.5"/></svg><span class="txt">Installed</span></a>
+   <a href="04-about.html"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="5" width="16" height="11" rx="2"/><path d="M2 20h20"/></svg><span class="txt">About this computer</span></a>
+   <a href="05-cleanup.html"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 3l-7 8"/><path d="M10 10l4 4c-1 3-4 6-9 7 0-5 2-8 5-11z"/></svg><span class="txt">Cleanup</span></a>
+   </nav>
+   
+   
+   <div class="foot"><div class="lbl">Drive C:</div><div class="val">67 GB free of 453 GB</div><div class="bar"><i style="width:85%"></i></div></div>
+  </aside>
+  <main class="main"><div class="head"><div><h1>Marketplace</h1><p>Browse apps to install.</p></div><div class="actions"><a class="btn sec" href="#">Check again</a></div></div>
+ <div class="list"><div class="card row"><div class="ico empty"></div><div class="info"><div class="nm">Spotify</div></div><a class="btn prim sm" href="#">Install</a></div>
+ <div class="card row"><div class="ico empty"></div><div class="info"><div class="nm">Discord</div></div><a class="btn inst sm" href="#">Installed</a></div></div></main>
+ </div></div></section>
+<section class="state-sec" id="state-8"><div class="state-cap">State 8 <span>&middot; Marketplace cached and refreshing</span></div>
+<div class="win"><div class="titlebar"><div class="name"><div class="logo-tile" style="width:18px;height:18px;border-radius:8px;display:flex;align-items:center;justify-content:center"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#041820" stroke-width="3" stroke-linecap="round"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 5 5"/></svg></div><span>Quantum Updater</span></div>
+  <div class="wc"><span><svg width="11" height="11" viewBox="0 0 11 11" stroke="#B4C2CB" stroke-width="1.2"><path d="M0 5.5h11"/></svg></span>
+  <span><svg width="11" height="11" viewBox="0 0 11 11" fill="none" stroke="#B4C2CB" stroke-width="1.2"><rect x=".6" y=".6" width="9.8" height="9.8"/></svg></span>
+  <span><svg width="11" height="11" viewBox="0 0 11 11" stroke="#B4C2CB" stroke-width="1.2"><path d="M.6.6l9.8 9.8M10.4.6L.6 10.4"/></svg></span></div></div>
+ <div class="body-rel">
+  <aside class="side">
+   <div class="brand"><div class="logo-tile" style="width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#041820" stroke-width="3" stroke-linecap="round"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 5 5"/></svg></div><div class="t">Quantum Updater<small>Keeps your apps current</small></div></div>
+   <nav class="nav">
+   <a href="01-updates.html"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="m7 11 5 5 5-5"/><path d="M5 20h14"/></svg><span class="txt">Updates</span></a>
+   <a href="02-marketplace.html" class="on"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9l1.5-5h13L20 9"/><path d="M4 9h16v1a3 3 0 0 1-5.3 1.9A3 3 0 0 1 12 13a3 3 0 0 1-2.7-1.1A3 3 0 0 1 4 10z"/><path d="M5 14v6h14v-6"/></svg><span class="txt">Marketplace</span><span class="st-ico"><svg class="ring-sm" width="28" height="28" viewBox="0 0 28 28" aria-hidden="true"><circle cx="14.0" cy="14.0" r="11.5" fill="none" stroke="var(--track)" stroke-width="3"/><circle cx="14.0" cy="14.0" r="11.5" fill="none" stroke="#06D7A0" stroke-width="3" stroke-dasharray="30.3 72.3" transform="rotate(-90 14.0 14.0)"/><text x="14.0" y="18.0" text-anchor="middle" font-size="9" font-weight="600" fill="var(--text)">42%</text></svg></span></a>
+   <a href="03-installed.html"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="4" width="7" height="7" rx="1.5"/><rect x="13" y="4" width="7" height="7" rx="1.5"/><rect x="4" y="13" width="7" height="7" rx="1.5"/><rect x="13" y="13" width="7" height="7" rx="1.5"/></svg><span class="txt">Installed</span></a>
+   <a href="04-about.html"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="5" width="16" height="11" rx="2"/><path d="M2 20h20"/></svg><span class="txt">About this computer</span></a>
+   <a href="05-cleanup.html"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 3l-7 8"/><path d="M10 10l4 4c-1 3-4 6-9 7 0-5 2-8 5-11z"/></svg><span class="txt">Cleanup</span></a>
+   </nav>
+   
+   
+   <div class="foot"><div class="lbl">Drive C:</div><div class="val">67 GB free of 453 GB</div><div class="bar"><i style="width:85%"></i></div></div>
+  </aside>
+  <main class="main"><div class="head"><div><h1>Marketplace</h1><p>Last scan 2 h ago, refreshing.</p></div><div class="actions"><a class="btn dest sm" href="#">Cancel</a></div></div>
+ <div class="card prog-strip"><div class="prog-meta"><span>Refreshing <strong>12%</strong></span></div><div class="prog-track" style="--p:12%"><i></i></div></div></main>
+ </div></div></section>
+<section class="state-sec" id="state-9"><div class="state-cap">State 9 <span>&middot; Marketplace failed</span></div>
+<div class="win"><div class="titlebar"><div class="name"><div class="logo-tile" style="width:18px;height:18px;border-radius:8px;display:flex;align-items:center;justify-content:center"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#041820" stroke-width="3" stroke-linecap="round"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 5 5"/></svg></div><span>Quantum Updater</span></div>
+  <div class="wc"><span><svg width="11" height="11" viewBox="0 0 11 11" stroke="#B4C2CB" stroke-width="1.2"><path d="M0 5.5h11"/></svg></span>
+  <span><svg width="11" height="11" viewBox="0 0 11 11" fill="none" stroke="#B4C2CB" stroke-width="1.2"><rect x=".6" y=".6" width="9.8" height="9.8"/></svg></span>
+  <span><svg width="11" height="11" viewBox="0 0 11 11" stroke="#B4C2CB" stroke-width="1.2"><path d="M.6.6l9.8 9.8M10.4.6L.6 10.4"/></svg></span></div></div>
+ <div class="body-rel">
+  <aside class="side">
+   <div class="brand"><div class="logo-tile" style="width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#041820" stroke-width="3" stroke-linecap="round"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 5 5"/></svg></div><div class="t">Quantum Updater<small>Keeps your apps current</small></div></div>
+   <nav class="nav">
+   <a href="01-updates.html"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="m7 11 5 5 5-5"/><path d="M5 20h14"/></svg><span class="txt">Updates</span></a>
+   <a href="02-marketplace.html" class="on"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9l1.5-5h13L20 9"/><path d="M4 9h16v1a3 3 0 0 1-5.3 1.9A3 3 0 0 1 12 13a3 3 0 0 1-2.7-1.1A3 3 0 0 1 4 10z"/><path d="M5 14v6h14v-6"/></svg><span class="txt">Marketplace</span><span class="st-ico"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#FFD167" stroke-width="2" stroke-linecap="round"><path d="M12 9v4"/><path d="M12 17h.01"/><path d="M10.3 4.5h3.4L21 19.5H3L10.3 4.5z"/></svg></span></a>
+   <a href="03-installed.html"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="4" width="7" height="7" rx="1.5"/><rect x="13" y="4" width="7" height="7" rx="1.5"/><rect x="4" y="13" width="7" height="7" rx="1.5"/><rect x="13" y="13" width="7" height="7" rx="1.5"/></svg><span class="txt">Installed</span></a>
+   <a href="04-about.html"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="5" width="16" height="11" rx="2"/><path d="M2 20h20"/></svg><span class="txt">About this computer</span></a>
+   <a href="05-cleanup.html"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 3l-7 8"/><path d="M10 10l4 4c-1 3-4 6-9 7 0-5 2-8 5-11z"/></svg><span class="txt">Cleanup</span></a>
+   </nav>
+   
+   
+   <div class="foot"><div class="lbl">Drive C:</div><div class="val">67 GB free of 453 GB</div><div class="bar"><i style="width:85%"></i></div></div>
+  </aside>
+  <main class="main"><div class="head"><div><h1>Marketplace</h1><p>Catalog check failed.</p></div><div class="actions"><a class="btn prim" href="#">Retry</a></div></div>
+ <div class="card" style="padding:16px"><div class="nm">Catalog unavailable</div></div></main>
+ </div></div></section>
+<section class="state-sec" id="state-10"><div class="state-cap">State 10 <span>&middot; Cleanup scanning</span></div>
+<div class="win"><div class="titlebar"><div class="name"><div class="logo-tile" style="width:18px;height:18px;border-radius:8px;display:flex;align-items:center;justify-content:center"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#041820" stroke-width="3" stroke-linecap="round"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 5 5"/></svg></div><span>Quantum Updater</span></div>
+  <div class="wc"><span><svg width="11" height="11" viewBox="0 0 11 11" stroke="#B4C2CB" stroke-width="1.2"><path d="M0 5.5h11"/></svg></span>
+  <span><svg width="11" height="11" viewBox="0 0 11 11" fill="none" stroke="#B4C2CB" stroke-width="1.2"><rect x=".6" y=".6" width="9.8" height="9.8"/></svg></span>
+  <span><svg width="11" height="11" viewBox="0 0 11 11" stroke="#B4C2CB" stroke-width="1.2"><path d="M.6.6l9.8 9.8M10.4.6L.6 10.4"/></svg></span></div></div>
+ <div class="body-rel">
+  <aside class="side">
+   <div class="brand"><div class="logo-tile" style="width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#041820" stroke-width="3" stroke-linecap="round"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 5 5"/></svg></div><div class="t">Quantum Updater<small>Keeps your apps current</small></div></div>
+   <nav class="nav">
+   <a href="01-updates.html"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="m7 11 5 5 5-5"/><path d="M5 20h14"/></svg><span class="txt">Updates</span></a>
+   <a href="02-marketplace.html"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9l1.5-5h13L20 9"/><path d="M4 9h16v1a3 3 0 0 1-5.3 1.9A3 3 0 0 1 12 13a3 3 0 0 1-2.7-1.1A3 3 0 0 1 4 10z"/><path d="M5 14v6h14v-6"/></svg><span class="txt">Marketplace</span></a>
+   <a href="03-installed.html"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="4" width="7" height="7" rx="1.5"/><rect x="13" y="4" width="7" height="7" rx="1.5"/><rect x="4" y="13" width="7" height="7" rx="1.5"/><rect x="13" y="13" width="7" height="7" rx="1.5"/></svg><span class="txt">Installed</span></a>
+   <a href="04-about.html"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="5" width="16" height="11" rx="2"/><path d="M2 20h20"/></svg><span class="txt">About this computer</span></a>
+   <a href="05-cleanup.html" class="on"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 3l-7 8"/><path d="M10 10l4 4c-1 3-4 6-9 7 0-5 2-8 5-11z"/></svg><span class="txt">Cleanup</span><span class="st-ico"><svg class="ring-sm" width="28" height="28" viewBox="0 0 28 28" aria-hidden="true"><circle cx="14.0" cy="14.0" r="11.5" fill="none" stroke="var(--track)" stroke-width="3"/><circle cx="14.0" cy="14.0" r="11.5" fill="none" stroke="#06D7A0" stroke-width="3" stroke-dasharray="30.3 72.3" transform="rotate(-90 14.0 14.0)"/><text x="14.0" y="18.0" text-anchor="middle" font-size="9" font-weight="600" fill="var(--text)">42%</text></svg></span></a>
+   </nav>
+   <div class="nav-grp"><div class="nav-grp-lbl">Maintenance</div>
+   <a href="05-cleanup.html" class="on"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 3l-7 8"/><path d="M10 10l4 4c-1 3-4 6-9 7 0-5 2-8 5-11z"/></svg><span class="txt">Cleanup</span></a>
+   <a href="10-startup-apps.html"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 3 4 14h7l-1 8 10-14h-7l0-5"/></svg><span class="txt">Startup apps</span></a>
+   <a href="11-large-files.html"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3v5h5"/><path d="M5 20h14a2 2 0 0 0 2-2V7l-5-5H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2z"/></svg><span class="txt">Large files</span></a>
+   <a href="12-leftover-folders.html"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h16"/><path d="M6 20V9l4-4 4 4v11"/></svg><span class="txt">Leftover folders</span></a>
+   </div>
+   
+   <div class="foot"><div class="lbl">Drive C:</div><div class="val">67 GB free of 453 GB</div><div class="bar"><i style="width:85%"></i></div></div>
+  </aside>
+  <main class="main"><div class="head"><div><h1>Cleanup</h1><p>Background scan running.</p></div><div class="actions"><a class="btn dest sm" href="#">Cancel</a></div></div>
+ <div class="card prog-strip"><div class="prog-meta"><span>Cleanup scan <strong>22%</strong></span><span>Stage: <strong>User temp</strong></span><span>About <strong>2 min</strong> left</span></div><div class="prog-track" style="--p:22%"><i></i></div></div>
+ <a class="btn dis" href="#" style="width:fit-content">Clean (waiting for scan)</a></main>
+ </div></div></section>
+<section class="state-sec" id="state-11"><div class="state-cap">State 11 <span>&middot; Cleanup ready</span></div>
+<div class="win"><div class="titlebar"><div class="name"><div class="logo-tile" style="width:18px;height:18px;border-radius:8px;display:flex;align-items:center;justify-content:center"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#041820" stroke-width="3" stroke-linecap="round"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 5 5"/></svg></div><span>Quantum Updater</span></div>
+  <div class="wc"><span><svg width="11" height="11" viewBox="0 0 11 11" stroke="#B4C2CB" stroke-width="1.2"><path d="M0 5.5h11"/></svg></span>
+  <span><svg width="11" height="11" viewBox="0 0 11 11" fill="none" stroke="#B4C2CB" stroke-width="1.2"><rect x=".6" y=".6" width="9.8" height="9.8"/></svg></span>
+  <span><svg width="11" height="11" viewBox="0 0 11 11" stroke="#B4C2CB" stroke-width="1.2"><path d="M.6.6l9.8 9.8M10.4.6L.6 10.4"/></svg></span></div></div>
+ <div class="body-rel">
+  <aside class="side">
+   <div class="brand"><div class="logo-tile" style="width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#041820" stroke-width="3" stroke-linecap="round"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 5 5"/></svg></div><div class="t">Quantum Updater<small>Keeps your apps current</small></div></div>
+   <nav class="nav">
+   <a href="01-updates.html"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="m7 11 5 5 5-5"/><path d="M5 20h14"/></svg><span class="txt">Updates</span></a>
+   <a href="02-marketplace.html"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9l1.5-5h13L20 9"/><path d="M4 9h16v1a3 3 0 0 1-5.3 1.9A3 3 0 0 1 12 13a3 3 0 0 1-2.7-1.1A3 3 0 0 1 4 10z"/><path d="M5 14v6h14v-6"/></svg><span class="txt">Marketplace</span></a>
+   <a href="03-installed.html"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="4" width="7" height="7" rx="1.5"/><rect x="13" y="4" width="7" height="7" rx="1.5"/><rect x="4" y="13" width="7" height="7" rx="1.5"/><rect x="13" y="13" width="7" height="7" rx="1.5"/></svg><span class="txt">Installed</span></a>
+   <a href="04-about.html"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="5" width="16" height="11" rx="2"/><path d="M2 20h20"/></svg><span class="txt">About this computer</span></a>
+   <a href="05-cleanup.html" class="on"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 3l-7 8"/><path d="M10 10l4 4c-1 3-4 6-9 7 0-5 2-8 5-11z"/></svg><span class="txt">Cleanup</span><span class="st-ico"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#06D7A0" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg><span class="pct"></span></span></a>
+   </nav>
+   <div class="nav-grp"><div class="nav-grp-lbl">Maintenance</div>
+   <a href="05-cleanup.html" class="on"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 3l-7 8"/><path d="M10 10l4 4c-1 3-4 6-9 7 0-5 2-8 5-11z"/></svg><span class="txt">Cleanup</span></a>
+   <a href="10-startup-apps.html"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 3 4 14h7l-1 8 10-14h-7l0-5"/></svg><span class="txt">Startup apps</span></a>
+   <a href="11-large-files.html"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3v5h5"/><path d="M5 20h14a2 2 0 0 0 2-2V7l-5-5H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2z"/></svg><span class="txt">Large files</span></a>
+   <a href="12-leftover-folders.html"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h16"/><path d="M6 20V9l4-4 4 4v11"/></svg><span class="txt">Leftover folders</span></a>
+   </div>
+   
+   <div class="foot"><div class="lbl">Drive C:</div><div class="val">67 GB free of 453 GB</div><div class="bar"><i style="width:85%"></i></div></div>
+  </aside>
+  <main class="main"><div class="head"><div><h1>Cleanup</h1><p>Scan complete. You can clean now.</p></div><div class="actions"><a class="btn sec" href="#">Scan again</a><a class="btn prim" href="#">Clean 4.8 GB</a></div></div>
+ <div class="card" style="padding:14px 16px"><p class="t2">Background scan finished. Cleanup actions are enabled.</p></div></main>
+ </div></div></section>
+<section class="state-sec" id="state-12"><div class="state-cap">State 12 <span>&middot; Cleanup failed</span></div>
+<div class="win"><div class="titlebar"><div class="name"><div class="logo-tile" style="width:18px;height:18px;border-radius:8px;display:flex;align-items:center;justify-content:center"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#041820" stroke-width="3" stroke-linecap="round"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 5 5"/></svg></div><span>Quantum Updater</span></div>
+  <div class="wc"><span><svg width="11" height="11" viewBox="0 0 11 11" stroke="#B4C2CB" stroke-width="1.2"><path d="M0 5.5h11"/></svg></span>
+  <span><svg width="11" height="11" viewBox="0 0 11 11" fill="none" stroke="#B4C2CB" stroke-width="1.2"><rect x=".6" y=".6" width="9.8" height="9.8"/></svg></span>
+  <span><svg width="11" height="11" viewBox="0 0 11 11" stroke="#B4C2CB" stroke-width="1.2"><path d="M.6.6l9.8 9.8M10.4.6L.6 10.4"/></svg></span></div></div>
+ <div class="body-rel">
+  <aside class="side">
+   <div class="brand"><div class="logo-tile" style="width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#041820" stroke-width="3" stroke-linecap="round"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 5 5"/></svg></div><div class="t">Quantum Updater<small>Keeps your apps current</small></div></div>
+   <nav class="nav">
+   <a href="01-updates.html"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="m7 11 5 5 5-5"/><path d="M5 20h14"/></svg><span class="txt">Updates</span></a>
+   <a href="02-marketplace.html"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9l1.5-5h13L20 9"/><path d="M4 9h16v1a3 3 0 0 1-5.3 1.9A3 3 0 0 1 12 13a3 3 0 0 1-2.7-1.1A3 3 0 0 1 4 10z"/><path d="M5 14v6h14v-6"/></svg><span class="txt">Marketplace</span></a>
+   <a href="03-installed.html"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="4" width="7" height="7" rx="1.5"/><rect x="13" y="4" width="7" height="7" rx="1.5"/><rect x="4" y="13" width="7" height="7" rx="1.5"/><rect x="13" y="13" width="7" height="7" rx="1.5"/></svg><span class="txt">Installed</span></a>
+   <a href="04-about.html"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="5" width="16" height="11" rx="2"/><path d="M2 20h20"/></svg><span class="txt">About this computer</span></a>
+   <a href="05-cleanup.html" class="on"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 3l-7 8"/><path d="M10 10l4 4c-1 3-4 6-9 7 0-5 2-8 5-11z"/></svg><span class="txt">Cleanup</span><span class="st-ico"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#FFD167" stroke-width="2" stroke-linecap="round"><path d="M12 9v4"/><path d="M12 17h.01"/><path d="M10.3 4.5h3.4L21 19.5H3L10.3 4.5z"/></svg></span></a>
+   </nav>
+   <div class="nav-grp"><div class="nav-grp-lbl">Maintenance</div>
+   <a href="05-cleanup.html" class="on"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 3l-7 8"/><path d="M10 10l4 4c-1 3-4 6-9 7 0-5 2-8 5-11z"/></svg><span class="txt">Cleanup</span></a>
+   <a href="10-startup-apps.html"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 3 4 14h7l-1 8 10-14h-7l0-5"/></svg><span class="txt">Startup apps</span></a>
+   <a href="11-large-files.html"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3v5h5"/><path d="M5 20h14a2 2 0 0 0 2-2V7l-5-5H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2z"/></svg><span class="txt">Large files</span></a>
+   <a href="12-leftover-folders.html"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h16"/><path d="M6 20V9l4-4 4 4v11"/></svg><span class="txt">Leftover folders</span></a>
+   </div>
+   
+   <div class="foot"><div class="lbl">Drive C:</div><div class="val">67 GB free of 453 GB</div><div class="bar"><i style="width:85%"></i></div></div>
+  </aside>
+  <main class="main"><div class="head"><div><h1>Cleanup</h1><p>Scan failed.</p></div><div class="actions"><a class="btn prim" href="#">Retry</a></div></div>
+ <div class="card" style="padding:16px"><div class="nm">Access denied on a system folder</div><p class="t2" style="font-size:13px;margin-top:6px">Skipped protected paths and stopped the scan.</p></div></main>
+ </div></div></section>
+</body></html>

@@ -81,7 +81,8 @@ class BaseEngine(abc.ABC):
     def uninstall_package(
         self, 
         package_id: str, 
-        on_log: Optional[Callable[[str], None]] = None
+        on_log: Optional[Callable[[str], None]] = None,
+        on_progress: Optional[Callable[[Optional[float], str], None]] = None,
     ) -> OperationStatus:
         """Uninstall an existing package."""
         pass

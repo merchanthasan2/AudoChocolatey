@@ -17,6 +17,9 @@ class PackageInfo:
     size_bytes: int = 0
     ete_str: str = ""
     ete_seconds: int = 0
+    origin: str = "catalog"
+    can_uninstall: bool = True
+    uninstall_kind: str = "catalog"
     
     @property
     def has_update(self) -> bool:
@@ -42,3 +45,5 @@ class OperationStatus:
     success: bool
     message: str
     exit_code: int = 0
+    reason: str = ""
+    holders: List[Dict[str, Any]] = field(default_factory=list)

@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<title>Quantum Updater - hardware illustration library</title>
+<meta name="viewport" content="width=1400">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--mint:#06D7A0;--gold:#FFD167;--peach:#F78C6A}
+body{background:#0F1418;color:#F2F6F8;font-family:'Segoe UI Variable','Segoe UI',Tahoma,sans-serif;font-size:14px;line-height:1.45;padding:32px 0 70px;min-width:1400px}
+.wrap{width:1360px;margin:0 auto}
+h1{font-family:'Segoe UI Variable Display','Segoe UI',sans-serif;font-size:30px;font-weight:600}
+h2{font-family:'Segoe UI Variable Display','Segoe UI',sans-serif;font-size:21px;font-weight:600;margin:42px 0 6px;padding-top:6px}
+h3{font-size:14px;font-weight:600;color:#F2F6F8}
+p.lead{color:#B4C2CB;max-width:960px;margin-top:6px}
+p.sub{color:#8798A3;font-size:12px;margin:2px 0 14px}
+code,pre{font-family:Consolas,'Cascadia Mono',monospace}
+code{font-size:12.5px;color:#F2F6F8;background:#1C252C;border:1px solid #2C3943;border-radius:4px;padding:1px 6px}
+pre{background:#161D23;border:1px solid #2C3943;border-radius:8px;padding:14px 16px;font-size:12.5px;line-height:1.55;color:#B4C2CB;overflow:auto;margin-top:10px}
+a{color:#4FC3E8}
+.nav{display:flex;flex-wrap:wrap;gap:8px;margin:20px 0 0}
+.nav a{height:32px;padding:0 14px;border-radius:6px;background:#1F2A32;border:1px solid #3A4A55;color:#F2F6F8;text-decoration:none;display:inline-flex;align-items:center;font-weight:600;font-size:13px}
+.status{margin-top:18px;border-radius:8px;padding:12px 16px;font-weight:600;font-size:13.5px}
+.status.ok{background:#06D7A0;color:#073A4B}
+.status.bad{background:#F04770;color:#FFFFFF}
+table{width:100%;border-collapse:collapse;background:#161D23;border:1px solid #2C3943;font-size:13px;margin-top:10px}
+th,td{padding:8px 12px;border-bottom:1px solid #2C3943;text-align:left;vertical-align:top}
+thead th{background:#1C252C;font-weight:600}
+td.n{font-variant-numeric:tabular-nums;font-weight:600;white-space:nowrap}
+td.ok{color:#06D7A0;font-weight:600}
+td.bad{color:#FF8FA9;font-weight:600}
+.sw{display:inline-block;min-width:32px;text-align:center;padding:1px 6px;border-radius:4px;font-weight:700;border:1px solid #3A4A55}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:12px}
+.key{border:1px solid #2C3943;border-radius:10px;background:#161D23;padding:14px 16px}
+.key header{display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin-bottom:10px}
+.key header code{font-size:13px}
+.key header span{color:#B4C2CB;font-size:12.5px;text-align:right}
+.pair{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.panel{border-radius:8px;padding:10px;border:1px solid var(--border);background:var(--card)}
+.panel .tag{font-size:12px;color:var(--t2);margin-bottom:8px;font-weight:600}
+.tiles{display:flex;gap:10px;align-items:flex-end}
+.tile{background:var(--win);border:1px solid var(--border);border-radius:8px;display:flex;align-items:center;justify-content:center;flex:none;
+ --art-fill:var(--mint);--art-ink:#073A4B;--art-accent:var(--gold);--art-line:var(--cyan);color:var(--cyan)}
+.t56{width:72px;height:72px}.t56 svg{width:56px;height:56px;display:block}
+.t160{width:184px;height:184px}.t160 svg{width:160px;height:160px;display:block}
+.k-cpu .tile,.k-memory .tile{--art-line:var(--mint)}
+.k-gpu .tile,.k-camera .tile{--art-line:var(--peach)}
+.k-battery .tile{--art-line:var(--gold);--art-accent:var(--peach)}
+.th-b{--win:#04212A;--card:#0A3442;--border:#164A5B;--t2:#BFD9E2;--muted:#8FB3C0;--cyan:#6CD0EE}
+.th-a{--win:#0F1418;--card:#1C252C;--border:#2C3943;--t2:#B4C2CB;--muted:#8798A3;--cyan:#4FC3E8}
+.mono{font-family:Consolas,monospace;font-size:12px;color:#B4C2CB}
+.row2{display:flex;gap:10px;align-items:center}
+.miniwrap{display:flex;gap:6px}
+.cell-key{white-space:nowrap}
+.rules td:first-child{white-space:nowrap;font-weight:600;color:#F2F6F8}
+.rules td{color:#B4C2CB}
+.rules ol{padding-left:18px}
+.fallback{color:#FFD167}
+</style></head><body><div class="wrap">
+
+<h1>Hardware illustration library</h1>
+<p class="lead">Every drawing the live About this computer page can use, at 56 px (card size) and 160 px (hero size), in the normal theme (Direction B, left of each pair) and dark mode (Direction A, right). Same line style as the approved mockup: 2 px strokes, rounded caps, one accent fill, colours from <code>--art-line</code>, <code>--art-accent</code>, <code>--art-fill</code>. No logos are copied; a short text label on the filled plate carries vendor, family and generation. Source: <code>parts.js</code> (ADR 009).</p>
+
+<div id="status" class="status ok">Running self-check...</div>
+<div class="nav" id="nav"></div>
+
+<h2 id="how">How to use it</h2>
+<pre>&lt;script src="parts.js"&gt;&lt;/script&gt;
+
+// 1. Pick the drawing for a part (always returns a key that exists, falling back to the generic drawing for that kind)
+const key = pickArt('cpu', { name: 'AMD Ryzen 7 4800H with Radeon Graphics' });   // 'cpu-amd-ryzen-7'
+el.innerHTML = HARDWARE_ART[key];                                                  // sample text on the die
+
+// 2. Or get the drawing with the REAL family and generation read from this PC
+const { key, label, svg } = renderArt('cpu', { name: '13th Gen Intel(R) Core(TM) i7-13700H' });   // Core i7 / 13th Gen
+
+// 3. Any family, any generation, from the template
+makeCpuArt({ vendor: 'amd', family: 'Ryzen 7', generation: '4000' })
+makeCpuArt({ vendor: 'qualcomm', family: 'X Elite', generation: 'X1E' })
+
+/* Colours: set on any ancestor of the svg */
+.art-host { --art-line:#6CD0EE; --art-accent:#FFD167; --art-fill:#06D7A0; --art-ink:#073A4B; }  /* ink = text on the fill, keep 4.5:1 */</pre>
+<h3 style="margin-top:16px">makeCpuArt({ vendor, family, generation, ai, shape })</h3>
+<table><thead><tr><th>Field</th><th>Values</th><th>Effect</th></tr></thead><tbody>
+<tr><td><code>vendor</code></td><td><code>intel</code> <code>amd</code> <code>qualcomm</code> <code>arm</code> <code>apple</code> <code>generic</code></td><td>Chooses the package shape: Intel is a square with a cut corner and heat-spreader line; AMD has pin fringe and a gold cut corner; Qualcomm is a rounded phone-style package with a stacked layer behind it; other ARM has a ring of ball dots; Apple is a rounded chip with two memory blocks beside it.</td></tr>
+<tr><td><code>family</code></td><td>text, for example <code>Core i7</code>, <code>Ryzen 7</code>, <code>Ultra 7</code>, <code>X Elite</code>, <code>M2</code></td><td>First line on the die. Words inside it change the shape: <em>Ultra</em> splits the Intel die into two tiles, <em>TR</em> or <em>Thread</em> makes the wide Threadripper package, <em>Athlon</em> uses fewer pins, <em>AI</em> adds the sparkle.</td></tr>
+<tr><td><code>generation</code></td><td>text, for example <code>13th Gen</code>, <code>4000</code>, <code>Series 2</code>, <code>Pro</code>, <code>Gen 3</code></td><td>Second line on the die (optional).</td></tr>
+<tr><td><code>ai</code>, <code>shape</code></td><td>boolean, shape name</td><td>Optional overrides. Text is fitted to the die and never drawn smaller than 8 px at the 56 px size.</td></tr>
+</tbody></table>
+
+<h2 id="rules">pickArt rules</h2>
+<p class="sub">Rules run top to bottom; the first match wins. Anything unmatched returns the generic drawing for that kind (shown in <span class="fallback">gold</span>). Facts may also be passed as a plain string.</p>
+<table class="rules"><thead><tr><th>Kind</th><th>Facts read</th><th>Rules, in order</th><th>Fallback</th></tr></thead><tbody>
+<tr><td>cpu</td><td><code>name</code> (processor brand string), optional <code>arch</code></td><td><ol>
+<li>Apple or <code>M1</code>-<code>M9</code> alone: Pro/Max/Ultra word gives <code>cpu-apple-pro|max|ultra</code>, else <code>cpu-apple-m1..m4</code>, else <code>cpu-apple-silicon</code></li>
+<li>Snapdragon / Qualcomm / X1E / X1P: X Elite, X Plus, 8cx, 7c, else <code>cpu-snapdragon</code></li>
+<li>Intel: Core Ultra N (<code>cpu-intel-ultra-5|7|9</code>), Core iN (<code>cpu-intel-core-i3|5|7|9</code>), Celeron, Pentium, else <code>cpu-intel</code></li>
+<li>AMD: Ryzen AI, Threadripper, Ryzen N (<code>cpu-amd-ryzen-3|5|7|9</code>), Athlon, else <code>cpu-amd</code></li>
+<li>ARM words (Cortex, Neoverse, ...) or <code>arch</code> containing arm/aarch: <code>cpu-arm</code></li></ol>
+Generation: Intel from the leading "13th Gen" or the model digits (i7-13700H = 13th, i5-8250U = 8th, 3 digits = 1st); Core Ultra from the first model digit (155H = Series 1, 258V = Series 2); Ryzen from the first model digit (4800H = 4000); Snapdragon from "Gen n" or the X1E/X1P code.</td><td class="fallback">cpu-generic</td></tr>
+<tr><td>gpu</td><td><code>name</code> of each adapter</td><td><ol>
+<li>Basic render, virtual, VMware, Hyper-V: <code>gpu-generic</code></li>
+<li>NVIDIA / GeForce / RTX / GTX / Quadro / MX: <code>gpu-nvidia-rtx</code> if RTX, else <code>gpu-nvidia-geforce</code></li>
+<li>Intel Arc with a model like A370M or B580: <code>gpu-intel-arc</code>; Intel Arc Graphics, Iris, UHD, Xe: <code>gpu-integrated</code></li>
+<li>AMD Radeon with RX, Pro W, VII, R5/R7/R9, HD: <code>gpu-amd-radeon</code>; any other Radeon name (Radeon Graphics, 780M, Vega 8): <code>gpu-integrated</code></li>
+<li>Adreno, Apple, Mali: <code>gpu-integrated</code></li></ol></td><td class="fallback">gpu-generic</td></tr>
+<tr><td>device</td><td><code>model</code>, <code>name</code>, <code>manufacturer</code>, <code>chassis</code> (Windows chassis number or text), <code>isLaptop</code></td><td><ol>
+<li>MacBook in the name: <code>device-macbook</code>; iMac: all-in-one; Mac mini, NUC, Mini PC: <code>device-mini-pc</code></li>
+<li>ROG Ally, Steam Deck, Legion Go, handheld: <code>device-handheld</code></li>
+<li>Chassis 13 or "all-in-one": <code>device-all-in-one</code>; chassis 30/32, Surface Pro/Go: <code>device-tablet</code>; chassis 31, Yoga, Flip, x360: <code>device-2in1</code>; chassis 34-36: mini PC</li>
+<li>Laptop chassis (8, 9, 10, 14) or <code>isLaptop</code>: <code>device-gaming-laptop</code> if the name has TUF, ROG, Legion, Predator, Nitro, Alienware, OMEN, Victus, Katana, Raider, Stealth or Gaming; otherwise <code>device-laptop</code></li>
+<li>Desktop chassis (3-7, 15, 16) or "tower": <code>device-desktop-tower</code></li></ol></td><td class="fallback">device-generic-pc</td></tr>
+<tr><td>memory</td><td><code>type</code> (text or SMBIOS number 24/26/27-30/34/35), <code>formFactor</code> (text or Win32 number 8/12/21/22), <code>soldered</code>, <code>isLaptop</code></td><td><ol>
+<li>LPDDR type: <code>ram-lpddr</code>; soldered or BGA form factor: <code>ram-soldered</code></li>
+<li>SO-DIMM (or unknown form factor on a laptop) with DDR4/DDR5: <code>ram-sodimm-ddr4|5</code></li>
+<li>DIMM with DDR4/DDR5: <code>ram-ddr4|5</code></li></ol></td><td class="fallback">ram-generic</td></tr>
+<tr><td>storage</td><td><code>busType</code> / <code>interface</code>, <code>mediaType</code>, <code>model</code>, <code>external</code>, <code>removable</code></td><td><ol>
+<li>USB bus, external or removable: <code>storage-usb-stick</code> if the model says flash/stick/thumb, else <code>storage-external</code></li>
+<li>NVMe bus or model: <code>storage-nvme</code></li>
+<li>HDD media or model: <code>storage-hdd</code></li>
+<li>SSD media or model: <code>storage-sata-ssd</code></li></ol></td><td class="fallback">storage-generic</td></tr>
+<tr><td>battery</td><td><code>present</code>, <code>percent</code>, <code>charging</code></td><td><ol>
+<li><code>present: false</code>: <code>battery-none</code></li>
+<li><code>charging: true</code>: <code>battery-charging</code></li>
+<li>70% and up: <code>battery-full</code>; 25-69%: <code>battery-mid</code>; under 25%: <code>battery-low</code></li></ol></td><td class="fallback">battery-unknown</td></tr>
+<tr><td>display</td><td><code>count</code>, <code>internal</code>, <code>external</code>, <code>connection</code></td><td><ol>
+<li>More than one display: <code>display-multi</code></li>
+<li>Internal, eDP or LVDS: <code>display-laptop-panel</code></li>
+<li>External, HDMI, DisplayPort: <code>display-monitor</code></li></ol></td><td class="fallback">display-monitor</td></tr>
+<tr><td>camera</td><td><code>present</code>, <code>builtIn</code>, <code>name</code></td><td><ol>
+<li><code>present: false</code> or count 0: <code>camera-none</code></li>
+<li>Built-in, integrated, IR or HD Camera: <code>camera-builtin</code></li>
+<li>USB, external or Logitech: <code>camera-webcam</code></li></ol></td><td class="fallback">camera-webcam</td></tr>
+<tr><td>os</td><td><code>name</code>, <code>build</code></td><td><ol>
+<li>Name says Windows 10: <code>os-windows-10</code>; Windows 11 or build 22000 and up: <code>os-windows-11</code>; build 10240-21999: Windows 10</li></ol></td><td class="fallback">os-generic</td></tr>
+</tbody></table>
+
+<div id="gallery"></div>
+
+<h2 id="templates">Processor template, live</h2>
+<p class="sub">Real processor names as Windows reports them, read by <code>renderArt('cpu', { name })</code>. The text on each die is drawn from the name, not from a sample.</p>
+<table id="cpuTable"><thead><tr><th>Name from Windows</th><th>Read as</th><th>Key</th><th>Normal theme</th><th>Dark mode</th></tr></thead><tbody></tbody></table>
+
+<h2 id="picks">pickArt examples</h2>
+<p class="sub">Each row calls <code>pickArt(kind, facts)</code> with the facts shown. Rows that land on a generic drawing show the key in gold.</p>
+<table id="pickTable"><thead><tr><th>Kind</th><th>Facts</th><th>Key</th><th>Normal theme</th><th>Dark mode</th></tr></thead><tbody></tbody></table>
+
+<h2 id="contrast">Contrast check</h2>
+<p class="sub">Text drawn inside a drawing sits on the accent fill and uses <code>--art-ink</code>: 4.5:1 required. Line and fill colours against the tile behind them are graphics: 3:1 required. Computed live from the colour values used on this page.</p>
+<table id="contrastTable"><thead><tr><th>Pair</th><th colspan="3">Normal theme (B)</th><th colspan="3">Dark mode (A)</th></tr>
+<tr><th></th><th>Colours</th><th>Ratio</th><th>Need</th><th>Colours</th><th>Ratio</th><th>Need</th></tr></thead><tbody></tbody></table>
+
+</div>
+<script src="parts.js"></script>
+<script>
+(function () {
+  var KIND_NAMES = { cpu: 'Processors', gpu: 'Graphics', device: 'Devices', memory: 'Memory', storage: 'Storage', battery: 'Battery', display: 'Display', camera: 'Camera', os: 'Operating system' };
+  var KIND_NOTE = {
+    cpu: 'One template draws every family and generation. The text shown here is a sample; the live page renders the real text with renderArt.',
+    gpu: 'Vendor comes from the card shape and the short plate label (RTX, GTX, RX, Arc). Integrated graphics shows the graphics block on the processor die.',
+    device: 'Chassis drawings. The MacBook has the notch and thin wedge; the gaming laptop has a vented base and a light bar.',
+    memory: 'DDR4 and DDR5 differ by the key notch in the gold contacts and by the plate label. Laptop SO-DIMMs are shorter with side latches.',
+    storage: 'M.2 NVMe, 2.5 in SATA SSD, hard disk with platter and arm, and two USB drives.',
+    battery: 'Charge level is drawn in segments. Charging adds a bolt badge. "Level not reported" is the generic drawing.',
+    display: 'Laptop panel, external monitor and multiple monitors.',
+    camera: 'Webcam on a stand, built-in camera in the lid bezel, and no camera.',
+    os: 'Window frames with a pane grid; Windows 11 has rounded corners and Windows 10 square ones. No logos are copied.'
+  };
+  var TH = { b: { win: '#04212A', card: '#0A3442', cyan: '#6CD0EE', name: 'Normal theme (B)' }, a: { win: '#0F1418', card: '#1C252C', cyan: '#4FC3E8', name: 'Dark mode (A)' } };
+  var MINT = '#06D7A0', GOLD = '#FFD167', PEACH = '#F78C6A', INK = '#073A4B';
+
+  function lum(h) { h = h.replace('#', ''); var c = [0, 2, 4].map(function (i) { return parseInt(h.substr(i, 2), 16) / 255; }).map(function (x) { return x <= .03928 ? x / 12.92 : Math.pow((x + .055) / 1.055, 2.4); }); return .2126 * c[0] + .7152 * c[1] + .0722 * c[2]; }
+  function ratio(a, b) { var x = lum(a), y = lum(b); if (x < y) { var t = x; x = y; y = t; } return (x + .05) / (y + .05); }
+  function esc(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+
+  function tile(svg, size) { return '<div class="tile t' + size + '">' + svg + '</div>'; }
+  function panel(theme, svg, withTags) {
+    return '<div class="panel th-' + theme + '"><div class="tag">' + TH[theme].name + '</div><div class="tiles">' + tile(svg, 56) + tile(svg, 160) + '</div></div>';
+  }
+  function miniPair(svg, kind) {
+    return '<td class="k-' + kind + '"><div class="th-b panel" style="display:inline-block"><div class="tiles">' + tile(svg, 56) + '</div></div></td>';
+  }
+
+  // nav
+  var nav = KIND_NAMES, navHtml = '<a href="#how">How to use</a><a href="#rules">pickArt rules</a>';
+  window.HARDWARE_KINDS.forEach(function (k) { navHtml += '<a href="#k-' + k + '">' + KIND_NAMES[k] + '</a>'; });
+  navHtml += '<a href="#templates">CPU template</a><a href="#picks">Examples</a><a href="#contrast">Contrast</a>';
+  document.getElementById('nav').innerHTML = navHtml;
+
+  // gallery
+  var g = '';
+  window.HARDWARE_KINDS.forEach(function (kind) {
+    var keys = Object.keys(window.HARDWARE_ART).filter(function (k) { return window.HARDWARE_META[k].kind === kind; });
+    g += '<h2 id="k-' + kind + '">' + KIND_NAMES[kind] + ' <span class="mono">(' + keys.length + ' drawings)</span></h2><p class="sub">' + KIND_NOTE[kind] + '</p><div class="grid">';
+    keys.forEach(function (k) {
+      var svg = window.HARDWARE_ART[k], gen = window.HARDWARE_FALLBACK[kind] === k;
+      g += '<article class="key k-' + kind + '"><header><code>' + k + '</code><span>' + esc(window.HARDWARE_META[k].label) + (gen ? ' <b class="fallback">(fallback for ' + kind + ')</b>' : '') + '</span></header><div class="pair">' + panel('b', svg) + panel('a', svg) + '</div></article>';
+    });
+    g += '</div>';
+  });
+  document.getElementById('gallery').innerHTML = g;
+
+  // live cpu table
+  var CPUS = [
+    'AMD Ryzen 7 4800H with Radeon Graphics', '13th Gen Intel(R) Core(TM) i7-13700H', 'Intel(R) Core(TM) i5-8250U CPU @ 1.60GHz', 'Intel(R) Core(TM) i3-1115G4',
+    'Intel(R) Core(TM) i9-14900HX', 'Intel(R) Core(TM) Ultra 7 155H', 'Intel(R) Core(TM) Ultra 9 285H', 'Intel(R) Celeron(R) N4500', 'Intel(R) Pentium(R) Gold 7505',
+    'AMD Ryzen 5 5600X', 'AMD Ryzen 9 7940HS', 'AMD Ryzen AI 9 HX 370', 'AMD Ryzen Threadripper PRO 5995WX', 'AMD Athlon Silver 3050U',
+    'Snapdragon(R) X Elite - X1E78100', 'Snapdragon(R) X Plus - X1P64100', 'Snapdragon (R) 8cx Gen 3', 'Qualcomm Snapdragon 7c Gen 2',
+    'Cortex-A72', 'Apple M1', 'Apple M2 Pro', 'Apple M3 Max', 'Apple M4', 'Apple M2 Ultra'
+  ];
+  var cb = '';
+  CPUS.forEach(function (n) {
+    var p = window.parseCpuName(n), r = window.renderArt('cpu', { name: n });
+    cb += '<tr><td class="mono">' + esc(n) + '</td><td>' + esc(p.family) + (p.generation ? ' / ' + esc(p.generation) : '') + '</td><td><code>' + r.key + '</code></td>' +
+      '<td class="k-cpu"><div class="th-b panel" style="display:inline-block"><div class="tiles">' + tile(r.svg, 56) + tile(r.svg, 160) + '</div></div></td>' +
+      '<td class="k-cpu"><div class="th-a panel" style="display:inline-block"><div class="tiles">' + tile(r.svg, 56) + tile(r.svg, 160) + '</div></div></td></tr>';
+  });
+  document.querySelector('#cpuTable tbody').innerHTML = cb;
+
+  // pick examples
+  var PICKS = [
+    ['gpu', 'NVIDIA GeForce RTX 3050 Laptop GPU'], ['gpu', 'NVIDIA GeForce GTX 1650'], ['gpu', 'AMD Radeon(TM) Graphics'], ['gpu', 'AMD Radeon RX 6600M'],
+    ['gpu', 'Intel(R) Arc(TM) A370M Graphics'], ['gpu', 'Intel(R) Iris(R) Xe Graphics'], ['gpu', 'Microsoft Basic Render Driver'],
+    ['device', { manufacturer: 'ASUSTeK COMPUTER INC.', model: 'FA506IC', name: 'ASUS TUF Gaming A15', chassis: 10 }], ['device', { model: 'MacBookPro18,2' }],
+    ['device', { chassis: 3 }], ['device', { chassis: 13 }], ['device', { chassis: 31 }], ['device', { model: 'Surface Pro 9', chassis: 30 }], ['device', { model: 'ROG Ally' }], ['device', {}],
+    ['memory', { type: 26, formFactor: 12 }], ['memory', { type: 'DDR5', formFactor: 8 }], ['memory', { type: 30, formFactor: 21 }], ['memory', {}],
+    ['storage', { busType: 'NVMe', mediaType: 'SSD' }], ['storage', { busType: 'SATA', mediaType: 'SSD' }], ['storage', { busType: 'SATA', mediaType: 'HDD' }], ['storage', { busType: 'USB', model: 'SanDisk Cruzer Flash' }], ['storage', { busType: 'USB' }], ['storage', {}],
+    ['battery', { percent: 90 }], ['battery', { percent: 50 }], ['battery', { percent: 10 }], ['battery', { charging: true, percent: 40 }], ['battery', { present: false }], ['battery', {}],
+    ['display', { count: 3 }], ['display', { internal: true }], ['display', { external: true }], ['display', {}],
+    ['camera', { present: false }], ['camera', { builtIn: true }], ['camera', { name: 'Logitech C920 USB' }], ['camera', {}],
+    ['os', { name: 'Microsoft Windows 11 Home Single Language' }], ['os', { name: 'Windows 10 Pro' }], ['os', { build: 22631 }], ['os', {}]
+  ];
+  var pb = '';
+  PICKS.forEach(function (pk) {
+    var key = window.pickArt(pk[0], pk[1]), svg = window.HARDWARE_ART[key], gen = window.HARDWARE_FALLBACK[pk[0]] === key;
+    var facts = typeof pk[1] === 'string' ? pk[1] : JSON.stringify(pk[1]);
+    pb += '<tr><td>' + pk[0] + '</td><td class="mono">' + esc(facts) + '</td><td><code' + (gen ? ' class="fallback"' : '') + '>' + key + '</code></td>' +
+      '<td class="k-' + pk[0] + '"><div class="th-b panel" style="display:inline-block"><div class="tiles">' + tile(svg, 56) + '</div></div></td>' +
+      '<td class="k-' + pk[0] + '"><div class="th-a panel" style="display:inline-block"><div class="tiles">' + tile(svg, 56) + '</div></div></td></tr>';
+  });
+  document.querySelector('#pickTable tbody').innerHTML = pb;
+
+  // contrast table
+  var pairs = [
+    ['Label text (--art-ink) on the fill (--art-fill)', function () { return [INK, MINT, 4.5]; }],
+    ['Bolt (--art-ink) on the charging badge (--art-accent, gold)', function () { return [INK, GOLD, 4.5]; }],
+    ['Bolt (--art-ink) on the charging badge when accent is peach (battery)', function () { return [INK, PEACH, 4.5]; }],
+    ['Gallery key text on card', function (t) { return [t === 'b' ? '#BFD9E2' : '#B4C2CB', TH[t].card, 4.5]; }],
+    ['Gallery theme label on card', function (t) { return [t === 'b' ? '#BFD9E2' : '#B4C2CB', TH[t].card, 4.5]; }],
+    ['Line, cyan (devices, storage, display, OS) on tile', function (t) { return [TH[t].cyan, TH[t].win, 3]; }],
+    ['Line, mint (processors, memory) on tile', function (t) { return [MINT, TH[t].win, 3]; }],
+    ['Line, peach (graphics, camera) on tile', function (t) { return [PEACH, TH[t].win, 3]; }],
+    ['Line, gold (battery) on tile', function (t) { return [GOLD, TH[t].win, 3]; }],
+    ['Accent, gold (contacts, LEDs, rings) on tile', function (t) { return [GOLD, TH[t].win, 3]; }],
+    ['Accent, peach (battery bolt badge) on tile', function (t) { return [PEACH, TH[t].win, 3]; }],
+    ['Fill, mint (die, plate, chips) on tile', function (t) { return [MINT, TH[t].win, 3]; }]
+  ];
+  var tb = '', failures = 0;
+  pairs.forEach(function (p) {
+    var row = '<tr><th scope="row" style="font-weight:500;color:#B4C2CB">' + p[0] + '</th>';
+    ['b', 'a'].forEach(function (t) {
+      var v = p[1](t), r = ratio(v[0], v[1]), ok = r >= v[2]; if (!ok) failures++;
+      row += '<td><span class="sw" style="background:' + v[1] + ';color:' + v[0] + '">Aa</span> <code>' + v[0] + '</code> on <code>' + v[1] + '</code></td><td class="n">' + r.toFixed(2) + ':1</td><td class="' + (ok ? 'ok' : 'bad') + '">' + (ok ? 'Pass ' : 'Below ') + v[2] + ':1</td>';
+    });
+    tb += row + '</tr>';
+  });
+  document.querySelector('#contrastTable tbody').innerHTML = tb;
+
+  // self check: every drawing parses, renders, keeps text inside the viewBox, text >= 8 px, ink on fill >= 4.5:1
+  var problems = [], count = 0, textCount = 0;
+  Object.keys(window.HARDWARE_ART).forEach(function (k) {
+    count++;
+    var doc = new DOMParser().parseFromString(window.HARDWARE_ART[k], 'image/svg+xml');
+    if (doc.getElementsByTagName('parsererror').length) problems.push(k + ': invalid SVG');
+    if (!/viewBox="0 0 56 56"/.test(window.HARDWARE_ART[k])) problems.push(k + ': wrong viewBox');
+    if (/https?:\/\/(?!www\.w3\.org)/.test(window.HARDWARE_ART[k]) || /<image|<use|href=/.test(window.HARDWARE_ART[k])) problems.push(k + ': external reference');
+  });
+  document.querySelectorAll('.t56 svg').forEach(function (s) {
+    var b = s.getBBox ? s.getBBox() : null;
+    if (!b || b.width < 8 || b.height < 8) problems.push((s.getAttribute('aria-label') || 'svg') + ': empty render');
+    else if (b.x < -0.5 || b.y < -0.5 || b.x + b.width > 56.5 || b.y + b.height > 56.5) problems.push((s.getAttribute('aria-label') || 'svg') + ': drawing leaves the 56 px box');
+    s.querySelectorAll('text').forEach(function (t) {
+      textCount++;
+      var tb2 = t.getBBox(), fs = parseFloat(getComputedStyle(t).fontSize);
+      if (fs < 7.99) problems.push(s.getAttribute('aria-label') + ': text under 8 px (' + fs + ')');
+      if (tb2.x < 0 || tb2.x + tb2.width > 56) problems.push(s.getAttribute('aria-label') + ': text leaves the box');
+    });
+  });
+  var st = document.getElementById('status');
+  if (failures) problems.push(failures + ' contrast pair(s) below target');
+  if (problems.length) { st.className = 'status bad'; st.innerHTML = 'Self-check found ' + problems.length + ' problem(s):<br>' + problems.slice(0, 12).map(esc).join('<br>'); }
+  else { st.textContent = 'Self-check passed: ' + count + ' drawings render in both themes, ' + textCount + ' text labels are 8 px or larger at 56 px and stay inside the drawing, and every contrast pair meets its target.'; }
+})();
+</script>
+</body></html>

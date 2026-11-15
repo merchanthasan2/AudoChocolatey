@@ -1,4 +1,6 @@
 # Prompts & Requirement History Log
+
+This file is history. The Windows app is described in `README.md`. Mac work is on `channel/macos`.
 ## Quantum Updater
 **Repository:** [https://github.com/merchanthasan2/AudoChocolatey](https://github.com/merchanthasan2/AudoChocolatey)  
 **Maintained by:** Quantum Step ([quantumstep.in](https://quantumstep.in))

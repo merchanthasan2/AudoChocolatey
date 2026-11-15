@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Quantum Updater — hardware illustration library</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI Variable','Segoe UI',Tahoma,sans-serif;font-size:14px;line-height:1.4;background:#0a1216;color:#e8f0f3;padding:24px}
+h1{font-size:22px;font-weight:600;margin-bottom:6px}
+.lead{color:#9eb4be;margin-bottom:22px;max-width:720px}
+.grid{display:flex;flex-direction:column;gap:18px}
+.row{display:grid;grid-template-columns:140px 1fr 1fr;gap:14px;align-items:stretch}
+.key{font-size:12px;font-weight:600;color:#b4c2cb;word-break:break-all;padding-top:18px}
+.panel{border-radius:10px;border:1px solid #2c3943;padding:14px 16px}
+.panel h2{font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;margin-bottom:12px}
+.sizes{display:flex;gap:20px;align-items:flex-end;flex-wrap:wrap}
+.cell{text-align:center}
+.cell .lbl{font-size:10px;color:#8798a3;margin-top:6px}
+.sw{display:flex;align-items:center;justify-content:center;background:var(--tile);border:1px solid var(--tile-bd);border-radius:8px;--art-line:var(--stroke);--art-accent:var(--accent);--art-fill:var(--knockout)}
+.sw.sm{width:56px;height:56px}
+.sw.lg{width:160px;height:160px}
+.sw svg{display:block}
+.sw.sm svg{width:56px;height:56px}
+.sw.lg svg{width:160px;height:160px}
+.theme-b{--tile:#04212A;--tile-bd:#164A5B;--stroke:#8FB3C0;--accent:#6CD0EE;--knockout:#04212A;--t:#F2F8FA;--t2:#BFD9E2}
+.theme-a{--tile:#0F1418;--tile-bd:#2C3943;--stroke:#8798A3;--accent:#4FC3E8;--knockout:#0F1418;--t:#F2F6F8;--t2:#B4C2CB}
+.panel.theme-b{background:#062B36;border-color:#164A5B;color:var(--t)}
+.panel.theme-a{background:#161D23;border-color:#2C3943;color:var(--t)}
+.panel h2{color:var(--t2)}
+.ill .l{fill:none;stroke:var(--art-line);stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.ill .m{fill:none;stroke:var(--art-line);stroke-width:2;stroke-linecap:round;stroke-linejoin:round;opacity:.72}
+.ill .md{fill:none;stroke:var(--art-line);stroke-width:2;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:2.5 3;opacity:.72}
+.ill .f{fill:var(--art-accent);stroke:var(--art-accent);stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.ill .g{fill:var(--art-fill);stroke:none}
+.ill .ga{fill:none;stroke:var(--art-fill);stroke-width:2;stroke-linecap:round}
+.note{margin-top:28px;font-size:12px;color:#8798a3}
+</style>
+<script src="parts.js"></script>
+</head>
+<body>
+<h1>Hardware illustration library</h1>
+<p class="lead">Every drawing at 56&nbsp;px and 160&nbsp;px. Direction&nbsp;B (Deep Teal) and Direction&nbsp;A (Graphite) side by side. Strokes use <code>--art-line</code>, accent fill <code>--art-accent</code>, knockouts <code>--art-fill</code>. Text pairs meet WCAG 4.5:1 on both tiles.</p>
+<div class="grid" id="gallery"></div>
+<p class="note">Open this file from disk; <code>parts.js</code> is loaded with a plain script tag.</p>
+<script>
+(function () {
+  var keys = Object.keys(window.HARDWARE_ART).sort();
+  var host = document.getElementById('gallery');
+  keys.forEach(function (key) {
+    var svg = window.HARDWARE_ART[key];
+    var row = document.createElement('div');
+    row.className = 'row';
+    var keyEl = document.createElement('div');
+    keyEl.className = 'key';
+    keyEl.textContent = key;
+    row.appendChild(keyEl);
+    ['theme-b', 'theme-a'].forEach(function (theme) {
+      var panel = document.createElement('div');
+      panel.className = 'panel ' + theme;
+      var title = theme === 'theme-b' ? 'Direction B' : 'Direction A';
+      panel.innerHTML = '<h2>' + title + '</h2><div class="sizes"></div>';
+      var sizes = panel.querySelector('.sizes');
+      [{ cls: 'sm', label: '56 px' }, { cls: 'lg', label: '160 px' }].forEach(function (sz) {
+        var cell = document.createElement('div');
+        cell.className = 'cell';
+        var sw = document.createElement('div');
+        sw.className = 'sw ' + sz.cls;
+        sw.innerHTML = svg;
+        cell.appendChild(sw);
+        var lbl = document.createElement('div');
+        lbl.className = 'lbl';
+        lbl.textContent = sz.label;
+        cell.appendChild(lbl);
+        sizes.appendChild(cell);
+      });
+      row.appendChild(panel);
+    });
+    host.appendChild(row);
+  });
+})();
+</script>
+</body>
+</html>

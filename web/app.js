@@ -3,166 +3,6 @@
  * Developed by Quantum Step (https://quantumstep.in)
  */
 
-const MONOGRAM_PALETTES = [
-  ['#0A84FF', '#0058B6'], // Apple System Blue
-  ['#30D158', '#1D7834'], // Apple System Mint
-  ['#BF5AF2', '#692095'], // Apple System Purple
-  ['#5E5CE6', '#2A297D'], // Apple System Indigo
-  ['#FF9F0A', '#9B5B00'], // Apple System Amber
-  ['#FF453A', '#9E1C15'], // Apple System Red
-  ['#64D2FF', '#08638C'], // Apple System Cyan
-  ['#8E8E93', '#3A3A3C']  // Apple System Slate
-];
-
-// Direct package ID to official SVG logo mapping (Local assets or Simple Icons)
-const APP_LOGOS_MAP = {
-  // Artificial Intelligence & Machine Learning
-  'ollama.ollama': { url: 'assets/icons/ollama.svg' },
-  'elementlabs.lmstudio': { url: 'assets/icons/lmstudio.png' },
-  'jan.jan': { url: 'assets/icons/jan.png' },
-  'openai.chatgpt': { slug: 'openai' },
-  'anthropic.claude': { slug: 'anthropic' },
-  'superwhisper.superwhisper': { url: 'assets/icons/superwhisper.png' },
-  'upscayl.upscayl': { url: 'assets/icons/upscayl.svg' },
-  'pinokio.pinokio': { url: 'assets/icons/pinokio.png' },
-
-  // Browsers
-  'google.chrome': { slug: 'googlechrome' },
-  'mozilla.firefox': { url: 'assets/icons/firefox.svg' },
-  'brave.brave': { url: 'assets/icons/brave.svg' },
-  'microsoft.edge': { url: 'assets/icons/edge.svg' },
-  'opera.opera': { url: 'assets/icons/opera.svg' },
-  'torproject.torbrowser': { url: 'assets/icons/torbrowser.svg' },
-  'vivaldi.vivaldi': { url: 'assets/icons/vivaldi.svg' },
-
-  // Development
-  'microsoft.visualstudiocode': { slug: 'visualstudiocode' },
-  'git.git': { slug: 'git' },
-  'github.githubdesktop': { url: 'assets/icons/github.svg' },
-  'docker.dockerdesktop': { slug: 'docker' },
-  'postman.postman': { url: 'assets/icons/postman.svg' },
-  'insomnia.insomnia': { url: 'assets/icons/insomnia.svg' },
-  'dbeaver.dbeaver': { url: 'assets/icons/dbeaver.svg' },
-  'python.python.3.13': { slug: 'python' },
-  'python.python.3': { slug: 'python' },
-  'python.python': { slug: 'python' },
-  'openjs.nodejs.lts': { url: 'assets/icons/nodedotjs.svg' },
-  'openjs.nodejs': { url: 'assets/icons/nodedotjs.svg' },
-  'rustlang.rustup': { url: 'assets/icons/rust.svg' },
-  'golang.go': { url: 'assets/icons/go.svg' },
-  'microsoft.windowsterminal': { slug: 'windowsterminal' },
-  'wiresharkfoundation.wireshark': { url: 'assets/icons/wireshark.svg' },
-
-  // Music & Media
-  'spotify.spotify': { slug: 'spotify' },
-  'videolan.vlc': { slug: 'vlcmediaplayer' },
-  'audacity.audacity': { url: 'assets/icons/audacity.svg' },
-  'obsproject.obsstudio': { url: 'assets/icons/obsstudio.svg' },
-  'handbrake.handbrake': { url: 'assets/icons/handbrake.svg' },
-  'foobar2000.foobar2000': { url: 'assets/icons/foobar2000.svg' },
-  'plex.plex': { url: 'assets/icons/plex.svg' },
-  'kodi.kodi': { url: 'assets/icons/kodi.svg' },
-  'deezer.deezer': { url: 'assets/icons/deezer.svg' },
-
-  // Addons & Utilities
-  '7zip.7zip': { slug: '7zip' },
-  'rarlab.winrar': { slug: 'winrar' },
-  'microsoft.powertoys': { slug: 'windows' },
-  'sharex.sharex': { url: 'assets/icons/sharex.svg' },
-  'flameshot.flameshot': { url: 'assets/icons/flameshot.svg' },
-  'autohotkey.autohotkey': { url: 'assets/icons/autohotkey.svg' },
-  'bitwarden.bitwarden': { url: 'assets/icons/bitwarden.svg' },
-  'keepassxcteam.keepassxc': { url: 'assets/icons/keepassxc.svg' },
-  'qbittorrent.qbittorrent': { url: 'assets/icons/qbittorrent.svg' },
-  'bleachbit.bleachbit': { url: 'assets/icons/bleachbit.svg' },
-  'anydesksoftwaregmbh.anydesk': { url: 'assets/icons/anydesk.svg' },
-
-  // Productivity
-  'notion.notion': { slug: 'notion' },
-  'obsidian.obsidian': { slug: 'obsidian' },
-  'notepad++.notepad++': { url: 'assets/icons/notepadplusplus.svg' },
-  'thedocumentfoundation.libreoffice': { url: 'assets/icons/libreoffice.svg' },
-  'adobe.acrobat.reader.64-bit': { url: 'assets/icons/acrobat.svg' },
-  'figma.figma': { url: 'assets/icons/figma.svg' },
-  'blenderfoundation.blender': { url: 'assets/icons/blender.svg' },
-  'gimp.gimp': { url: 'assets/icons/gimp.svg' },
-  'inkscape.inkscape': { url: 'assets/icons/inkscape.svg' },
-
-  // Gaming & Social
-  'discord.discord': { slug: 'discord' },
-  'telegram.telegramdesktop': { slug: 'telegram' },
-  'whatsapp.whatsapp': { slug: 'whatsapp' },
-  'slacktechnologies.slack': { slug: 'slack' },
-  'zoom.zoom': { url: 'assets/icons/zoom.svg' },
-  'microsoft.teams': { url: 'assets/icons/teams.svg' },
-  'valve.steam': { slug: 'steam' },
-  'epicgames.epicgameslauncher': { url: 'assets/icons/epicgames.svg' },
-  'gog.galaxy': { url: 'assets/icons/gogdotcom.svg' }
-};
-
-// Substring / keyword logo fallbacks
-const APP_KEYWORD_LOGOS = {
-  'ollama': { slug: 'ollama' },
-  'chatgpt': { slug: 'openai' },
-  'claude': { slug: 'anthropic' },
-
-  'chrome': { slug: 'googlechrome' },
-  'firefox': { slug: 'firefox' },
-  'visualstudio': { slug: 'visualstudio' },
-  'vscode': { slug: 'visualstudiocode' },
-  'code': { slug: 'visualstudiocode' },
-  'vlc': { slug: 'vlcmediaplayer' },
-  'spotify': { slug: 'spotify' },
-  'git': { slug: 'git' },
-  'docker': { slug: 'docker' },
-  'python': { slug: 'python' },
-  'node': { slug: 'nodedotjs' },
-  'discord': { slug: 'discord' },
-  'slack': { slug: 'slack' },
-  'telegram': { slug: 'telegram' },
-  'whatsapp': { slug: 'whatsapp' },
-  'zoom': { slug: 'zoom' },
-  'steam': { slug: 'steam' },
-  'epic': { slug: 'epicgames' },
-  'notepad++': { slug: 'notepadplusplus' },
-  '7zip': { slug: '7zip' },
-  'winrar': { slug: 'winrar' },
-  'postman': { slug: 'postman' },
-  'obs': { slug: 'obsstudio' },
-  'audacity': { slug: 'audacity' },
-  'blender': { slug: 'blender' },
-  'gimp': { slug: 'gimp' },
-  'inkscape': { slug: 'inkscape' },
-  'figma': { slug: 'figma' },
-  'notion': { slug: 'notion' },
-  'obsidian': { slug: 'obsidian' },
-  'libreoffice': { slug: 'libreoffice' },
-  'bitwarden': { slug: 'bitwarden' },
-  'keepass': { slug: 'keepassxc' },
-  'wireshark': { slug: 'wireshark' },
-  'rust': { slug: 'rust' },
-  'golang': { slug: 'go' },
-  'edge': { slug: 'microsoftedge' },
-  'brave': { slug: 'brave' },
-  'opera': { slug: 'opera' },
-  'tor': { slug: 'torbrowser' },
-  'qbittorrent': { slug: 'qbittorrent' },
-  'anydesk': { slug: 'anydesk' },
-  'powertoys': { slug: 'windows' },
-  'sharex': { slug: 'sharex' },
-  'flameshot': { slug: 'flameshot' },
-  'autohotkey': { slug: 'autohotkey' },
-  'dbeaver': { slug: 'dbeaver' },
-  'insomnia': { slug: 'insomnia' },
-  'handbrake': { slug: 'handbrake' },
-  'plex': { slug: 'plex' },
-  'kodi': { slug: 'kodi' },
-  'deezer': { slug: 'deezer' },
-  'acrobat': { slug: 'adobeacrobatreader' },
-  'microsoft': { slug: 'windows' },
-  'google': { slug: 'google' }
-};
-
 // Rich Curated Explore Catalog (Automatically loaded on launch)
 const APP_CATALOG = [
   // Artificial Intelligence & Local LLMs
@@ -173,7 +13,7 @@ const APP_CATALOG = [
     desc: 'Run large language models locally (Llama 3, DeepSeek, Mistral, Gemma) on CPU and GPU with zero cloud lock-in.',
     downloads: 99,
     version: '0.5.7',
-    logo: 'assets/icons/ollama.svg'
+    homepage: 'https://ollama.com/',
   },
   {
     id: 'ElementLabs.LMStudio',
@@ -182,7 +22,7 @@ const APP_CATALOG = [
     desc: 'Discover, download, and run local LLMs with GPU acceleration, interactive chat UI, and OpenAI-compatible API server.',
     downloads: 98,
     version: '0.3.6',
-    logo: 'assets/icons/lmstudio.png'
+    homepage: 'https://lmstudio.ai/',
   },
   {
     id: 'Jan.Jan',
@@ -191,7 +31,7 @@ const APP_CATALOG = [
     desc: 'Self-hosted, open-source ChatGPT alternative that runs 100% offline on your device with complete privacy.',
     downloads: 95,
     version: '0.5.10',
-    logo: 'assets/icons/jan.png'
+    homepage: 'https://jan.ai/',
   },
   {
     id: 'OpenAI.ChatGPT',
@@ -200,7 +40,7 @@ const APP_CATALOG = [
     desc: 'Official Windows desktop client for OpenAI ChatGPT with instant voice mode, global shortcuts, and file attachments.',
     downloads: 100,
     version: '1.2024.310',
-    logo: ''
+    homepage: 'https://openai.com/chatgpt/',
   },
   {
     id: 'Anthropic.Claude',
@@ -209,7 +49,7 @@ const APP_CATALOG = [
     desc: 'Official Anthropic Claude desktop application with Model Context Protocol (MCP) and Artifacts rendering.',
     downloads: 97,
     version: '0.7.8',
-    logo: ''
+    homepage: 'https://claude.ai/',
   },
   {
     id: 'Anysphere.Cursor',
@@ -218,7 +58,7 @@ const APP_CATALOG = [
     desc: 'AI-first code editor fork of VS Code with multi-file reasoning, inline diffs, and terminal execution.',
     downloads: 99,
     version: '0.45.6',
-    logo: ''
+    homepage: 'https://cursor.com/',
   },
   {
     id: 'Superwhisper.Superwhisper',
@@ -227,7 +67,7 @@ const APP_CATALOG = [
     desc: 'Ultra-fast, accurate offline voice-to-text dictation and transcription powered by local OpenAI Whisper models.',
     downloads: 91,
     version: '1.4.0',
-    logo: 'assets/icons/superwhisper.png'
+    homepage: 'https://superwhisper.com/',
   },
   {
     id: 'Upscayl.Upscayl',
@@ -236,7 +76,7 @@ const APP_CATALOG = [
     desc: 'Free, open source AI image upscaler powered by advanced neural network models with zero quality loss.',
     downloads: 93,
     version: '2.15.0',
-    logo: 'assets/icons/upscayl.svg'
+    homepage: 'https://upscayl.org/',
   },
   {
     id: 'Pinokio.Pinokio',
@@ -245,7 +85,7 @@ const APP_CATALOG = [
     desc: 'Autonomous browser ecosystem that lets you install, run, and automate local AI apps and models with 1 click.',
     downloads: 92,
     version: '3.0.0',
-    logo: 'assets/icons/pinokio.png'
+    homepage: 'https://pinokio.computer/',
   },
 
   // Music & Media
@@ -256,7 +96,7 @@ const APP_CATALOG = [
     desc: 'Stream millions of tracks, albums, podcasts, and curated playlists.',
     downloads: 99,
     version: '1.2.53',
-    logo: ''
+    homepage: 'https://www.spotify.com/',
   },
   {
     id: 'VideoLAN.VLC',
@@ -265,7 +105,7 @@ const APP_CATALOG = [
     desc: 'Plays virtually all video and audio codecs, discs, streams, and webcams.',
     downloads: 98,
     version: '3.0.21',
-    logo: ''
+    homepage: 'https://www.videolan.org/vlc/',
   },
   {
     id: 'Audacity.Audacity',
@@ -274,7 +114,7 @@ const APP_CATALOG = [
     desc: 'Open-source multi-track audio editor, recorder, and sound analyzer.',
     downloads: 88,
     version: '3.7.1',
-    logo: 'assets/icons/audacity.svg'
+    homepage: 'https://www.audacityteam.org/',
   },
   {
     id: 'OBSProject.OBSStudio',
@@ -283,7 +123,7 @@ const APP_CATALOG = [
     desc: 'High performance video recording and live streaming for content creators.',
     downloads: 95,
     version: '31.0.0',
-    logo: 'assets/icons/obsstudio.svg'
+    homepage: 'https://obsproject.com/',
   },
   {
     id: 'HandBrake.HandBrake',
@@ -292,7 +132,7 @@ const APP_CATALOG = [
     desc: 'Open-source video transcoder for converting video to modern codecs.',
     downloads: 84,
     version: '1.8.2',
-    logo: 'assets/icons/handbrake.svg'
+    homepage: 'https://handbrake.fr/',
   },
   {
     id: 'Foobar2000.Foobar2000',
@@ -301,7 +141,7 @@ const APP_CATALOG = [
     desc: 'Advanced, lightweight audio player with gapless playback and DSP.',
     downloads: 80,
     version: '2.1.6',
-    logo: 'assets/icons/foobar2000.svg'
+    homepage: 'https://www.foobar2000.org/',
   },
   {
     id: 'Plex.Plex',
@@ -310,7 +150,7 @@ const APP_CATALOG = [
     desc: 'Stream live TV, movies, shows, and your personal home media library.',
     downloads: 86,
     version: '1.104.0',
-    logo: 'assets/icons/plex.svg'
+    homepage: 'https://www.plex.tv/',
   },
   {
     id: 'Kodi.Kodi',
@@ -319,7 +159,7 @@ const APP_CATALOG = [
     desc: 'Award-winning open source home entertainment hub and digital jukebox.',
     downloads: 83,
     version: '21.1',
-    logo: 'assets/icons/kodi.svg'
+    homepage: 'https://kodi.tv/',
   },
   {
     id: 'Deezer.Deezer',
@@ -328,7 +168,7 @@ const APP_CATALOG = [
     desc: 'High Fidelity music streaming with FLAC sound and personalized Flow.',
     downloads: 78,
     version: '6.0.190',
-    logo: 'assets/icons/deezer.svg'
+    homepage: 'https://www.deezer.com/',
   },
 
   // Addons & Utilities
@@ -339,7 +179,7 @@ const APP_CATALOG = [
     desc: 'Essential Windows system utilities for power users: FancyZones, Text Extractor, Awake, and PowerToys Run.',
     downloads: 99,
     version: '0.86.0',
-    logo: ''
+    homepage: 'https://learn.microsoft.com/en-us/windows/powertoys/',
   },
   {
     id: '7zip.7zip',
@@ -348,7 +188,7 @@ const APP_CATALOG = [
     desc: 'High compression ratio file archiver supporting 7z, ZIP, RAR, TAR, and ISO.',
     downloads: 99,
     version: '24.09',
-    logo: ''
+    homepage: 'https://www.7-zip.org/',
   },
   {
     id: 'RARLab.WinRAR',
@@ -357,7 +197,7 @@ const APP_CATALOG = [
     desc: 'Industry standard RAR archive creator and decompression utility with high-speed unrar.',
     downloads: 93,
     version: '7.01',
-    logo: ''
+    homepage: 'https://www.win-rar.com/',
   },
   {
     id: 'voidtools.Everything',
@@ -366,7 +206,7 @@ const APP_CATALOG = [
     desc: 'Locate files and folders across all NTFS drives in milliseconds with instant index search.',
     downloads: 98,
     version: '1.4.1',
-    logo: ''
+    homepage: 'https://www.voidtools.com/',
   },
   {
     id: 'ShareX.ShareX',
@@ -375,7 +215,7 @@ const APP_CATALOG = [
     desc: 'Screen capture, file sharing and productivity tool with OCR and screen recorder for Windows.',
     downloads: 97,
     version: '16.1.0',
-    logo: 'assets/icons/sharex.svg'
+    homepage: 'https://getsharex.com/',
   },
   {
     id: 'Flameshot.Flameshot',
@@ -384,7 +224,7 @@ const APP_CATALOG = [
     desc: 'Powerful yet simple to use screenshot software with in-place annotation and pin to desktop.',
     downloads: 92,
     version: '12.1.0',
-    logo: 'assets/icons/flameshot.svg'
+    homepage: 'https://flameshot.org/',
   },
   {
     id: 'Rufus.Rufus',
@@ -393,7 +233,7 @@ const APP_CATALOG = [
     desc: 'Reliably create bootable USB drives for Windows, Linux, and UEFI installations.',
     downloads: 94,
     version: '4.6',
-    logo: ''
+    homepage: 'https://rufus.ie/',
   },
   {
     id: 'AutoHotkey.AutoHotkey',
@@ -402,7 +242,7 @@ const APP_CATALOG = [
     desc: 'Desktop automation and macro scripting language for custom keybindings.',
     downloads: 87,
     version: '2.0.18',
-    logo: 'assets/icons/autohotkey.svg'
+    homepage: 'https://www.autohotkey.com/',
   },
   {
     id: 'Bitwarden.Bitwarden',
@@ -411,7 +251,7 @@ const APP_CATALOG = [
     desc: 'Open-source end-to-end encrypted password manager and passkey vault.',
     downloads: 94,
     version: '2024.11.0',
-    logo: 'assets/icons/bitwarden.svg'
+    homepage: 'https://bitwarden.com/',
   },
   {
     id: 'KeePassXCTeam.KeePassXC',
@@ -420,7 +260,7 @@ const APP_CATALOG = [
     desc: 'Offline encrypted password manager with browser integration and auto-type.',
     downloads: 85,
     version: '2.7.9',
-    logo: 'assets/icons/keepassxc.svg'
+    homepage: 'https://keepassxc.org/',
   },
   {
     id: 'qBittorrent.qBittorrent',
@@ -429,7 +269,7 @@ const APP_CATALOG = [
     desc: 'Free, open-source, ad-free torrent downloader with integrated search.',
     downloads: 91,
     version: '5.0.1',
-    logo: 'assets/icons/qbittorrent.svg'
+    homepage: 'https://www.qbittorrent.org/',
   },
   {
     id: 'BleachBit.BleachBit',
@@ -438,7 +278,7 @@ const APP_CATALOG = [
     desc: 'Free cache cleaner, privacy cleaner, and disk space optimizer.',
     downloads: 81,
     version: '4.6.0',
-    logo: 'assets/icons/bleachbit.svg'
+    homepage: 'https://www.bleachbit.org/',
   },
   {
     id: 'AnyDeskSoftwareGmbH.AnyDesk',
@@ -447,7 +287,7 @@ const APP_CATALOG = [
     desc: 'High frame-rate remote desktop application for IT support and telework.',
     downloads: 90,
     version: '8.1.1',
-    logo: 'assets/icons/anydesk.svg'
+    homepage: 'https://anydesk.com/',
   },
 
   // Development & Tools
@@ -458,7 +298,7 @@ const APP_CATALOG = [
     desc: 'Lightweight, extensible code editor with integrated Git, debugging, and terminal.',
     downloads: 100,
     version: '1.95.3',
-    logo: ''
+    homepage: 'https://code.visualstudio.com/',
   },
   {
     id: 'Git.Git',
@@ -467,7 +307,7 @@ const APP_CATALOG = [
     desc: 'Fast, distributed version control system for tracking source code changes.',
     downloads: 100,
     version: '2.47.1',
-    logo: ''
+    homepage: 'https://git-scm.com/',
   },
   {
     id: 'GitHub.GitHubDesktop',
@@ -476,7 +316,7 @@ const APP_CATALOG = [
     desc: 'Visual interface for Git and GitHub with seamless diffs, branches, and PRs.',
     downloads: 95,
     version: '3.4.9',
-    logo: 'assets/icons/github.svg'
+    homepage: 'https://desktop.github.com/',
   },
   {
     id: 'Docker.DockerDesktop',
@@ -485,7 +325,7 @@ const APP_CATALOG = [
     desc: 'Build, share, and run containerized microservices with Docker and Kubernetes.',
     downloads: 97,
     version: '4.35.1',
-    logo: ''
+    homepage: 'https://www.docker.com/',
   },
   {
     id: 'Postman.Postman',
@@ -494,7 +334,7 @@ const APP_CATALOG = [
     desc: 'API testing platform for building, debugging, and mocking REST and GraphQL APIs.',
     downloads: 93,
     version: '11.19.0',
-    logo: 'assets/icons/postman.svg'
+    homepage: 'https://www.postman.com/',
   },
   {
     id: 'Insomnia.Insomnia',
@@ -503,7 +343,7 @@ const APP_CATALOG = [
     desc: 'Streamlined desktop API client for REST, GraphQL, gRPC, and WebSockets.',
     downloads: 82,
     version: '10.1.1',
-    logo: 'assets/icons/insomnia.svg'
+    homepage: 'https://insomnia.rest/',
   },
   {
     id: 'dbeaver.dbeaver',
@@ -512,7 +352,7 @@ const APP_CATALOG = [
     desc: 'Universal SQL database administration tool for Postgres, MySQL, SQLite, and Oracle.',
     downloads: 89,
     version: '24.2.4',
-    logo: 'assets/icons/dbeaver.svg'
+    homepage: 'https://dbeaver.io/',
   },
   {
     id: 'Python.Python.3.13',
@@ -521,7 +361,7 @@ const APP_CATALOG = [
     desc: 'Modern general-purpose programming language for AI, data science, and scripting.',
     downloads: 98,
     version: '3.13.0',
-    logo: ''
+    homepage: 'https://www.python.org/',
   },
   {
     id: 'OpenJS.NodeJS.LTS',
@@ -530,7 +370,7 @@ const APP_CATALOG = [
     desc: 'JavaScript runtime built on Chrome V8 engine for scalable backend servers.',
     downloads: 97,
     version: '22.11.0',
-    logo: 'assets/icons/nodedotjs.svg'
+    homepage: 'https://nodejs.org/',
   },
   {
     id: 'Rustlang.Rustup',
@@ -539,7 +379,7 @@ const APP_CATALOG = [
     desc: 'Official installer for the memory-safe, ultra-fast Rust programming language.',
     downloads: 90,
     version: '1.27.1',
-    logo: 'assets/icons/rust.svg'
+    homepage: 'https://rustup.rs/',
   },
   {
     id: 'Golang.Go',
@@ -548,7 +388,43 @@ const APP_CATALOG = [
     desc: 'Simple, fast, and concurrent systems programming language developed by Google.',
     downloads: 88,
     version: '1.23.3',
-    logo: 'assets/icons/go.svg'
+    homepage: 'https://go.dev/',
+  },
+  {
+    id: 'Python.Python.3.12',
+    name: 'Python 3.12',
+    category: 'development',
+    desc: 'Stable Python release for production apps, automation, and data workflows.',
+    downloads: 96,
+    version: 'Latest',
+    homepage: 'https://www.python.org/',
+  },
+  {
+    id: 'PuTTY.PuTTY',
+    name: 'PuTTY',
+    category: 'development',
+    desc: 'SSH and Telnet client for secure remote shell and serial console access.',
+    downloads: 91,
+    version: 'Latest',
+    homepage: 'https://www.chiark.greenend.org.uk/~sgtatham/putty/',
+  },
+  {
+    id: 'WinSCP.WinSCP',
+    name: 'WinSCP',
+    category: 'development',
+    desc: 'SFTP, SCP, and FTP client for secure file transfer and remote editing.',
+    downloads: 89,
+    version: 'Latest',
+    homepage: 'https://winscp.net/',
+  },
+  {
+    id: 'FileZilla.FileZilla',
+    name: 'FileZilla',
+    category: 'utilities',
+    desc: 'Fast FTP, FTPS, and SFTP client for moving files to servers and NAS devices.',
+    downloads: 88,
+    version: 'Latest',
+    homepage: 'https://filezilla-project.org/',
   },
   {
     id: 'Microsoft.WindowsTerminal',
@@ -557,7 +433,7 @@ const APP_CATALOG = [
     desc: 'GPU-accelerated terminal for PowerShell, Command Prompt, and WSL Linux.',
     downloads: 96,
     version: '1.21.2911',
-    logo: ''
+    homepage: 'https://github.com/microsoft/terminal',
   },
   {
     id: 'WiresharkFoundation.Wireshark',
@@ -566,7 +442,7 @@ const APP_CATALOG = [
     desc: 'World’s foremost network traffic and packet capture analyzer.',
     downloads: 87,
     version: '4.4.1',
-    logo: 'assets/icons/wireshark.svg'
+    homepage: 'https://www.wireshark.org/',
   },
 
   // Browsers & Web
@@ -577,7 +453,7 @@ const APP_CATALOG = [
     desc: 'Fast, secure, and customizable browser built by Google for the modern web.',
     downloads: 100,
     version: '131.0.6778',
-    logo: ''
+    homepage: 'https://www.google.com/chrome/',
   },
   {
     id: 'Mozilla.Firefox',
@@ -586,7 +462,7 @@ const APP_CATALOG = [
     desc: 'Privacy-focused, independent web browser with advanced tracking protection.',
     downloads: 96,
     version: '132.0.2',
-    logo: 'assets/icons/firefox.svg'
+    homepage: 'https://www.mozilla.org/firefox/',
   },
   {
     id: 'Brave.Brave',
@@ -595,7 +471,7 @@ const APP_CATALOG = [
     desc: 'Shields privacy by blocking advertisements and trackers automatically by default.',
     downloads: 95,
     version: '1.71.123',
-    logo: 'assets/icons/brave.svg'
+    homepage: 'https://brave.com/',
   },
   {
     id: 'Microsoft.Edge',
@@ -604,7 +480,7 @@ const APP_CATALOG = [
     desc: 'Fast and secure Windows browser with built-in Copilot AI features and vertical tabs.',
     downloads: 92,
     version: '131.0.2903',
-    logo: 'assets/icons/edge.svg'
+    homepage: 'https://www.microsoft.com/edge',
   },
   {
     id: 'Opera.Opera',
@@ -613,7 +489,7 @@ const APP_CATALOG = [
     desc: 'Feature-rich web browser with built-in free VPN, ad blocker, and AI assistant.',
     downloads: 87,
     version: '114.0.5282',
-    logo: 'assets/icons/opera.svg'
+    homepage: 'https://www.opera.com/',
   },
   {
     id: 'TorProject.TorBrowser',
@@ -622,7 +498,7 @@ const APP_CATALOG = [
     desc: 'Browse anonymously with multi-layered onion encryption protecting privacy.',
     downloads: 84,
     version: '14.0.1',
-    logo: 'assets/icons/torbrowser.svg'
+    homepage: 'https://www.torproject.org/',
   },
   {
     id: 'Vivaldi.Vivaldi',
@@ -631,7 +507,7 @@ const APP_CATALOG = [
     desc: 'Highly customizable power browser with tabs stacking, split views, and notes.',
     downloads: 83,
     version: '7.0.3495',
-    logo: 'assets/icons/vivaldi.svg'
+    homepage: 'https://vivaldi.com/',
   },
 
   // Productivity & Office
@@ -642,7 +518,7 @@ const APP_CATALOG = [
     desc: 'The all-in-one workspace for notes, tasks, databases, and project management.',
     downloads: 96,
     version: '3.14.0',
-    logo: ''
+    homepage: 'https://www.notion.so/',
   },
   {
     id: 'Obsidian.Obsidian',
@@ -651,7 +527,7 @@ const APP_CATALOG = [
     desc: 'Markdown-based second brain and personal knowledge base stored locally on disk.',
     downloads: 94,
     version: '1.7.5',
-    logo: ''
+    homepage: 'https://obsidian.md/',
   },
   {
     id: 'Notepad++.Notepad++',
@@ -660,7 +536,7 @@ const APP_CATALOG = [
     desc: 'Fast, lightweight text and source code editor with multi-document tabs.',
     downloads: 98,
     version: '8.7.1',
-    logo: 'assets/icons/notepadplusplus.svg'
+    homepage: 'https://notepad-plus-plus.org/',
   },
   {
     id: 'TheDocumentFoundation.LibreOffice',
@@ -669,7 +545,7 @@ const APP_CATALOG = [
     desc: 'Free open source office suite for documents, spreadsheets, and presentations.',
     downloads: 91,
     version: '24.8.3',
-    logo: 'assets/icons/libreoffice.svg'
+    homepage: 'https://www.libreoffice.org/',
   },
   {
     id: 'Adobe.Acrobat.Reader.64-bit',
@@ -678,7 +554,7 @@ const APP_CATALOG = [
     desc: 'Standard for viewing, printing, signing, and annotating PDF documents.',
     downloads: 95,
     version: '24.004.20243',
-    logo: 'assets/icons/acrobat.svg'
+    homepage: 'https://www.adobe.com/acrobat/pdf-reader.html',
   },
   {
     id: 'Figma.Figma',
@@ -687,7 +563,7 @@ const APP_CATALOG = [
     desc: 'Collaborative UI/UX design tool for prototyping and design systems.',
     downloads: 93,
     version: '124.5.5',
-    logo: 'assets/icons/figma.svg'
+    homepage: 'https://www.figma.com/',
   },
   {
     id: 'BlenderFoundation.Blender',
@@ -696,7 +572,7 @@ const APP_CATALOG = [
     desc: 'Free and open source 3D creation suite: modeling, animation, VFX, and rendering.',
     downloads: 93,
     version: '4.2.3',
-    logo: 'assets/icons/blender.svg'
+    homepage: 'https://www.blender.org/',
   },
   {
     id: 'GIMP.GIMP',
@@ -705,7 +581,7 @@ const APP_CATALOG = [
     desc: 'Cross-platform image editor with advanced retouching and drawing tools.',
     downloads: 87,
     version: '2.10.38',
-    logo: 'assets/icons/gimp.svg'
+    homepage: 'https://www.gimp.org/',
   },
   {
     id: 'Inkscape.Inkscape',
@@ -714,7 +590,7 @@ const APP_CATALOG = [
     desc: 'Professional vector graphics editor for creating SVG illustrations and logos.',
     downloads: 86,
     version: '1.4',
-    logo: 'assets/icons/inkscape.svg'
+    homepage: 'https://inkscape.org/',
   },
 
   // Gaming & Social
@@ -725,7 +601,7 @@ const APP_CATALOG = [
     desc: 'High clarity voice, video, and text communication for communities and gamers.',
     downloads: 99,
     version: '1.0.9168',
-    logo: ''
+    homepage: 'https://discord.com/',
   },
   {
     id: 'Telegram.TelegramDesktop',
@@ -734,7 +610,7 @@ const APP_CATALOG = [
     desc: 'Cloud-based instant messaging with powerful channels, bots, and file sharing.',
     downloads: 95,
     version: '5.7.1',
-    logo: ''
+    homepage: 'https://telegram.org/',
   },
   {
     id: 'WhatsApp.WhatsApp',
@@ -743,7 +619,7 @@ const APP_CATALOG = [
     desc: 'Simple, reliable, private messaging and HD calls synced to your PC.',
     downloads: 97,
     version: '2.2444.6',
-    logo: ''
+    homepage: 'https://www.whatsapp.com/',
   },
   {
     id: 'SlackTechnologies.Slack',
@@ -752,7 +628,7 @@ const APP_CATALOG = [
     desc: 'Enterprise communication hub bringing teamwork, channels, and apps together.',
     downloads: 94,
     version: '4.41.97',
-    logo: ''
+    homepage: 'https://slack.com/',
   },
   {
     id: 'Zoom.Zoom',
@@ -761,7 +637,7 @@ const APP_CATALOG = [
     desc: 'Video meetings, virtual team chat, whiteboard, and screen sharing.',
     downloads: 93,
     version: '6.2.6',
-    logo: 'assets/icons/zoom.svg'
+    homepage: 'https://www.zoom.com/',
   },
   {
     id: 'Microsoft.Teams',
@@ -770,7 +646,7 @@ const APP_CATALOG = [
     desc: 'Connect and collaborate with coworkers, group calls, and Office integration.',
     downloads: 92,
     version: '24277.502',
-    logo: 'assets/icons/teams.svg'
+    homepage: 'https://www.microsoft.com/microsoft-teams/group-chat-software',
   },
   {
     id: 'Valve.Steam',
@@ -779,7 +655,7 @@ const APP_CATALOG = [
     desc: 'The ultimate digital entertainment platform for playing and purchasing PC games.',
     downloads: 98,
     version: '2.10.91',
-    logo: ''
+    homepage: 'https://store.steampowered.com/',
   },
   {
     id: 'EpicGames.EpicGamesLauncher',
@@ -788,7 +664,7 @@ const APP_CATALOG = [
     desc: 'Gateway to Unreal Engine games, Fortnite, and weekly free games store.',
     downloads: 88,
     version: '17.0.0',
-    logo: 'assets/icons/epicgames.svg'
+    homepage: 'https://www.epicgames.com/',
   },
   {
     id: 'GOG.Galaxy',
@@ -797,9 +673,537 @@ const APP_CATALOG = [
     desc: 'All your PC games in one launcher with DRM-free downloads and friend lists.',
     downloads: 85,
     version: '2.0.73',
-    logo: 'assets/icons/gogdotcom.svg'
+    homepage: 'https://www.gog.com/galaxy',
   }
 ];
+
+
+// ================= About this computer v2 (ADR 009) =================
+const ABOUT_NR_ICON = '<svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><circle cx="7" cy="7" r="5.2" stroke-dasharray="2.6 2.2"/></svg>';
+const ABOUT_COPY_ICON = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/></svg>';
+
+function aboutEscapeHtml(str) {
+  if (str === null || str === undefined) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+function aboutNr() {
+  return `<span class="about-nr">${ABOUT_NR_ICON}Not reported by this PC</span>`;
+}
+
+function aboutDisp(value) {
+  if (value === null || value === undefined || value === '') return aboutNr();
+  return aboutEscapeHtml(value);
+}
+
+function aboutFormatArch(arch) {
+  if (!arch) return null;
+  const a = String(arch).toLowerCase();
+  if (a === 'x64' || a === 'amd64') return 'AMD64';
+  if (a === 'arm64' || a === 'aarch64') return 'ARM64';
+  return String(arch);
+}
+
+function aboutFormatBytes(bytes) {
+  const n = Number(bytes);
+  if (!Number.isFinite(n) || n <= 0) return null;
+  if (n >= 1024 ** 3) return (n / 1024 ** 3).toFixed(2) + ' GB';
+  if (n >= 1024 ** 2) return (n / 1024 ** 2).toFixed(1) + ' MB';
+  return Math.round(n / 1024) + ' KB';
+}
+
+function aboutFormatGiB(bytes) {
+  const n = Number(bytes);
+  if (!Number.isFinite(n) || n <= 0) return null;
+  return Math.round((n + (1 << 30) - 1) / (1 << 30)) + ' GB';
+}
+
+function aboutArt(kind, facts) {
+  if (typeof renderArt === 'function') {
+    try {
+      return renderArt(kind, facts);
+    } catch (e) {
+      return { svg: '', key: '', label: '' };
+    }
+  }
+  if (typeof pickArt === 'function' && typeof HARDWARE_ART === 'object') {
+    const key = pickArt(kind, facts);
+    return { key, label: key, svg: HARDWARE_ART[key] || '' };
+  }
+  return { svg: '', key: '', label: '' };
+}
+
+function aboutCpuSvg(cpu) {
+  if (cpu && typeof makeCpuArt === 'function') {
+    const gen = cpu.model_number || cpu.generation || '';
+    return makeCpuArt({
+      vendor: cpu.vendor || 'generic',
+      family: cpu.family || 'CPU',
+      generation: gen,
+      ai: cpu.family && /\bAI\b/i.test(cpu.family)
+    });
+  }
+  return aboutArt('cpu', { name: (cpu && cpu.brand_string) || '', brand: (cpu && cpu.brand_string) || '' }).svg;
+}
+
+function aboutCoreStrip(cores, threads) {
+  const c = Math.max(0, Number(cores) || 0);
+  const t = Math.max(c, Number(threads) || c);
+  const perCore = c > 0 ? Math.max(1, Math.round(t / c)) : 0;
+  if (!c) return '';
+  let html = '<div class="about-cores">';
+  for (let i = 0; i < c; i++) {
+    const dots = Math.min(perCore, 4);
+    html += '<span class="about-core">';
+    for (let d = 0; d < dots; d++) html += '<i></i>';
+    html += '</span>';
+  }
+  html += '</div>';
+  if (c && perCore) {
+    html += `<div class="about-cap2">${c} cores, ${perCore} thread${perCore === 1 ? '' : 's'} each</div>`;
+  }
+  return html;
+}
+
+function aboutMemBlocks(totalBytes) {
+  const gib = totalBytes ? Math.round((Number(totalBytes) + (1 << 30) - 1) / (1 << 30)) : 0;
+  if (!gib) return '';
+  const blocks = Math.min(Math.max(gib, 1), 32);
+  let html = '<div class="about-blocks">';
+  for (let i = 0; i < blocks; i++) html += '<i></i>';
+  html += '</div><div class="about-cap2">Installed memory, 1 GB per block</div>';
+  return html;
+}
+
+function aboutDriveMeta(d) {
+  const loc = (d.external || d.removable) ? 'External' : 'Internal';
+  const media = d.media || d.mediaType || d.bus || d.busType || '';
+  const fs = d.fs || d.filesystem || '';
+  return [loc, media, fs].filter(Boolean).join(' · ');
+}
+
+function aboutGpuSub(gpu) {
+  const integrated = !!gpu.integrated;
+  if (integrated) return 'Built-in · shares system memory';
+  const vram = aboutFormatBytes(gpu.vram_bytes);
+  return vram ? `Dedicated · ${vram}` : 'Dedicated';
+}
+
+function aboutIsUsbDisplay(row) {
+  if (!row) return false;
+  if (row.kind === 'usb-display' || row.connection === 'usb') return true;
+  const blob = `${row.name || ''} ${row.provider || ''}`;
+  if (/displaylink/i.test(blob)) return true;
+  return /^usb\\/i.test(String(row.matching_id || ''));
+}
+
+function aboutUsbDisplayKey(row) {
+  if (!row) return '';
+  if (row.merge_key) return String(row.merge_key).toLowerCase();
+  let matching = String(row.matching_id || '').toLowerCase();
+  const mi = matching.indexOf('&mi_');
+  if (mi >= 0) matching = matching.slice(0, mi);
+  return `${String(row.name || '').toLowerCase()}|${matching}`;
+}
+
+function aboutCollectUsbDevices(hw) {
+  const reportedGpus = Array.isArray(hw && hw.gpus) ? hw.gpus : [];
+  const seen = new Set();
+  const devices = [];
+  []
+    .concat(Array.isArray(hw && hw.usb_devices) ? hw.usb_devices : [])
+    .concat(reportedGpus.filter(aboutIsUsbDisplay))
+    .forEach((row) => {
+      const key = aboutUsbDisplayKey(row);
+      if (!key || seen.has(key)) return;
+      seen.add(key);
+      devices.push(row);
+    });
+  return devices;
+}
+
+function buildAboutComputerPageHtml(diag, storageDrives) {
+  const hw = (diag && diag.hardware) || {};
+  const device = hw.device || {};
+  const cpu = hw.cpu || {};
+  const memory = hw.memory || {};
+  const reportedGpus = Array.isArray(hw.gpus) ? hw.gpus : [];
+  const gpus = reportedGpus.filter((gpu) => !aboutIsUsbDisplay(gpu));
+  const usbDevices = aboutCollectUsbDevices(hw);
+  const displays = Array.isArray(hw.display) ? hw.display : [];
+  const cameras = Array.isArray(hw.camera) ? hw.camera : [];
+  const battery = hw.battery || {};
+  const osInfo = hw.os || {};
+  const drives = Array.isArray(storageDrives) && storageDrives.length
+    ? storageDrives
+    : (Array.isArray(hw.storage) ? hw.storage : []);
+
+  const modelName = device.model_name || diag.model_name || diag.model_id || 'This PC';
+  const modelId = device.model_id || diag.model_id || '';
+  const serial = device.serial_number || diag.serial_number || '';
+  const manufacturer = device.manufacturer || '';
+  const osName = osInfo.name || diag.os_display || diag.os_info || '';
+  const osVersion = osInfo.version ? ` ${osInfo.version}` : '';
+  const osLine = (osName + osVersion).trim() || diag.os_display || '';
+  const archLabel = aboutFormatArch(cpu.arch || diag.arch);
+  const kind = device.kind === 'desktop' ? 'desktop' : 'laptop';
+  const kindLabel = `Windows ${kind}`;
+
+  const deviceArt = aboutArt('device', {
+    model: modelName,
+    manufacturer,
+    isLaptop: kind === 'laptop'
+  }).svg;
+
+  const heroChips = [];
+  if (modelId) heroChips.push(`<span class="about-chip-neu">${aboutEscapeHtml(modelId)}</span>`);
+  if (archLabel) heroChips.push(`<span class="about-chip-neu">${aboutEscapeHtml(archLabel)}</span>`);
+
+  const serialDisabled = serial ? '' : ' disabled';
+  const serialHint = serial
+    ? ''
+    : '<div class="about-hero-hint">Copy serial number turns on when this PC reports one.</div>';
+
+  const cores = cpu.cores || 0;
+  const threads = cpu.threads || cores;
+  const cpuStat = cores ? `${cores} core${cores === 1 ? '' : 's'}, ${threads} thread${threads === 1 ? '' : 's'}` : aboutNr();
+  const cpuGenLine = cpu.generation ? `<div class="about-cap2">${aboutEscapeHtml(cpu.generation)}</div>` : '';
+
+  const memGiB = aboutFormatGiB(memory.total_bytes) || diag.memory || null;
+  const memStat = memGiB || aboutNr();
+  const memArt = aboutArt('memory', { type: memory.type, isLaptop: kind === 'laptop' }).svg;
+
+  const gpuCount = gpus.length;
+  const gpuStat = gpuCount
+    ? `${gpuCount} graphics adapter${gpuCount === 1 ? '' : 's'}`
+    : aboutNr();
+  const gpuRows = gpus.map((gpu) => {
+    const art = aboutArt('gpu', { name: gpu.name, integrated: gpu.integrated, dedicated: !gpu.integrated }).svg;
+    return `<div class="about-part-row" style="--acc:var(--about-acc-peach)"><div class="about-ptile">${art}</div><div class="about-pinfo"><div class="about-pnm">${aboutEscapeHtml(gpu.name)}</div><div class="about-psub">${aboutGpuSub(gpu)}</div></div></div>`;
+  }).join('');
+
+  const primary = drives.find((d) => String(d.letter || '').toUpperCase().startsWith('C')) || drives[0];
+  let storageStat = aboutNr();
+  let storageWarn = '';
+  if (primary && primary.total_bytes) {
+    const free = aboutFormatBytes(primary.free_bytes);
+    const letter = primary.letter ? `${primary.letter}:` : 'drive';
+    storageStat = free ? `${free} free on ${letter}` : aboutNr();
+    const usedPct = Math.round(((primary.total_bytes - (primary.free_bytes || 0)) / primary.total_bytes) * 100);
+    if (usedPct >= 85) storageWarn = '<span class="about-chip-warn">Getting full</span>';
+  }
+
+  const storageRows = drives.map((d) => {
+    const letter = d.letter ? String(d.letter).replace(/:$/, '') : '';
+    const total = Number(d.total_bytes) || 0;
+    const free = Number(d.free_bytes) || 0;
+    const used = Math.max(0, total - free);
+    const usedPct = total ? Math.round((used / total) * 100) : 0;
+    const freePct = total ? 100 - usedPct : 0;
+    const title = d.label ? `${d.label}${letter ? ` (${letter}:)` : ''}` : (letter ? `Local Disk (${letter}:)` : 'Local disk');
+    const art = aboutArt('storage', d).svg;
+    const extTag = (d.external || d.removable) ? ' · External' : '';
+    return `<div class="about-part-row" style="--acc:var(--about-acc-sky)">${letter ? `<div class="about-plet">${aboutEscapeHtml(letter)}:</div>` : ''}<div class="about-ptile" style="--art-accent:var(--about-acc-sky)">${art}</div><div class="about-pinfo"><div class="about-pnm">${aboutEscapeHtml(title)}</div><div class="about-psub">${aboutEscapeHtml(aboutDriveMeta(d))}${extTag}</div><div class="about-pmeta"><span>${used ? aboutEscapeHtml(`${aboutFormatBytes(used)} used`) : aboutNr()}</span><span><b>${free ? aboutEscapeHtml(aboutFormatBytes(free)) : aboutNr()}</b> free of ${total ? aboutEscapeHtml(aboutFormatBytes(total)) : aboutNr()}</span></div><div class="about-pbar"><div class="about-seg"><i class="about-used" style="width:${usedPct}%"></i><i class="about-free" style="width:${freePct}%"></i></div></div></div></div>`;
+  }).join('');
+
+  const dispRows = displays.length ? displays.map((disp) => {
+    const res = disp.width && disp.height ? `${disp.width} × ${disp.height}` : null;
+    const hz = disp.refresh_hz ? `${disp.refresh_hz} Hz` : null;
+    const sub = [res, hz, disp.scale_percent ? `${disp.scale_percent}% scale` : ''].filter(Boolean).join(' · ');
+    const art = aboutArt('display', { name: disp.name, isLaptop: kind === 'laptop' }).svg;
+    return `<div class="about-part-row"><div class="about-ptile">${art}</div><div class="about-pinfo"><div class="about-pnm">${aboutDisp(disp.name)}</div><div class="about-psub">${sub ? aboutEscapeHtml(sub) : aboutNr()}</div></div></div>`;
+  }).join('') : '';
+
+  const camNames = cameras.filter(Boolean);
+  const camStat = camNames.length ? aboutEscapeHtml(camNames[0]) : aboutNr();
+  const camArt = aboutArt('camera', camNames.length ? { name: camNames[0], builtIn: true } : { present: false }).svg;
+  const camKvs = camNames.length
+    ? camNames.map((name, i) => `<div class="about-kv"><dt>Camera ${camNames.length > 1 ? i + 1 : ''}</dt><dd>${aboutEscapeHtml(name)}</dd></div>`).join('')
+    : `<div class="about-kv"><dt>Webcam</dt><dd>${aboutNr()}</dd></div>`;
+
+  const batPresent = battery.present !== false && (battery.charge_percent != null || battery.health_percent != null);
+  const batHead = batPresent && battery.charge_percent != null
+    ? `${battery.charge_percent}% charged`
+    : (battery.present === false ? 'Plugged in · no battery' : aboutNr());
+  const powerSrc = battery.on_ac === true ? 'Wall power' : (battery.on_ac === false ? 'Battery' : null);
+  const batArt = aboutArt('battery', {
+    present: battery.present !== false,
+    percent: battery.charge_percent,
+    charging: battery.on_ac === true && battery.charge_percent != null && battery.charge_percent < 100
+  }).svg;
+
+  const winArt = aboutArt('os', { name: osName, version: osInfo.version, build: osInfo.build }).svg;
+  const osStat = osName ? osName.replace(/\s+\d.+$/, '').trim() || osName : aboutNr();
+
+  const identityArt = aboutArt('device', { model: modelId || modelName, manufacturer }).svg;
+  const gpuTile = aboutArt('gpu', gpus[0] ? { name: gpus[0].name } : {}).svg;
+  const usbStat = usbDevices.length
+    ? `${usbDevices.length} external USB device${usbDevices.length === 1 ? '' : 's'}`
+    : '';
+  const usbRows = usbDevices.map((row) => {
+    const art = aboutArt('storage', { name: row.name, bus: 'usb', external: true }).svg;
+    return `<div class="about-part-row" style="--acc:var(--about-acc-sky)"><div class="about-ptile" style="--art-accent:var(--about-acc-sky)">${art}</div><div class="about-pinfo"><div class="about-pnm">${aboutEscapeHtml(row.name)}</div><div class="about-psub">External</div></div></div>`;
+  }).join('');
+  const usbSection = usbDevices.length ? `
+      <article class="about-sec card" style="--acc:var(--about-acc-sky)">
+        <div class="about-sh"><div class="about-tile" style="--art-accent:var(--about-acc-sky)">${aboutArt('storage', { name: usbDevices[0].name, bus: 'usb', external: true }).svg}</div><div><div class="about-eyebrow">USB devices</div><div class="about-stat">${aboutEscapeHtml(usbStat)}</div><div class="about-hint">Plugged in with a USB cable. These are not graphics cards.</div></div></div>
+        <div class="about-part-rows">${usbRows}</div>
+      </article>` : '';
+
+  return `
+    <section class="about-hero card">
+      <div class="about-hero-art">${deviceArt}</div>
+      <div class="about-hero-body">
+        <div class="about-hero-kind">${aboutEscapeHtml(kindLabel)}</div>
+        <h2 class="about-hero-title">${aboutEscapeHtml(modelName)}</h2>
+        <div class="about-hero-os">${aboutDisp(osLine)}</div>
+        <div class="about-hero-facts">${heroChips.join('')}</div>
+        <div class="about-hero-acts">
+          <button type="button" class="glass-btn btn-primary btn-sm" onclick="app.copyAllSystemSpecs()">${ABOUT_COPY_ICON}<span>Copy all system info</span></button>
+          <button type="button" class="glass-btn btn-installed btn-sm"${serialDisabled} onclick="app.copySerialNumber()">${ABOUT_COPY_ICON}<span>Copy serial number</span></button>
+        </div>
+        ${serialHint}
+      </div>
+    </section>
+    <div class="about-grid">
+      <article class="about-sec card" style="--acc:var(--about-acc-sky)">
+        <div class="about-sh"><div class="about-tile" style="--art-accent:var(--about-acc-sky)">${identityArt}</div><div><div class="about-eyebrow">Model and identity</div><div class="about-stat">${aboutDisp(modelId || modelName)}</div><div class="about-hint">The model number printed on this ${kind}.</div></div></div>
+        <dl class="about-kvs"><div class="about-kv"><dt>Brand</dt><dd>${aboutDisp(manufacturer)}</dd></div><div class="about-kv"><dt>Product name</dt><dd>${aboutDisp(modelName)}</dd></div><div class="about-kv"><dt>Serial number</dt><dd>${serial ? aboutEscapeHtml(serial) : aboutNr()}</dd></div></dl>
+      </article>
+      <article class="about-sec card" style="--acc:var(--about-acc-mint)">
+        <div class="about-sh"><div class="about-tile" style="--art-accent:var(--about-acc-mint);--art-fill:var(--input-surface)">${aboutCpuSvg(cpu)}</div><div><div class="about-eyebrow">Processor</div><div class="about-stat">${typeof cpuStat === 'string' && cpuStat.indexOf('about-nr') === -1 ? aboutEscapeHtml(cpuStat) : cpuStat}</div><div class="about-hint">The brain of your PC. It runs every app.</div></div></div>
+        ${aboutCoreStrip(cores, threads)}${cpuGenLine}
+        <dl class="about-kvs"><div class="about-kv"><dt>Processor</dt><dd>${aboutDisp(cpu.brand_string || diag.cpu)}</dd></div><div class="about-kv"><dt>Architecture</dt><dd>${aboutDisp(archLabel)}</dd></div></dl>
+      </article>
+      <article class="about-sec card" style="--acc:var(--about-acc-mint)">
+        <div class="about-sh"><div class="about-tile">${memArt}</div><div><div class="about-eyebrow">Memory</div><div class="about-stat">${memGiB ? aboutEscapeHtml(memGiB) : memStat}</div><div class="about-hint">Short-term space where open apps keep their data.</div></div></div>
+        ${aboutMemBlocks(memory.total_bytes)}
+        <dl class="about-kvs"><div class="about-kv"><dt>Installed</dt><dd>${memGiB ? aboutEscapeHtml(memGiB) : aboutNr()}</dd></div><div class="about-kv"><dt>Type</dt><dd>${aboutDisp(memory.type)}</dd></div><div class="about-kv"><dt>Speed</dt><dd>${memory.speed_mhz ? aboutEscapeHtml(`${memory.speed_mhz} MHz`) : aboutNr()}</dd></div><div class="about-kv"><dt>Slots used</dt><dd>${memory.slots_used != null ? aboutEscapeHtml(String(memory.slots_used)) : aboutNr()}</dd></div></dl>
+      </article>
+      <article class="about-sec card" style="--acc:var(--about-acc-peach)">
+        <div class="about-sh"><div class="about-tile" style="--art-accent:var(--about-acc-peach)">${gpuTile}</div><div><div class="about-eyebrow">Graphics</div><div class="about-stat">${gpuCount ? aboutEscapeHtml(gpuStat) : gpuStat}</div><div class="about-hint">Built-in and dedicated cards that draw what you see on screen.</div></div></div>
+        ${gpuRows ? `<div class="about-part-rows">${gpuRows}</div>` : ''}
+      </article>
+      ${usbSection}
+      <article class="about-sec card" style="--acc:var(--about-acc-sky)">
+        <div class="about-sh"><div class="about-tile" style="--art-accent:var(--about-acc-sky)">${dispRows ? aboutArt('display', { count: displays.length, isLaptop: kind === 'laptop' }).svg : aboutArt('display', { isLaptop: kind === 'laptop' }).svg}</div><div><div class="about-eyebrow">Display</div><div class="about-stat">${displays.length ? aboutEscapeHtml(`${displays.length} screen${displays.length === 1 ? '' : 's'}`) : aboutNr()}</div><div class="about-hint">Resolution and refresh for each screen.</div></div></div>
+        ${dispRows ? `<div class="about-part-rows">${dispRows}</div>` : `<dl class="about-kvs"><div class="about-kv"><dt>Primary display</dt><dd>${aboutNr()}</dd></div></dl>`}
+      </article>
+      <article class="about-sec card wide" style="--acc:var(--about-acc-sky)">
+        <div class="about-sh"><div class="about-tile" style="--art-accent:var(--about-acc-sky)">${aboutArt('storage', primary || {}).svg}</div><div><div class="about-sec-head-row"><div class="about-eyebrow">Storage</div>${storageWarn}</div><div class="about-stat">${typeof storageStat === 'string' && storageStat.indexOf('about-nr') >= 0 ? storageStat : aboutEscapeHtml(storageStat)}</div><div class="about-hint">Every physical drive on this PC. Cloud volumes are not listed.</div></div></div>
+        ${storageRows ? `<div class="about-part-rows">${storageRows}</div>` : `<dl class="about-kvs"><div class="about-kv"><dt>Drives</dt><dd>${aboutNr()}</dd></div></dl>`}
+      </article>
+      <article class="about-sec card" style="--acc:var(--about-acc-gold)">
+        <div class="about-sh"><div class="about-tile">${batArt}</div><div><div class="about-eyebrow">Battery and power</div><div class="about-stat${batPresent ? '' : ' muted-stat'}">${typeof batHead === 'string' && batHead.indexOf('about-nr') >= 0 ? batHead : aboutEscapeHtml(batHead)}</div><div class="about-hint">Charge, health and power source from Windows.</div></div></div>
+        <div class="about-minis">
+          <div class="about-mini"><div class="about-lb">Charge level</div><div class="about-vl">${battery.charge_percent != null ? aboutEscapeHtml(`${battery.charge_percent}%`) : aboutNr()}</div></div>
+          <div class="about-mini"><div class="about-lb">Battery health</div><div class="about-vl">${battery.health_percent != null ? aboutEscapeHtml(`${battery.health_percent}%`) : aboutNr()}</div></div>
+          <div class="about-mini"><div class="about-lb">Power source</div><div class="about-vl">${powerSrc ? aboutEscapeHtml(powerSrc) : aboutNr()}</div></div>
+        </div>
+        <dl class="about-kvs"><div class="about-kv"><dt>Cycle count</dt><dd>${battery.cycle_count != null ? aboutEscapeHtml(String(battery.cycle_count)) : aboutNr()}</dd></div></dl>
+      </article>
+      <article class="about-sec card" style="--acc:var(--about-acc-peach)">
+        <div class="about-sh"><div class="about-tile">${camArt}</div><div><div class="about-eyebrow">Camera</div><div class="about-stat${camNames.length ? '' : ' muted-stat'}">${camStat}</div><div class="about-hint">Cameras Windows has listed on this PC.</div></div></div>
+        <dl class="about-kvs">${camKvs}</dl>
+      </article>
+      <article class="about-sec card" style="--acc:var(--about-acc-sky)">
+        <div class="about-sh"><div class="about-tile">${winArt}</div><div><div class="about-eyebrow">Windows</div><div class="about-stat">${typeof osStat === 'string' && osStat.indexOf('about-nr') >= 0 ? osStat : aboutEscapeHtml(osStat)}</div><div class="about-hint">The system that runs this PC.</div></div></div>
+        <dl class="about-kvs"><div class="about-kv"><dt>Edition</dt><dd>${aboutDisp(osName)}</dd></div><div class="about-kv"><dt>Version</dt><dd>${aboutDisp(osInfo.version)}</dd></div><div class="about-kv"><dt>Build number</dt><dd>${aboutDisp(osInfo.build)}</dd></div><div class="about-kv"><dt>Architecture</dt><dd>${aboutDisp(archLabel ? `64-bit (${archLabel})` : null)}</dd></div></dl>
+      </article>
+    </div>`;
+}
+
+if (typeof window !== 'undefined') {
+  window.buildAboutComputerPageHtml = buildAboutComputerPageHtml;
+}
+
+
+// ================= ScanStore (ADR 008 readiness / mockup 08–09) =================
+const SCAN_UI_JOB_IDS = [
+  'catalog-updates',
+  'catalog-installed',
+  'local-hardware',
+  'local-arp',
+  'cleanup_scan',
+  'startup',
+  'leftovers'
+];
+
+const TAB_TO_SCAN_JOB = {
+  updates: 'catalog-updates',
+  explore: 'catalog-installed',
+  installed: 'catalog-installed',
+  specs: 'local-hardware',
+  cleanup: 'cleanup_scan',
+  'startup-apps': 'startup',
+  'leftover-folders': 'leftovers'
+};
+
+const NAV_SCAN_SLOTS = [
+  { tab: 'updates', job: 'catalog-updates' },
+  { tab: 'explore', job: 'catalog-installed' },
+  { tab: 'installed', job: 'catalog-installed' },
+  { tab: 'cleanup', job: 'cleanup_scan' },
+  { tab: 'startup-apps', job: 'startup' },
+  { tab: 'large-files', job: null },
+  { tab: 'leftover-folders', job: 'leftovers' },
+  { tab: 'specs', job: 'local-hardware' }
+];
+
+/** Startup ready-gate jobs (ADR 025). local-hardware stays off this list. */
+const STARTUP_GATE_JOBS = [
+  { id: 'local-arp', label: 'Programs on this PC', detail: 'Uninstall entries on this PC.' },
+  { id: 'catalog-updates', label: 'App updates', detail: 'Reading the catalog. No invented percent.' },
+  { id: 'catalog-installed', label: 'Programs from the catalog', detail: 'Starts after App updates when needed.' }
+];
+const STARTUP_GATE_SETTLED = new Set(['ready', 'failed', 'cancelled']);
+
+class ScanStore {
+  constructor(app) {
+    this.app = app;
+    this.jobs = {};
+    this.summary = { done: 0, total: 0, eta_s: 0, running: 0 };
+    this._pollTimer = null;
+    this._prevStatus = {};
+    this._cleanupPoll = null;
+    this.cleanupLive = null;
+    this.hasLeftoversRecycle = true;
+  }
+
+  async bootstrap() {
+    try {
+      await this.app.invoke('bridge_ping', {});
+    } catch (_) { /* offline dev */ }
+    try {
+      if (window.pywebview && window.pywebview.api && window.pywebview.api.leftovers_recycle) {
+        this.hasLeftoversRecycle = true;
+      } else if (window.pywebview && window.pywebview.api && !window.pywebview.api.leftovers_recycle) {
+        this.hasLeftoversRecycle = false;
+      }
+    } catch (_) {
+      this.hasLeftoversRecycle = false;
+    }
+    try {
+      await this.app.invoke('scans_start_all', {});
+    } catch (_) {}
+    this.poll();
+  }
+
+  schedule(ms) {
+    clearTimeout(this._pollTimer);
+    this._pollTimer = setTimeout(() => this.poll(), ms);
+  }
+
+  async poll() {
+    try {
+      const st = await this.app.invoke('scans_state', {});
+      if (st && typeof st === 'object') {
+        this.jobs = st.jobs || {};
+        this.summary = st.summary || this.summary;
+        this.onJobsUpdated();
+      }
+    } catch (err) {
+      console.warn('[ScanStore] scans_state:', err);
+    }
+    const gateOpen = !!(this.app && this.app.isStartupGateVisible && this.app.isStartupGateVisible());
+    const ms = gateOpen ? 1000 : ((this.summary.running > 0) ? 500 : 5000);
+    this.schedule(ms);
+    this.pollCleanupStatusIfNeeded();
+  }
+
+  job(id) {
+    return this.jobs[id] || { id, status: 'queued', percent: 0, cached: false };
+  }
+
+  isReady(id) { return this.job(id).status === 'ready'; }
+  isScanning(id) { return this.job(id).status === 'scanning'; }
+  isCleanupJobActive() {
+    const status = this.job('cleanup_scan').status;
+    return status === 'scanning' || status === 'queued';
+  }
+  isFailed(id) { return this.job(id).status === 'failed'; }
+  isCached(id) { return !!this.job(id).cached; }
+
+  updatesReady() { return this.isReady('catalog-updates'); }
+  marketplaceReady() { return this.isReady('catalog-installed') || this.isReady('local-arp'); }
+  cleanupReady() { return this.isReady('cleanup_scan'); }
+  cleanupFresh() { return this.cleanupReady() && !this.isCached('cleanup_scan'); }
+
+  formatLastChecked(job) {
+    const ts = job.cached_at || job.finished_at;
+    if (!ts) return '';
+    const d = new Date(ts * 1000);
+    if (Number.isNaN(d.getTime())) return '';
+    return d.toLocaleString();
+  }
+
+  async rescanAll() {
+    if (this.app && typeof this.app.skipStartupGateForForcedRescan === 'function') {
+      this.app.skipStartupGateForForcedRescan();
+    }
+    await this.app.invoke('scans_start_all', { force: true });
+  }
+
+  async startJob(jobId, force) {
+    await this.app.invoke('scan_start', { job_id: jobId, force: !!force });
+  }
+
+  async ensureDeferredJob(jobId) {
+    if (!jobId || this.isReady(jobId) || this.isScanning(jobId)) return;
+    await this.startJob(jobId, false);
+  }
+
+  async cancelJob(jobId) {
+    await this.app.invoke('scan_cancel', { job_id: jobId });
+  }
+
+  onJobsUpdated() {
+    SCAN_UI_JOB_IDS.forEach((id) => {
+      const cur = this.job(id).status;
+      const prev = this._prevStatus[id];
+      if (id === 'catalog-updates' && (cur === 'scanning' || cur === 'queued') && prev !== cur) {
+        this.app.refreshUpdatesFromStore(true);
+      }
+      if (cur === 'ready' && prev !== 'ready') {
+        this.app.onScanJobReady(id, this.job(id));
+      }
+      if (id === 'cleanup_scan' && (cur === 'failed' || cur === 'cancelled') && prev !== cur) {
+        this.app.onCleanupScanStopped(cur);
+      }
+      this._prevStatus[id] = cur;
+    });
+    this.app.renderSidebarScanStatus();
+    this.app.applyReadinessGates();
+  }
+
+  pollCleanupStatusIfNeeded() {
+    const job = this.job('cleanup_scan');
+    if (!this.isCleanupJobActive()) {
+      if (this._cleanupPoll) {
+        clearInterval(this._cleanupPoll);
+        this._cleanupPoll = null;
+      }
+      if (job.status === 'ready' || job.status === 'failed' || job.status === 'cancelled') {
+        this.app.renderCleanupScanProgress({ status: 'done' });
+      }
+      return;
+    }
+    this.app.renderCleanupScanProgress({
+      status: job.status === 'queued' ? 'queued' : 'scanning',
+      percent: job.percent,
+      progress: {
+        percent: job.percent,
+        eta_s: job.eta_s,
+        current_folder: job.current_item,
+      },
+      current_item: job.current_item,
+    });
+  }
+}
 
 class QuantumUpdaterApp {
   constructor() {
@@ -807,8 +1211,12 @@ class QuantumUpdaterApp {
     this.selectedIds = new Set();
     this.installed = [];
     this.installedSet = new Set();
+    this.installedNormSet = new Set();
+    this.exploreLiveSearchQuery = '';
+    this.lastCatalogSearchResults = null;
     this.activeTab = 'updates';
     this.isScanning = false;
+    this.scanError = '';
     this.isUpdating = false;
     this.activeEngine = 'winget';
 
@@ -832,13 +1240,75 @@ class QuantumUpdaterApp {
     this.isCheckingAppUpdate = false;
     this.isApplyingAppUpdate = false;
 
+    // Startup ready gate (ADR 025) — dismissed for the session once bootstrap jobs settle
+    this._startupGateDismissed = false;
+    this._startupGateSkipForced = false;
+
+    // Wave 1 30.1 — show restart needed; never reboot the PC from here
+    this._restartRequired = false;
+
+    this.appIconCache = new Map();
+    this.scanStore = new ScanStore(this);
+    this.leftoverItems = [];
+    this.largeFilesList = [];
+    this.largeFilesJobId = '';
+    this.cleanupPlanStale = true;
+
     this.init();
   }
 
+  isDarwinHost() {
+    if (typeof navigator === 'undefined') return false;
+    const ua = navigator.userAgent || '';
+    if (/Windows/i.test(ua)) return false;
+    const platform = navigator.platform || '';
+    if (/Win/i.test(platform)) return false;
+    return platform === 'MacIntel' || platform === 'MacPPC' || platform === 'Mac68K' ||
+      /Mac OS X|Macintosh/i.test(ua);
+  }
+
+  isMacDiagnostics(diag) {
+    if (diag) {
+      if (diag.os_system === 'Darwin') return true;
+      if (diag.os_display && /macOS/i.test(diag.os_display)) return true;
+      if (diag.os_system && /Windows/i.test(diag.os_system)) return false;
+    }
+    return this.isDarwinHost();
+  }
+
+  normalizeInstallKey(value) {
+    if (value === null || value === undefined) return '';
+    return String(value).toLowerCase().trim().replace(/[^a-z0-9]/g, '');
+  }
+
+  rebuildInstalledMatchIndex(packages) {
+    this.installedSet.clear();
+    if (!this.installedNormSet) this.installedNormSet = new Set();
+    this.installedNormSet.clear();
+    if (!packages || !Array.isArray(packages)) return;
+    packages.forEach(p => {
+      if (p.id) {
+        this.installedSet.add(p.id.toLowerCase().trim());
+        const normId = this.normalizeInstallKey(p.id);
+        if (normId) this.installedNormSet.add(normId);
+      }
+      if (p.name) {
+        this.installedSet.add(p.name.toLowerCase().trim());
+        const normName = this.normalizeInstallKey(p.name);
+        if (normName) this.installedNormSet.add(normName);
+      }
+    });
+  }
+
+  applyWindowsAboutComputerPlaceholders() {
+    const root = document.getElementById('about-computer-root');
+    if (root) {
+      root.innerHTML = '<p class="about-loading muted-copy">Reading this PC\u2026</p>';
+    }
+  }
+
   adaptPlatformUI() {
-    this.isMac = (window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.quantum) ||
-                 (typeof navigator !== 'undefined' && navigator.userAgent && navigator.userAgent.includes('Mac')) ||
-                 (typeof navigator !== 'undefined' && navigator.platform && navigator.platform.includes('Mac'));
+    this.isMac = this.isDarwinHost();
 
     document.body.classList.toggle('platform-mac', !!this.isMac);
     document.body.classList.toggle('platform-windows', !this.isMac);
@@ -849,6 +1319,7 @@ class QuantumUpdaterApp {
     }
 
     if (!this.isMac) {
+      this.applyWindowsAboutComputerPlaceholders();
       document.title = 'Quantum Updater • Windows Edition';
 
       // Harmonize branding subtitle
@@ -911,9 +1382,9 @@ class QuantumUpdaterApp {
         diskPct.textContent = 'NTFS';
       }
 
-      const archBadge = document.querySelector('.security-chip-pill');
-      if (archBadge && archBadge.textContent.includes('Universal 2')) {
-        archBadge.textContent = 'x64 / ARM64';
+      const archBadge = document.getElementById('sidebar-arch-chip') || document.querySelector('.security-chip-pill');
+      if (archBadge && /Universal|ARM64/i.test(archBadge.textContent)) {
+        archBadge.textContent = 'x64';
       }
 
       const cleanupSub = document.getElementById('cleanup-disk-sub');
@@ -924,6 +1395,27 @@ class QuantumUpdaterApp {
       const specStorageHint = document.getElementById('spec-detail-storage-hint');
       if (specStorageHint && specStorageHint.textContent.includes('Macintosh')) {
         specStorageHint.textContent = 'Local Disk (C:) • NTFS';
+      }
+
+      document.querySelectorAll('.modal-security-strip .sec-strip-pill span').forEach((el, i) => {
+        if (el.textContent.includes('Gatekeeper')) el.textContent = 'SmartScreen Verified';
+        if (el.textContent.includes('Hardened Runtime')) el.textContent = 'Code Integrity Checked';
+      });
+      const secBoxTitle = document.querySelector('.modal-security-box .sec-box-title span');
+      if (secBoxTitle && secBoxTitle.textContent.includes('Apple')) {
+        secBoxTitle.textContent = 'Cryptographic Integrity \u2022 Windows Security';
+      }
+      const secBoxDesc = document.querySelector('.modal-security-box .sec-box-desc');
+      if (secBoxDesc && secBoxDesc.textContent.includes('Gatekeeper')) {
+        secBoxDesc.textContent = 'This package is verified against the official catalog before installation or update. Quantum Updater enforces SHA-256 hash checks and publisher validation. Corrupted or altered payloads are rejected.';
+      }
+      const diagHeading = document.querySelector('#tab-settings .settings-card h3');
+      if (diagHeading && diagHeading.textContent.includes('macOS Diagnostics')) {
+        diagHeading.textContent = 'Windows Diagnostics & Environment';
+      }
+      const consoleBoot = document.querySelector('#console-output .terminal-line.system');
+      if (consoleBoot && consoleBoot.textContent.includes('macOS')) {
+        consoleBoot.textContent = '[Quantum Updater]: Windows desktop engine initialized. Ready.';
       }
     }
   }
@@ -949,17 +1441,75 @@ class QuantumUpdaterApp {
         });
       }
       this.onBridgeReady();
-    } else if (window.pywebview) {
+    } else if (window.pywebview && window.pywebview.api) {
       this.onBridgeReady();
     } else {
       window.addEventListener('pywebviewready', () => this.onBridgeReady());
-      // Fallback
-      setTimeout(() => this.onBridgeReady(), 300);
     }
+  }
+
+  async invokeCleanup(cmd, args = {}) {
+    const res = await this.invoke(cmd, args);
+    if (res === null || res === undefined) {
+      throw new Error('Cleanup service is unavailable. Wait until the desktop bridge is ready and try again.');
+    }
+    return res;
+  }
+
+
+  pywebviewOrderedArgs(cmd, args = {}) {
+    const order = {
+      scan_start: ['job_id', 'force'],
+      scan_cancel: ['job_id'],
+      scan_result: ['job_id'],
+      scans_start_all: ['force'],
+      scans_start_maintenance: ['job_ids', 'force'],
+      startup_set_enabled: ['entry_id', 'enabled'],
+      large_files_scan_start: ['root', 'min_mb', 'older_than_days'],
+      large_files_status: ['job_id'],
+      large_files_recycle: ['paths', 'job_id'],
+      large_files_confirm: ['paths', 'job_id'],
+      large_files_delete: ['paths', 'token'],
+      large_files_reveal: ['path'],
+      leftovers_reveal: ['path'],
+      leftovers_recycle: ['path', 'confirmed'],
+      leftovers_confirm_registry: ['entry_id'],
+      leftovers_delete_registry: ['entry_id', 'token'],
+    };
+    const keys = order[cmd];
+    if (keys) return keys.map((k) => args[k]);
+    return Object.values(args);
   }
 
   async invoke(cmd, args = {}) {
     try {
+      if (cmd === 'get_app_icons') {
+        if (window.pywebview && window.pywebview.api && window.pywebview.api.get_app_icons) {
+          try {
+            return await window.pywebview.api.get_app_icons(
+              args.ids || [],
+              args.homepages || {},
+              args.meta || {}
+            );
+          } catch (err) {
+            console.warn('[get_app_icons]:', err);
+            return {};
+          }
+        }
+        try {
+          const resp = await fetch('/api/invoke', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ cmd, args }),
+          });
+          if (resp.ok) {
+            return await resp.json();
+          }
+        } catch (_) {
+          /* browser dev server without pywebview */
+        }
+        return {};
+      }
       if (window.__TAURI__ && window.__TAURI__.core) {
         return await window.__TAURI__.core.invoke(cmd, args);
       }
@@ -972,7 +1522,7 @@ class QuantumUpdaterApp {
         });
       }
       if (window.pywebview && window.pywebview.api && window.pywebview.api[cmd]) {
-        return await window.pywebview.api[cmd](...Object.values(args));
+        return await window.pywebview.api[cmd](...this.pywebviewOrderedArgs(cmd, args));
       }
       // Live HTTP API Bridge fallback (runs when running in web browser on localhost)
       try {
@@ -1000,15 +1550,29 @@ class QuantumUpdaterApp {
     this._bridgeReadyInitialized = true;
     console.log('[Quantum Updater]: Backend bridge connected.');
     this.loadInitialDiagnostics();
+    this.loadSettingsFromBridge();
+    this.showInstalledReadingState();
     this.loadInstalledSilent();
-
-    // Auto sync immediately on start before commencing anything
-    this.scanUpdates();
+    if (this.scanStore) this.scanStore.bootstrap();
 
     // Auto check for application self-update after initial scan launch
     setTimeout(() => {
       this.checkAutoUpdateOnStartup();
     }, 2500);
+
+    this.refreshVisibleAppIconsAfterBridge();
+  }
+
+  async loadSettingsFromBridge() {
+    try {
+      const settings = await this.invoke('get_settings', {});
+      if (settings && typeof settings === 'object') {
+        this.settings = { ...(this.settings || {}), ...settings };
+      }
+    } catch (_) {
+      this.settings = this.settings || {};
+    }
+    this.applyAllowBetaCheckbox();
   }
 
   bindEvents() {
@@ -1152,7 +1716,7 @@ class QuantumUpdaterApp {
   }
 
   toggleSidebar() {
-    const sidebar = document.getElementById('mac-sidebar');
+    const sidebar = document.getElementById('prism-sidebar') || document.getElementById('mac-sidebar');
     if (sidebar) {
       sidebar.classList.toggle('collapsed');
       this.playHapticTick();
@@ -1203,15 +1767,28 @@ class QuantumUpdaterApp {
     }, 120);
   }
 
+  showBackdrop(id) {
+    const el = document.getElementById(id);
+    if (!el) return null;
+    el.style.display = 'flex';
+    el.classList.add('active');
+    return el;
+  }
+
+  hideBackdrop(id) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.classList.remove('active');
+    el.style.display = 'none';
+  }
+
   openShortcutsModal() {
     this.playHapticTick();
-    const el = document.getElementById('modal-shortcuts-backdrop');
-    if (el) el.style.display = 'flex';
+    this.showBackdrop('modal-shortcuts-backdrop');
   }
 
   closeShortcutsModal() {
-    const el = document.getElementById('modal-shortcuts-backdrop');
-    if (el) el.style.display = 'none';
+    this.hideBackdrop('modal-shortcuts-backdrop');
   }
 
   showDetailsModal(pkgId, pkgName, version, origin = 'explore') {
@@ -1222,7 +1799,13 @@ class QuantumUpdaterApp {
 
     // Logo & Titles
     const logoContainer = document.getElementById('modal-pkg-logo');
-    if (logoContainer) logoContainer.innerHTML = this.getAppLogoHtml(pkgId, pkgName);
+    if (logoContainer) {
+      logoContainer.innerHTML = this.getAppLogoHtml(pkgId, pkgName);
+      const installedPkg = (this.installed || []).find(p => p.id === pkgId);
+      const catPkg = APP_CATALOG.find(c => c.id && c.id.toLowerCase() === (pkgId || '').toLowerCase());
+      const modalPkg = installedPkg || (catPkg ? { ...catPkg, id: pkgId } : { id: pkgId, name: pkgName });
+      this.hydrateAppIconsIn(logoContainer, [modalPkg]);
+    }
 
     const titleEl = document.getElementById('modal-pkg-title');
     if (titleEl) titleEl.textContent = pkgName || pkgId;
@@ -1234,19 +1817,31 @@ class QuantumUpdaterApp {
     if (verEl) verEl.textContent = version || 'Latest Verified';
 
     const pubEl = document.getElementById('modal-pkg-publisher');
-    if (pubEl) pubEl.textContent = 'Apple Verified / Notarized Developer';
+    if (pubEl) {
+      pubEl.textContent = this.isMac ? 'Apple Verified / Notarized Developer' : 'Verified Publisher';
+    }
 
     const licEl = document.getElementById('modal-pkg-license');
     if (licEl) licEl.textContent = 'Proprietary / Open Source (Standard EULA)';
 
     const typeEl = document.getElementById('modal-pkg-type');
-    if (typeEl) typeEl.textContent = 'Universal 2 (Apple Silicon arm64 + Intel x86_64)';
+    if (typeEl) {
+      typeEl.textContent = this.isMac
+        ? 'Universal 2 (Apple Silicon arm64 + Intel x86_64)'
+        : 'x64 / ARM64 Native';
+    }
 
     // Find in catalog for description
     const catItem = APP_CATALOG.find(c => c.id.toLowerCase() === pkgId.toLowerCase() || c.name.toLowerCase() === pkgName.toLowerCase());
     const descEl = document.getElementById('modal-pkg-desc');
     if (descEl) {
-      descEl.textContent = catItem ? catItem.desc : `Native macOS application bundle verified by Apple Gatekeeper and Hardened Runtime.`;
+      if (catItem && catItem.desc) {
+        descEl.textContent = catItem.desc;
+      } else if (this.isMac) {
+        descEl.textContent = 'Native application bundle verified by platform security checks.';
+      } else {
+        descEl.textContent = 'Verified package from the official catalog for this PC.';
+      }
     }
 
     const hashEl = document.getElementById('modal-pkg-hash');
@@ -1260,26 +1855,26 @@ class QuantumUpdaterApp {
       const isInstalled = this.isPackageInstalled(pkgId, pkgName);
       if (isInstalled) {
         actionContainer.innerHTML = `
-          <button class="glass-btn btn-success btn-sm" onclick="app.revealSelectedInFinder()">
-            Reveal in Finder
+          <button class="glass-btn btn-installed-disabled btn-sm" disabled title="Already installed on this system">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+            Installed
           </button>
         `;
       } else {
         actionContainer.innerHTML = `
-          <button class="glass-btn btn-coral btn-sm" onclick="app.installExplorePackage('${pkgId}', null); app.closeDetailsModal();">
-            Install Package
+          <button class="glass-btn btn-coral btn-sm market-install-btn" onclick="app.installExplorePackage('${pkgId}', null); app.closeDetailsModal();">
+            <span>Install Package</span>
           </button>
         `;
       }
     }
 
-    backdrop.style.display = 'flex';
+    this.showBackdrop('modal-details-backdrop');
   }
 
   closeDetailsModal() {
     this.activeModalPkg = null;
-    const backdrop = document.getElementById('modal-details-backdrop');
-    if (backdrop) backdrop.style.display = 'none';
+    this.hideBackdrop('modal-details-backdrop');
   }
 
   async revealSelectedInFinder() {
@@ -1303,6 +1898,7 @@ class QuantumUpdaterApp {
   }
 
   switchTab(tabId) {
+    if (this.isStartupGateVisible()) return;
     this.activeTab = tabId;
     document.querySelectorAll('.sidebar-item, .pill-btn').forEach(btn => {
       btn.classList.toggle('active', btn.dataset.tab === tabId);
@@ -1316,7 +1912,10 @@ class QuantumUpdaterApp {
       updates: { title: 'App & System Updates', sub: 'Scan and update installed software safely' },
       explore: { title: 'Software Marketplace', sub: 'Curated starter bundles, top apps, and tools' },
       installed: { title: 'Installed Applications', sub: 'Manage apps on your computer' },
-      cleanup: { title: 'Free Up Disk Space', sub: 'Clean temporary cache and reclaim disk space' },
+      cleanup: { title: 'System cleanup', sub: 'Scan drives, review reclaimable files, and clean safely' },
+      'startup-apps': { title: 'Startup apps', sub: 'See what opens when you sign in' },
+      'large-files': { title: 'Large files', sub: 'Find big files and reclaim space safely' },
+      'leftover-folders': { title: 'Leftover folders', sub: 'Folders left after uninstalls' },
       console: { title: 'Activity Log', sub: 'Review real-time background tasks and terminal logs' },
       specs: { title: 'About This Computer', sub: 'Hardware specifications and system details' },
       settings: { title: 'Settings & Options', sub: 'App preferences and automated update options' }
@@ -1329,280 +1928,337 @@ class QuantumUpdaterApp {
 
     if (tabId === 'explore') {
       this.renderExplore();
-    } else if (tabId === 'installed' && this.installed.length === 0) {
-      this.loadInstalled();
-    } else if (tabId === 'cleanup' && (!this.cleanupData || !this.cleanupData.categories)) {
-      this.scanCleanup();
+    } else if (tabId === 'installed') {
+      if (this.installed.length > 0) {
+        this.renderInstalled();
+      } else if (this._installedLoadInFlight) {
+        this.showInstalledReadingState();
+      } else {
+        this.loadInstalled();
+      }
+    } else if (tabId === 'cleanup') {
+      if (this.scanStore) {
+        void this.scanStore.ensureDeferredJob('cleanup_scan');
+        this.applyCleanupFromOrchestrator(true);
+      } else if (!this.cleanupData || !this.cleanupData.categories) this.scanCleanup();
+    } else if (tabId === 'startup-apps') {
+      if (this.scanStore) void this.scanStore.ensureDeferredJob('startup');
+      this.renderStartupAppsPage();
+    } else if (tabId === 'large-files') {
+      /* on-demand scan */
+    } else if (tabId === 'leftover-folders') {
+      if (this.scanStore) void this.scanStore.ensureDeferredJob('leftovers');
+      this.renderLeftoverFoldersPage();
     } else if (tabId === 'specs' || tabId === 'settings') {
+      if (this.scanStore && tabId === 'specs') void this.scanStore.ensureDeferredJob('local-hardware');
       this.loadInitialDiagnostics();
     }
+    if (this.scanStore) this.applyReadinessGates();
   }
 
 
-  // ================= Universal Logo & Monogram Resolver =================
+  // ================= Real app icons (ADR 008) =================
 
-  getMonogram(name) {
-    const clean = (name || '').trim().replace(/[^a-zA-Z0-9\s]/g, '');
-    const words = clean.split(/\s+/).filter(Boolean);
-    if (!words.length) return 'APP';
-    if (words.length === 1) return words[0].slice(0, 2).toUpperCase();
-    return (words[0][0] + words[1][0]).toUpperCase();
+  normalizePkgIconId(pkgId) {
+    return (pkgId || '').trim();
   }
 
-  getGradient(name) {
-    let hash = 0;
-    for (let i = 0; i < (name || '').length; i++) {
-      hash = name.charCodeAt(i) + ((hash << 5) - hash);
-    }
-    const idx = Math.abs(hash) % MONOGRAM_PALETTES.length;
-    const [c1, c2] = MONOGRAM_PALETTES[idx];
-    return `linear-gradient(135deg, ${c1}, ${c2})`;
-  }
-
-  /**
-   * Resolves the authentic official software logo for any package across Updates, Explore, and Installed tabs.
-   * Cascades through exact IDs, curated catalog, keyword dictionaries, and falls back cleanly to high-contrast monogram.
-   */
-  /**
-   * Official built-in vector SVGs for prominent applications.
-   * Renders instantly offline, with zero 404s and maximum sharpness.
-   */
-  getBuiltinAppSvg(id, name) {
-    const s = `${id} ${name}`.toLowerCase();
-    
-    // 1. Google Chrome (Official 4-color pinwheel)
-    if (s.includes('chrome') || s.includes('google-chrome')) {
-      return `<svg width="34" height="34" viewBox="0 0 192 192"><circle cx="96" cy="96" r="88" fill="#FFFFFF"/><path fill="#EA4335" d="M96 8A88 88 0 0 0 19.6 52.4L57 117.2A44 44 0 0 1 96 52h76.3A88.3 88.3 0 0 0 96 8z"/><path fill="#4CAF50" d="M96 184a88 88 0 0 0 76.4-44.4L135 74.8A44 44 0 0 1 96 140v44z"/><path fill="#FFEB3B" d="M96 184H19.6A88 88 0 0 0 135 74.8l-37.5 65.2A44 44 0 0 1 52 96l-32.4-43.6A88.2 88.2 0 0 0 96 184z"/><circle cx="96" cy="96" r="34" fill="#1976D2"/></svg>`;
-    }
-
-    // 2. Visual Studio Code (Official folded ribbon in #007ACC)
-    if (s.includes('visualstudiocode') || s.includes('vscode') || s.includes('code.visualstudio')) {
-      return `<svg width="34" height="34" viewBox="0 0 24 24" fill="#007ACC"><path d="M23.15 2.587L18.21.21a1.494 1.494 0 0 0-1.705.29l-9.46 8.63-4.12-3.128a.999.999 0 0 0-1.276.057L.327 7.261A1 1 0 0 0 .32 8.688l3.47 3.313-3.47 3.314a1 1 0 0 0 .007 1.427l1.323 1.201a1 1 0 0 0 1.276.057l4.12-3.128 9.46 8.63a1.492 1.492 0 0 0 1.704.29l4.94-2.377A1.5 1.5 0 0 0 24 20.06V3.939a1.5 1.5 0 0 0-.85-1.352zm-5.146 14.861L10.826 12l7.178-5.448v10.896z"/></svg>`;
-    }
-
-    // 3. Anthropic Claude (Official Claude Starburst in #CC785C)
-    if (s.includes('claude') || s.includes('anthropic')) {
-      return `<svg width="34" height="34" viewBox="0 0 24 24" fill="#CC785C"><path d="M13.83 1.54a.58.58 0 0 0-.85 0L9.58 5.06 5.36 2.63a.58.58 0 0 0-.85.49v4.88L.85 8.32a.58.58 0 0 0 0 .85l3.66.33-2.44 4.22a.58.58 0 0 0 .49.85h4.88l.33 3.66a.58.58 0 0 0 .85 0l3.39-3.52 4.22 2.44a.58.58 0 0 0 .85-.49v-4.88l3.66-.33a.58.58 0 0 0 0-.85l-3.66-.33 2.44-4.22a.58.58 0 0 0-.49-.85h-4.88l-.33-3.66z"/></svg>`;
-    }
-
-    // 4. OpenAI ChatGPT (Official OpenAI spiral swirl rosette in #10A37F)
-    if (s.includes('chatgpt') || s.includes('openai')) {
-      return `<svg width="34" height="34" viewBox="0 0 24 24" fill="#10A37F"><path d="M22.28 9.82a5.98 5.98 0 0 0-.52-4.91 6.05 6.05 0 0 0-6.51-2.9 6.07 6.07 0 0 0-4.27 2.17 5.98 5.98 0 0 0-4 2.9 6.05 6.05 0 0 0 .74 7.1 5.98 5.98 0 0 0 .51 4.91 6.05 6.05 0 0 0 6.51 2.9A5.98 5.98 0 0 0 13.26 24a6.06 6.06 0 0 0 5.77-4.21 5.99 5.99 0 0 0 4-2.9 6.06 6.06 0 0 0-.75-7.07zm-9.02 12.61a4.48 4.48 0 0 1-2.88-1.04l.14-.08 4.78-2.76a.79.79 0 0 0 .39-.68v-6.74l2.02 1.17c.02.01.04.03.04.05v5.58a4.5 4.5 0 0 1-4.49 4.5zm-9.66-4.13a4.47 4.47 0 0 1-.53-3.01l.14.08 4.78 2.76a.77.77 0 0 0 .78 0l5.84-3.37v2.33a.08.08 0 0 1-.03.06L9.74 19.95a4.5 4.5 0 0 1-6.14-1.65zM2.34 7.9a4.49 4.49 0 0 1 2.37-1.98v5.68a.77.77 0 0 0 .39.68l5.81 3.35-2.02 1.17a.08.08 0 0 1-.07 0L4.71 14a4.5 4.5 0 0 1-2.37-6.1zm16.6 3.85L13.1 8.36l2.02-1.16a.08.08 0 0 1 .07 0l4.83 2.79a4.5 4.5 0 0 1-.68 8.1v-5.67a.79.79 0 0 0-.4-.67zm2.01-3.02l-.14-.09-4.77-2.78a.78.78 0 0 0-.79 0L9.41 9.23V6.9a.07.07 0 0 1 .03-.06l4.83-2.79a4.5 4.5 0 0 1 6.68 4.66zM8.31 12.86l-2.02-1.16a.08.08 0 0 1-.04-.06V6.07a4.5 4.5 0 0 1 7.38-3.45l-.14.08L8.7 5.46a.79.79 0 0 0-.39.68zm1.1-2.37l2.6-1.5 2.61 1.5v3l-2.6 1.5-2.61-1.5z"/></svg>`;
-    }
-
-    // 5. Cursor (Official isometric 3D mark)
-    if (s.includes('cursor')) {
-      return `<svg width="34" height="34" viewBox="0 0 24 24" fill="none"><path d="M12 2L3 7.5v9L12 22l9-5.5v-9L12 2z" fill="#18181B"/><path d="M12 2v10.5L3 7.5 12 2z" fill="#38BDF8"/><path d="M12 12.5V22l9-5.5V7l-9 5.5z" fill="#0284C7"/><path d="M3 16.5l9 5.5v-9.5L3 7.5v9z" fill="#0EA5E9"/></svg>`;
-    }
-
-    // 6. Microsoft PowerToys (Official 4-color tiles)
-    if (s.includes('powertoys')) {
-      return `<svg width="34" height="34" viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="8.5" height="8.5" rx="1.5" fill="#0078D4"/><rect x="12.5" y="3" width="8.5" height="8.5" rx="1.5" fill="#2B88D8"/><rect x="3" y="12.5" width="8.5" height="8.5" rx="1.5" fill="#106EBE"/><rect x="12.5" y="12.5" width="8.5" height="8.5" rx="1.5" fill="#005A9E"/><path d="M7 7h4v2H7zm0 8h4v2H7zm8-8h2v2h-2zm0 8h2v2h-2z" fill="#FFFFFF"/></svg>`;
-    }
-
-    // 7. GitHub Desktop & GitHub (Official GitHub Octocat Mark - checked before Git)
-    if (s.includes('github')) {
-      return `<svg width="34" height="34" viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" clip-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.53 1.032 1.53 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/></svg>`;
-    }
-
-    // 8. Git SCM (Official Git logo with strict word boundary)
-    if ((s.includes('git.git') || s.includes('git-scm') || /git/.test(s)) && !s.includes('github')) {
-      return `<svg width="34" height="34" viewBox="0 0 24 24" fill="#F05032"><path d="M23.546 10.93L13.067.452a1.5 1.5 0 0 0-2.126 0L8.808 2.585l3.22 3.22a1.78 1.78 0 0 1 2.25 2.25l3.098 3.098a1.78 1.78 0 0 1 1.706 2.457l2.463 2.464a.75.75 0 0 0 1.06-1.06l-2.464-2.464a1.78 1.78 0 0 1-1.096-1.614zm-14.88 5.75a1.78 1.78 0 0 1-2.25-2.25L3.318 11.332a1.5 1.5 0 0 0 0 2.126l10.479 10.48a1.5 1.5 0 0 0 2.126 0l2.133-2.133-3.22-3.22a1.78 1.78 0 0 1-2.25-2.25l-2.92-2.92v6.245z"/></svg>`;
-    }
-
-    // 9. Windows Terminal
-    if (s.includes('windowsterminal') || s.includes('terminal')) {
-      return `<svg width="34" height="34" viewBox="0 0 24 24"><rect width="24" height="24" rx="4" fill="#4D4D4D"/><path d="M5 8l4 4-4 4" stroke="#4EC9B0" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" fill="none"/><line x1="11" y1="16" x2="17" y2="16" stroke="#FFFFFF" stroke-width="2.2" stroke-linecap="round"/></svg>`;
-    }
-
-    // 10. voidtools Everything
-    if (s.includes('everything') || s.includes('voidtools')) {
-      return `<svg width="34" height="34" viewBox="0 0 24 24" fill="none"><rect width="24" height="24" rx="5" fill="#FF9800"/><circle cx="11" cy="11" r="6" stroke="#FFFFFF" stroke-width="2.2"/><line x1="15.5" y1="15.5" x2="20" y2="20" stroke="#FFFFFF" stroke-width="2.5" stroke-linecap="round"/></svg>`;
-    }
-
-    // 11. Rufus
-    if (s.includes('rufus')) {
-      return `<svg width="34" height="34" viewBox="0 0 24 24" fill="none"><rect width="24" height="24" rx="5" fill="#475569"/><rect x="8" y="3" width="8" height="5" rx="1" fill="#94A3B8"/><rect x="7" y="7" width="10" height="14" rx="2" fill="#0EA5E9"/><path d="M12 11v6m-2-2l2 2 2-2" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
-    }
-
-    // 12. 7-Zip
-    if (s.includes('7zip') || s.includes('sevenzip')) {
-      return `<svg width="34" height="34" viewBox="0 0 24 24" fill="none"><rect width="24" height="24" rx="4" fill="#000000"/><path d="M4 6h16v3l-8 9H8l7-8H4V6z" fill="#FFFFFF"/></svg>`;
-    }
-
-    // 13. WinRAR
-    if (s.includes('winrar')) {
-      return `<svg width="34" height="34" viewBox="0 0 24 24"><path fill="#3F51B5" d="M4 3h16v18H4z"/><path fill="#FFFFFF" d="M7 6h10v2H7zm0 4h10v2H7zm0 4h10v2H7z"/><path fill="#FFC107" d="M14 2v20h3V2z"/></svg>`;
-    }
-
-    // 14. Python
-    if (s.includes('python')) {
-      return `<svg width="34" height="34" viewBox="0 0 24 24"><path fill="#3776AB" d="M11.9 2c-3.1 0-4.9 1.4-4.9 3.2v2.4h5v.8H5.1C3.3 8.4 2 9.8 2 12.9s1.1 4.7 3.1 4.7h1.6v-2.3c0-1.8 1.5-3.3 3.3-3.3h5.1c1.5 0 2.7-1.2 2.7-2.7V5.2C17.9 3.4 15 2 11.9 2zm-1.4 1.7a.9.9 0 1 1 0 1.8.9.9 0 0 1 0-1.8z"/><path fill="#FFD43B" d="M12.1 22c3.1 0 4.9-1.4 4.9-3.2v-2.4h-5v-.8h6.9c1.8 0 3.1-1.4 3.1-4.5s-1.1-4.7-3.1-4.7h-1.6v2.3c0 1.8-1.5 3.3-3.3 3.3H8.9c-1.5 0-2.7 1.2-2.7 2.7v4.1c0 1.8 2.9 3.2 5.9 3.2zm1.4-1.7a.9.9 0 1 1 0-1.8.9.9 0 0 1 0 1.8z"/></svg>`;
-    }
-
-    // 15. Docker
-    if (s.includes('docker')) {
-      return `<svg width="34" height="34" viewBox="0 0 24 24" fill="#2496ED"><path d="M13.983 11.078h2.119a.186.186 0 00.186-.185V9.006a.186.186 0 00-.186-.186h-2.119a.185.185 0 00-.185.186v1.887c0 .102.083.185.185.185zm-2.954-5.43h2.118a.186.186 0 00.186-.186V3.574a.186.186 0 00-.186-.185h-2.118a.185.185 0 00-.185.185v1.888c0 .102.082.185.185.185zm0 2.716h2.118a.187.187 0 00.186-.186V6.29a.186.186 0 00-.186-.185h-2.118a.185.185 0 00-.185.185v1.887c0 .102.082.186.185.186zm-2.93 0h2.12a.186.186 0 00.184-.186V6.29a.185.185 0 00-.185-.185H8.1a.185.185 0 00-.185.185v1.887c0 .102.083.186.185.186zm-2.964 0h2.119a.186.186 0 00.185-.186V6.29a.185.185 0 00-.185-.185H5.136a.186.186 0 00-.186.185v1.887c0 .102.084.186.186.186zm5.894 2.714h2.118a.186.186 0 00.186-.185V9.006a.186.186 0 00-.186-.186h-2.118a.185.185 0 00-.185.186v1.887c0 .102.082.185.185.185zm-2.93 0h2.12a.185.185 0 00.184-.185V9.006a.185.185 0 00-.184-.186H8.1a.185.185 0 00-.185.186v1.887c0 .102.083.185.185.185zm-2.964 0h2.119a.185.185 0 00.185-.185V9.006a.185.185 0 00-.185-.186H5.136a.186.186 0 00-.186.185v1.887c0 .102.084.185.186.185zm-2.928 0h2.119a.185.185 0 00.185-.185V9.006a.185.185 0 00-.185-.186H2.208a.186.186 0 00-.186.186v1.887c0 .102.084.185.186.185zM23.987 11.882c-.378-.456-1.127-.58-1.748-.387-.194-.648-.68-1.188-1.34-1.464-.326-.137-.68-.21-1.043-.213l-.58-.004-.325.48c-.628.928-.76 2.05-.36 3.067-.29.176-.59.34-.9.493-1.077.532-2.316.812-3.565.812H1.94c-.454 0-.895.077-1.312.227a.407.407 0 00-.256.368c-.144 2.875 1.096 5.617 3.398 7.525C5.83 24.37 8.5 25.1 11.233 25.1c7.34 0 13.064-4.805 13.513-11.218.02-.277.01-.555-.027-.83a3.52 3.52 0 00-.732-1.17z"/></svg>`;
-    }
-
-    // 16. Spotify
-    if (s.includes('spotify')) {
-      return `<svg width="34" height="34" viewBox="0 0 24 24" fill="#1DB954"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/></svg>`;
-    }
-
-    // 17. Slack
-    if (s.includes('slack')) {
-      return `<svg width="34" height="34" viewBox="0 0 24 24"><path fill="#E01E5A" d="M6 15a2 2 0 1 0-2 2h2v-2zm1 0a2 2 0 1 0 4 0V9a2 2 0 1 0-4 0v6z"/><path fill="#36C5F0" d="M9 6a2 2 0 1 0-2-2v2h2zm0 1a2 2 0 1 0 0 4h6a2 2 0 1 0 0-4H9z"/><path fill="#2EB67D" d="M18 9a2 2 0 1 0 2-2h-2v2zm-1 0a2 2 0 1 0-4 0v6a2 2 0 1 0 4 0V9z"/><path fill="#ECB22E" d="M15 18a2 2 0 1 0 2 2v-2h-2zm0-1a2 2 0 1 0 0-4H9a2 2 0 1 0 0 4h6z"/></svg>`;
-    }
-
-    // 18. Discord
-    if (s.includes('discord')) {
-      return `<svg width="34" height="34" viewBox="0 0 24 24" fill="#5865F2"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994.021-.041.001-.09-.041-.106a13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.929 1.793 8.18 1.793 12.061 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.893.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.028zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"/></svg>`;
-    }
-
-    // 19. Telegram
-    if (s.includes('telegram')) {
-      return `<svg width="34" height="34" viewBox="0 0 24 24" fill="#2AABEE"><path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.894 8.221l-1.97 9.28c-.145.658-.537.818-1.084.508l-3-2.21-1.446 1.394c-.14.18-.357.295-.6.295-.002 0-.003 0-.005 0l.213-3.054 5.56-5.022c.24-.213-.054-.334-.373-.121l-6.869 4.326-2.96-.924c-.64-.203-.658-.64.135-.954l11.566-4.458c.538-.196 1.006.128.832.94z"/></svg>`;
-    }
-
-    // 20. WhatsApp
-    if (s.includes('whatsapp')) {
-      return `<svg width="34" height="34" viewBox="0 0 24 24" fill="#25D366"><path d="M17.472 14.382c-.301-.15-1.78-.878-2.056-.978-.276-.1-.477-.15-.678.15-.2.301-.778.978-.954 1.179-.176.2-.351.226-.652.075s-1.272-.469-2.422-1.495c-.895-.798-1.5-1.784-1.676-2.085-.176-.301-.019-.464.131-.614.136-.135.301-.351.452-.527.15-.176.2-.301.3-.502.1-.2.05-.376-.025-.527s-.678-1.631-.93-2.233c-.244-.585-.493-.506-.678-.515-.176-.009-.376-.01-.577-.01s-.527.075-.803.376c-.276.301-1.054 1.029-1.054 2.509s1.079 2.909 1.23 3.11c.15.2 2.122 3.241 5.141 4.545.718.31 1.278.496 1.716.635.722.23 1.378.197 1.9.119.58-.088 1.78-.728 2.03-1.431.25-.703.25-1.305.176-1.431-.075-.126-.276-.201-.577-.351zM12.042.028C5.405.028.019 5.414.019 12.051c0 2.12.554 4.192 1.606 6.015L0 24l6.108-1.603c1.761.96 3.754 1.468 5.934 1.468 6.637 0 12.023-5.386 12.023-12.023S18.679.028 12.042.028z"/></svg>`;
-    }
-
-    // 21. VLC Media Player
-    if (s.includes('vlc')) {
-      return `<svg width="34" height="34" viewBox="0 0 24 24"><polygon points="12,2 8,11 16,11" fill="#FF8800"/><polygon points="7.5,12 5.5,17 18.5,17 16.5,12" fill="#FFFFFF"/><polygon points="5,18 2,22 22,22 19,18" fill="#FF8800"/></svg>`;
-    }
-
-    // 22. Obsidian
-    if (s.includes('obsidian')) {
-      return `<svg width="34" height="34" viewBox="0 0 24 24" fill="#7C3AED"><path d="M12 2L3 8l3 13 9 1 6-7-9-13zm0 3.5l6.5 9-4.5 5.5L6.5 19 4.5 9.5 12 5.5z"/></svg>`;
-    }
-
-    // 23. Notion
-    if (s.includes('notion')) {
-      return `<svg width="34" height="34" viewBox="0 0 24 24" fill="currentColor"><path d="M4.459 4.208c.746.606 1.026.56 2.428.466l13.215-.793c.28 0 .047-.28-.046-.326L17.86 1.976c-.466-.373-.7-.466-1.54-.42l-11.436.653c-.373.047-.466.233-.42.42zm.84 3.733v13.535c0 .607.327.84.887.84h11.48c.56 0 .84-.327.84-.84V7.941c0-.56-.28-.84-.84-.84H6.186c-.56 0-.887.28-.887.84zm11.2 1.12l.14 9.88c.047.373-.093.56-.467.56l-1.4.093c-.373 0-.513-.14-.513-.42l-.093-6.944-4.57 6.944c-.28.42-.513.466-.933.466l-1.353.093c-.373 0-.513-.187-.513-.513l-.14-9.833c0-.373.14-.56.513-.56l1.353-.093c.373 0 .513.187.513.513l.093 6.944 4.57-6.944c.28-.42.513-.466.933-.466l1.353-.093c.373 0 .513.187.513.513z"/></svg>`;
-    }
-
-    // 24. Steam
-    if (s.includes('steam')) {
-      return `<svg width="34" height="34" viewBox="0 0 24 24" fill="#171A21"><path d="M11.979 0C5.678 0 .511 4.86.022 11.037l6.432 2.658c.545-.371 1.203-.59 1.912-.59.063 0 .125.004.188.006l2.861-4.142V8.91c0-2.495 2.028-4.524 4.524-4.524 2.494 0 4.524 2.031 4.524 4.527s-2.03 4.525-4.524 4.525h-.105l-4.076 2.911c0 .052.004.105.004.159 0 1.875-1.515 3.396-3.39 3.396-1.635 0-3.016-1.173-3.331-2.704L.452 15.34C1.942 20.358 6.551 24 11.979 24c6.627 0 12-5.373 12-12s-5.373-12-12-12zM7.55 16.568a1.536 1.536 0 1 0 1.536 1.537 1.537 1.537 0 0 0-1.536-1.537zm8.39-10.743c1.674 0 3.036 1.362 3.036 3.035 0 1.675-1.362 3.036-3.036 3.036s-3.036-1.361-3.036-3.036c0-1.673 1.362-3.035 3.036-3.035z"/></svg>`;
-    }
-
-    return null;
-  }
-
-  /**
-   * Resolves the authentic official software logo for any package across Updates, Explore, and Installed tabs.
-   * Zero-background on icon containers. True crisp brand vector graphics.
-   */
-  getAppLogoHtml(pkgId, pkgName, customIcon = null) {
-    const id = (pkgId || '').toLowerCase().trim();
-    const name = (pkgName || '').toLowerCase().trim();
-    const mono = this.getMonogram(pkgName || pkgId);
-    const grad = this.getGradient(pkgName || pkgId);
-    const safeName = this.escapeHtml(pkgName || pkgId);
-
-    // 1. Native Windows/System icon if cached
-    const nativeIcon = customIcon || (this.installedIconsMap && (this.installedIconsMap.get(id) || this.installedIconsMap.get(name)));
-    if (nativeIcon) {
+  getAppLogoHtml(pkgId, pkgName) {
+    const id = this.normalizePkgIconId(pkgId);
+    const safeId = this.escapeHtml(id);
+    const safeName = this.escapeHtml(pkgName || pkgId || '');
+    const cached = this.appIconCache && this.appIconCache.has(id) ? this.appIconCache.get(id) : null;
+    if (cached) {
       return `
-        <div class="app-logo-container" title="${safeName}">
-          <img class="app-logo-img" src="${nativeIcon}" alt="${safeName}">
+        <div class="app-logo-container app-icon-tile" data-app-icon-id="${safeId}" title="${safeName}">
+          <img class="app-logo-img" src="${cached}" alt="${safeName}">
         </div>
       `;
     }
+    return `
+      <div class="app-logo-container app-icon-tile app-icon-tile-empty" data-app-icon-id="${safeId}" title="${safeName}"></div>
+    `;
+  }
 
-    // 2. Built-in crisp official vector SVGs (instant offline sharpness)
-    const builtinSvg = this.getBuiltinAppSvg(id, name);
-    if (builtinSvg) {
-      const svgContent = typeof builtinSvg === 'string' ? builtinSvg : (builtinSvg.svg || '');
-      return `
-        <div class="app-logo-container" title="${safeName}">
-          ${svgContent}
-        </div>
-      `;
+  buildIconMetaEntry(pkg) {
+    if (!pkg || !pkg.id) return null;
+    const id = this.normalizePkgIconId(pkg.id);
+    const installLoc = pkg.install_location || pkg.path || '';
+    const displayIcon = pkg.display_icon || (typeof pkg.icon === 'string' && pkg.icon.startsWith('data:') ? '' : (pkg.icon || ''));
+    return {
+      name: pkg.name || '',
+      origin: pkg.origin || pkg.source || '',
+      arp_id: pkg.arp_id || (id.startsWith('arp:') ? id : ''),
+      display_icon: displayIcon,
+      install_location: installLoc,
+    };
+  }
+
+  resolveInstalledRecordForIcon(pkg) {
+    if (!pkg || !this.installed || !this.installed.length) return null;
+    if (!this.isPackageInstalled(pkg.id, pkg.name)) return null;
+    const id = (pkg.id || '').toLowerCase().trim();
+    const name = (pkg.name || '').toLowerCase().trim();
+    const normId = this.normalizeInstallKey(pkg.id);
+    const normName = this.normalizeInstallKey(pkg.name);
+    return this.installed.find(p => {
+      const pid = (p.id || '').toLowerCase().trim();
+      const pname = (p.name || '').toLowerCase().trim();
+      if (id && pid === id) return true;
+      if (name && pname === name) return true;
+      if (normId && this.normalizeInstallKey(p.id) === normId) return true;
+      if (normName && this.normalizeInstallKey(p.name) === normName) return true;
+      return false;
+    }) || null;
+  }
+
+  collectHomepageForPackage(pkg) {
+    if (!pkg || !pkg.id) return '';
+    const hp = pkg.homepage || pkg.home_page || pkg.homePage || '';
+    if (hp && /^https:\/\//i.test(hp)) return hp;
+    const id = this.normalizePkgIconId(pkg.id);
+    const cat = APP_CATALOG.find(c => c.id && c.id.toLowerCase() === id.toLowerCase());
+    if (cat && cat.homepage && /^https:\/\//i.test(cat.homepage)) return cat.homepage;
+    return '';
+  }
+
+  buildIconRequestFromPackages(packages) {
+    const ids = [];
+    const homepages = {};
+    const meta = {};
+    (packages || []).forEach(pkg => {
+      const id = this.normalizePkgIconId(pkg.id);
+      if (!id) return;
+      if (this.appIconCache.has(id)) return;
+      ids.push(id);
+      const hp = this.collectHomepageForPackage(pkg);
+      if (hp) homepages[id] = hp;
+      const installedRec = this.resolveInstalledRecordForIcon(pkg);
+      const metaSource = installedRec
+        ? { ...installedRec, id: pkg.id, name: installedRec.name || pkg.name }
+        : pkg;
+      const entry = this.buildIconMetaEntry(metaSource);
+      if (entry) meta[id] = entry;
+    });
+    return { ids, homepages, meta };
+  }
+
+  isCompleteAppIconsBatch(result, chunkIds) {
+    if (result == null || typeof result !== 'object') return false;
+    return chunkIds.length > 0 && chunkIds.every(id => Object.prototype.hasOwnProperty.call(result, id));
+  }
+
+  packagesForVisibleExploreIcons() {
+    if (this.lastCatalogSearchResults && this.lastCatalogSearchResults.length) {
+      return this.lastCatalogSearchResults;
     }
-
-    // 3. Direct Catalog Match (Local assets preserved intact)
-    const catItem = APP_CATALOG.find(c => c.id.toLowerCase() === id);
-    if (catItem && catItem.logo) {
-      return `
-        <div class="app-logo-container" title="${safeName}">
-          <img class="app-logo-img" src="${catItem.logo}" alt="${safeName}" loading="lazy"
-               onerror="this.onerror=null; this.style.display='none'; this.nextElementSibling.style.display='flex';">
-          <span class="app-logo-fallback" style="display: none; background: ${grad};">${mono}</span>
-        </div>
-      `;
+    let items = [...APP_CATALOG];
+    if (this.exploreCategory === 'popular') {
+      items = items.filter(it => (it.downloads || 0) >= 93);
+    } else if (this.exploreCategory !== 'all') {
+      items = items.filter(it => it.category === this.exploreCategory);
     }
+    if (this.exploreSearchTerm) {
+      const q = this.exploreSearchTerm;
+      items = items.filter(it =>
+        it.name.toLowerCase().includes(q) ||
+        it.id.toLowerCase().includes(q) ||
+        (it.desc || '').toLowerCase().includes(q) ||
+        (it.category || '').toLowerCase().includes(q)
+      );
+    }
+    return items;
+  }
 
-    // 4. Exact and Keyword Logo Map
-    let match = APP_LOGOS_MAP[id];
-    if (!match) {
-      for (const [key, val] of Object.entries(APP_KEYWORD_LOGOS)) {
-        if (id.includes(key) || name.includes(key)) {
-          match = val;
-          break;
-        }
+  refreshVisibleAppIconsAfterBridge() {
+    if (this.activeTab === 'explore') {
+      const container = document.getElementById('explore-results-list');
+      const packages = this.packagesForVisibleExploreIcons();
+      if (container && packages.length) {
+        this.hydrateAppIconsIn(container, packages);
+      }
+    } else if (this.activeTab === 'updates') {
+      const container = document.getElementById('updates-list');
+      if (container && this.updates && this.updates.length && container.querySelector('[data-app-icon-id]')) {
+        this.hydrateAppIconsIn(container, this.updates);
       }
     }
+  }
 
-    if (match) {
-      const logoUrl = match.url || `https://cdn.simpleicons.org/${match.slug}`;
-      return `
-        <div class="app-logo-container" title="${safeName}">
-          <img class="app-logo-img" src="${logoUrl}" alt="${safeName}" loading="lazy"
-               onerror="this.onerror=null; this.style.display='none'; this.nextElementSibling.style.display='flex';">
-          <span class="app-logo-fallback" style="display: none; background: ${grad};">${mono}</span>
-        </div>
-      `;
+  async fetchAppIconsBatch(request) {
+    const ids = (request && request.ids) || [];
+    if (!ids.length) return;
+    const chunkSize = 50;
+    for (let i = 0; i < ids.length; i += chunkSize) {
+      const chunkIds = ids.slice(i, i + chunkSize);
+      const chunkHomepages = {};
+      const chunkMeta = {};
+      chunkIds.forEach(id => {
+        if (request.homepages && request.homepages[id]) chunkHomepages[id] = request.homepages[id];
+        if (request.meta && request.meta[id]) chunkMeta[id] = request.meta[id];
+      });
+      let result;
+      try {
+        result = await this.invoke('get_app_icons', {
+          ids: chunkIds,
+          homepages: chunkHomepages,
+          meta: chunkMeta,
+        });
+      } catch (_) {
+        continue;
+      }
+      if (!this.isCompleteAppIconsBatch(result, chunkIds)) continue;
+      chunkIds.forEach(id => {
+        this.appIconCache.set(id, result[id]);
+      });
     }
+  }
 
-    // 5. Clean Fallback to Monogram (No outer container background, clean internal pill)
-    return `
-      <div class="app-logo-container" title="${safeName}">
-        <span class="app-logo-fallback" style="background: ${grad};">${mono}</span>
-      </div>
-    `;
+  applyAppIconTiles(root) {
+    const scope = root || document;
+    scope.querySelectorAll('[data-app-icon-id]').forEach(tile => {
+      const id = tile.getAttribute('data-app-icon-id');
+      if (!id || !this.appIconCache.has(id)) return;
+      const dataUrl = this.appIconCache.get(id);
+      if (dataUrl) {
+        tile.classList.remove('app-icon-tile-empty');
+        let img = tile.querySelector('.app-logo-img');
+        if (!img) {
+          img = document.createElement('img');
+          img.className = 'app-logo-img';
+          img.alt = tile.getAttribute('title') || '';
+          tile.appendChild(img);
+        }
+        if (img.getAttribute('src') !== dataUrl) img.setAttribute('src', dataUrl);
+      } else {
+        const img = tile.querySelector('.app-logo-img');
+        const shown = img && img.getAttribute('src');
+        if (shown && /^data:/i.test(shown)) return;
+        tile.classList.add('app-icon-tile-empty');
+        if (img) img.remove();
+      }
+    });
+  }
+
+  hydrateAppIconsIn(root, packages) {
+    if (!this.appIconCache) this.appIconCache = new Map();
+    const request = this.buildIconRequestFromPackages(packages);
+    if (!request.ids.length) {
+      this.applyAppIconTiles(root);
+      return;
+    }
+    this.fetchAppIconsBatch(request).then(() => this.applyAppIconTiles(root)).catch(() => {});
   }
 
   // ================= Sequential Operation Queue & Installed Detection =================
 
+  showInstalledReadingState() {
+    const container = document.getElementById('installed-list');
+    if (!container || this.installed.length > 0) return;
+    container.innerHTML = `
+      <div class="glass-placeholder">
+        <div class="placeholder-icon"><svg class="spin" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"></path><path d="M16 21h5v-5"></path></svg></div>
+        <h3>Reading apps on this PC…</h3>
+        <p>Loading programs from the registry and package manager.</p>
+      </div>
+    `;
+  }
+
   async loadInstalledSilent() {
-    try {
-      const packages = await this.invoke('get_installed', { engine: this.activeEngine });
-      if (packages && Array.isArray(packages)) {
-        this.installed = packages;
-        this.installedSet.clear();
-        if (!this.installedIconsMap) this.installedIconsMap = new Map();
-        packages.forEach(p => {
-          if (p.id) this.installedSet.add(p.id.toLowerCase().trim());
-          if (p.name) this.installedSet.add(p.name.toLowerCase().trim());
-          if (p.icon) {
-            if (p.id) this.installedIconsMap.set(p.id.toLowerCase().trim(), p.icon);
-            if (p.name) this.installedIconsMap.set(p.name.toLowerCase().trim(), p.icon);
-          }
-        });
-        this.renderExplore();
-      }
-    } catch (err) {
-      console.warn('[Quantum Updater]: Silent installed audit notice:', err);
+    if (this._installedLoadInFlight) {
+      return this._installedLoadPromise;
     }
+    if (!this.installed.length) {
+      this.showInstalledReadingState();
+    }
+    this._installedLoadInFlight = true;
+    this._installedLoadPromise = (async () => {
+      try {
+        const packages = await this.invoke('get_installed', { engine: this.activeEngine });
+        if (packages && Array.isArray(packages)) {
+          this.installed = packages;
+          this.rebuildInstalledMatchIndex(packages);
+          this.refreshExploreMarketplaceView();
+          this.renderInstalled();
+        }
+      } catch (err) {
+        console.warn('[Quantum Updater]: Silent installed audit notice:', err);
+      } finally {
+        this._installedLoadInFlight = false;
+        this._installedLoadPromise = null;
+      }
+    })();
+    return this._installedLoadPromise;
   }
 
   isPackageInstalled(pkgId, pkgName) {
-    if (!pkgId) return false;
-    const id = pkgId.toLowerCase().trim();
-    if (this.installedSet.has(id)) return true;
-    if (pkgName && this.installedSet.has(pkgName.toLowerCase().trim())) return true;
-    for (const instId of this.installedSet) {
-      if (instId === id || instId.includes(id) || id.includes(instId)) return true;
-    }
+    if (!pkgId && !pkgName) return false;
+    const id = (pkgId || '').toLowerCase().trim();
+    const name = (pkgName || '').toLowerCase().trim();
+    if (id && this.installedSet.has(id)) return true;
+    if (name && this.installedSet.has(name)) return true;
+    const normId = this.normalizeInstallKey(pkgId);
+    const normName = this.normalizeInstallKey(pkgName);
+    if (!this.installedNormSet) this.installedNormSet = new Set();
+    if (normId && this.installedNormSet.has(normId)) return true;
+    if (normName && this.installedNormSet.has(normName)) return true;
     return false;
   }
 
+  resolveInstallPackageId(pkgOrId) {
+    this._betaFallbackNote = '';
+    let row = null;
+    let normalId = '';
+
+    if (pkgOrId && typeof pkgOrId === 'object') {
+      row = pkgOrId;
+      normalId = row.id ? String(row.id) : '';
+    } else if (pkgOrId != null && pkgOrId !== '') {
+      normalId = String(pkgOrId);
+    }
+
+    const lookup = (row && row.id) ? String(row.id) : normalId;
+    if (lookup) {
+      const lower = lookup.toLowerCase();
+      const catalogRow = APP_CATALOG.find(c => c.id && c.id.toLowerCase() === lower);
+      if (catalogRow) row = catalogRow;
+    }
+    if (!normalId && row && row.id) normalId = String(row.id);
+
+    let allowBeta = false;
+    if (this.settings) {
+      allowBeta = !!this.settings.allow_beta;
+    } else {
+      allowBeta = !!document.getElementById('pref-allow-beta')?.checked;
+    }
+
+    if (!allowBeta) return normalId;
+
+    const testId = row && (row.beta_id || row.test_id);
+    if (testId) return String(testId);
+
+    this._betaFallbackNote = 'No test version is listed. The normal version will be used.';
+    return normalId;
+  }
+
+  refreshExploreMarketplaceView() {
+    if (this.activeTab !== 'explore') return;
+    if (this.exploreLiveSearchQuery && this.lastCatalogSearchResults && this.lastCatalogSearchResults.length) {
+      this.renderCatalogSearchResults(this.exploreLiveSearchQuery, this.lastCatalogSearchResults);
+    } else {
+      this.exploreLiveSearchQuery = '';
+      this.renderExplore();
+    }
+  }
+
   enqueueTask(task) {
+    if (task && (task.type === 'install' || task.type === 'upgrade') && task.pkgId) {
+      task.pkgId = this.resolveInstallPackageId(task.pkgId);
+      if (this._betaFallbackNote) {
+        this.showToast(this._betaFallbackNote, 'info');
+        this._betaFallbackNote = '';
+      }
+    }
     task.id = Date.now() + Math.random().toString(36).substr(2, 5);
     task.status = 'pending';
     task.timestamp = new Date();
@@ -1611,88 +2267,199 @@ class QuantumUpdaterApp {
     this.updateGlobalDock();
     this.renderQueueDrawer();
 
-    if (!this.isProcessingQueue) {
-      this.processNextQueueItem();
+    this.kickOperationQueue();
+  }
+
+  kickOperationQueue() {
+    this.fillQueueDownloadSlots();
+    this.startNextQueueRunner();
+    this.syncQueueProcessingFlag();
+    this.updateGlobalDock();
+    this.renderQueueDrawer();
+  }
+
+  syncQueueProcessingFlag() {
+    const active = this.operationQueue.some(t =>
+      t.status === 'pending' || t.status === 'downloading' || t.status === 'running'
+    );
+    this.isProcessingQueue = active;
+    if (!this.operationQueue.some(t => t.status === 'running')) {
+      const stillActive = this.operationQueue.some(t =>
+        t.status === 'pending' || t.status === 'downloading'
+      );
+      if (!stillActive) this.currentQueueTask = null;
     }
   }
 
-  async processNextQueueItem() {
-    const nextTask = this.operationQueue.find(t => t.status === 'pending');
+  fillQueueDownloadSlots() {
+    for (const task of this.operationQueue) {
+      if (task.status !== 'pending' || task.type !== 'upgrade') continue;
+      if (task.prefetchStarted) continue;
+      task.prefetchStarted = true;
+      task.prefetchDone = true;
+    }
+    let downloadingCount = this.operationQueue.filter(t => t.status === 'downloading').length;
+    const maxDownloads = 3;
+    for (const task of this.operationQueue) {
+      if (downloadingCount >= maxDownloads) break;
+      if (task.status !== 'pending' || task.type !== 'install') continue;
+      if (task.prefetchStarted) continue;
+      task.prefetchStarted = true;
+      task.status = 'downloading';
+      downloadingCount++;
+      this.runQueuePrefetch(task);
+    }
+  }
+
+  async runQueuePrefetch(task) {
+    try {
+      const res = await this.invoke('prefetch_package', { packageId: task.pkgId });
+      if (res && res.success === false) {
+        task.prefetchDone = true;
+      } else {
+        task.prefetchDone = true;
+      }
+    } catch (_err) {
+      task.prefetchDone = true;
+    }
+    if (task.status === 'downloading') {
+      task.status = 'pending';
+    }
+    this.fillQueueDownloadSlots();
+    this.startNextQueueRunner();
+    this.syncQueueProcessingFlag();
+    this.updateGlobalDock();
+    this.renderQueueDrawer();
+  }
+
+  findNextRunnableQueueTask() {
+    if (this.operationQueue.some(t => t.status === 'running')) return null;
+    const uninstall = this.operationQueue.find(t => t.status === 'pending' && t.type === 'uninstall');
+    if (uninstall) return uninstall;
+    return this.operationQueue.find(t =>
+      t.status === 'pending' &&
+      (t.type === 'install' || t.type === 'upgrade') &&
+      t.prefetchDone
+    ) || null;
+  }
+
+  startNextQueueRunner() {
+    if (this._queueRunnerBusy) return;
+    const nextTask = this.findNextRunnableQueueTask();
     if (!nextTask) {
-      this.isProcessingQueue = false;
-      this.currentQueueTask = null;
-      this.updateGlobalDock();
+      this.syncQueueProcessingFlag();
       return;
     }
+    this._queueRunnerBusy = true;
+    this.executeQueueTask(nextTask);
+  }
 
+  async executeQueueTask(task) {
     this.isProcessingQueue = true;
-    this.currentQueueTask = nextTask;
-    nextTask.status = 'running';
+    this.currentQueueTask = task;
+    task.status = 'running';
     this.updateGlobalDock();
     this.renderQueueDrawer();
 
     const typeLabels = { install: 'Installing', upgrade: 'Upgrading', uninstall: 'Uninstalling' };
-    const actionLabel = typeLabels[nextTask.type] || 'Processing';
-    this.appendLog(`\n[Queue Manager]: ${actionLabel} ${nextTask.name} (${nextTask.pkgId})...\n`);
+    const actionLabel = typeLabels[task.type] || 'Processing';
+    this.appendLog(`\n[Queue Manager]: ${actionLabel} ${task.name} (${task.pkgId})...\n`);
 
+    let success = false;
     try {
-      let success = false;
-      if (nextTask.type === 'install') {
-        const res = await this.invoke('install_package', { packageId: nextTask.pkgId, engine: this.activeEngine });
+      if (task.type === 'install') {
+        const res = await this.invoke('install_package', { packageId: task.pkgId, engine: this.activeEngine });
         success = res && res.success !== false;
-      } else if (nextTask.type === 'upgrade') {
-        const res = await this.invoke('upgrade_packages', { packageIds: [nextTask.pkgId], engine: this.activeEngine });
+      } else if (task.type === 'upgrade') {
+        const res = await this.invoke('upgrade_packages', { packageIds: [task.pkgId], engine: this.activeEngine });
         success = res && res.length > 0 && res[0].success !== false;
-      } else if (nextTask.type === 'uninstall') {
-        const res = await this.invoke('uninstall_package', { packageId: nextTask.pkgId, engine: this.activeEngine });
-        success = res === true || res === null;
+        if (success && res[0] && this.statusNeedsRestart(res[0])) {
+          this.showRestartRequired(
+            `${task.name} finished, but Windows needs a restart. This app will not restart the PC.`
+          );
+        }
+      } else if (task.type === 'uninstall') {
+        const res = await this.invoke('uninstall_package', { packageId: task.pkgId, engine: this.activeEngine });
+        success = res && res.success === true;
+        if (success && res && this.statusNeedsRestart(res)) {
+          this.showRestartRequired(
+            `${task.name} was removed, but Windows may need a restart. This app will not restart the PC.`
+          );
+        }
       }
 
       if (success) {
-        nextTask.status = 'success';
-        if (nextTask.type === 'install' || nextTask.type === 'upgrade') {
-          this.installedSet.add(nextTask.pkgId.toLowerCase().trim());
-          if (nextTask.name) this.installedSet.add(nextTask.name.toLowerCase().trim());
-        } else if (nextTask.type === 'uninstall') {
-          this.installedSet.delete(nextTask.pkgId.toLowerCase().trim());
+        task.status = 'success';
+        if (task.type === 'install' || task.type === 'upgrade') {
+          this.installedSet.add(task.pkgId.toLowerCase().trim());
+          if (task.name) this.installedSet.add(task.name.toLowerCase().trim());
+        } else if (task.type === 'uninstall') {
+          this.installedSet.delete(task.pkgId.toLowerCase().trim());
         }
-        this.showToast(`Successfully completed: ${nextTask.name}`, 'success');
-        this.appendLog(`[Queue Manager]: Successfully finished ${nextTask.name}.\n`);
+        this.showToast(`Successfully completed: ${task.name}`, 'success');
+        this.appendLog(`[Queue Manager]: Successfully finished ${task.name}.\n`);
       } else {
-        nextTask.status = 'failed';
-        this.showToast(`Notice: ${nextTask.name} finished with status note`, 'error');
-        this.appendLog(`[Queue Manager]: Notice on ${nextTask.name}.\n`);
+        task.status = 'failed';
+        this.showToast(`Notice: ${task.name} finished with status note`, 'error');
+        this.appendLog(`[Queue Manager]: Notice on ${task.name}.\n`);
       }
     } catch (err) {
-      nextTask.status = 'failed';
-      nextTask.error = String(err);
-      this.showToast(`Failed: ${nextTask.name} - ${err}`, 'error');
+      task.status = 'failed';
+      task.error = String(err);
+      this.showToast(`Failed: ${task.name} - ${err}`, 'error');
       this.appendLog(`[Queue Manager Error]: ${err}\n`);
     }
 
     this.renderExplore();
+    this._queueRunnerBusy = false;
+    this.fillQueueDownloadSlots();
+    this.syncQueueProcessingFlag();
     this.updateGlobalDock();
     this.renderQueueDrawer();
+    setTimeout(() => this.startNextQueueRunner(), 400);
+  }
 
-    setTimeout(() => this.processNextQueueItem(), 400);
+  processNextQueueItem() {
+    this.kickOperationQueue();
   }
 
   updateGlobalDock() {
     const dock = document.getElementById('global-operation-dock');
     if (!dock) return;
 
-    const pendingOrRunning = this.operationQueue.filter(t => t.status === 'pending' || t.status === 'running');
+    const activeTasks = this.operationQueue.filter(t =>
+      t.status === 'pending' || t.status === 'downloading' || t.status === 'running'
+    );
+    const downloadingCount = this.operationQueue.filter(t => t.status === 'downloading').length;
+    const installingCount = this.operationQueue.filter(t => t.status === 'running').length;
     const countBadge = document.getElementById('dock-queue-count');
-    if (countBadge) countBadge.textContent = pendingOrRunning.length;
+    if (countBadge) countBadge.textContent = activeTasks.length;
 
-    if (this.currentQueueTask && this.isProcessingQueue) {
+    if (this.currentQueueTask && this.currentQueueTask.status === 'running') {
       dock.style.display = 'flex';
       const dot = document.getElementById('dock-pulse-dot');
       if (dot) { dot.className = 'dock-pulse-dot'; }
       const title = document.getElementById('dock-status-title');
-      if (title) title.textContent = `${this.currentQueueTask.type.toUpperCase()}: ${this.currentQueueTask.name}`;
+      if (title) {
+        const runLabel = this.currentQueueTask.type === 'install' ? 'Installing'
+          : this.currentQueueTask.type === 'upgrade' ? 'Upgrading' : 'Uninstalling';
+        title.textContent = `${runLabel}: ${this.currentQueueTask.name}`;
+      }
       const ticker = document.getElementById('dock-status-ticker');
-      if (ticker) ticker.textContent = `Processing package ${this.currentQueueTask.pkgId} via ${this.activeEngine.toUpperCase()}... (${pendingOrRunning.length} remaining)`;
+      if (ticker) {
+        const dlPart = downloadingCount > 0 ? `${downloadingCount} downloading` : 'No active downloads';
+        ticker.textContent = `${dlPart} · ${installingCount} installing · ${activeTasks.length} in queue`;
+      }
+    } else if (downloadingCount > 0 || activeTasks.length > 0) {
+      dock.style.display = 'flex';
+      const dot = document.getElementById('dock-pulse-dot');
+      if (dot) { dot.className = 'dock-pulse-dot'; }
+      const title = document.getElementById('dock-status-title');
+      if (title) title.textContent = downloadingCount > 0 ? 'Downloading packages' : 'Queue active';
+      const ticker = document.getElementById('dock-status-ticker');
+      if (ticker) {
+        ticker.textContent = `${downloadingCount} downloading · ${installingCount} installing · ${activeTasks.length} remaining`;
+      }
     } else if (this.operationQueue.length > 0) {
       dock.style.display = 'flex';
       const dot = document.getElementById('dock-pulse-dot');
@@ -1702,7 +2469,9 @@ class QuantumUpdaterApp {
       const ticker = document.getElementById('dock-status-ticker');
       if (ticker) ticker.textContent = `All ${this.operationQueue.length} operations completed.`;
       setTimeout(() => {
-        if (!this.isProcessingQueue && this.operationQueue.every(t => t.status !== 'pending' && t.status !== 'running')) {
+        if (!this.isProcessingQueue && this.operationQueue.every(t =>
+          t.status !== 'pending' && t.status !== 'running' && t.status !== 'downloading'
+        )) {
           dock.style.display = 'none';
         }
       }, 5000);
@@ -1737,20 +2506,29 @@ class QuantumUpdaterApp {
     let html = '';
     [...this.operationQueue].reverse().forEach(task => {
       const isRunning = task.status === 'running';
+      const isDownloading = task.status === 'downloading';
+      const statusLabel = task.status === 'running'
+        ? (task.type === 'install' ? 'installing' : task.type === 'upgrade' ? 'upgrading' : 'uninstalling')
+        : task.status === 'downloading' ? 'downloading' : task.status;
       html += `
-        <div class="queue-item-row ${isRunning ? 'running' : ''}">
+        <div class="queue-item-row ${isRunning || isDownloading ? 'running' : ''}">
           <div class="queue-item-left">
+            ${this.getAppLogoHtml(task.pkgId, task.name)}
             <span class="queue-item-name" title="${this.escapeHtml(task.pkgId)}">${this.escapeHtml(task.name)}</span>
           </div>
-          <span class="queue-item-status-pill ${task.status}">${task.status}</span>
+          <span class="queue-item-status-pill ${task.status}">${statusLabel}</span>
         </div>
       `;
     });
     list.innerHTML = html;
+    const queuePkgs = this.operationQueue.map(t => ({ id: t.pkgId, name: t.name }));
+    this.hydrateAppIconsIn(list, queuePkgs);
   }
 
   clearFinishedQueue() {
-    this.operationQueue = this.operationQueue.filter(t => t.status === 'pending' || t.status === 'running');
+    this.operationQueue = this.operationQueue.filter(t =>
+      t.status === 'pending' || t.status === 'running' || t.status === 'downloading'
+    );
     this.renderQueueDrawer();
     this.updateGlobalDock();
   }
@@ -1785,67 +2563,76 @@ class QuantumUpdaterApp {
   // ================= Updates Logic =================
 
   async scanUpdates() {
-    if (this.isScanning || this.isUpdating) return;
-    this.isScanning = true;
-
-    const btnScan = document.getElementById('btn-scan');
-    const btnSync = document.getElementById('btn-sync');
-    const syncIcon = document.getElementById('sync-icon-svg');
-    const syncText = document.getElementById('sync-btn-text');
-
-    if (btnScan) {
-      btnScan.disabled = true;
-      btnScan.innerHTML = `<svg class="spin" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"></path><path d="M16 21h5v-5"></path></svg> <span>Syncing...</span>`;
+    if (this.isUpdating) return;
+    const store = this.scanStore;
+    if (store && store.isScanning('catalog-updates')) {
+      await this.cancelUpdatesScan();
+      return;
     }
-    if (btnSync) btnSync.classList.add('syncing');
-    if (syncIcon) syncIcon.classList.add('spin');
-    if (syncText) syncText.textContent = 'Syncing...';
+    if (store && !store.updatesReady() && !store.job('catalog-updates').cached) {
+      this.showToast('Waiting for the update catalog scan…', 'info');
+      return;
+    }
 
-    this.setIslandState(true, 'Syncing Application Catalog...', 20, 'Reading installed applications...');
-    this.appendLog(`[Quantum Updater]: Initiating secure catalog sync & system audit...\n`);
-
-    const tick1 = setTimeout(() => {
-      if (this.isScanning) this.setIslandState(true, 'Auditing Installed Software...', 55, 'Checking for latest software releases...');
-    }, 600);
-    const tick2 = setTimeout(() => {
-      if (this.isScanning) this.setIslandState(true, 'Resolving Updates & Patches...', 80, 'Finalizing sync catalog...');
-    }, 1300);
+    this.isScanning = true;
+    this.scanError = '';
+    this.renderUpdates();
+    this.appendLog('[Quantum Updater]: Starting catalog-updates scan…\n');
 
     try {
-      const scanPromise = this.invoke('scan_updates', { engine: this.activeEngine });
-      const timeoutPromise = new Promise((_, reject) =>
-        setTimeout(() => reject(new Error('Update sync timeout reached')), 15000)
-      );
-      const result = await Promise.race([scanPromise, timeoutPromise]);
-      if (result && Array.isArray(result)) {
-        this.updates = result;
+      if (store) {
+        const job = store.job('catalog-updates');
+        const forceRecheck = !!(job.cached || job.status === 'ready');
+        if (forceRecheck) this.skipStartupGateForForcedRescan();
+        await store.startJob('catalog-updates', forceRecheck);
+        if (job.cached && store.updatesReady()) {
+          await this.refreshUpdatesFromStore(true);
+        }
+        this.setIslandState(true, 'Checking for updates…', job.percent > 0 ? job.percent : null, 'Catalog scan in progress');
       } else {
-        this.updates = [];
+        const result = await this.invoke('scan_updates', { engine: this.activeEngine });
+        if (Array.isArray(result)) {
+          this.updates = result;
+          this.scanError = '';
+        } else {
+          this.updates = [];
+          this.scanError = 'The update scan returned nothing.';
+        }
+        this.selectedIds.clear();
+        this.isScanning = false;
+        this.renderUpdates();
+        this.setIslandState(false, this.scanError ? 'Scan failed' : 'Sync complete', 100, this.formatUpdatesSummaryMessage());
       }
-      this.selectedIds.clear();
-      this.renderUpdates();
-      this.setIslandState(false, 'Sync Complete', 100, `Found ${this.updates.length} applications with available updates.`);
     } catch (e) {
-      console.warn('Sync updates notice:', e);
-      this.appendLog(`[Quantum Updater]: Sync completed. ${e.message || e}\n`);
-      if (!this.updates) this.updates = [];
-      this.renderUpdates();
-      this.setIslandState(false, 'System Synchronized', 100, 'Sync complete. System ready.');
-    } finally {
-      clearTimeout(tick1);
-      clearTimeout(tick2);
+      const message = (e && e.message) ? e.message : 'The update scan failed.';
+      this.scanError = message;
       this.isScanning = false;
-      if (btnScan) {
-        btnScan.disabled = false;
-        btnScan.innerHTML = `
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"></path><path d="M16 21h5v-5"></path></svg>
-          <span>Scan for Updates</span>
-        `;
-      }
-      if (btnSync) btnSync.classList.remove('syncing');
-      if (syncIcon) syncIcon.classList.remove('spin');
-      if (syncText) syncText.textContent = 'Sync';
+      this.renderUpdates();
+      this.setIslandState(false, 'Scan failed', 0, message);
     }
+    if (this.scanStore) this.applyReadinessGates();
+  }
+
+  syncUpdatesPageSummary(text) {
+    const pageSummary = document.getElementById('updates-page-summary');
+    if (pageSummary && text) pageSummary.textContent = text;
+  }
+
+  formatUpdatesSummaryMessage() {
+    if (this.scanStore && this.scanStore.isScanning('catalog-updates')) {
+      return 'Scan still running — checking for updates...';
+    }
+    if (this.isScanning) {
+      return 'Scan still running — checking for updates...';
+    }
+    if (this.scanError) {
+      return 'Scan did not finish';
+    }
+    if (this.updates.length === 0) {
+      return 'Every installed application is up to date.';
+    }
+    const n = this.updates.length;
+    return n === 1 ? '1 app has a newer version ready.' : `${n} apps have a newer version ready.`;
   }
 
   renderUpdates(filteredList = null) {
@@ -1862,10 +2649,17 @@ class QuantumUpdaterApp {
 
     if (updatesVal) updatesVal.textContent = this.updates.length;
     if (updatesSub) {
-      updatesSub.textContent = this.updates.length > 0 
-        ? `${this.updates.length} updates ready to install` 
-        : 'All software up to date';
+      if (this.isScanning) {
+        updatesSub.textContent = 'Scan still running — checking for updates...';
+      } else if (this.scanError) {
+        updatesSub.textContent = 'Update scan did not finish';
+      } else {
+        updatesSub.textContent = this.updates.length > 0
+          ? `${this.updates.length} updates ready to install`
+          : 'All software up to date';
+      }
     }
+    this.syncUpdatesPageSummary(this.formatUpdatesSummaryMessage());
 
     if (selVal) selVal.textContent = this.selectedIds.size;
     if (selSub) {
@@ -1878,23 +2672,48 @@ class QuantumUpdaterApp {
     if (healthSub) healthSub.innerHTML = '<span style="display:inline-block; width:6px; height:6px; border-radius:50%; background:#10B981; margin-right:4px;"></span>Protected & verified';
 
     const navBadge = document.getElementById('nav-update-count');
-    if (this.updates.length > 0) {
-      navBadge.style.display = 'inline-block';
-      navBadge.textContent = this.updates.length;
-    } else {
-      navBadge.style.display = 'none';
+    if (navBadge) {
+      if (this.updates.length > 0) {
+        navBadge.style.display = 'inline-block';
+        navBadge.textContent = this.updates.length;
+      } else {
+        navBadge.style.display = 'none';
+      }
     }
 
     this.updateActionButtons();
 
-    if (!list.length) {
+    if (!container) return;
+
+    if (!this.updates.length && this.isScanning) {
       container.innerHTML = `
         <div class="glass-placeholder">
-          <div class="placeholder-icon"><svg width="38" height="38" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg></div>
-          <h3>System Up-to-Date</h3>
-          <p>Great news! All installed applications monitored by this engine are currently on the latest version.</p>
+          <div class="placeholder-icon"><svg class="spin" width="38" height="38" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"></path><path d="M16 21h5v-5"></path></svg></div>
+          <h3>Scanning for Updates</h3>
+          <p>Still checking installed software against the catalog.</p>
         </div>
       `;
+      return;
+    }
+
+    if (!list.length) {
+      if (this.scanError) {
+        container.innerHTML = `
+          <div class="glass-placeholder">
+            <div class="placeholder-icon"><svg width="38" height="38" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg></div>
+            <h3>Scan did not finish</h3>
+            <p>${this.escapeHtml(this.scanError)}</p>
+          </div>
+        `;
+      } else {
+        container.innerHTML = `
+          <div class="glass-placeholder">
+            <div class="placeholder-icon"><svg width="38" height="38" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg></div>
+            <h3>System Up-to-Date</h3>
+            <p>Great news! All installed applications monitored by this engine are currently on the latest version.</p>
+          </div>
+        `;
+      }
       return;
     }
 
@@ -1902,8 +2721,16 @@ class QuantumUpdaterApp {
     list.forEach(pkg => {
       const isChecked = this.selectedIds.has(pkg.id);
       const logoHtml = this.getAppLogoHtml(pkg.id, pkg.name);
-      const sizeStr = pkg.size_str || (pkg.size_bytes ? `${(pkg.size_bytes / (1024 * 1024)).toFixed(1)} MB` : '48.2 MB');
-      const eteStr = pkg.ete_str || (pkg.ete_seconds ? `ETE: ~${pkg.ete_seconds}s` : 'ETE: ~6s');
+      const savedIssue = this.loadUpdateIssues()[pkg.id];
+      const issueHtml = savedIssue ? this.renderUpdateIssueNote(pkg, savedIssue) : '';
+      const sizeStr = pkg.size_str || (pkg.size_bytes ? `${(pkg.size_bytes / (1024 * 1024)).toFixed(1)} MB` : '');
+      const eteStr = pkg.ete_str || (pkg.ete_seconds ? `ETE: ~${pkg.ete_seconds}s` : '');
+      const sizePill = sizeStr
+        ? `<span class="meta-pill size-pill" title="Download size"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg><span>${this.escapeHtml(sizeStr)}</span></span>`
+        : '';
+      const etePill = eteStr
+        ? `<span class="meta-pill ete-pill" title="Estimated time"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg><span>${this.escapeHtml(eteStr)}</span></span>`
+        : '';
 
       html += `
         <div class="package-card ${isChecked ? 'selected' : ''}" id="card-${pkg.id}" onclick="app.handleCardClick('${pkg.id}', event)">
@@ -1921,20 +2748,14 @@ class QuantumUpdaterApp {
                   <span class="version-pill">v${this.escapeHtml(pkg.installed_version || '?')}</span>
                   <span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg></span>
                   <span class="version-pill version-upgrade">v${this.escapeHtml(pkg.available_version || 'Latest')}</span>
-                  <span class="meta-pill size-pill" title="Download Payload Size">
-                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
-                    <span>${this.escapeHtml(sizeStr)}</span>
-                  </span>
-                  <span class="meta-pill ete-pill" title="Estimated Time Remaining">
-                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
-                    <span>${this.escapeHtml(eteStr)}</span>
-                  </span>
+                  ${sizePill}
+                  ${etePill}
                 </div>
               </div>
             </div>
             <div class="package-right" onclick="event.stopPropagation()">
-              <button class="glass-btn btn-primary btn-sm" id="btn-update-single-${pkg.id}" onclick="app.updateSinglePackage('${pkg.id}')">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg> Upgrade
+              <button class="glass-btn btn-secondary btn-sm" id="btn-update-single-${pkg.id}" onclick="app.updateSinglePackage('${pkg.id}')" ${(!this.scanStore || this.scanStore.updatesReady()) && !this.isUpdating ? '' : 'disabled'}>
+                ${this.scanStore && !this.scanStore.updatesReady() ? 'Waiting…' : 'Update'}
               </button>
             </div>
           </div>
@@ -1944,22 +2765,23 @@ class QuantumUpdaterApp {
               <div class="transfer-metric-group">
                 <span class="speed-pulse-indicator"></span>
                 <span class="transfer-speed-label">SPEED:</span>
-                <span class="transfer-speed-val" id="hud-speed-${pkg.id}">0.0 MB/s</span>
+                <span class="transfer-speed-val" id="hud-speed-${pkg.id}"></span>
               </div>
               <div class="transfer-metric-group">
-                <span class="transfer-bytes-val" id="hud-bytes-${pkg.id}">0.0 MB / ${this.escapeHtml(sizeStr)}</span>
-                <span class="transfer-pct-pill" id="hud-pct-${pkg.id}">0%</span>
+                <span class="transfer-bytes-val" id="hud-bytes-${pkg.id}">— / —</span>
+                <span class="transfer-pct-pill" id="hud-pct-${pkg.id}"></span>
               </div>
               <div class="transfer-metric-group">
                 <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
-                <span class="transfer-ete-val" id="hud-ete-${pkg.id}">${this.escapeHtml(eteStr)}</span>
+                <span class="transfer-ete-val" id="hud-ete-${pkg.id}"></span>
               </div>
             </div>
             <div class="transfer-status-line">
               <span class="transfer-ticker-dot"></span>
-              <span class="transfer-status-text" id="hud-status-${pkg.id}">Connecting to official repository CDN...</span>
+              <span class="transfer-status-text" id="hud-status-${pkg.id}">Updating…</span>
             </div>
           </div>
+          ${issueHtml}
           <div class="card-inline-progress">
             <div class="card-inline-progress-fill" id="card-prog-${pkg.id}" style="width: 0%;"></div>
           </div>
@@ -1968,6 +2790,7 @@ class QuantumUpdaterApp {
     });
 
     container.innerHTML = html;
+    this.hydrateAppIconsIn(container, list);
   }
 
   handleCardClick(id, event) {
@@ -2016,10 +2839,15 @@ class QuantumUpdaterApp {
 
     if (updatesVal) updatesVal.textContent = this.updates.length;
     if (updatesSub) {
-      updatesSub.textContent = this.updates.length > 0
-        ? `${this.updates.length} updates pending`
-        : 'All packages up-to-date';
+      if (this.scanError) {
+        updatesSub.textContent = 'Update scan did not finish';
+      } else {
+        updatesSub.textContent = this.updates.length > 0
+          ? `${this.updates.length} updates pending`
+          : 'All packages up-to-date';
+      }
     }
+    this.syncUpdatesPageSummary(this.formatUpdatesSummaryMessage());
 
     if (selVal) selVal.textContent = this.selectedIds.size;
     if (selSub) {
@@ -2046,17 +2874,22 @@ class QuantumUpdaterApp {
 
     if (!btnAction || !btnText) return;
 
-    if (!this.updates.length || this.isUpdating) {
+    const updatesReady = !this.scanStore || this.scanStore.updatesReady();
+    if (!this.updates.length || this.isUpdating || !updatesReady) {
       btnAction.disabled = true;
-      btnText.textContent = this.isUpdating ? 'Updating in Progress...' : 'Update All Packages';
+      if (!updatesReady && !this.isUpdating) {
+        btnText.textContent = 'Waiting for catalog…';
+      } else {
+        btnText.textContent = this.isUpdating ? 'Updating...' : 'Update all';
+      }
       return;
     }
 
     btnAction.disabled = false;
     if (this.selectedIds.size === 0) {
-      btnText.textContent = `Update All Packages (${this.updates.length})`;
+      btnText.textContent = `Update all (${this.updates.length})`;
     } else {
-      btnText.textContent = `Update Selected (${this.selectedIds.size})`;
+      btnText.textContent = `Update selected (${this.selectedIds.size})`;
     }
   }
 
@@ -2080,6 +2913,7 @@ class QuantumUpdaterApp {
 
   async startUpdateAction() {
     if (this.isUpdating) return;
+    if (this.scanStore && !this.scanStore.updatesReady()) return;
     const targetIds = this.selectedIds.size > 0
       ? Array.from(this.selectedIds)
       : this.updates.map(p => p.id);
@@ -2090,10 +2924,16 @@ class QuantumUpdaterApp {
 
   async updateSinglePackage(pkgId) {
     if (this.isUpdating) return;
-    await this.runBatchUpgrade([pkgId]);
+    if (this.scanStore && !this.scanStore.updatesReady()) return;
+    const resolvedId = this.resolveInstallPackageId(pkgId);
+    if (this._betaFallbackNote) {
+      this.showToast(this._betaFallbackNote, 'info');
+      this._betaFallbackNote = '';
+    }
+    await this.runBatchUpgrade([pkgId], resolvedId);
   }
 
-  async runBatchUpgrade(packageIds) {
+  async runBatchUpgrade(packageIds, resolvedBridgeId) {
     if (this.isUpdating || !packageIds.length) return;
     this.isUpdating = true;
     this.updateActionButtons();
@@ -2102,19 +2942,27 @@ class QuantumUpdaterApp {
     this.appendLog(`\n======================================================\n`);
     this.appendLog(`[Quantum Updater]: Starting live update for ${total} package(s)...\n`);
 
-    this.setIslandState(true, `Upgrading 1 of ${total}`, 0, `Initializing update engine...`);
+    this.setIslandState(true, `Upgrading 1 of ${total}`, null, `Initializing update engine...`);
 
     let completed = 0;
     let failed = 0;
+    let toastedBetaFallback = !!resolvedBridgeId;
 
     for (let i = 0; i < packageIds.length; i++) {
       const pid = packageIds[i];
       this.currentUpdatingPkgId = pid;
       const pkgObj = this.updates.find(p => p.id === pid);
       const pkgDisplayName = pkgObj ? pkgObj.name : pid;
-      const stepPct = Math.round(((i + 0.1) / total) * 100);
+      const bridgeId = (i === 0 && resolvedBridgeId) ? resolvedBridgeId : this.resolveInstallPackageId(pkgObj || pid);
+      if (this._betaFallbackNote) {
+        if (!toastedBetaFallback) {
+          this.showToast(this._betaFallbackNote, 'info');
+          toastedBetaFallback = true;
+        }
+        this._betaFallbackNote = '';
+      }
 
-      this.setIslandState(true, `Upgrading ${i + 1} of ${total}: ${pkgDisplayName}`, stepPct, `Running silent update for ${pkgDisplayName}...`);
+      this.setIslandState(true, `Upgrading ${i + 1} of ${total}: ${pkgDisplayName}`, null, `Running silent update for ${pkgDisplayName}...`);
       this.appendLog(`\n[${i + 1}/${total}] Updating ${pkgDisplayName} (${pid})...\n`);
 
       // Set card to live updating state in-place
@@ -2146,7 +2994,7 @@ class QuantumUpdaterApp {
 
       try {
         const statuses = await this.invoke('upgrade_packages', {
-          packageIds: [pid],
+          packageIds: [bridgeId],
           engine: this.activeEngine
         });
 
@@ -2162,6 +3010,11 @@ class QuantumUpdaterApp {
         if (status && status.success) {
           completed++;
           this.finishCardTelemetry(pid, true);
+          if (this.statusNeedsRestart(status)) {
+            this.showRestartRequired(
+              `${pkgDisplayName} finished, but Windows needs a restart. This app will not restart the PC.`
+            );
+          }
 
           // Visual state: Success on card
           if (card) {
@@ -2190,6 +3043,7 @@ class QuantumUpdaterApp {
             `;
           }
 
+          this.clearUpdateIssue(pid);
           this.appendLog(`[OK] Successfully upgraded ${pkgDisplayName} (${pid})\n`);
 
           // Live state decrement WITHOUT resetting or reloading the UI
@@ -2212,7 +3066,9 @@ class QuantumUpdaterApp {
 
         } else {
           failed++;
-          this.finishCardTelemetry(pid, false);
+          const noticeMsg = this.resolveUpgradeNoticeMessage(status);
+          this.finishCardTelemetry(pid, false, status);
+          this.setIslandTicker(noticeMsg);
           if (card) {
             card.classList.remove('card-updating');
             const fill = card.querySelector('.card-inline-progress-fill');
@@ -2224,11 +3080,15 @@ class QuantumUpdaterApp {
             singleBtn.innerHTML = `Retry`;
             singleBtn.onclick = () => this.updateSinglePackage(pid);
           }
-          this.appendLog(`[NOTICE] Upgrade finished with note: ${(status && status.message) || 'Check log'}\n`);
+          this.rememberUpdateIssue(pkgObj || { id: pid, name: pkgDisplayName }, status);
+          this.appendLog(`[NOTICE] Upgrade finished with note: ${noticeMsg}\n`);
+          this.renderUpdates();
         }
       } catch (e) {
         failed++;
-        this.finishCardTelemetry(pid, false);
+        const noticeMsg = this.resolveUpgradeNoticeMessage({ message: String(e) });
+        this.finishCardTelemetry(pid, false, { message: String(e) });
+        this.setIslandTicker(noticeMsg);
         if (card) {
           card.classList.remove('card-updating');
           const fill = card.querySelector('.card-inline-progress-fill');
@@ -2240,7 +3100,9 @@ class QuantumUpdaterApp {
           singleBtn.innerHTML = `Retry`;
           singleBtn.onclick = () => this.updateSinglePackage(pid);
         }
+        this.rememberUpdateIssue(pkgObj || { id: pid, name: pkgDisplayName }, { message: String(e) });
         this.appendLog(`[ERROR] Failed ${pid}: ${e}\n`);
+        this.renderUpdates();
       }
     }
 
@@ -2259,6 +3121,42 @@ class QuantumUpdaterApp {
 
   // ================= In-Card Live Transfer Speed & ETE Telemetry =================
 
+  resolveUpgradeNoticeMessage(status) {
+    if (status && typeof status.message === 'string' && status.message.trim()) {
+      return status.message.trim();
+    }
+    return 'Update did not finish.';
+  }
+
+  statusNeedsRestart(status) {
+    if (!status || typeof status !== 'object') return false;
+    const code = Number(status.exit_code);
+    // winget: 3010 success+reboot, -1978335181 reboot required
+    if (code === 3010 || code === -1978335181) return true;
+    const msg = String(status.message || status.reason || '').toLowerCase();
+    return msg.includes('restart') || msg.includes('reboot');
+  }
+
+  showRestartRequired(detail) {
+    this._restartRequired = true;
+    const banner = document.getElementById('restart-required-banner');
+    const detailEl = document.getElementById('restart-required-detail');
+    if (detailEl && detail) detailEl.textContent = detail;
+    if (banner) banner.hidden = false;
+    this.setIslandTicker('Restart this PC to finish.');
+  }
+
+  dismissRestartRequired() {
+    this._restartRequired = false;
+    const banner = document.getElementById('restart-required-banner');
+    if (banner) banner.hidden = true;
+  }
+
+  setIslandTicker(text) {
+    const islandTicker = document.getElementById('island-status-ticker');
+    if (islandTicker && text) islandTicker.textContent = text;
+  }
+
   startCardTelemetry(pid, pkgObj) {
     this.cardTelemetryIntervals = this.cardTelemetryIntervals || {};
     if (this.cardTelemetryIntervals[pid]) {
@@ -2268,6 +3166,7 @@ class QuantumUpdaterApp {
 
     const card = document.getElementById(`card-${pid}`);
     const hud = document.getElementById(`hud-${pid}`);
+    const hudRow = hud ? hud.querySelector('.transfer-hud-row') : null;
     const speedEl = document.getElementById(`hud-speed-${pid}`);
     const bytesEl = document.getElementById(`hud-bytes-${pid}`);
     const pctEl = document.getElementById(`hud-pct-${pid}`);
@@ -2276,21 +3175,13 @@ class QuantumUpdaterApp {
     const progFill = document.getElementById(`card-prog-${pid}`);
 
     if (hud) hud.style.display = 'flex';
+    if (hudRow) hudRow.style.display = '';
     if (card) card.classList.add('card-updating');
 
     const totalBytes = (pkgObj && pkgObj.size_bytes && pkgObj.size_bytes > 0)
       ? pkgObj.size_bytes
-      : 54 * 1024 * 1024;
-    const totalStr = (pkgObj && pkgObj.size_str)
-      ? pkgObj.size_str
-      : `${(totalBytes / (1024 * 1024)).toFixed(1)} MB`;
-    const initialEteSec = (pkgObj && pkgObj.ete_seconds && pkgObj.ete_seconds > 0)
-      ? pkgObj.ete_seconds
-      : Math.max(3, Math.round(totalBytes / (15 * 1024 * 1024)));
-
-    let currentBytes = 0;
-    let currentPct = 0;
-    const startTime = Date.now();
+      : null;
+    const totalStr = (pkgObj && pkgObj.size_str) ? pkgObj.size_str : '';
 
     this.activeCardTelemetry = {
       pid,
@@ -2298,96 +3189,92 @@ class QuantumUpdaterApp {
       totalStr,
       currentBytes: 0,
       currentPct: 0,
-      startTime
+      lastBytes: null,
+      lastTime: null,
+      lastSpeedBps: null,
+      externalProgress: false
     };
 
     if (progFill) {
       progFill.className = 'card-inline-progress-fill';
       progFill.style.width = '0%';
     }
-    if (speedEl) speedEl.textContent = '14.2 MB/s';
-    if (bytesEl) bytesEl.textContent = `0.0 MB / ${totalStr}`;
-    if (pctEl) pctEl.textContent = '0%';
-    if (eteEl) eteEl.textContent = `ETE: ~${initialEteSec}s`;
-    if (statusEl) statusEl.textContent = 'Connecting to official CDN repository...';
-
-    const intervalId = setInterval(() => {
-      if (!this.activeCardTelemetry || this.activeCardTelemetry.pid !== pid) {
-        clearInterval(intervalId);
-        return;
-      }
-
-      const elapsedSec = (Date.now() - startTime) / 1000;
-      const baseSpeed = 16.5;
-      const wave = Math.sin(elapsedSec * 1.8) * 4.2;
-      const jitter = (Math.random() - 0.5) * 1.8;
-      const currentSpeedMBs = Math.max(8.5, Math.min(32.0, baseSpeed + wave + jitter));
-
-      if (!this.activeCardTelemetry.externalProgress) {
-        const bytesIncrement = (currentSpeedMBs * 1024 * 1024) * 0.25;
-        currentBytes = Math.min(totalBytes * 0.94, currentBytes + bytesIncrement);
-        currentPct = Math.min(94, Math.round((currentBytes / totalBytes) * 100));
-      } else {
-        currentBytes = this.activeCardTelemetry.currentBytes;
-        currentPct = this.activeCardTelemetry.currentPct;
-      }
-
-      const transferredMB = (currentBytes / (1024 * 1024)).toFixed(1);
-      const remainingBytes = Math.max(0, totalBytes - currentBytes);
-      const calculatedEte = Math.max(1, Math.ceil(remainingBytes / (currentSpeedMBs * 1024 * 1024)));
-
-      if (progFill) progFill.style.width = `${currentPct}%`;
-      if (speedEl) speedEl.textContent = `${currentSpeedMBs.toFixed(1)} MB/s`;
-      if (bytesEl) bytesEl.textContent = `${transferredMB} MB / ${totalStr}`;
-      if (pctEl) pctEl.textContent = `${currentPct}%`;
-      if (eteEl) eteEl.textContent = `ETE: ${calculatedEte}s left`;
-
-      if (statusEl && !this.activeCardTelemetry.externalTicker) {
-        if (currentPct < 25) {
-          statusEl.textContent = 'Downloading package archive from verified CDN...';
-        } else if (currentPct < 70) {
-          statusEl.textContent = 'Streaming high-speed binary payload chunks...';
-        } else if (currentPct < 90) {
-          statusEl.textContent = 'Verifying SHA-256 package cryptographic signature...';
-        } else {
-          statusEl.textContent = 'Applying update via silent background installer...';
-        }
-      }
-    }, 250);
-
-    this.cardTelemetryIntervals[pid] = intervalId;
+    if (speedEl) speedEl.textContent = '';
+    if (bytesEl) bytesEl.textContent = totalStr ? `— / ${totalStr}` : '— / —';
+    if (pctEl) pctEl.textContent = '';
+    if (eteEl) eteEl.textContent = '';
+    if (statusEl) statusEl.textContent = 'Updating…';
   }
 
   feedCardTelemetry(pid, pctVal, tickerText) {
     if (!this.activeCardTelemetry || this.activeCardTelemetry.pid !== pid) return;
-    const p = Math.min(100, Math.max(0, Math.round((pctVal || 0) * (pctVal <= 1 ? 100 : 1))));
-    this.activeCardTelemetry.externalProgress = true;
-    this.activeCardTelemetry.currentPct = p;
-    this.activeCardTelemetry.currentBytes = Math.round((p / 100) * this.activeCardTelemetry.totalBytes);
-    if (tickerText) this.activeCardTelemetry.externalTicker = tickerText;
+    const tel = this.activeCardTelemetry;
+    tel.externalProgress = true;
+    const parsed = this.parseWingetProgressLine(tickerText || '');
+    let pct = parsed && parsed.pct !== null ? parsed.pct : null;
+    if (pct === null && pctVal) {
+      const raw = Number(pctVal);
+      if (Number.isFinite(raw) && raw > 0) {
+        pct = Math.min(100, Math.max(0, Math.round(raw * (raw <= 1 ? 100 : 1))));
+      }
+    }
 
+    const speedEl = document.getElementById(`hud-speed-${pid}`);
     const bytesEl = document.getElementById(`hud-bytes-${pid}`);
     const pctEl = document.getElementById(`hud-pct-${pid}`);
+    const eteEl = document.getElementById(`hud-ete-${pid}`);
     const statusEl = document.getElementById(`hud-status-${pid}`);
     const progFill = document.getElementById(`card-prog-${pid}`);
 
-    const transferredMB = (this.activeCardTelemetry.currentBytes / (1024 * 1024)).toFixed(1);
-    if (bytesEl) bytesEl.textContent = `${transferredMB} MB / ${this.activeCardTelemetry.totalStr}`;
-    if (pctEl) pctEl.textContent = `${p}%`;
-    if (progFill) progFill.style.width = `${p}%`;
+    if (pct !== null) {
+      tel.currentPct = pct;
+      if (progFill) progFill.style.width = `${pct}%`;
+      if (pctEl) pctEl.textContent = `${pct}%`;
+    }
+    if (parsed && parsed.bytesLabel && bytesEl) bytesEl.textContent = parsed.bytesLabel;
+    if (parsed && parsed.downloadedBytes !== null) {
+      const now = Date.now();
+      if (tel.lastBytes !== null && tel.lastTime && now > tel.lastTime) {
+        const elapsed = (now - tel.lastTime) / 1000;
+        if (elapsed >= 0.35) {
+          const delta = parsed.downloadedBytes - tel.lastBytes;
+          if (delta >= 0) {
+            const bps = delta / elapsed;
+            tel.lastSpeedBps = bps;
+            let speedText = '';
+            if (bps >= 1024 * 1024) speedText = `${(bps / (1024 * 1024)).toFixed(1)} MB/s`;
+            else if (bps >= 1024) speedText = `${(bps / 1024).toFixed(1)} KB/s`;
+            else if (bps > 0) speedText = `${Math.round(bps)} B/s`;
+            if (speedText && speedEl) speedEl.textContent = speedText;
+          }
+        }
+      }
+      if (tel.lastBytes === null || parsed.downloadedBytes !== tel.lastBytes) {
+        tel.lastBytes = parsed.downloadedBytes;
+        tel.lastTime = now;
+      }
+      tel.currentBytes = parsed.downloadedBytes;
+      if (eteEl && tel.totalBytes && tel.lastSpeedBps > 0 && tel.currentBytes < tel.totalBytes) {
+        const left = Math.max(1, Math.ceil((tel.totalBytes - tel.currentBytes) / tel.lastSpeedBps));
+        eteEl.textContent = `${left}s left`;
+      }
+    }
     if (statusEl && tickerText) statusEl.textContent = tickerText;
   }
 
-  finishCardTelemetry(pid, success) {
+  finishCardTelemetry(pid, success, status = null) {
+    let hadExternalProgress = false;
     if (this.cardTelemetryIntervals && this.cardTelemetryIntervals[pid]) {
       clearInterval(this.cardTelemetryIntervals[pid]);
       delete this.cardTelemetryIntervals[pid];
     }
     if (this.activeCardTelemetry && this.activeCardTelemetry.pid === pid) {
+      hadExternalProgress = !!this.activeCardTelemetry.externalProgress;
       this.activeCardTelemetry = null;
     }
 
     const hud = document.getElementById(`hud-${pid}`);
+    const hudRow = hud ? hud.querySelector('.transfer-hud-row') : null;
     const speedEl = document.getElementById(`hud-speed-${pid}`);
     const bytesEl = document.getElementById(`hud-bytes-${pid}`);
     const pctEl = document.getElementById(`hud-pct-${pid}`);
@@ -2396,6 +3283,7 @@ class QuantumUpdaterApp {
     const progFill = document.getElementById(`card-prog-${pid}`);
 
     if (success) {
+      if (hudRow) hudRow.style.display = '';
       if (progFill) {
         progFill.style.width = '100%';
         progFill.className = 'card-inline-progress-fill success';
@@ -2403,13 +3291,151 @@ class QuantumUpdaterApp {
       if (speedEl) speedEl.textContent = 'Completed';
       if (pctEl) pctEl.textContent = '100%';
       if (eteEl) eteEl.textContent = '0s';
-      if (statusEl) statusEl.textContent = 'Package updated & cryptographic integrity verified.';
+      if (statusEl) statusEl.textContent = 'Updated.';
     } else {
+      const msg = this.resolveUpgradeNoticeMessage(status);
       if (progFill) {
         progFill.className = 'card-inline-progress-fill notice';
+        if (!hadExternalProgress) progFill.style.width = '0%';
       }
-      if (speedEl) speedEl.textContent = 'Interrupted';
-      if (statusEl) statusEl.textContent = 'Update completed with status notice.';
+      if (hudRow) hudRow.style.display = 'none';
+      if (speedEl) speedEl.textContent = '';
+      if (bytesEl) bytesEl.textContent = '';
+      if (pctEl) pctEl.textContent = '';
+      if (eteEl) eteEl.textContent = '';
+      if (statusEl) statusEl.textContent = msg;
+    }
+  }
+
+  parseWingetSizeToBytes(value, unit) {
+    const v = parseFloat(value);
+    if (!Number.isFinite(v)) return null;
+    const u = String(unit || '').toUpperCase();
+    const scales = { B: 1, KB: 1024, KIB: 1024, MB: 1024 * 1024, MIB: 1024 * 1024, GB: 1024 * 1024 * 1024, GIB: 1024 * 1024 * 1024 };
+    return v * (scales[u] || 1);
+  }
+
+  parseWingetProgressLine(tickerText) {
+    if (!tickerText) return null;
+    const transfer = tickerText.match(/(\d+(?:\.\d+)?)\s*(B|KB|KiB|MB|MiB|GB|GiB)\s*\/\s*(\d+(?:\.\d+)?)\s*(B|KB|KiB|MB|MiB|GB|GiB)/i);
+    const pctMatch = tickerText.match(/(\d{1,3})\s*%/);
+    const pct = pctMatch ? Math.min(100, parseInt(pctMatch[1], 10)) : null;
+    if (!transfer && pct === null) return null;
+    const parsed = { pct, bytesLabel: '', downloadedBytes: null };
+    if (transfer) {
+      const [, down, downU, total, totalU] = transfer;
+      parsed.bytesLabel = `${down} ${downU.toUpperCase()} / ${total} ${totalU.toUpperCase()}`;
+      parsed.downloadedBytes = this.parseWingetSizeToBytes(down, downU);
+    }
+    return parsed;
+  }
+
+  startExploreInstallProgress(pkgId) {
+    this.currentInstallingExploreId = pkgId;
+    this.exploreInstallTelemetry = { lastBytes: null, lastTime: null, lastSpeed: '' };
+
+    const hud = document.getElementById(`explore-hud-${pkgId}`);
+    const hudRow = hud ? hud.querySelector('.transfer-hud-row') : null;
+    if (hud) hud.style.display = 'flex';
+    if (hudRow) hudRow.style.display = '';
+
+    const progWrap = document.getElementById(`explore-prog-wrap-${pkgId}`);
+    const progFill = document.getElementById(`explore-card-prog-${pkgId}`);
+    if (progWrap) progWrap.style.display = '';
+    if (progFill) {
+      progFill.className = 'card-inline-progress-fill';
+      progFill.style.width = '0%';
+    }
+
+    const speedEl = document.getElementById(`explore-hud-speed-${pkgId}`);
+    const bytesEl = document.getElementById(`explore-hud-bytes-${pkgId}`);
+    const pctEl = document.getElementById(`explore-hud-pct-${pkgId}`);
+    const statusEl = document.getElementById(`explore-hud-status-${pkgId}`);
+    if (speedEl) speedEl.textContent = '';
+    if (bytesEl) bytesEl.textContent = '— / —';
+    if (pctEl) pctEl.textContent = '0%';
+    if (statusEl) statusEl.textContent = 'Starting winget install...';
+  }
+
+  feedExploreInstallProgress(pkgId, pctVal, tickerText) {
+    if (!pkgId || this.currentInstallingExploreId !== pkgId) return;
+
+    const parsed = this.parseWingetProgressLine(tickerText);
+    let pct = parsed && parsed.pct !== null
+      ? parsed.pct
+      : Math.min(100, Math.max(0, Math.round((pctVal || 0) * (pctVal <= 1 ? 100 : 1))));
+
+    const progFill = document.getElementById(`explore-card-prog-${pkgId}`);
+    if (progFill) progFill.style.width = `${pct}%`;
+
+    const speedEl = document.getElementById(`explore-hud-speed-${pkgId}`);
+    const bytesEl = document.getElementById(`explore-hud-bytes-${pkgId}`);
+    const pctEl = document.getElementById(`explore-hud-pct-${pkgId}`);
+    const statusEl = document.getElementById(`explore-hud-status-${pkgId}`);
+
+    if (pctEl) pctEl.textContent = `${pct}%`;
+    if (parsed && parsed.bytesLabel && bytesEl) {
+      bytesEl.textContent = parsed.bytesLabel;
+
+      if (parsed.downloadedBytes !== null) {
+        const now = Date.now();
+        const tel = this.exploreInstallTelemetry || {};
+        if (tel.lastBytes !== null && tel.lastTime !== null && now > tel.lastTime) {
+          const elapsed = (now - tel.lastTime) / 1000;
+          if (elapsed >= 0.35) {
+            const delta = parsed.downloadedBytes - tel.lastBytes;
+            if (delta >= 0) {
+              const bps = delta / elapsed;
+              let speedText = '';
+              if (bps >= 1024 * 1024) {
+                speedText = `${(bps / (1024 * 1024)).toFixed(1)} MB/s`;
+              } else if (bps >= 1024) {
+                speedText = `${(bps / 1024).toFixed(1)} KB/s`;
+              } else if (bps > 0) {
+                speedText = `${Math.round(bps)} B/s`;
+              }
+              if (speedText && speedEl) speedEl.textContent = speedText;
+              tel.lastSpeed = speedText;
+            }
+          }
+        }
+        if (tel.lastBytes === null || parsed.downloadedBytes !== tel.lastBytes) {
+          tel.lastBytes = parsed.downloadedBytes;
+          tel.lastTime = now;
+        }
+        this.exploreInstallTelemetry = tel;
+      }
+    }
+
+    if (statusEl && tickerText) statusEl.textContent = tickerText;
+  }
+
+  finishExploreInstallProgress(pkgId, success, message) {
+    if (this.currentInstallingExploreId === pkgId) {
+      this.currentInstallingExploreId = null;
+    }
+    this.exploreInstallTelemetry = null;
+
+    const progFill = document.getElementById(`explore-card-prog-${pkgId}`);
+    const speedEl = document.getElementById(`explore-hud-speed-${pkgId}`);
+    const pctEl = document.getElementById(`explore-hud-pct-${pkgId}`);
+    const statusEl = document.getElementById(`explore-hud-status-${pkgId}`);
+
+    if (success) {
+      if (progFill) {
+        progFill.style.width = '100%';
+        progFill.className = 'card-inline-progress-fill success';
+      }
+      if (pctEl) pctEl.textContent = '100%';
+      if (speedEl && speedEl.textContent) {
+        speedEl.textContent = speedEl.textContent;
+      } else if (speedEl) {
+        speedEl.textContent = 'Done';
+      }
+      if (statusEl) statusEl.textContent = message || 'Installed';
+    } else {
+      if (progFill) progFill.className = 'card-inline-progress-fill notice';
+      if (statusEl) statusEl.textContent = message || 'Install did not finish.';
     }
   }
 
@@ -2417,6 +3443,9 @@ class QuantumUpdaterApp {
     this.setIslandProgress(pctVal, tickerText);
     if (this.currentUpdatingPkgId) {
       this.feedCardTelemetry(this.currentUpdatingPkgId, pctVal, tickerText);
+    }
+    if (this.currentInstallingExploreId) {
+      this.feedExploreInstallProgress(this.currentInstallingExploreId, pctVal, tickerText);
     }
   }
 
@@ -2435,20 +3464,50 @@ class QuantumUpdaterApp {
 
     if (pct !== null && pct !== undefined) {
       const p = Math.round(pct);
-      fillEl.style.width = `${p}%`;
-      badgeEl.textContent = `${p}%`;
+      if (fillEl) {
+        fillEl.style.width = `${p}%`;
+        fillEl.classList.remove('indeterminate');
+      }
+      if (badgeEl) badgeEl.textContent = `${p}%`;
     } else {
-      fillEl.style.width = active ? '30%' : '0%';
-      badgeEl.textContent = active ? 'Working...' : '';
+      if (fillEl) {
+        fillEl.style.width = '0%';
+        fillEl.classList.toggle('indeterminate', !!active);
+      }
+      if (badgeEl) badgeEl.textContent = active ? 'Working...' : '';
     }
   }
 
   setIslandProgress(pctVal, tickerText) {
-    const p = Math.min(100, Math.max(0, Math.round((pctVal || 0) * 100)));
+    // Bridge sends 0..1 fractions; some UI callers send 0..100. Match card telemetry.
+    let hasFinitePct = false;
+    let p = 0;
+    if (pctVal !== null && pctVal !== undefined) {
+      const raw = Number(pctVal);
+      if (Number.isFinite(raw)) {
+        hasFinitePct = true;
+        p = Math.min(100, Math.max(0, Math.round(raw * (raw <= 1 ? 100 : 1))));
+      }
+    }
+
+    if (!hasFinitePct) {
+      if (tickerText) {
+        const islandTicker = document.getElementById('island-status-ticker');
+        if (islandTicker) islandTicker.textContent = tickerText;
+        const dockTicker = document.getElementById('dock-status-ticker');
+        if (dockTicker) dockTicker.textContent = tickerText;
+        const updateProgTicker = document.getElementById('update-prog-ticker');
+        if (updateProgTicker) updateProgTicker.textContent = tickerText;
+      }
+      return;
+    }
 
     // 1. Dynamic Floating Progress Island
     const islandFill = document.getElementById('island-progress-fill');
-    if (islandFill) islandFill.style.width = `${p}%`;
+    if (islandFill) {
+      islandFill.style.width = `${p}%`;
+      islandFill.classList.remove('indeterminate');
+    }
     const islandPct = document.getElementById('island-pct-badge');
     if (islandPct) islandPct.textContent = `${p}%`;
     if (tickerText) {
@@ -2474,6 +3533,13 @@ class QuantumUpdaterApp {
       if (cardProg) {
         cardProg.className = 'card-inline-progress-fill';
         cardProg.style.width = `${p}%`;
+      }
+    }
+    if (this.currentInstallingExploreId) {
+      const exploreProg = document.getElementById(`explore-card-prog-${this.currentInstallingExploreId}`);
+      if (exploreProg) {
+        exploreProg.className = 'card-inline-progress-fill';
+        exploreProg.style.width = `${p}%`;
       }
     }
 
@@ -2512,6 +3578,8 @@ class QuantumUpdaterApp {
   }
 
   renderExplore() {
+    this.exploreLiveSearchQuery = '';
+    this.lastCatalogSearchResults = null;
     const container = document.getElementById('explore-results-list');
     if (!container) return;
 
@@ -2557,7 +3625,7 @@ class QuantumUpdaterApp {
         <div class="glass-placeholder">
           <div class="placeholder-icon"><svg width="38" height="38" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg></div>
           <h3>No Matching Applications</h3>
-          <p>No curated software matched "${this.escapeHtml(this.exploreSearchTerm)}". Click "Search Online" to query the live repository.</p>
+          <p>No apps on the shelf matched "${this.escapeHtml(this.exploreSearchTerm)}". Search the full catalog.</p>
         </div>
       `;
       return;
@@ -2610,18 +3678,113 @@ class QuantumUpdaterApp {
                   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg> Installed
                 </button>
               ` : `
-                <button class="glass-btn btn-coral btn-sm" id="btn-explore-inst-${pkg.id}" onclick="app.installExplorePackage('${pkg.id}', this)">
+                <button class="glass-btn btn-coral btn-sm market-install-btn" id="btn-explore-inst-${pkg.id}" onclick="app.installExplorePackage('${pkg.id}', this)">
                   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg> Install
                 </button>
               `}
             </div>
-            ${isInstalled ? `<button class="glass-btn btn-secondary btn-xs" style="opacity: 0.75;" onclick="app.installExplorePackage('${pkg.id}', this, true)">Reinstall</button>` : ''}
+          </div>
+          <div class="card-transfer-hud" id="explore-hud-${pkg.id}" style="display: none;">
+            <div class="transfer-hud-row">
+              <div class="transfer-metric-group">
+                <span class="speed-pulse-indicator"></span>
+                <span class="transfer-speed-label">SPEED:</span>
+                <span class="transfer-speed-val" id="explore-hud-speed-${pkg.id}"></span>
+              </div>
+              <div class="transfer-metric-group">
+                <span class="transfer-bytes-val" id="explore-hud-bytes-${pkg.id}">— / —</span>
+                <span class="transfer-pct-pill" id="explore-hud-pct-${pkg.id}">0%</span>
+              </div>
+            </div>
+            <div class="transfer-status-line">
+              <span class="transfer-ticker-dot"></span>
+              <span class="transfer-status-text" id="explore-hud-status-${pkg.id}">Preparing install...</span>
+            </div>
+          </div>
+          <div class="card-inline-progress explore-card-prog-wrap" id="explore-prog-wrap-${pkg.id}" style="display: none;">
+            <div class="card-inline-progress-fill" id="explore-card-prog-${pkg.id}" style="width: 0%"></div>
           </div>
         </div>
       `;
     });
 
     container.innerHTML = html;
+    this.hydrateAppIconsIn(container, items);
+  }
+
+  renderCatalogSearchResults(query, results) {
+    const container = document.getElementById('explore-results-list');
+    if (!container) return;
+    this.exploreLiveSearchQuery = query;
+    this.lastCatalogSearchResults = results;
+
+    let html = `
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; padding: 0 4px;">
+        <span style="font-size: 13px; color: var(--text-muted); font-weight: 600;">Full catalog (${results.length})</span>
+        <button class="glass-btn btn-secondary btn-sm" onclick="app.renderExplore()">Back to the shelf</button>
+      </div>
+    `;
+
+    results.forEach(item => {
+      const logoHtml = this.getAppLogoHtml(item.id, item.name);
+      const isInstalled = this.isPackageInstalled(item.id, item.name);
+      html += `
+        <div class="package-card ${isInstalled ? 'card-installed' : ''}" id="explore-card-${item.id}">
+          <div class="package-left">
+            ${logoHtml}
+            <div class="package-info">
+              <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                <span class="package-name">${this.escapeHtml(item.name)}</span>
+                ${isInstalled ? `<span class="badge-installed-tag"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg> Installed</span>` : ''}
+              </div>
+              <div class="package-meta">
+                <span>${this.escapeHtml(item.id)}</span>
+                <span class="version-pill">v${this.escapeHtml(item.version || 'Latest')}</span>
+                <span>Catalog</span>
+              </div>
+            </div>
+          </div>
+          <div class="package-right" style="display: flex; gap: 6px;">
+            <button class="glass-btn btn-secondary btn-sm btn-info-action" onclick="app.showDetailsModal('${item.id}', '${this.escapeHtml(item.name)}', '${item.version || ''}', 'explore')" title="Quick Look Inspector">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+              <span>Info</span>
+            </button>
+            ${isInstalled ? `
+              <button class="glass-btn btn-installed-disabled btn-sm" disabled title="Already installed on this system">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg> Installed
+              </button>
+            ` : `
+              <button class="glass-btn btn-coral btn-sm" onclick="app.installExplorePackage('${item.id}', this)">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg> Install
+              </button>
+            `}
+          </div>
+          <div class="card-transfer-hud" id="explore-hud-${item.id}" style="display: none;">
+            <div class="transfer-hud-row">
+              <div class="transfer-metric-group">
+                <span class="speed-pulse-indicator"></span>
+                <span class="transfer-speed-label">SPEED:</span>
+                <span class="transfer-speed-val" id="explore-hud-speed-${item.id}"></span>
+              </div>
+              <div class="transfer-metric-group">
+                <span class="transfer-bytes-val" id="explore-hud-bytes-${item.id}">— / —</span>
+                <span class="transfer-pct-pill" id="explore-hud-pct-${item.id}">0%</span>
+              </div>
+            </div>
+            <div class="transfer-status-line">
+              <span class="transfer-ticker-dot"></span>
+              <span class="transfer-status-text" id="explore-hud-status-${item.id}">Preparing install...</span>
+            </div>
+          </div>
+          <div class="card-inline-progress explore-card-prog-wrap" id="explore-prog-wrap-${item.id}" style="display: none;">
+            <div class="card-inline-progress-fill" id="explore-card-prog-${item.id}" style="width: 0%"></div>
+          </div>
+        </div>
+      `;
+    });
+
+    container.innerHTML = html;
+    this.hydrateAppIconsIn(container, results);
   }
 
   async searchRepositoryCatalog() {
@@ -2660,38 +3823,7 @@ class QuantumUpdaterApp {
         return;
       }
 
-      let html = `
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; padding: 0 4px;">
-          <span style="font-size: 13px; color: var(--text-muted); font-weight: 600;">Live Search Results (${results.length})</span>
-          <button class="glass-btn btn-secondary btn-sm" onclick="app.renderExplore()">← Back to Curated Explore</button>
-        </div>
-      `;
-
-      results.forEach(item => {
-        const logoHtml = this.getAppLogoHtml(item.id, item.name);
-        html += `
-          <div class="package-card">
-            <div class="package-left">
-              ${logoHtml}
-              <div class="package-info">
-                <span class="package-name">${this.escapeHtml(item.name)}</span>
-                <div class="package-meta">
-                  <span>${this.escapeHtml(item.id)}</span>
-                  <span class="version-pill">v${this.escapeHtml(item.version || 'Latest')}</span>
-                  <span>(${this.escapeHtml(item.source || 'winget')})</span>
-                </div>
-              </div>
-            </div>
-            <div class="package-right">
-              <button class="glass-btn btn-primary btn-sm" onclick="app.installExplorePackage('${item.id}', this)">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg> Install
-              </button>
-            </div>
-          </div>
-        `;
-      });
-
-      container.innerHTML = html;
+      this.renderCatalogSearchResults(query, results);
     } catch (e) {
       container.innerHTML = `
         <div class="glass-placeholder">
@@ -2703,8 +3835,97 @@ class QuantumUpdaterApp {
     }
   }
 
-  installBundle(bundleId) {
-    const bundleConfigs = {
+  loadUpdateIssues() {
+    try {
+      const raw = JSON.parse(localStorage.getItem('qu-update-issues') || '{}');
+      return raw && typeof raw === 'object' ? raw : {};
+    } catch (_) {
+      return {};
+    }
+  }
+
+  rememberUpdateIssue(pkg, status) {
+    if (!pkg || !pkg.id) return;
+    const issues = this.loadUpdateIssues();
+    const holders = Array.isArray(status && status.holders)
+      ? status.holders.filter(Boolean).map((h) => {
+          if (typeof h === 'string') return h;
+          if (h && typeof h === 'object') {
+            if (h.name) return String(h.name);
+            if (h.process) return String(h.process);
+            if (h.path) {
+              const parts = String(h.path).split(/[/\\]/).filter(Boolean);
+              return parts.length ? parts[parts.length - 1] : '';
+            }
+          }
+          return '';
+        }).filter(Boolean)
+      : [];
+    issues[pkg.id] = {
+      name: pkg.name || pkg.id,
+      message: this.resolveUpgradeNoticeMessage(status),
+      holders,
+      homepage: this.collectHomepageForPackage(pkg),
+      at: Date.now()
+    };
+    localStorage.setItem('qu-update-issues', JSON.stringify(issues));
+  }
+
+  clearUpdateIssue(pkgId) {
+    const issues = this.loadUpdateIssues();
+    if (!issues[pkgId]) return;
+    delete issues[pkgId];
+    localStorage.setItem('qu-update-issues', JSON.stringify(issues));
+  }
+
+  openPublisherPage(url) {
+    if (!url || !/^https:\/\//i.test(url)) return;
+    window.open(url, '_blank', 'noopener');
+  }
+
+  openPublisherPageFromButton(btn) {
+    const url = btn && btn.getAttribute('data-url');
+    this.openPublisherPage(url);
+  }
+
+  async launchDownloadedInstaller(pkgId) {
+    try {
+      const res = await this.invoke('launch_downloaded_installer', { packageId: pkgId });
+      if (res && res.success) {
+        this.showToast(res.message || 'Installer launched.', 'success');
+      } else {
+        this.showToast((res && res.message) || 'Could not run the installer.', 'error');
+      }
+    } catch (err) {
+      this.showToast(err.message || String(err), 'error');
+    }
+  }
+
+  renderUpdateIssueNote(pkg, issue) {
+    const holders = Array.isArray(issue.holders) ? issue.holders.filter(Boolean) : [];
+    const closeLine = holders.length
+      ? `Close ${holders.map((name) => this.escapeHtml(String(name))).join(', ')}, then try again. This app will not close them for you.`
+      : 'You can try again, or open the publisher page and update it yourself.';
+    const home = issue.homepage && /^https:\/\//i.test(issue.homepage) ? issue.homepage : '';
+    const safeId = String(pkg.id || '').replace(/[^A-Za-z0-9._+-]/g, '');
+    const homeBtn = home
+      ? `<button type="button" class="glass-btn btn-secondary btn-sm" data-url="${this.escapeHtml(home)}" onclick="event.stopPropagation(); app.openPublisherPageFromButton(this)">Publisher page</button>`
+      : '';
+    return `
+      <div class="update-issue-note" onclick="event.stopPropagation()">
+        <div>This update failed before. ${this.escapeHtml(issue.message || 'Update did not finish.')}</div>
+        <div>${closeLine}</div>
+        <div class="update-issue-actions">
+          <button type="button" class="glass-btn btn-secondary btn-sm" onclick="event.stopPropagation(); app.updateSinglePackage('${safeId}')">Try again</button>
+          ${homeBtn}
+          <button type="button" class="glass-btn btn-secondary btn-sm" onclick="event.stopPropagation(); app.launchDownloadedInstaller('${safeId}')">Run installer</button>
+        </div>
+      </div>
+    `;
+  }
+
+  bundleConfigs() {
+    return {
       essentials: {
         title: 'Essential Windows Starter',
         apps: [
@@ -2747,27 +3968,78 @@ class QuantumUpdaterApp {
         ]
       }
     };
+  }
 
-    const bundle = bundleConfigs[bundleId];
+  openBundle(bundleId) {
+    const bundle = this.bundleConfigs()[bundleId];
     if (!bundle) return;
+    this._openBundleId = bundleId;
+    let sheet = document.getElementById('bundle-sheet');
+    if (!sheet) {
+      sheet = document.createElement('div');
+      sheet.id = 'bundle-sheet';
+      sheet.className = 'modal-backdrop';
+      sheet.addEventListener('click', (event) => {
+        if (event.target === sheet) this.closeBundle();
+      });
+      document.body.appendChild(sheet);
+    }
+    const rows = bundle.apps.map((item) => {
+      const installed = this.isPackageInstalled(item.pkgId, item.name);
+      const safeId = String(item.pkgId).replace(/[^A-Za-z0-9._+-]/g, '');
+      return `
+        <label class="bundle-app-row">
+          <input type="checkbox" data-bundle-app="${safeId}" ${installed ? 'disabled' : 'checked'}>
+          <span>${this.escapeHtml(item.name)}</span>
+          ${installed ? '<em>Already on this PC</em>' : ''}
+        </label>
+      `;
+    }).join('');
+    sheet.innerHTML = `
+      <div class="modal-glass bundle-sheet-card" onclick="event.stopPropagation()">
+        <div class="modal-header">
+          <h3 class="modal-pkg-title">${this.escapeHtml(bundle.title)}</h3>
+          <button type="button" class="modal-close-btn" onclick="app.closeBundle()" aria-label="Close">Close</button>
+        </div>
+        <p class="bundle-sheet-lead">Untick anything you do not want. Only the ticked apps are installed.</p>
+        <div class="bundle-app-list">${rows}</div>
+        <div class="update-issue-actions">
+          <button type="button" class="glass-btn btn-primary btn-sm" onclick="app.installChosenBundle()">Install selected</button>
+          <button type="button" class="glass-btn btn-secondary btn-sm" onclick="app.closeBundle()">Cancel</button>
+        </div>
+      </div>
+    `;
+    this.showBackdrop('bundle-sheet');
+  }
 
+  closeBundle() {
+    this.hideBackdrop('bundle-sheet');
+    this._openBundleId = '';
+  }
+
+  installChosenBundle() {
+    const bundle = this.bundleConfigs()[this._openBundleId];
+    const sheet = document.getElementById('bundle-sheet');
+    if (!bundle || !sheet) return;
+    const chosen = new Set(
+      Array.from(sheet.querySelectorAll('input[data-bundle-app]:checked')).map((box) => box.getAttribute('data-bundle-app'))
+    );
+    if (!chosen.size) {
+      this.showToast('Tick at least one app.', 'info');
+      return;
+    }
     let queuedCount = 0;
-    bundle.apps.forEach(item => {
-      if (!this.isPackageInstalled(item.pkgId, item.name)) {
-        this.enqueueTask({
-          type: 'install',
-          pkgId: item.pkgId,
-          name: item.name
-        });
-        queuedCount++;
-      }
+    bundle.apps.forEach((item) => {
+      if (!chosen.has(item.pkgId)) return;
+      if (this.isPackageInstalled(item.pkgId, item.name)) return;
+      this.enqueueTask({ type: 'install', pkgId: item.pkgId, name: item.name });
+      queuedCount++;
     });
-
+    this.closeBundle();
     if (queuedCount > 0) {
-      this.showToast(`Queued ${queuedCount} apps from ${bundle.title}`, 'info');
-      this.setIslandState(true, `Installing ${bundle.title}`, null, `${queuedCount} applications queued in background manager.`);
+      this.showToast(`Queued ${queuedCount} selected app${queuedCount === 1 ? '' : 's'} from ${bundle.title}`, 'info');
     } else {
-      this.showToast(`All applications in ${bundle.title} are already installed.`, 'success');
+      this.showToast('Those apps are already on this PC.', 'success');
     }
   }
 
@@ -2779,17 +4051,8 @@ class QuantumUpdaterApp {
 
     if (card) {
       card.classList.add('card-updating');
-      let prog = card.querySelector('.card-inline-progress');
-      if (!prog) {
-        prog = document.createElement('div');
-        prog.className = 'card-inline-progress';
-        prog.innerHTML = '<div class="card-inline-progress-fill indeterminate"></div>';
-        card.appendChild(prog);
-      } else {
-        const fill = prog.querySelector('.card-inline-progress-fill');
-        if (fill) fill.className = 'card-inline-progress-fill indeterminate';
-      }
     }
+    this.startExploreInstallProgress(pkgId);
 
     if (btnEl) {
       btnEl.disabled = true;
@@ -2797,12 +4060,18 @@ class QuantumUpdaterApp {
       btnEl.innerHTML = `<span class="btn-spinner"></span> <span>Installing...</span>`;
     }
 
-    this.setIslandState(true, `Installing ${pkgDisplayName}`, null, `Downloading & running silent setup via ${this.activeEngine.toUpperCase()}...`);
+    this.setIslandState(true, `Installing ${pkgDisplayName}`, null, `Downloading via ${this.activeEngine.toUpperCase()}...`);
     this.appendLog(`[Quantum Updater]: Initiating silent install for "${pkgDisplayName}" (${pkgId})...\n`);
+
+    const resolvedId = this.resolveInstallPackageId(catItem || pkgId);
+    if (this._betaFallbackNote) {
+      this.showToast(this._betaFallbackNote, 'info');
+      this._betaFallbackNote = '';
+    }
 
     try {
       const res = await this.invoke('install_package', {
-        packageId: pkgId,
+        packageId: resolvedId,
         engine: this.activeEngine
       });
 
@@ -2810,8 +4079,6 @@ class QuantumUpdaterApp {
         if (card) {
           card.classList.remove('card-updating');
           card.classList.add('card-completed');
-          const fill = card.querySelector('.card-inline-progress-fill');
-          if (fill) fill.className = 'card-inline-progress-fill success';
         }
 
         if (btnEl) {
@@ -2826,46 +4093,38 @@ class QuantumUpdaterApp {
 
         this.installedSet.add(pkgId.toLowerCase());
         const successMsg = (res && res.message) ? res.message : `${pkgDisplayName} is ready to use.`;
+        this.finishExploreInstallProgress(pkgId, true, 'Installed');
         this.setIslandState(false, `${pkgDisplayName} Ready`, 100, successMsg);
         this.showToast(successMsg, 'success');
         this.appendLog(`[OK] Successfully processed "${pkgDisplayName}" (${pkgId}): ${successMsg}\n`);
 
-        // Smoothly clean up celebration pulse after delay without resetting UI
         setTimeout(() => {
-          if (card) {
-            card.classList.remove('card-completed');
-            const prog = card.querySelector('.card-inline-progress');
-            if (prog) prog.remove();
-          }
+          if (card) card.classList.remove('card-completed');
         }, 3200);
 
       } else {
-        if (card) {
-          card.classList.remove('card-updating');
-          const fill = card.querySelector('.card-inline-progress-fill');
-          if (fill) fill.className = 'card-inline-progress-fill notice';
-        }
+        const failMsg = (res && res.message) ? res.message : 'Check console for details.';
+        if (card) card.classList.remove('card-updating');
+        this.finishExploreInstallProgress(pkgId, false, failMsg);
         if (btnEl) {
           btnEl.disabled = false;
           btnEl.className = 'glass-btn btn-secondary btn-sm';
           btnEl.innerHTML = `Retry Install`;
           btnEl.onclick = () => this.installExplorePackage(pkgId, btnEl);
         }
-        this.setIslandState(false, `Install Notice`, null, `${pkgDisplayName} notice: ${(res && res.message) || 'Check console'}`);
+        this.setIslandState(false, `Install Notice`, null, failMsg);
       }
     } catch (e) {
-      if (card) {
-        card.classList.remove('card-updating');
-        const fill = card.querySelector('.card-inline-progress-fill');
-        if (fill) fill.className = 'card-inline-progress-fill notice';
-      }
+      const errMsg = String(e);
+      if (card) card.classList.remove('card-updating');
+      this.finishExploreInstallProgress(pkgId, false, errMsg);
       if (btnEl) {
         btnEl.disabled = false;
         btnEl.className = 'glass-btn btn-secondary btn-sm';
         btnEl.innerHTML = `Retry Install`;
         btnEl.onclick = () => this.installExplorePackage(pkgId, btnEl);
       }
-      this.setIslandState(false, `Install Error`, null, String(e));
+      this.setIslandState(false, `Install Error`, null, errMsg);
       this.appendLog(`[ERROR]: Installation failed for "${pkgDisplayName}": ${e}\n`);
     }
   }
@@ -2873,32 +4132,7 @@ class QuantumUpdaterApp {
   // ================= Installed Applications Tab =================
 
   async loadInstalled() {
-    const container = document.getElementById('installed-list');
-    container.innerHTML = `
-      <div class="glass-placeholder">
-        <div class="placeholder-icon"><svg class="spin" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"></path><path d="M16 21h5v-5"></path></svg></div>
-        <h3>Auditing System Applications...</h3>
-        <p>Reading registry and package manager database...</p>
-      </div>
-    `;
-
-    try {
-      const packages = await this.invoke('get_installed', { engine: this.activeEngine });
-      this.installed = packages || [];
-      this.installedSet.clear();
-      if (!this.installedIconsMap) this.installedIconsMap = new Map();
-      this.installed.forEach(p => {
-        if (p.id) this.installedSet.add(p.id.toLowerCase().trim());
-        if (p.name) this.installedSet.add(p.name.toLowerCase().trim());
-        if (p.icon) {
-          if (p.id) this.installedIconsMap.set(p.id.toLowerCase().trim(), p.icon);
-          if (p.name) this.installedIconsMap.set(p.name.toLowerCase().trim(), p.icon);
-        }
-      });
-      this.renderInstalled();
-    } catch (e) {
-      container.innerHTML = `<div class="glass-placeholder"><p>Failed to load installed apps: ${e}</p></div>`;
-    }
+    return this.loadInstalledSilent();
   }
 
   renderInstalled(filteredList = null) {
@@ -2910,43 +4144,68 @@ class QuantumUpdaterApp {
       return;
     }
 
+    const isWin = !this.isMac;
     let html = '';
     list.forEach(pkg => {
-      const logoHtml = this.getAppLogoHtml(pkg.id, pkg.name, pkg.icon);
+      const logoHtml = this.getAppLogoHtml(pkg.id, pkg.name);
+      let badgeLabel = pkg.source || 'mac-app';
+      if (isWin) {
+        if (pkg.origin === 'catalog') badgeLabel = 'Catalog';
+        else if (pkg.origin === 'this-pc') badgeLabel = 'This PC';
+        else if (pkg.origin) badgeLabel = pkg.origin;
+        else badgeLabel = 'This PC';
+      }
+      const archChip = isWin ? 'x64 / ARM64' : 'Universal 2';
+      const encId = encodeURIComponent(pkg.id || '');
+      const encName = encodeURIComponent(pkg.name || '');
+      const safePath = (pkg.path || '').replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+      const folderBtn = isWin
+        ? (pkg.path
+          ? `<button class="glass-btn btn-secondary btn-sm" onclick="app.revealInFinder(decodeURIComponent('${encId}'), decodeURIComponent('${encodeURIComponent(pkg.path || '')}'))" title="Open install folder">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
+              <span>Open folder</span>
+            </button>`
+          : '')
+        : `<button class="glass-btn btn-secondary btn-sm" onclick="app.revealInFinder('${pkg.id}', '${safePath}')" title="Reveal in macOS Finder">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
+              <span>Finder</span>
+            </button>`;
+      const uninstallDisabled = isWin && pkg.can_uninstall === false;
+      const uninstallBtn = uninstallDisabled
+        ? `<button class="glass-btn btn-secondary btn-sm" style="color: var(--c-coral-pink); opacity: 0.45;" disabled title="No safe uninstall command">Uninstall</button>`
+        : `<button class="glass-btn btn-secondary btn-sm" style="color: var(--c-coral-pink);" onclick="app.uninstallPackage(decodeURIComponent('${encId}'), decodeURIComponent('${encName}'))">Uninstall</button>`;
 
       html += `
         <div class="package-card">
-          <div class="package-left">
-            ${logoHtml}
-            <div class="package-info">
-              <div style="display: flex; align-items: center; gap: 8px;">
-                <span class="package-name">${this.escapeHtml(pkg.name)}</span>
-                <span class="badge-cat" style="font-size: 10px;">${pkg.source || 'mac-app'}</span>
-              </div>
-              <div class="package-meta">
-                <span>${this.escapeHtml(pkg.id)}</span>
-                <span class="version-pill">v${this.escapeHtml(pkg.installed_version || '?')}</span>
-                <span class="security-chip-pill" style="font-size: 9px;">Universal 2</span>
+          <div class="package-main-row">
+            <div class="package-left">
+              ${logoHtml}
+              <div class="package-info">
+                <div style="display: flex; align-items: center; gap: 8px; min-width: 0;">
+                  <span class="package-name">${this.escapeHtml(pkg.name)}</span>
+                  <span class="badge-cat" style="font-size: 10px;">${this.escapeHtml(badgeLabel)}</span>
+                </div>
+                <div class="package-meta">
+                  <span>${this.escapeHtml(pkg.id)}</span>
+                  <span class="version-pill">v${this.escapeHtml(pkg.installed_version || '?')}</span>
+                  <span class="security-chip-pill" style="font-size: 9px;">${archChip}</span>
+                </div>
               </div>
             </div>
-          </div>
-          <div class="package-right" style="display: flex; align-items: center; gap: 6px;">
-            <button class="glass-btn btn-secondary btn-sm" onclick="app.revealInFinder('${pkg.id}', '${pkg.path || ''}')" title="Reveal in macOS Finder">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
-              <span>Finder</span>
-            </button>
-            <button class="glass-btn btn-secondary btn-sm btn-info-action" onclick="app.showDetailsModal('${pkg.id}', '${this.escapeHtml(pkg.name)}', '${pkg.installed_version || ''}', 'installed')" title="Quick Look Inspector">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
-              <span>Info</span>
-            </button>
-            <button class="glass-btn btn-secondary btn-sm" style="color: var(--c-coral-pink);" onclick="app.uninstallPackage('${pkg.id}', '${this.escapeHtml(pkg.name)}')">
-              Uninstall
-            </button>
+            <div class="package-right" style="display: flex; align-items: center; gap: 6px; flex-shrink: 0;">
+              ${folderBtn}
+              <button class="glass-btn btn-secondary btn-sm btn-info-action" onclick="app.showDetailsModal('${pkg.id}', '${this.escapeHtml(pkg.name)}', '${pkg.installed_version || ''}', 'installed')" title="Quick Look Inspector">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+                <span>Info</span>
+              </button>
+              ${uninstallBtn}
+            </div>
           </div>
         </div>
       `;
     });
     container.innerHTML = html;
+    this.hydrateAppIconsIn(container, list);
   }
 
   filterInstalled(query) {
@@ -2968,15 +4227,19 @@ class QuantumUpdaterApp {
   async uninstallPackage(pkgId, pkgName) {
     if (!confirm(`Are you sure you want to completely uninstall "${pkgName || pkgId}" and purge all its residual files?`)) return;
     this.appendLog(`[Deep Uninstaller]: Initiating total clean removal for "${pkgName || pkgId}"...\n`);
-    this.setIslandState(true, `Uninstalling ${pkgName || pkgId}`, null, 'Purging application bundle and scattered residual cache files...');
+    this.setIslandState(true, `Uninstalling ${pkgName || pkgId}`, null, pkgName || pkgId);
     try {
       const res = await this.invoke('uninstall_package', { packageId: pkgId, name: pkgName || pkgId, engine: this.activeEngine });
-      const freed = (res && res.freed_str) ? res.freed_str : '';
-      const freedMsg = freed ? ` and reclaimed ${freed} of disk space` : '';
-      this.showToast(`Uninstalled ${pkgName || pkgId}${freedMsg}`, 'success');
-      this.setIslandState(false, 'Uninstalled Successfully', 100, `Removed ${pkgName || pkgId}${freedMsg}.`);
-      this.installedSet.delete(pkgId.toLowerCase().trim());
-      if (pkgName) this.installedSet.delete(pkgName.toLowerCase().trim());
+      if (res && res.success === true) {
+        this.showToast(`Uninstalled ${pkgName || pkgId}`, 'success');
+        this.setIslandState(false, 'Uninstalled Successfully', 100, `Removed ${pkgName || pkgId}.`);
+        this.installedSet.delete(pkgId.toLowerCase().trim());
+        if (pkgName) this.installedSet.delete(pkgName.toLowerCase().trim());
+      } else {
+        const msg = (res && res.message) ? res.message : 'Uninstall did not complete successfully.';
+        this.showToast(`Notice during uninstall: ${msg}`, 'info');
+        this.setIslandState(false, 'Uninstall Notice', 0, msg);
+      }
     } catch (e) {
       this.showToast(`Notice during uninstall: ${e.message || e}`, 'info');
       this.setIslandState(false, 'Uninstall Notice', 0, String(e));
@@ -3031,23 +4294,28 @@ class QuantumUpdaterApp {
       btn.innerHTML = `<svg class="spin" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"></path><path d="M16 21h5v-5"></path></svg> <span>Optimizing...</span>`;
     }
 
-    this.setIslandState(true, 'Optimizing Unified Memory...', null, 'Compacting RAM pages and purging inactive file caches...');
+    this.setIslandState(true, 'Optimizing memory…', null, 'Reclaiming inactive RAM…');
     this.appendLog('[Memory Optimizer]: Requesting user-mode compaction of purgeable memory...\n');
 
     try {
-      const res = await this.invoke('optimize_memory', {});
-      const freed = (res && res.freed_str) ? res.freed_str : '450 MB';
-      this.showToast(`Reclaimed ${freed} of inactive RAM`, 'success');
-      this.setIslandState(false, 'Memory Compacted', 100, `Reclaimed ${freed} of inactive RAM pages.`);
-      this.appendLog(`[Memory Optimizer]: Compaction finished. Freed ${freed} of inactive RAM.\n`);
+      const res = await this.invokeCleanup('optimize_memory', {});
+      const freedBytes = res.freed_bytes || 0;
+      const freed = res.freed_str || this.formatBytes(freedBytes);
+      const message = res.message || (freedBytes > 0
+        ? `${freed} of inactive RAM reclaimed`
+        : 'No memory was freed');
+      const toastType = freedBytes > 0 ? 'success' : 'info';
+      this.showToast(message, toastType);
+      this.setIslandState(false, freedBytes > 0 ? 'Memory Compacted' : 'Memory Unchanged', 100, message);
+      this.appendLog(`[Memory Optimizer]: ${message}\n`);
 
       const ramStatus = document.getElementById('cleanup-ram-status');
       const ramSub = document.getElementById('cleanup-ram-sub');
-      if (ramStatus) ramStatus.textContent = 'Optimized';
-      if (ramSub) ramSub.textContent = `Reclaimed ${freed}`;
+      if (ramStatus) ramStatus.textContent = freedBytes > 0 ? 'Optimized' : 'No change';
+      if (ramSub) ramSub.textContent = message;
     } catch (e) {
-      this.showToast('Memory compaction complete', 'info');
-      this.setIslandState(false, 'Memory Ready', 100, 'Inactive memory purged.');
+      this.showToast(e.message || 'Memory optimization failed', 'error');
+      this.setIslandState(false, 'Memory optimization failed', null, String(e.message || e));
     } finally {
       if (btn) {
         btn.disabled = false;
@@ -3057,22 +4325,35 @@ class QuantumUpdaterApp {
   }
 
   async scanCleanup() {
-    const btn = document.getElementById('btn-scan-cleanup');
+    const store = this.scanStore;
+    if (store && store.isCleanupJobActive()) {
+      await this.cancelCleanupScan();
+      return;
+    }
+  const btn = document.getElementById('btn-scan-cleanup');
     if (btn) btn.classList.add('loading');
-    this.appendLog('[Quantum Clean]: Scanning system storage, app caches, developer bloat, and orphaned data...');
+    this.appendLog('[Quantum Clean]: Requesting cleanup_scan job…');
 
     try {
-      const res = await this.invoke('scan_cleanup');
-      if (res && res.categories) {
+      if (store) {
+        await store.startJob('cleanup_scan', true);
+        this.applyReadinessGates();
+        return;
+      }
+      const res = await this.invokeCleanup('scan_cleanup');
+      if (res.categories) {
         this.cleanupData = res;
+        this.cleanupPlanStale = false;
         this.selectedCleanupCategories = new Set(
-          res.categories.filter(c => c.selected && c.size_bytes > 0).map(c => c.id)
+          res.categories.filter(c =>
+            c.selected && c.size_bytes > 0 && c.id !== 'missing_folders' && !c.report_only && !c.needs_windows_decision
+          ).map(c => c.id)
         );
         this.renderCleanupMetrics();
+        this.renderCleanupDisks();
         this.renderCleanupCategories();
-        this.appendLog(`[Quantum Clean]: Scan complete. Identified ${res.total_reclaimable_str} across ${(res.total_files || 0).toLocaleString()} files.`);
       } else {
-        this.appendLog('[Quantum Clean]: No cleanup targets available or backend offline.');
+        this.showToast('Cleanup scan returned no data', 'error');
       }
     } catch (err) {
       this.appendLog(`[Quantum Clean Error]: ${err.message || err}`);
@@ -3082,17 +4363,53 @@ class QuantumUpdaterApp {
     }
   }
 
+  renderCleanupDisks() {
+    const container = document.getElementById('cleanup-disks-grid');
+    if (!container || !this.cleanupData) return;
+    const disks = Array.isArray(this.cleanupData.disks) ? this.cleanupData.disks : [];
+    if (!disks.length) {
+      container.innerHTML = '';
+      container.style.display = 'none';
+      return;
+    }
+    container.style.display = 'grid';
+    container.innerHTML = disks.map(disk => {
+      const letter = disk.letter || '?';
+      const total = disk.total_bytes || 0;
+      const used = disk.used_bytes || 0;
+      const free = disk.free_bytes || 0;
+      const usedPct = total > 0 ? Math.min(100, Math.round((used / total) * 100)) : 0;
+      return `
+        <div class="cleanup-disk-card">
+          <div class="cleanup-disk-head">
+            <span class="cleanup-disk-letter">${this.escapeHtml(letter)}:</span>
+            <span class="cleanup-disk-free">${this.formatBytes(free)} free</span>
+          </div>
+          <div class="cleanup-disk-bar"><span style="width:${usedPct}%;"></span></div>
+          <div class="cleanup-disk-meta">${this.formatBytes(used)} used of ${this.formatBytes(total)} (${usedPct}%)</div>
+        </div>
+      `;
+    }).join('');
+  }
+
   renderCleanupMetrics() {
     if (!this.cleanupData) return;
     const d = this.cleanupData;
+    const primaryDisk = (Array.isArray(d.disks) && d.disks.length)
+      ? d.disks.find(x => x.letter && x.letter.toUpperCase() === 'C') || d.disks[0]
+      : null;
 
-    // Total Reclaimable
     const totalEl = document.getElementById('cleanup-reclaimable-total');
     if (totalEl) totalEl.textContent = d.total_reclaimable_str;
     const subEl = document.getElementById('cleanup-reclaimable-sub');
-    if (subEl) subEl.textContent = `${d.total_files.toLocaleString()} temporary files found`;
+    if (subEl) {
+      let sub = `${d.total_files.toLocaleString()} temporary files scanned`;
+      if (d.windows_owned_bytes > 0) {
+        sub += ` · ${d.windows_owned_str || this.formatBytes(d.windows_owned_bytes)} Windows-owned (separate)`;
+      }
+      subEl.textContent = sub;
+    }
 
-    // Health
     const healthEl = document.getElementById('cleanup-health-status');
     if (healthEl) {
       if (d.total_reclaimable_bytes > 1024 * 1024 * 1024) {
@@ -3109,14 +4426,32 @@ class QuantumUpdaterApp {
 
     // Disk storage
     const diskEl = document.getElementById('cleanup-disk-free');
-    if (diskEl) diskEl.textContent = `${d.disk_free_str} Free`;
+    if (diskEl) {
+      diskEl.textContent = primaryDisk
+        ? `${this.formatBytes(primaryDisk.free_bytes)} Free`
+        : `${d.disk_free_str} Free`;
+    }
     const diskSub = document.getElementById('cleanup-disk-sub');
-    if (diskSub) diskSub.textContent = `${d.disk_used_str} of ${d.disk_total_str} used (${d.disk_used_percent}%)`;
+    if (diskSub) {
+      if (primaryDisk) {
+        const pct = primaryDisk.total_bytes > 0
+          ? Math.round((primaryDisk.used_bytes / primaryDisk.total_bytes) * 1000) / 10
+          : (d.disk_used_percent || 0);
+        diskSub.textContent = `${this.formatBytes(primaryDisk.used_bytes)} of ${this.formatBytes(primaryDisk.total_bytes)} used (${pct}%)`;
+      } else {
+        diskSub.textContent = `${d.disk_used_str} of ${d.disk_total_str} used (${d.disk_used_percent}%)`;
+      }
+    }
+
+    const diskUsedPercent = primaryDisk && primaryDisk.total_bytes > 0
+      ? (primaryDisk.used_bytes / primaryDisk.total_bytes) * 100
+      : (d.disk_used_percent || 20);
+    const diskTotalBytes = primaryDisk ? primaryDisk.total_bytes : (d.disk_total_bytes || 0);
 
     // Visual Storage Meter
-    const usedPct = Math.min(92, Math.max(8, d.disk_used_percent || 20));
-    const junkPct = d.total_reclaimable_bytes && d.disk_total_bytes ?
-      Math.min(12, Math.max(1, (d.total_reclaimable_bytes / d.disk_total_bytes) * 100)) :
+    const usedPct = Math.min(92, Math.max(8, diskUsedPercent));
+    const junkPct = d.total_reclaimable_bytes && diskTotalBytes ?
+      Math.min(12, Math.max(1, (d.total_reclaimable_bytes / diskTotalBytes) * 100)) :
       (d.total_reclaimable_bytes > 0 ? 3 : 0);
 
     const meterUsed = document.getElementById('cleaner-meter-used');
@@ -3162,6 +4497,14 @@ class QuantumUpdaterApp {
     }
   }
 
+  isCleanupReportOnly(cat) {
+    return !!cat && (cat.id === 'missing_folders' || cat.report_only === true);
+  }
+
+  isCleanupWindowsDeferred(cat) {
+    return !!cat && (cat.needs_windows_decision === true);
+  }
+
   renderCleanupCategories() {
     const container = document.getElementById('cleanup-categories-container');
     if (!container || !this.cleanupData || !this.cleanupData.categories) return;
@@ -3178,8 +4521,10 @@ class QuantumUpdaterApp {
 
     let html = '';
     this.cleanupData.categories.forEach(cat => {
+      const reportOnly = this.isCleanupReportOnly(cat);
+      const windowsDeferred = this.isCleanupWindowsDeferred(cat);
       const isSelected = this.selectedCleanupCategories.has(cat.id);
-      const isZero = cat.size_bytes === 0;
+      const isZero = cat.size_bytes === 0 && !(reportOnly && (cat.file_count || 0) > 0);
 
       let subItemsHtml = '';
       if (cat.sub_items && cat.sub_items.length > 0) {
@@ -3213,10 +4558,14 @@ class QuantumUpdaterApp {
               <span class="category-size-text ${isZero ? 'text-zero' : ''}">${cat.size_str}</span>
               <span class="category-files-text">${cat.file_count.toLocaleString()} files</span>
             </div>
-            <label class="mac-checkbox-switch">
+            ${reportOnly
+              ? '<span class="category-report-only-pill">Report only</span>'
+              : windowsDeferred
+              ? '<span class="category-report-only-pill">Needs Windows decision</span>'
+              : `<label class="mac-checkbox-switch">
               <input type="checkbox" ${isSelected ? 'checked' : ''} ${isZero ? 'disabled' : ''} onchange="app.toggleCleanupCategory('${cat.id}', this.checked)">
               <span class="mac-switch-slider"></span>
-            </label>
+            </label>`}
           </div>
         </div>
       `;
@@ -3248,6 +4597,10 @@ class QuantumUpdaterApp {
   }
 
   toggleCleanupCategory(catId, isChecked) {
+    const cat = (this.cleanupData && this.cleanupData.categories)
+      ? this.cleanupData.categories.find(c => c.id === catId)
+      : null;
+    if (this.isCleanupReportOnly(cat) || this.isCleanupWindowsDeferred(cat)) return;
     if (isChecked) {
       this.selectedCleanupCategories.add(catId);
     } else {
@@ -3258,46 +4611,58 @@ class QuantumUpdaterApp {
     this.updateCleanupSelectedMetric();
   }
 
-  toggleAllCleanup(onlySafe = false) {
+  selectRecommendedCleanup() {
     if (!this.cleanupData || !this.cleanupData.categories) return;
-    const shouldSelectAll = this.selectedCleanupCategories.size < this.cleanupData.categories.filter(c => c.size_bytes > 0).length;
-
     this.selectedCleanupCategories.clear();
-    if (shouldSelectAll) {
-      this.cleanupData.categories.forEach(c => {
-        if (c.size_bytes > 0 && (!onlySafe || c.risk === 'low')) {
-          this.selectedCleanupCategories.add(c.id);
-        }
-      });
+    this.cleanupData.categories.forEach(c => {
+      if (
+        c.risk === 'low'
+        && c.size_bytes > 0
+        && !c.opt_in
+        && !this.isCleanupReportOnly(c)
+        && !this.isCleanupWindowsDeferred(c)
+      ) {
+        this.selectedCleanupCategories.add(c.id);
+      }
+    });
+    this.renderCleanupCategories();
+    this.updateCleanupSelectedMetric();
+  }
+
+  toggleAllCleanup() {
+    if (!this.cleanupData || !this.cleanupData.categories) return;
+    const eligible = this.cleanupData.categories.filter(
+      c => c.size_bytes > 0 && !c.opt_in && !this.isCleanupReportOnly(c) && !this.isCleanupWindowsDeferred(c)
+    );
+    const allSelected = eligible.length > 0 && eligible.every(c => this.selectedCleanupCategories.has(c.id));
+    this.selectedCleanupCategories.clear();
+    if (!allSelected) {
+      eligible.forEach(c => this.selectedCleanupCategories.add(c.id));
     }
     this.renderCleanupCategories();
     this.updateCleanupSelectedMetric();
   }
 
-  async oneClickClean() {
-    if (this.isCleaning) return;
-    this.isCleaning = true;
-    const btn = document.getElementById('btn-one-click-clean');
-    if (btn) btn.classList.add('loading');
-
-    this.setIslandProgress(0.15, 'Cleaning application caches and temporary files...');
-    this.appendLog('[Quick Clean]: Starting One-Click Quick Clean for safe caches and logs...');
-
-    try {
-      const res = await this.invoke('one_click_clean', {});
-      this.onCleanupFinished(true, res);
-    } catch (err) {
-      this.appendLog(`[Quick Clean Error]: ${err.message || err}`);
-      this.showToast('Quick Clean failed to complete', 'error');
-      this.setIslandProgress(null, '');
-      if (btn) btn.classList.remove('loading');
-      this.isCleaning = false;
-    }
-  }
-
   // ================= System Cleanup Consent & File Trace Inspector =================
 
   openCleanupConsentModal(mode = 'purge') {
+    if (this.isCleaning) {
+      this.showToast('Cleanup is already running.', 'info');
+      return;
+    }
+    const store = this.scanStore;
+    if (store && !store.cleanupReady()) {
+      const job = store.job('cleanup_scan');
+      this._openCleanReviewAfterScan = true;
+      this.renderCleanupScanProgress({
+        status: job.status === 'queued' ? 'queued' : 'scanning',
+        percent: job.percent || 0,
+        current_item: job.current_item || 'Starting storage scan…',
+      });
+      if (!store.isCleanupJobActive()) this.scanCleanup();
+      this.showToast('Scanning storage. The review opens when the scan finishes.', 'info');
+      return;
+    }
     const modal = document.getElementById('modal-cleanup-consent');
     if (!modal) {
       this.executeCleanup();
@@ -3317,7 +4682,7 @@ class QuantumUpdaterApp {
     const categories = (this.cleanupData && this.cleanupData.categories) ? this.cleanupData.categories : [];
     
     categories.forEach(cat => {
-      if (this.selectedCleanupCategories.has(cat.id)) {
+      if (this.selectedCleanupCategories.has(cat.id) && !this.isCleanupReportOnly(cat)) {
         totalBytes += cat.size_bytes || 0;
         totalItems += cat.item_count || 0;
 
@@ -3352,12 +4717,12 @@ class QuantumUpdaterApp {
     if (catsEl) catsEl.textContent = `${selectedList.length} categories`;
     if (listEl) listEl.innerHTML = categoriesHtml;
 
-    modal.style.display = 'flex';
+    this.showBackdrop('modal-cleanup-consent');
   }
 
   closeCleanupConsentModal() {
-    const modal = document.getElementById('modal-cleanup-consent');
-    if (modal) modal.style.display = 'none';
+    this._openCleanReviewAfterScan = false;
+    this.hideBackdrop('modal-cleanup-consent');
   }
 
   confirmExecuteCleanup() {
@@ -3404,43 +4769,62 @@ class QuantumUpdaterApp {
       }
     }
 
-    drawer.style.display = 'flex';
+    this.showBackdrop('drawer-category-inspect');
   }
 
   closeInspectDrawer() {
-    const drawer = document.getElementById('drawer-category-inspect');
-    if (drawer) drawer.style.display = 'none';
+    this.hideBackdrop('drawer-category-inspect');
+  }
+
+  onCleanupScanStopped(status) {
+    if (!this._openCleanReviewAfterScan) return;
+    this._openCleanReviewAfterScan = false;
+    this.showToast(status === 'cancelled' ? 'Storage scan cancelled.' : 'Storage scan did not finish.', 'error');
   }
 
   async executeCleanup() {
+    if (this.scanStore && !this.scanStore.cleanupReady()) {
+      this.showToast('Wait for the storage scan to finish before cleaning.', 'error');
+      return;
+    }
     if (this.selectedCleanupCategories.size === 0) {
       this.showToast('Please select at least one item to clean', 'error');
       return;
     }
 
-    const selectedList = Array.from(this.selectedCleanupCategories);
+    const selectedList = Array.from(this.selectedCleanupCategories).filter(id => id !== 'missing_folders');
     let selectedBytes = 0;
     if (this.cleanupData && this.cleanupData.categories) {
       this.cleanupData.categories.forEach(c => {
-        if (this.selectedCleanupCategories.has(c.id)) selectedBytes += c.size_bytes;
+        if (selectedList.includes(c.id)) selectedBytes += c.size_bytes;
       });
     }
 
     this.isCleaning = true;
+    this._lastCleanupCategoryCount = selectedList.length;
     const purgeBtn = document.getElementById('btn-purge-cleanup');
+    const headerBtn = document.getElementById('btn-one-click-clean');
     if (purgeBtn) purgeBtn.classList.add('loading');
+    if (headerBtn) headerBtn.classList.add('loading');
 
-    this.setIslandProgress(0.15, `Cleaning ${selectedList.length} selected storage categories...`);
+    this.setIslandState(
+      true,
+      'Cleaning...',
+      null,
+      `Cleaning ${selectedList.length} selected storage categories...`
+    );
     this.appendLog(`[Storage Clean]: Cleaning ${this.formatBytes(selectedBytes)} from: ${selectedList.join(', ')}`);
 
     try {
-      const res = await this.invoke('execute_cleanup', { categories: selectedList });
+      const res = await this.invokeCleanup('execute_cleanup', { categories: selectedList });
       this.onCleanupFinished(true, res);
     } catch (err) {
       this.appendLog(`[Storage Clean Error]: ${err.message || err}`);
       this.showToast('Cleaning failed to complete', 'error');
-      this.setIslandProgress(null, '');
+      this.setIslandState(false, 'Cleaning failed', 0, err.message || String(err));
       if (purgeBtn) purgeBtn.classList.remove('loading');
+      const headerBtn = document.getElementById('btn-one-click-clean');
+      if (headerBtn) headerBtn.classList.remove('loading');
       this.isCleaning = false;
     }
   }
@@ -3451,34 +4835,58 @@ class QuantumUpdaterApp {
     if (purgeBtn) purgeBtn.classList.remove('loading');
     const oneClickBtn = document.getElementById('btn-one-click-clean');
     if (oneClickBtn) oneClickBtn.classList.remove('loading');
-    this.setIslandProgress(null, '');
-
     let res = {};
     try {
       res = (typeof rawResult === 'string' ? JSON.parse(rawResult) : rawResult) || {};
     } catch (e) {
-      res = { total_freed_str: 'storage' };
+      res = {};
     }
     if (!res || typeof res !== 'object') {
       res = {};
     }
 
+    const selectedCount = this._lastCleanupCategoryCount || 0;
+    const skipped = res.files_skipped || 0;
+    const blocked = res.items_blocked || 0;
+
     if (success && !res.error) {
       const freedBytes = res.total_freed_bytes || 0;
       const freed = res.total_freed_str || this.formatBytes(freedBytes);
+      const parts = [];
       if (freedBytes > 0) {
-        this.showToast(`Clean complete! Freed up ${freed}.`, 'success');
-        this.appendLog(`[Storage Clean]: Successfully finalized. Total space freed: ${freed}.`);
+        parts.push(`Freed ${freed}`);
       } else {
-        this.showToast(`System clean! Caches and temporary files are already at minimum.`, 'success');
-        this.appendLog(`[Storage Clean]: Optimization complete. System storage is already optimized.`);
+        parts.push('Freed 0 B');
+      }
+      if (skipped > 0) parts.push(`${skipped} file(s) skipped (in use)`);
+      if (blocked > 0) parts.push(`${blocked} protected item(s) not changed`);
+      const summary = parts.join('. ') + '.';
+
+      if (res.reboot_required || res.restart_required || this.statusNeedsRestart(res)) {
+        this.showRestartRequired(
+          'A clean finished, but Windows needs a restart. This app will not restart the PC.'
+        );
+      }
+
+      this.setIslandState(false, 'Cleanup complete', 100, summary);
+
+      if (freedBytes > 0) {
+        this.showToast(summary, 'success');
+        this.appendLog(`[Storage Clean]: ${summary}`);
+      } else if (selectedCount > 0) {
+        this.showToast(summary, 'error');
+        this.appendLog(`[Storage Clean]: Nothing reclaimable. ${summary}`);
+      } else {
+        this.showToast('No categories were selected to clean.', 'error');
       }
       setTimeout(() => {
         this.scanCleanup();
         this.loadInitialDiagnostics();
       }, 600);
     } else {
-      this.showToast(`Cleanup notice: ${res.error || 'Check activity log'}`, 'error');
+      const failMsg = res.error || 'Check activity log';
+      this.setIslandState(false, 'Cleanup failed', 0, failMsg);
+      this.showToast(`Cleanup notice: ${failMsg}`, 'error');
     }
   }
 
@@ -3490,20 +4898,769 @@ class QuantumUpdaterApp {
     return (bytes / (1024 * 1024 * 1024)).toFixed(2) + ' GB';
   }
 
+
+  // ================= Scan orchestration UI =================
+
+  renderSidebarScanStatus() {
+    if (!this.scanStore) return;
+    const sumEl = document.getElementById('sidebar-scan-summary');
+    const sumSub = document.getElementById('sidebar-scan-summary-sub');
+    const sumBtn = document.getElementById('sidebar-scan-rescan-btn');
+    const s = this.scanStore.summary || {};
+    const running = s.running || 0;
+  if (sumEl) {
+      if (running > 0) {
+        const done = s.done || 0;
+        const total = s.total || 0;
+        sumEl.textContent = `Checking your PC, ${done} of ${total} done`;
+        if (sumSub) sumSub.textContent = 'Finishing background checks…';
+      } else {
+        sumEl.textContent = 'All checks complete';
+        if (sumSub) sumSub.textContent = 'Background scans are up to date';
+      }
+    }
+    if (sumBtn) sumBtn.disabled = running > 0;
+
+    NAV_SCAN_SLOTS.forEach(({ tab, job }) => {
+      const slot = document.getElementById(`nav-scan-${tab}`);
+      if (!slot) return;
+      if (!job) {
+        slot.innerHTML = '';
+        return;
+      }
+      const j = this.scanStore.job(job);
+      slot.innerHTML = this.sidebarStatusIconHtml(j);
+    });
+  }
+
+  sidebarStatusIconHtml(job) {
+    const pct = Math.max(0, Math.min(100, Math.round(job.percent || 0)));
+    if (job.status === 'scanning' || job.status === 'queued') {
+      if (pct <= 0) {
+        return `<span class="nav-scan-ring" title="Scanning…"><svg class="nav-scan-svg" width="28" height="28" viewBox="0 0 28 28" aria-hidden="true"><circle cx="14" cy="14" r="11.5" fill="none" stroke="var(--progress-track)" stroke-width="3"/><circle cx="14" cy="14" r="11.5" fill="none" stroke="var(--color-mint)" stroke-width="3" stroke-dasharray="18 54" stroke-linecap="round"><animateTransform attributeName="transform" type="rotate" from="0 14 14" to="360 14 14" dur="1.1s" repeatCount="indefinite"/></circle></svg></span>`;
+      }
+      const dash = (pct / 100) * 72;
+      return `<span class="nav-scan-ring" title="Scanning ${pct}%"><svg class="nav-scan-svg" width="28" height="28" viewBox="0 0 28 28" aria-hidden="true"><circle cx="14" cy="14" r="11.5" fill="none" stroke="var(--progress-track)" stroke-width="3"/><circle cx="14" cy="14" r="11.5" fill="none" stroke="var(--color-mint)" stroke-width="3" stroke-dasharray="${dash} 72" transform="rotate(-90 14 14)"/><text x="14" y="17.5" text-anchor="middle" font-size="8" font-weight="600" fill="var(--text-secondary)">${pct}</text></svg></span>`;
+    }
+    if (job.status === 'ready') {
+      const hint = job.cached ? 'Cached result' : 'Ready';
+      return `<span class="nav-scan-ok" title="${hint}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--color-mint)" stroke-width="2.5" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg></span>`;
+    }
+    if (job.status === 'failed') {
+      return `<span class="nav-scan-warn" title="Check failed"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--color-warning-bg)" stroke-width="2.5" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></span>`;
+    }
+    return '';
+  }
+
+  skipStartupGateForForcedRescan() {
+    this._startupGateSkipForced = true;
+    this._startupGateDismissed = true;
+    this.updateStartupReadyGate();
+  }
+
+  isStartupGateVisible() {
+    const el = document.getElementById('startup-ready-gate');
+    return !!(el && !el.hidden);
+  }
+
+  _startupJobSettled(status) {
+    return STARTUP_GATE_SETTLED.has(status);
+  }
+
+  _startupJobLabel(status) {
+    if (status === 'ready') return 'Ready';
+    if (status === 'failed') return 'Could not finish';
+    if (status === 'cancelled') return 'Stopped';
+    if (status === 'scanning') return 'Checking';
+    if (status === 'queued') return 'Waiting';
+    return 'Waiting';
+  }
+
+  updateStartupReadyGate() {
+    const gate = document.getElementById('startup-ready-gate');
+    if (!gate) return;
+    const store = this.scanStore;
+    if (!store || this._startupGateDismissed || this._startupGateSkipForced) {
+      gate.hidden = true;
+      gate.setAttribute('aria-hidden', 'true');
+      document.body.classList.remove('startup-gate-open');
+      return;
+    }
+
+    let settled = 0;
+    const total = STARTUP_GATE_JOBS.length;
+    STARTUP_GATE_JOBS.forEach(({ id }) => {
+      const status = store.job(id).status;
+      const row = gate.querySelector(`li[data-job="${id}"]`);
+      if (this._startupJobSettled(status)) settled += 1;
+      if (row) {
+        row.classList.toggle('is-ready', status === 'ready');
+        row.classList.toggle('is-failed', status === 'failed' || status === 'cancelled');
+        row.classList.toggle('is-wait', status === 'queued' || (!status));
+        const em = row.querySelector('em');
+        if (em) em.textContent = this._startupJobLabel(status);
+      }
+    });
+
+    const countEl = document.getElementById('startup-ready-count');
+    const phaseEl = document.getElementById('startup-ready-phase');
+    const fill = document.getElementById('startup-ready-fill');
+    if (countEl) countEl.textContent = `${settled} of ${total} checks finished`;
+    if (phaseEl) phaseEl.textContent = settled >= total ? 'Ready' : 'Working';
+    if (fill) fill.style.width = `${Math.round((settled / total) * 100)}%`;
+
+    if (settled >= total) {
+      this._startupGateDismissed = true;
+      gate.hidden = true;
+      gate.setAttribute('aria-hidden', 'true');
+      document.body.classList.remove('startup-gate-open');
+      return;
+    }
+
+    gate.hidden = false;
+    gate.setAttribute('aria-hidden', 'false');
+    document.body.classList.add('startup-gate-open');
+  }
+
+  applyReadinessGates() {
+    const store = this.scanStore;
+    if (!store) return;
+    this.updateStartupReadyGate();
+    this.isScanning = store.isScanning('catalog-updates');
+    const updatesReady = store.updatesReady();
+    const marketReady = store.marketplaceReady();
+    const cleanReady = store.cleanupReady();
+    const btnScan = document.getElementById('btn-scan');
+    const btnSync = document.getElementById('btn-sync');
+    const scanningUpdates = store.isScanning('catalog-updates');
+    if (btnScan) {
+      if (scanningUpdates) {
+        btnScan.disabled = false;
+        btnScan.innerHTML = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="6" y="6" width="12" height="12" rx="2"/></svg> <span>Cancel</span>`;
+        btnScan.onclick = () => this.cancelUpdatesScan();
+      } else {
+        btnScan.disabled = !updatesReady && !store.job('catalog-updates').cached;
+        btnScan.innerHTML = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"></path><path d="M16 21h5v-5"></path></svg> <span>${updatesReady ? 'Check again' : 'Waiting for catalog…'}</span>`;
+        btnScan.onclick = () => this.scanUpdates();
+      }
+    }
+    if (btnSync) btnSync.disabled = scanningUpdates;
+
+    const btnAction = document.getElementById('btn-update-action');
+    if (btnAction) btnAction.disabled = !updatesReady || this.isUpdating;
+
+    const cleanBtn = document.getElementById('btn-one-click-clean');
+    const purgeBtn = document.getElementById('btn-purge-cleanup');
+    const scanClean = document.getElementById('btn-scan-cleanup');
+    const cleanBusy = store.isCleanupJobActive() || this.isCleaning;
+    if (cleanBtn) {
+      cleanBtn.disabled = this.isCleaning;
+      cleanBtn.classList.toggle('loading', cleanBusy);
+    }
+    if (purgeBtn) {
+      purgeBtn.disabled = this.isCleaning;
+      purgeBtn.classList.toggle('loading', cleanBusy);
+    }
+    if (scanClean) {
+      if (store.isCleanupJobActive()) {
+        scanClean.innerHTML = `<span>Cancel scan</span>`;
+        scanClean.onclick = () => this.cancelCleanupScan();
+      } else {
+        scanClean.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg><span>${cleanReady ? 'Scan storage' : 'Waiting for scan…'}</span>`;
+        scanClean.onclick = () => this.scanCleanup();
+      }
+      scanClean.disabled = false;
+    }
+
+    document.querySelectorAll('.btn-install-market, .market-install-btn').forEach((btn) => {
+      if (!marketReady) {
+        btn.disabled = true;
+        const lbl = btn.querySelector('span');
+        if (lbl && !lbl.dataset.prev) {
+          lbl.dataset.prev = lbl.textContent;
+          lbl.textContent = 'Checking…';
+        }
+      } else if (btn.disabled && btn.querySelector('span')?.dataset?.prev === 'Checking…') {
+        const lbl = btn.querySelector('span');
+        if (lbl) {
+          lbl.textContent = lbl.dataset.prev;
+          delete lbl.dataset.prev;
+        }
+      }
+    });
+
+    const staleNote = document.getElementById('updates-cache-note');
+    const uj = store.job('catalog-updates');
+    if (staleNote) {
+      const catalogBusy = uj.status === 'queued' || uj.status === 'scanning';
+      if (catalogBusy && this.updates.length > 0) {
+        staleNote.textContent = 'Showing the last list. Checking again.';
+        staleNote.hidden = false;
+      } else if (uj.cached && uj.status === 'ready') {
+        const when = store.formatLastChecked(uj);
+        staleNote.textContent = when ? `Last checked ${when}` : '';
+        staleNote.hidden = !when;
+      } else {
+        staleNote.hidden = true;
+      }
+    }
+  }
+
+  onScanJobReady(jobId) {
+    if (jobId === 'catalog-updates') this.refreshUpdatesFromStore(true);
+    if (jobId === 'local-arp' || jobId === 'catalog-installed') this.loadInstalledSilent();
+    if (jobId === 'cleanup_scan') this.applyCleanupFromOrchestrator(true);
+    if (jobId === 'startup') this.renderStartupAppsPage();
+    if (jobId === 'leftovers') this.renderLeftoverFoldersPage();
+    if (jobId === 'local-hardware') this.loadInitialDiagnostics();
+  }
+
+  async refreshUpdatesFromStore(allowCached) {
+    const store = this.scanStore;
+    if (!store) return;
+    const job = store.job('catalog-updates');
+    const canRead = store.updatesReady() || job.status === 'scanning' || job.status === 'queued';
+    if (!canRead) return;
+    if (job.cached && !allowCached && store.updatesReady()) return;
+    const catalogBusy = job.status === 'queued' || job.status === 'scanning';
+    try {
+      const raw = await this.invoke('scan_result', { job_id: 'catalog-updates' });
+      if (Array.isArray(raw)) {
+        this.updates = raw;
+        this.scanError = '';
+        this.isScanning = catalogBusy;
+        this.renderUpdates();
+        if (catalogBusy) {
+          this.syncUpdatesPageSummary(this.formatUpdatesSummaryMessage());
+          this.setIslandState(true, 'Checking for updates…', job.percent > 0 ? job.percent : null, 'Showing the last list. Checking again.');
+        } else if (job.status === 'ready') {
+          this.isScanning = false;
+          this.setIslandState(false, 'Sync complete', 100, this.formatUpdatesSummaryMessage());
+        } else {
+          this.syncUpdatesPageSummary(this.formatUpdatesSummaryMessage());
+        }
+      }
+    } catch (e) {
+      console.warn('[updates refresh]', e);
+    }
+  }
+
+  async cancelUpdatesScan() {
+    if (!this.scanStore) return;
+    await this.scanStore.cancelJob('catalog-updates');
+    this.isScanning = false;
+    this.renderUpdates();
+    this.applyReadinessGates();
+  }
+
+  async cancelCleanupScan() {
+    try {
+      await this.invoke('cleanup_scan_cancel', {});
+      await this.scanStore.cancelJob('cleanup_scan');
+    } catch (_) {}
+    this.applyReadinessGates();
+  }
+
+  async applyCleanupFromOrchestrator(allowCached) {
+    const store = this.scanStore;
+    if (!store || !store.cleanupReady()) return;
+    const job = store.job('cleanup_scan');
+    if (job.cached && !allowCached) return;
+    try {
+      const res = await this.invoke('scan_result', { job_id: 'cleanup_scan' });
+      if (res && res.categories) {
+        this.cleanupData = res;
+        this.cleanupPlanStale = false;
+        this.selectedCleanupCategories = new Set(
+          res.categories.filter((c) =>
+            c.selected && c.size_bytes > 0 && c.id !== 'missing_folders' && !c.report_only && !c.needs_windows_decision
+          ).map((c) => c.id)
+        );
+        this.renderCleanupMetrics();
+        this.renderCleanupDisks();
+        this.renderCleanupCategories();
+        this.renderCleanupScanProgress({ status: 'done' });
+      }
+    } catch (e) {
+      console.warn('[cleanup refresh]', e);
+    }
+    const staleNote = document.getElementById('cleanup-stale-note');
+    if (staleNote) {
+      if (job.cached && store.cleanupReady()) {
+        const when = store.formatLastChecked(job);
+        staleNote.textContent = when
+          ? `Showing saved scan from ${when}. Scan storage to refresh.`
+          : 'Showing saved scan. Scan storage to refresh.';
+        staleNote.hidden = false;
+      } else {
+        staleNote.hidden = true;
+      }
+    }
+    this.applyReadinessGates();
+    if (this._openCleanReviewAfterScan && store.cleanupReady()) {
+      this._openCleanReviewAfterScan = false;
+      this.openCleanupConsentModal('purge');
+    }
+  }
+
+  renderCleanupScanProgress(live) {
+    const strip = document.getElementById('cleanup-scan-progress');
+    if (!strip) return;
+    if (!live || (live.status !== 'running' && live.status !== 'scanning' && live.status !== 'queued')) {
+      strip.hidden = true;
+      return;
+    }
+    strip.hidden = false;
+    const p = live.progress || live;
+    const pct = Math.round(p.percent ?? live.percent ?? 0);
+    const bar = strip.querySelector('.cleanup-scan-bar i');
+    if (bar) {
+      bar.classList.toggle('is-waiting', pct <= 0);
+      bar.style.width = pct <= 0 ? '0%' : `${pct}%`;
+    }
+    const folder = document.getElementById('cleanup-scan-folder');
+    if (folder) folder.textContent = p.current_folder || live.current_item || 'Scanning…';
+    const bytes = document.getElementById('cleanup-scan-bytes');
+    if (bytes) bytes.textContent = p.bytes_scanned_str || p.bytes_str || '';
+    const eta = document.getElementById('cleanup-scan-eta');
+    if (eta) eta.textContent = pct > 0 ? (p.eta_str || '') : '';
+    const title = document.getElementById('cleanup-scan-title');
+    if (title) {
+      title.textContent = live.status === 'queued'
+        ? 'Preparing storage scan…'
+        : pct > 0
+          ? `Scanning storage (${pct}%)`
+          : 'Scanning storage…';
+    }
+  }
+
+  isStartupEdgeName(name) {
+    return /^MicrosoftEdgeAutoLaunch_/i.test(name || '');
+  }
+
+  startupDisplayName(name) {
+    if (!name) return 'Startup item';
+    if (this.isStartupEdgeName(name)) return 'Microsoft Edge';
+    const known = {
+      GoogleDriveFS: 'Google Drive',
+      JellyfinTray: 'Jellyfin',
+      'Microsoft.Lists': 'Microsoft Lists',
+      BingWallpaperDaemon: 'Bing Wallpaper',
+      CanvaAutoLaunchAvailabilityCheckAgent: 'Canva',
+      SecurityHealth: 'Windows Security',
+      RtkAudUService: 'Realtek Audio',
+      CloudflareWARP: 'Cloudflare WARP',
+    };
+    if (known[name]) return known[name];
+    let label = name;
+    if (label.endsWith('.lnk')) label = label.slice(0, -4);
+    return label;
+  }
+
+  startupSourceLocation(source) {
+    const s = (source || '').trim();
+    if (s === 'Starts with Windows for you') return 'Your sign-in';
+    if (s === 'Starts for everyone on this PC') return 'Every account';
+    if (s === 'Startup folder') return 'Startup folder';
+    if (s === 'Sign-in task') return 'Sign-in task';
+    return s;
+  }
+
+  startupEntrySubtitle(entry) {
+    const loc = this.startupSourceLocation(entry.source || entry.kind);
+    const pub = (entry.publisher || '').trim();
+    if (pub && loc) return `${pub} · ${loc}`;
+    return loc || pub || '';
+  }
+
+  startupHumanRefusedReason(reason) {
+    if (!reason || typeof reason !== 'string') return '';
+    const r = reason.trim();
+    if (r.length < 4 || r.length > 96) return '';
+    if (/^[A-Z0-9_]+$/.test(r)) return '';
+    if (!/[a-z]/.test(r)) return '';
+    if (r.split(/\s+/).filter(Boolean).length < 2) return '';
+    return r;
+  }
+
+  startupRowIsOn(entry) {
+    return entry.enabled !== false;
+  }
+
+  startupBuildDisplayRows(entries) {
+    const edgeMembers = entries.filter((e) => this.isStartupEdgeName(e.name));
+    const displayRows = [];
+    let edgePlaced = false;
+    for (const e of entries) {
+      if (this.isStartupEdgeName(e.name)) {
+        if (!edgePlaced && edgeMembers.length) {
+          displayRows.push({ kind: 'edge', members: edgeMembers });
+          edgePlaced = true;
+        }
+      } else {
+        displayRows.push({ kind: 'single', entry: e });
+      }
+    }
+    return displayRows;
+  }
+
+  startupRowHtml(row) {
+    const isEdge = row.kind === 'edge';
+    const refused = isEdge
+      ? row.members.length > 0 && row.members.every((m) => m.refused)
+      : Boolean(row.entry.refused);
+    const enabled = isEdge
+      ? row.members.some((m) => this.startupRowIsOn(m))
+      : this.startupRowIsOn(row.entry);
+    const title = isEdge ? 'Microsoft Edge' : this.startupDisplayName(row.entry.name || row.entry.label);
+    let subtitle = isEdge
+      ? (() => {
+          const n = row.members.length;
+          const on = row.members.filter((m) => this.startupRowIsOn(m)).length;
+          return `Startup boost · ${n} entries · ${on} on`;
+        })()
+      : this.startupEntrySubtitle(row.entry);
+    const extraRefused = !isEdge && row.entry.refused
+      ? this.startupHumanRefusedReason(row.entry.refused_reason)
+      : '';
+    const rowClasses = ['tool-row', 'card'];
+    if (!enabled && !refused) rowClasses.push('tool-row-off');
+    if (refused) rowClasses.push('tool-row-protected');
+    const stateLabel = enabled ? 'On' : 'Off';
+    const switchDisabled = refused ? 'disabled' : '';
+    const dataToggle = isEdge ? 'data-startup-edge-toggle' : 'data-startup-toggle';
+    const dataId = !isEdge && row.entry.id ? ` data-startup-id="${this.escapeHtml(row.entry.id)}"` : '';
+    const refusedBlock = refused
+      ? `<div class="tool-row-sub tool-row-sub-refused">Windows protects this${extraRefused ? ` · ${this.escapeHtml(extraRefused)}` : ''}</div>`
+      : '';
+    return `
+      <div class="${rowClasses.join(' ')}">
+        <div class="tool-row-info">
+          <div class="tool-row-title">${this.escapeHtml(title)}</div>
+          <div class="tool-row-sub">${this.escapeHtml(subtitle)}</div>
+          ${refusedBlock}
+        </div>
+        <div class="startup-toggle-wrap" aria-label="${this.escapeHtml(title)} ${stateLabel}">
+          <span class="startup-toggle-label">${stateLabel}</span>
+          <label class="toggle-switch">
+            <input type="checkbox" ${enabled ? 'checked' : ''} ${switchDisabled} ${dataToggle}${dataId}>
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+      </div>`;
+  }
+
+  bindStartupListToggles(root) {
+    root.querySelectorAll('[data-startup-toggle]').forEach((input) => {
+      input.addEventListener('change', () => {
+        const id = input.getAttribute('data-startup-id');
+        if (!id) return;
+        this.onStartupEntryToggle(id, input.checked, input);
+      });
+    });
+    root.querySelectorAll('[data-startup-edge-toggle]').forEach((input) => {
+      input.addEventListener('change', () => {
+        this.onStartupEdgeToggle(input.checked, input);
+      });
+    });
+  }
+
+  async onStartupEntryToggle(entryId, enabled, input) {
+    try {
+      await this.toggleStartupEntry(entryId, enabled);
+    } catch (_) {
+      if (input) input.checked = !enabled;
+    }
+  }
+
+  async onStartupEdgeToggle(wantOn, input) {
+    const members = this._startupEdgeMembers || [];
+    const targets = members.filter(
+      (m) => !m.refused && (wantOn ? !this.startupRowIsOn(m) : this.startupRowIsOn(m)),
+    );
+    if (!targets.length) return;
+    let failed = false;
+    for (const m of targets) {
+      try {
+        await this.toggleStartupEntry(m.id, wantOn);
+        m.enabled = wantOn;
+      } catch (_) {
+        failed = true;
+      }
+    }
+    if (failed && input) input.checked = !wantOn;
+    await this.renderStartupAppsPage();
+  }
+
+  async renderStartupAppsPage() {
+    const root = document.getElementById('startup-apps-list');
+    if (!root) return;
+    const summaryEl = document.getElementById('startup-apps-summary');
+    const store = this.scanStore;
+    if (store && !store.isReady('startup')) {
+      root.innerHTML = '<p class="tool-page-hint">Waiting for startup scan…</p>';
+      return;
+    }
+    let entries = [];
+    try {
+      entries = await this.invoke('startup_list', {});
+      if (!Array.isArray(entries)) {
+        const raw = await this.invoke('scan_result', { job_id: 'startup' });
+        entries = Array.isArray(raw) ? raw : (raw?.entries || []);
+      }
+    } catch (_) {
+      root.innerHTML = '<p class="tool-page-hint">Startup list is not available yet.</p>';
+      return;
+    }
+    if (!entries.length) {
+      if (summaryEl) summaryEl.textContent = 'No startup entries found.';
+      root.innerHTML = '<p class="tool-page-hint">No startup entries found.</p>';
+      return;
+    }
+    const displayRows = this.startupBuildDisplayRows(entries);
+    const edgeMembers = entries.filter((e) => this.isStartupEdgeName(e.name));
+    this._startupEdgeMembers = edgeMembers;
+    const turnedOn = displayRows.filter((row) => {
+      if (row.kind === 'edge') return row.members.some((m) => this.startupRowIsOn(m));
+      return this.startupRowIsOn(row.entry);
+    }).length;
+    if (summaryEl) {
+      summaryEl.textContent = `${displayRows.length} startup items, ${turnedOn} turned on`;
+    }
+    root.innerHTML = displayRows.map((row) => this.startupRowHtml(row)).join('');
+    this.bindStartupListToggles(root);
+  }
+
+  async toggleStartupEntry(entryId, enabled) {
+    if (!entryId) return;
+    try {
+      await this.invoke('startup_set_enabled', { entry_id: entryId, enabled });
+      this.showToast(enabled ? 'Startup enabled' : 'Startup disabled', 'success');
+    } catch (e) {
+      this.showToast(e.message || 'Could not change startup item', 'error');
+      throw e;
+    }
+  }
+
+  async renderLeftoverFoldersPage() {
+    const root = document.getElementById('leftover-folders-list');
+    if (!root) return;
+    const store = this.scanStore;
+    if (store && !store.isReady('leftovers')) {
+      root.innerHTML = '<p class="tool-page-hint">Waiting for leftover scan…</p>';
+      return;
+    }
+    let data = { items: [] };
+    try {
+      data = await this.invoke('leftovers_scan', {});
+      if (!data.items) {
+        const raw = await this.invoke('scan_result', { job_id: 'leftovers' });
+        data = raw && raw.items ? raw : { items: Array.isArray(raw) ? raw : [] };
+      }
+    } catch (_) {}
+    const items = data.items || [];
+    this.leftoverItems = items;
+    if (!items.length) {
+      root.innerHTML = '<p class="tool-page-hint">No leftover folders found.</p>';
+      return;
+    }
+    const showRecycle = store ? store.hasLeftoversRecycle : false;
+    root.innerHTML = items.map((it) => `
+      <div class="tool-row card wide">
+        <div class="tool-row-info">
+          <div class="tool-row-title">${this.escapeHtml(it.program || 'Leftover folder')}</div>
+          <div class="tool-row-sub">${this.escapeHtml(it.folder || '')} · ${this.escapeHtml(it.size_str || '')}</div>
+        </div>
+        <div class="tool-row-actions">
+          <button type="button" class="glass-btn btn-secondary btn-sm" onclick="app.leftoversReveal('${this.escapeHtml(it.folder || '').replace(/'/g, "\\'")}')">Reveal</button>
+          ${showRecycle ? `<button type="button" class="glass-btn btn-secondary btn-sm" onclick="app.leftoversRecycleConfirm('${this.escapeHtml(it.id || '')}')">Recycle</button>` : ''}
+          ${showRecycle && it.registry_entry_id ? `<button type="button" class="glass-btn btn-secondary btn-sm" onclick="app.leftoversRemoveRegistry('${this.escapeHtml(it.registry_entry_id || '')}', '${this.escapeHtml(it.id || '')}')">Remove uninstall entry</button>` : ''}
+        </div>
+      </div>
+    `).join('');
+  }
+
+  async leftoversReveal(path) {
+    await this.invoke('leftovers_reveal', { path });
+  }
+
+  async leftoversRecycleConfirm(itemId) {
+    const item = (this.leftoverItems || []).find((x) => x.id === itemId);
+    if (!item || !confirm(`Move this folder to the Recycle Bin?\n\n${item.folder}\n\n${item.size_str || ''}`)) return;
+    this.setIslandState(true, 'Moving leftover folder…', null, item.folder || item.program || '');
+    try {
+      const res = await this.invoke('leftovers_recycle', { path: item.folder, confirmed: true });
+      this.showToast(res?.message || 'Recycle Bin action finished', res?.success === false ? 'error' : 'success');
+      this.setIslandState(false, res?.success === false ? 'Move failed' : 'Leftover folder moved', res?.success === false ? 0 : 100, res?.message || 'Recycle Bin action finished');
+    } catch (e) {
+      this.showToast(String(e.message || e), 'error');
+      this.setIslandState(false, 'Move failed', 0, String(e.message || e));
+    }
+    this.renderLeftoverFoldersPage();
+  }
+
+  async leftoversRemoveRegistry(entryId, folderId) {
+    const item = (this.leftoverItems || []).find((x) => x.registry_entry_id === entryId || x.id === folderId);
+    if (!item) return;
+    if (!confirm(`Remove the stale uninstall registry entry after backing it up?\n\n${item.program || entryId}`)) return;
+    this.setIslandState(true, 'Removing uninstall entry…', null, item.program || item.folder || entryId);
+    try {
+      const conf = await this.invoke('leftovers_confirm_registry', { entry_id: entryId });
+      if (!conf?.token) {
+        this.showToast(conf?.message || 'Could not prepare registry removal', 'error');
+        this.setIslandState(false, 'Registry removal failed', 0, conf?.message || 'Could not prepare registry removal');
+        return;
+      }
+      const res = await this.invoke('leftovers_delete_registry', { entry_id: entryId, token: conf.token });
+      this.showToast(res?.message || 'Registry entry removed', res?.success === false ? 'error' : 'success');
+      this.setIslandState(false, res?.success === false ? 'Registry removal failed' : 'Uninstall entry removed', res?.success === false ? 0 : 100, res?.message || 'Registry entry removed');
+    } catch (e) {
+      this.showToast(String(e.message || e), 'error');
+      this.setIslandState(false, 'Registry removal failed', 0, String(e.message || e));
+    }
+    this.renderLeftoverFoldersPage();
+  }
+
+  async renderLargeFilesPage() {
+    const root = document.getElementById('large-files-list');
+    if (!root || !this.largeFilesJobId) return;
+    try {
+      const st = await this.invoke('large_files_status', { job_id: this.largeFilesJobId });
+      if (st.status === 'running') {
+        const prog = st.progress || {};
+        const filesScanned = prog.files_scanned;
+        const currentFolder = prog.current_folder || '';
+        let ticker = 'Starting…';
+        if (filesScanned != null && Number.isFinite(Number(filesScanned))) {
+          ticker = `${Number(filesScanned).toLocaleString()} files scanned`;
+        }
+        if (currentFolder) {
+          ticker = ticker === 'Starting…' ? currentFolder : `${ticker} · ${currentFolder}`;
+        }
+        this.setIslandState(true, 'Scanning large files…', null, ticker);
+        let hint = 'Scanning…';
+        if (filesScanned != null && Number.isFinite(Number(filesScanned))) {
+          hint += ` ${Number(filesScanned).toLocaleString()} files`;
+        }
+        if (currentFolder) {
+          const folderLine = `<p class="tool-page-hint tool-row-sub">${this.escapeHtml(currentFolder)}</p>`;
+          root.innerHTML = `<p class="tool-page-hint">${hint}</p>${folderLine}`;
+        } else {
+          root.innerHTML = `<p class="tool-page-hint">${hint}</p>`;
+        }
+        setTimeout(() => this.renderLargeFilesPage(), 600);
+        return;
+      }
+      if (this._largeFilesScanning) {
+        this._largeFilesScanning = false;
+        const n = st.count != null ? st.count : (st.files || st.results || []).length;
+        this.setIslandState(false, 'Large file scan finished', 100, `${n} large file(s) found`);
+      }
+      const list = st.results || st.files || [];
+      if (list.length) {
+        this.largeFilesList = list;
+        root.innerHTML = list.map((f) => `
+          <div class="tool-row card wide">
+            <p class="tool-row-title">${this.escapeHtml(f.name || f.path)}</p>
+            <p class="tool-row-sub">${this.escapeHtml(f.path || '')} · ${this.escapeHtml(f.size_str || '')}</p>
+            <div class="tool-row-actions">
+              <button type="button" class="glass-btn btn-primary btn-sm" onclick="app.largeFilesRecycle(['${this.escapeHtml(f.path).replace(/\\/g, '\\\\').replace(/'/g, "\\'")}'])">Move to Recycle Bin</button>
+              <button type="button" class="glass-btn btn-secondary btn-sm" onclick="app.largeFilesDeleteConfirm(['${this.escapeHtml(f.path).replace(/\\/g, '\\\\').replace(/'/g, "\\'")}'])">Delete permanently</button>
+              <button type="button" class="glass-btn btn-secondary btn-sm" onclick="app.largeFilesReveal('${this.escapeHtml(f.path).replace(/\\/g, '\\\\').replace(/'/g, "\\'")}')">Reveal</button>
+            </div>
+          </div>
+        `).join('');
+      } else {
+        root.innerHTML = '<p class="tool-page-hint">No large files matched your filters.</p>';
+      }
+    } catch (_) {
+      root.innerHTML = '<p class="tool-page-hint">Large file scan unavailable.</p>';
+      if (this._largeFilesScanning) {
+        this._largeFilesScanning = false;
+        this.setIslandState(false, 'Large file scan finished', 0, 'Large file scan unavailable.');
+      }
+    }
+  }
+
+  async largeFilesStartScan() {
+    const rootPath = (document.getElementById('large-files-root') || {}).value || '';
+    const minMb = parseFloat((document.getElementById('large-files-min') || {}).value || '500') || 500;
+    this.setIslandState(true, 'Scanning large files…', null, 'Starting…');
+    this._largeFilesScanning = true;
+    try {
+      const res = await this.invoke('large_files_scan_start', { root: rootPath, min_mb: minMb, older_than_days: 0 });
+      this.largeFilesJobId = res.job_id || res.job || '';
+      if (!this.largeFilesJobId) {
+        this._largeFilesScanning = false;
+        this.setIslandState(false, 'Large file scan finished', 0, 'Scan did not start');
+        return;
+      }
+      this.renderLargeFilesPage();
+    } catch (e) {
+      this._largeFilesScanning = false;
+      this.setIslandState(false, 'Large file scan finished', 0, String(e.message || e));
+    }
+  }
+
+  async largeFilesReveal(path) {
+    await this.invoke('large_files_reveal', { path });
+  }
+
+  async largeFilesRecycle(paths) {
+    const list = paths || [];
+    const ticker = list.length === 1 ? (list[0] || '') : `${list.length} files`;
+    this.setIslandState(true, 'Moving to Recycle Bin…', null, ticker);
+    try {
+      const res = await this.invoke('large_files_recycle', { paths, job_id: this.largeFilesJobId || '' });
+      this.showToast(res?.message || 'Moved to Recycle Bin', res?.success === false ? 'error' : 'success');
+      this.setIslandState(false, res?.success === false ? 'Recycle Bin failed' : 'Moved to Recycle Bin', res?.success === false ? 0 : 100, res?.message || 'Moved to Recycle Bin');
+    } catch (e) {
+      this.showToast(String(e.message || e), 'error');
+      this.setIslandState(false, 'Recycle Bin failed', 0, String(e.message || e));
+    }
+    this.renderLargeFilesPage();
+  }
+
+  async largeFilesDeleteConfirm(paths) {
+    const total = (paths || []).length;
+    if (!confirm(`Delete ${total} file(s) permanently? This cannot be undone.`)) return;
+    const ticker = total === 1 ? ((paths && paths[0]) || '') : `${total} files`;
+    this.setIslandState(true, 'Deleting permanently…', null, ticker);
+    try {
+      const conf = await this.invoke('large_files_confirm', { paths, job_id: this.largeFilesJobId || '' });
+      if (!conf?.token) {
+        this.showToast(conf?.message || 'Confirmation failed', 'error');
+        this.setIslandState(false, 'Delete cancelled', 0, conf?.message || 'Confirmation failed');
+        return;
+      }
+      if (!confirm(`Final confirmation: permanently delete ${conf.total_str || ''}? This cannot be undone.`)) {
+        this.setIslandState(false, 'Delete cancelled', 0, '');
+        return;
+      }
+      const res = await this.invoke('large_files_delete', { paths, token: conf.token });
+      this.showToast(res?.message || 'Delete finished', res?.success === false ? 'error' : 'success');
+      this.setIslandState(false, res?.success === false ? 'Delete failed' : 'Deleted permanently', res?.success === false ? 0 : 100, res?.message || 'Delete finished');
+    } catch (e) {
+      this.showToast(String(e.message || e), 'error');
+      this.setIslandState(false, 'Delete failed', 0, String(e.message || e));
+    }
+    this.renderLargeFilesPage();
+  }
+
   // ================= Settings & Diagnostics =================
 
 
   async loadInitialDiagnostics() {
+    this.applyAllowBetaCheckbox();
     try {
       const diag = await this.invoke('get_diagnostics', { activeEngine: this.activeEngine });
       if (!diag) return;
 
       this.hardwareDiag = diag;
-      this.renderHardwareSpecs(diag);
+      await this.renderHardwareSpecs(diag);
       this.renderDiagnostics(diag);
       this.renderEngineSelector(diag.engines, diag.active_engine);
 
-      // Admin badge
       const adminText = document.getElementById('admin-status-text');
       const adminPill = document.getElementById('admin-status-pill');
       if (diag.is_admin) {
@@ -3514,169 +5671,66 @@ class QuantumUpdaterApp {
         if (adminPill) adminPill.className = 'status-pill status-admin standard';
       }
 
-      // Engine badge
-      this.activeEngine = diag.active_engine || 'apple';
-      const engineLabel = (this.activeEngine === 'apple' ? 'Apple Update' : (this.activeEngine === 'brew' ? 'Homebrew' : (this.activeEngine || 'macOS Native')));
+      this.activeEngine = diag.active_engine || this.activeEngine || 'winget';
+      const engineLabel = diag.active_engine || 'Catalog';
       const badgeEl = document.getElementById('active-engine-badge');
-      if (badgeEl) badgeEl.textContent = 'Mac Health: Good';
+      if (badgeEl) badgeEl.textContent = 'PC Health: Good';
       const bentoEngine = document.getElementById('bento-engine-val');
       if (bentoEngine) bentoEngine.textContent = engineLabel;
-
-      this.loadBatteryTelemetry();
-      this.loadLaunchAgentsTelemetry();
     } catch (e) {
       console.warn('Diagnostics notice:', e);
     }
   }
 
-  renderHardwareSpecs(diag) {
+  async resolveAboutStorageDrives(diag) {
+    const hw = (diag && diag.hardware) || {};
+    let drives = Array.isArray(hw.storage) ? hw.storage.slice() : [];
+    try {
+      const extra = await this.invoke('cleanup_drives', {});
+      if (Array.isArray(extra) && extra.length) drives = extra;
+    } catch (e) {
+      /* feature-detect: fall back to hardware.storage */
+    }
+    return drives;
+  }
+
+  async renderHardwareSpecs(diag) {
     if (!diag) return;
     this.hardwareDiag = diag;
 
-    const isMac = (diag.os_display === 'macOS' || diag.os_system === 'Darwin' || (typeof navigator !== 'undefined' && navigator.platform && navigator.platform.includes('Mac')));
+    const root = document.getElementById('about-computer-root');
+    if (!root) return;
 
-    // Hero Header
-    const heroModel = document.getElementById('spec-hero-model');
-    if (heroModel) heroModel.textContent = diag.model_name || diag.model_id || (isMac ? 'Apple Mac' : 'Windows PC Hardware');
-
-    const heroOs = document.getElementById('spec-hero-os');
-    if (heroOs) {
-      const serialPart = diag.serial_number ? ` \u2022 Serial: ${diag.serial_number}` : '';
-      const verifiedTag = isMac ? 'Genuine Mac Hardware' : 'Verified PC Architecture';
-      heroOs.textContent = `${diag.os_display || diag.os_info || (isMac ? 'macOS' : 'Windows 11')}${serialPart} \u2022 ${verifiedTag}`;
+    const storageDrives = await this.resolveAboutStorageDrives(diag);
+    if (typeof buildAboutComputerPageHtml === 'function') {
+      root.innerHTML = buildAboutComputerPageHtml(diag, storageDrives);
     }
 
-    // Model & Identity
-    const dModel = document.getElementById('spec-detail-model');
-    if (dModel) dModel.textContent = diag.model_name || diag.model_id || (isMac ? 'Apple Mac' : 'Windows Workstation');
+    const hw = diag.hardware || {};
+    const cpu = hw.cpu || {};
+    const archChip = aboutFormatArch(cpu.arch || diag.arch) || 'x64';
+    const archEl = document.getElementById('sidebar-arch-chip') || document.querySelector('.security-chip-pill');
+    if (archEl) archEl.textContent = archChip;
 
-    const dModelId = document.getElementById('spec-detail-model-id');
-    if (dModelId) dModelId.textContent = diag.model_id || (isMac ? 'Macintosh' : 'x64/ARM64 System');
-
-    const dSerial = document.getElementById('spec-detail-serial');
-    if (dSerial) dSerial.textContent = diag.serial_number || 'Standard Hardware';
-
-    // Processor & Platform
-    const dCpu = document.getElementById('spec-detail-cpu');
-    if (dCpu) dCpu.textContent = diag.cpu || (isMac ? 'Apple Silicon / Intel' : (diag.arch ? `Windows ${diag.arch}` : 'Intel / AMD Processor'));
-
-    const dArch = document.getElementById('spec-detail-arch');
-    if (dArch) dArch.textContent = isMac ? 'Universal 2 (Apple Silicon & Intel 64-bit)' : (diag.arch ? `${diag.arch} Native Architecture` : 'x86_64 Architecture');
-
-    const dPlatform = document.getElementById('spec-detail-platform');
-    if (dPlatform) dPlatform.textContent = `${diag.os_system || diag.os_info || (isMac ? 'macOS' : 'Windows')} (${diag.os_display || diag.os_info || '64-bit'})`;
-
-    // Memory & Storage
-    const dMemory = document.getElementById('spec-detail-memory');
-    if (dMemory) dMemory.textContent = diag.memory || '16 GB';
-
-    const dStorage = document.getElementById('spec-detail-storage');
-    if (dStorage) dStorage.textContent = `${diag.storage_free_str || 'Available'} free of ${diag.storage_total_str || 'Main Drive'}`;
-
-    const dStorageBar = document.getElementById('spec-detail-storage-bar');
-    if (dStorageBar) {
-      const pct = diag.storage_used_percent !== undefined ? diag.storage_used_percent : 20;
-      dStorageBar.style.width = `${pct}%`;
-    }
-
-    const dStorageHint = document.getElementById('spec-detail-storage-hint');
-    if (dStorageHint) dStorageHint.textContent = isMac ? `Macintosh HD \u2022 APFS (${diag.storage_used_percent || 0}% used)` : `Local Disk (C:) \u2022 NTFS (${diag.storage_used_percent || 0}% used)`;
-
-    // Camera & Display
-    const dCamera = document.getElementById('spec-detail-camera');
-    if (dCamera) dCamera.textContent = diag.camera || (isMac ? 'FaceTime HD Camera (Built-in)' : 'HD Video Camera');
-
-    const dDisplay = document.getElementById('spec-detail-display');
-    if (dDisplay) dDisplay.textContent = diag.display || (isMac ? 'Retina Display' : 'Primary Monitor Display');
-
-    const dOs = document.getElementById('spec-detail-os');
-    if (dOs) dOs.textContent = diag.os_display || diag.os_info || (isMac ? 'macOS' : 'Windows 11');
-
-    // Sidebar storage telemetry widget sync
     const sideDiskPct = document.getElementById('sidebar-disk-pct');
     if (sideDiskPct) sideDiskPct.textContent = `${diag.storage_used_percent || 0}%`;
     const sideDiskBar = document.getElementById('sidebar-disk-bar');
     if (sideDiskBar) sideDiskBar.style.width = `${diag.storage_used_percent || 0}%`;
     const sideDiskFree = document.getElementById('sidebar-disk-free');
-    if (sideDiskFree) sideDiskFree.textContent = `${diag.storage_free_str || ''} Free`;
-  }
-
-  async loadBatteryTelemetry() {
-    try {
-      const batt = await this.invoke('get_battery_info', {});
-      if (!batt) return;
-
-      const healthEl = document.getElementById('spec-detail-battery-health');
-      const cyclesEl = document.getElementById('spec-detail-battery-cycles');
-      const powerEl = document.getElementById('spec-detail-battery-power');
-      const tempEl = document.getElementById('spec-detail-battery-temp');
-
-      if (!batt.has_battery) {
-        if (healthEl) {
-          healthEl.textContent = 'AC Power Direct';
-          healthEl.className = 'spec-val highlight-blue';
-        }
-        if (cyclesEl) cyclesEl.textContent = 'Desktop Hardware';
-        if (powerEl) powerEl.textContent = 'Direct Wall Power';
-        if (tempEl) tempEl.textContent = 'Optimal';
-        return;
-      }
-
-      if (healthEl) {
-        healthEl.textContent = `${batt.health_percent}% (${batt.condition || 'Normal'})`;
-        healthEl.className = (batt.health_percent >= 80) ? 'spec-val highlight-mint' : 'spec-val highlight-coral';
-      }
-      if (cyclesEl) {
-        const maxMah = batt.max_capacity_mah || 0;
-        const desMah = batt.design_capacity_mah || 0;
-        const mahStr = maxMah > 0 ? ` (${maxMah} / ${desMah} mAh)` : '';
-        cyclesEl.textContent = `${batt.cycle_count} Cycles${mahStr}`;
-      }
-      if (powerEl) {
-        const charging = batt.is_charging ? ' (Charging)' : (batt.fully_charged ? ' (Fully Charged)' : '');
-        powerEl.textContent = `${batt.power_source || 'Battery'}${charging}`;
-      }
-      if (tempEl) {
-        tempEl.textContent = batt.temperature_c || (batt.temperature_celsius ? `${batt.temperature_celsius}°C (Optimal)` : 'Optimal');
-      }
-    } catch (err) {
-      console.warn('Battery telemetry notice:', err);
-    }
-  }
-
-  async loadLaunchAgentsTelemetry() {
-    try {
-      const agents = await this.invoke('get_launch_agents', {});
-      const countEl = document.getElementById('spec-detail-daemons-count');
-      const impactEl = document.getElementById('spec-detail-daemons-impact');
-      const previewEl = document.getElementById('spec-daemons-preview');
-
-      if (!agents || !Array.isArray(agents) || agents.length === 0) {
-        if (countEl) countEl.textContent = '0 Monitored';
-        if (impactEl) impactEl.textContent = 'Minimal (Clean System)';
-        return;
-      }
-
-      if (countEl) countEl.textContent = `${agents.length} Monitored Daemons`;
-      if (impactEl) {
-        impactEl.textContent = agents.length > 5 ? 'Moderate (Background Services Active)' : 'Minimal (Clean System)';
-      }
-
-      if (previewEl) {
-        previewEl.innerHTML = agents.slice(0, 5).map(ag => `
-          <div style="display:flex; justify-content:space-between; align-items:center; padding: 4px 8px; background: rgba(255,255,255,0.03); border-radius: 6px; font-size: 11px;">
-            <span style="color: var(--c-text-primary); font-weight: 500;">${this.escapeHtml(ag.name || ag.label)}</span>
-            <span style="color: var(--c-text-secondary); font-family: var(--font-mono); font-size: 10px;">${this.escapeHtml(ag.vendor || 'System')}</span>
-          </div>
-        `).join('');
-      }
-    } catch (err) {
-      console.warn('Launch agents telemetry notice:', err);
+    if (sideDiskFree) {
+      const free = diag.storage_free_str || '';
+      sideDiskFree.textContent = free ? `${free} free` : sideDiskFree.textContent;
     }
   }
 
   copySerialNumber() {
-    const serial = (this.hardwareDiag && this.hardwareDiag.serial_number) || 'C02D14LAMD6N';
+    const hw = (this.hardwareDiag && this.hardwareDiag.hardware) || {};
+    const device = hw.device || {};
+    const serial = device.serial_number || (this.hardwareDiag && this.hardwareDiag.serial_number) || '';
+    if (!serial) {
+      this.showToast('This PC has not reported a serial number yet', 'info');
+      return;
+    }
     navigator.clipboard.writeText(serial).then(() => {
       this.showToast('Serial number copied to clipboard', 'success');
       this.playHapticTick();
@@ -3688,17 +5742,37 @@ class QuantumUpdaterApp {
   copyAllSystemSpecs() {
     if (!this.hardwareDiag) return;
     const d = this.hardwareDiag;
+    const hw = d.hardware || {};
+    const device = hw.device || {};
+    const cpu = hw.cpu || {};
+    const catalogParts = [d.catalog_version, d.engine_version].filter(Boolean);
+    if (!catalogParts.length) {
+      const cv = [d.winget_version, d.choco_version, d.scoop_version].filter(Boolean);
+      if (cv.length) catalogParts.push(cv.join(', '));
+    }
+    const catalogLine = catalogParts.length
+      ? `Catalog tool version: ${catalogParts.join(' / ')}`
+      : 'Catalog tool version: Not reported by this PC';
     const lines = [
-      `Computer Model: ${d.model_name || d.model_id || 'Apple Mac'}`,
-      `Model Identifier: ${d.model_id || 'N/A'}`,
-      `Serial Number: ${d.serial_number || 'N/A'}`,
-      `Operating System: ${d.os_display || 'macOS'}`,
-      `Processor: ${d.cpu || 'N/A'}`,
-      `Memory: ${d.memory || 'N/A'}`,
-      `Primary Storage: ${d.storage_free_str || ''} free of ${d.storage_total_str || ''} (${d.storage_used_percent || 0}% used)`,
-      `Camera: ${d.camera || 'FaceTime HD Camera'}`,
-      `Displays: ${d.display || 'Built-in Display'}`
+      `Product: ${device.model_name || d.model_name || 'Not reported by this PC'}`,
+      `Model: ${device.model_id || d.model_id || 'Not reported by this PC'}`,
+      `Serial: ${device.serial_number || d.serial_number || 'Not reported by this PC'}`,
+      `OS: ${(hw.os && hw.os.name) || d.os_display || d.os_info || 'Not reported by this PC'}`,
+      `Processor: ${cpu.brand_string || d.cpu || 'Not reported by this PC'}`,
+      `Cores / threads: ${cpu.cores || '?'} / ${cpu.threads || '?'}`,
+      `Generation: ${cpu.generation || 'Not reported by this PC'}`,
+      `Architecture: ${aboutFormatArch(cpu.arch || d.arch) || 'Not reported by this PC'}`,
+      `Memory: ${d.memory || aboutFormatGiB((hw.memory && hw.memory.total_bytes)) || 'Not reported by this PC'}`,
+      `Storage: ${d.storage_free_str || ''} free of ${d.storage_total_str || ''} (${d.storage_used_percent || 0}% used)`.trim(),
+      catalogLine
     ];
+    const gpuLines = Array.isArray(hw.gpus) ? hw.gpus.filter((g) => !aboutIsUsbDisplay(g)) : [];
+    gpuLines.forEach((g, i) => {
+      lines.push(`Graphics ${i + 1}: ${g.name}${g.integrated ? ' (built-in)' : ''}`);
+    });
+    aboutCollectUsbDevices(hw).forEach((row, i) => {
+      lines.push(`USB ${i + 1}: ${row.name} (external)`);
+    });
     navigator.clipboard.writeText(lines.join('\n')).then(() => {
       this.showToast('All system specifications copied to clipboard', 'success');
       this.playHapticTick();
@@ -3709,28 +5783,20 @@ class QuantumUpdaterApp {
     const container = document.getElementById('diagnostics-container');
     if (!container || !diag) return;
 
-    const isMac = (diag.os_display === 'macOS' || diag.os_system === 'Darwin' || navigator.platform.includes('Mac'));
-    const rows = isMac ? [
-      ['Computer Model', diag.model_name || diag.model_id || 'Apple Mac'],
-      ['Serial Number', diag.serial_number || 'C02D14LAMD6N'],
-      ['Operating System', diag.os_display || 'macOS'],
-      ['Processor', diag.cpu || 'Apple / Intel'],
-      ['Memory (RAM)', diag.memory || '16 GB'],
-      ['Primary Camera', diag.camera || 'FaceTime HD Camera (Built-in)'],
-      ['Displays & Graphics', diag.display || 'Retina Display'],
-      ['Disk Storage Space', `${diag.storage_free_str || ''} free of ${diag.storage_total_str || ''}`],
-      ['Developer & Publisher', 'Quantum Step (https://quantumstep.in)'],
-      ['Security Profile', 'Apple Gatekeeper & Hardened Runtime Active'],
-      ['Package Engine', diag.active_engine === 'apple' ? 'macOS Software Update' : (diag.active_engine === 'brew' ? 'Homebrew' : 'Native Applications')],
-      ['Application Build', 'Quantum Updater v2.0.0 (Apple macOS Edition)']
-    ] : [
+    if (this.isMacDiagnostics(diag)) {
+      container.innerHTML = '<div class="diag-row"><span class="diag-key">Platform</span><span class="diag-val">This build targets Windows PCs.</span></div>';
+      return;
+    }
+
+    const hw = diag.hardware || {};
+    const cpu = hw.cpu || {};
+    const arch = aboutFormatArch(cpu.arch || diag.arch) || 'x64';
+    const rows = [
       ['Publisher', 'Quantum Step (quantumstep.in)'],
       ['Privilege Level', diag.is_admin ? 'Administrator (Elevated)' : 'Standard User (Not Elevated)'],
-      ['Operating System', diag.os_info || 'Windows'],
-      ['CPU Architecture', diag.arch || 'x64'],
-      ['Active Engine', diag.active_engine || 'winget'],
-      ['Winget Version', diag.winget_version || 'Not Available'],
-      ['Chocolatey Version', diag.choco_version || 'Not Available']
+      ['Operating System', (hw.os && hw.os.name) || diag.os_info || diag.os_display || 'Not reported by this PC'],
+      ['CPU Architecture', arch],
+      ['Active Engine', diag.active_engine || 'Not reported by this PC']
     ];
 
     let html = '';
@@ -3738,12 +5804,13 @@ class QuantumUpdaterApp {
       html += `
         <div class="diag-row">
           <span class="diag-key">${k}</span>
-          <span class="diag-val">${v}</span>
+          <span class="diag-val">${this.escapeHtml(String(v))}</span>
         </div>
       `;
     });
     container.innerHTML = html;
   }
+
 
   renderEngineSelector(engines, activeId) {
     const container = document.getElementById('engine-options-container');
@@ -3772,7 +5839,14 @@ class QuantumUpdaterApp {
     this.scanUpdates();
   }
 
+  applyAllowBetaCheckbox() {
+    const box = document.getElementById('pref-allow-beta');
+    if (!box) return;
+    box.checked = !!(this.settings && this.settings.allow_beta);
+  }
+
   savePreference(key, value) {
+    if (this.settings) this.settings[key] = value;
     this.invoke('save_setting', { key: key, value: value }).catch(() => {});
   }
 
@@ -3977,6 +6051,16 @@ window.onNativeResponse = function(callId, result, error) {
 };
 
 // Global instance
+function paintBuildStamp() {
+  const stamp = window.QUANTUM_BUILD || { label: "2.0.0 · not a packaged build" };
+  const text = stamp.label || "2.0.0 · not a packaged build";
+  document.querySelectorAll("[data-build-label]").forEach((el) => {
+    el.textContent = text;
+  });
+  document.title = "Quantum Updater · " + text;
+}
+
+paintBuildStamp();
 const app = new QuantumUpdaterApp();
 window.app = app;
 
