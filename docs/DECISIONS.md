@@ -198,6 +198,12 @@
 - **Decision:** No new protective middle layer. `main.py` starts `preload_self_update_check` and waits up to 8s before opening the window. Getting ready includes a **Quantum Updater** row. Catalog bootstrap starts only after that check settles (or times out at 10s in the UI). Offline or failed checks do not hold the app. The install banner still offers the update; applying it remains user-confirmed via the existing Install path. Official Releases rules from ADR 026 stay.
 - **Consequences:** Tracker 42.5. A tagged Release is still required before an installed EXE can download a newer build.
 
+### ADR 038: Publish full onedir zip on GitHub Releases
+- **Status:** Accepted (2026-11-15).
+- **Context:** Release pipeline uploaded only `dist\...\QuantumUpdater.exe` from an onedir build. That bootloader needs `_internal`; alone it fails with Python errors and will not start.
+- **Decision:** CI publishes `QuantumUpdater-Windows.zip` (entire onedir folder). Do not publish a lone bootloader as the install asset. Startup failures write `%LOCALAPPDATA%\QuantumUpdater\logs\startup-crash.log` and show a MessageBox. Packaged as Build 8 / tag `v2.0.2`.
+- **Consequences:** Other PCs unzip then run. Winget manifests may point at the zip until a true single-file portable exists.
+
 ### ADR 037: Cap stuck winget upgrades so batch updates continue
 - **Status:** Accepted (2026-11-15).
 - **Context:** Owner's 2.0 app froze on the second package during a multi-app update. `_run_streaming_cmd` waited on winget with no timeout.
