@@ -22,8 +22,20 @@ public sealed class MainWindow : Window
     public MainWindow()
     {
         Title = "DeskVerve";
-        ExtendsContentIntoTitleBar = true;
-        SystemBackdrop = new MicaBackdrop();
+        // TEMP DIAGNOSTIC 46.7.37: the switches are read one time (DiagSwitches is static).
+        var noTitleBar = DiagSwitches.Has("notitlebar"); // TEMP DIAGNOSTIC 46.7.37
+        var titleBarLate = DiagSwitches.Has("titlebarlate"); // TEMP DIAGNOSTIC 46.7.37
+        var noEmblem = DiagSwitches.Has("noemblem"); // TEMP DIAGNOSTIC 46.7.37
+        CrashLog.Write("Mark:Diag " + (DiagSwitches.RawValue.Length == 0 ? "none" : DiagSwitches.RawValue), null); // TEMP DIAGNOSTIC 46.7.37
+        if (!noTitleBar) // TEMP DIAGNOSTIC 46.7.37
+        {
+            ExtendsContentIntoTitleBar = true;
+        }
+
+        if (!DiagSwitches.Has("nomica")) // TEMP DIAGNOSTIC 46.7.37
+        {
+            SystemBackdrop = new MicaBackdrop();
+        }
 
         var titleBar = new Grid
         {
@@ -37,9 +49,13 @@ public sealed class MainWindow : Window
             Margin = new Thickness(16, 0, 0, 0),
             VerticalAlignment = VerticalAlignment.Center,
         };
-        var titleLogo = BrandAssets.Emblem(24);
-        AutomationProperties.SetAccessibilityView(titleLogo, AccessibilityView.Raw);
-        titleContent.Children.Add(titleLogo);
+        if (!noEmblem) // TEMP DIAGNOSTIC 46.7.37
+        {
+            var titleLogo = BrandAssets.Emblem(24);
+            AutomationProperties.SetAccessibilityView(titleLogo, AccessibilityView.Raw);
+            titleContent.Children.Add(titleLogo);
+        }
+
         titleContent.Children.Add(new TextBlock
         {
             Text = "DeskVerve",
@@ -50,7 +66,10 @@ public sealed class MainWindow : Window
             VerticalAlignment = VerticalAlignment.Center,
         });
         titleBar.Children.Add(titleContent);
-        SetTitleBar(titleBar);
+        if (!noTitleBar && !titleBarLate) // TEMP DIAGNOSTIC 46.7.37
+        {
+            SetTitleBar(titleBar);
+        }
 
         foreach (var name in new[] { "Getting ready", "Updates & Health", "App Marketplace", "Installed", "About This PC" })
         {
@@ -107,6 +126,10 @@ public sealed class MainWindow : Window
         Grid.SetRow(body, 1);
         root.Children.Add(body);
         Content = root;
+        if (!noTitleBar && titleBarLate) // TEMP DIAGNOSTIC 46.7.37
+        {
+            SetTitleBar(titleBar);
+        }
 
         Show("Getting ready");
         RefreshAccountFooter();

@@ -34,6 +34,14 @@ public sealed class GettingReadyPage : StackPanel
             }
 
             _started = true;
+            if (DiagSwitches.Has("noscan")) // TEMP DIAGNOSTIC 46.7.38
+            {
+                Set(_updates, "Updates scan · Scan skipped (diagnostic)", Theme.Muted); // TEMP DIAGNOSTIC 46.7.38
+                Set(_installed, "Installed scan · Scan skipped (diagnostic)", Theme.Muted); // TEMP DIAGNOSTIC 46.7.38
+                Set(_self, "DeskVerve check · Scan skipped (diagnostic)", Theme.Muted); // TEMP DIAGNOSTIC 46.7.38
+                return; // TEMP DIAGNOSTIC 46.7.38
+            }
+
             _ = RunAsync();
         };
     }

@@ -21,23 +21,26 @@ public class App : Application, IXamlMetadataProvider
         TaskScheduler.UnobservedTaskException += (_, e) => CrashLog.Write("Task", e.Exception);
 
         // TEMP DIAGNOSTIC (16 Nov, start crash 0xC000027B). Remove after the cause is found.
-        AppDomain.CurrentDomain.FirstChanceException += (_, e) =>
+        if (!DiagSwitches.Has("nofirstchance")) // TEMP DIAGNOSTIC 46.7.38
         {
-            if (_inFirstChance)
+            AppDomain.CurrentDomain.FirstChanceException += (_, e) =>
             {
-                return;
-            }
+                if (_inFirstChance)
+                {
+                    return;
+                }
 
-            _inFirstChance = true;
-            try
-            {
-                CrashLog.Write("FirstChance", e.Exception);
-            }
-            finally
-            {
-                _inFirstChance = false;
-            }
-        };
+                _inFirstChance = true;
+                try
+                {
+                    CrashLog.Write("FirstChance", e.Exception);
+                }
+                finally
+                {
+                    _inFirstChance = false;
+                }
+            };
+        }
     }
 
     [ThreadStatic]

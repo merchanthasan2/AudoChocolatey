@@ -18,6 +18,7 @@
     <Compile Include="..\..\src\QuantumUpdater\Services\Inventory\RegistryInventory.cs" Link="Linked\RegistryInventory.cs" />
     <Compile Include="..\..\src\QuantumUpdater\Services\Inventory\StoreAppRules.cs" Link="Linked\StoreAppRules.cs" />
     <Compile Include="..\..\src\QuantumUpdater\CrashLog.cs" Link="Linked\CrashLog.cs" />
+    <Compile Include="..\..\src\QuantumUpdater\Views\Controls\LetterTileRules.cs" Link="Linked\LetterTileRules.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Data\winget-sample.txt" CopyToOutputDirectory="PreserveNewest" />
