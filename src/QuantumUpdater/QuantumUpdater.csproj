@@ -24,6 +24,8 @@
     <AssemblyTitle>DeskVerve</AssemblyTitle>
     <Description>DeskVerve keeps your Windows apps up to date.</Description>
     <Copyright>© 2026 Quantum Step. All rights reserved.</Copyright>
+    <!-- W29: release builds map source paths to /_/, so crash stacks never show the build machine folder. -->
+    <ContinuousIntegrationBuild Condition="'$(Configuration)' == 'Release'">true</ContinuousIntegrationBuild>
   </PropertyGroup>
   <ItemGroup>
     <Content Include="..\..\brand\desk-verve-emblem.png" Link="Assets\Brand\desk-verve-emblem.png" CopyToOutputDirectory="PreserveNewest" />
