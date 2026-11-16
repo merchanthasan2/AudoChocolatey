@@ -316,7 +316,7 @@ flowchart LR
   aq["A · queue key, kind, phase, batch · 46.7.44, 46.7.45 · ActivitySummary 46.7.46"] --> bar["46.7.8 ActivityBar"] --> a9
   a9 --> cpa{"Checkpoint A · owner looks at shell and gallery"}
   gal --> cpa
-  cpa --> b1["B · runner W7, W18, W8 · error text · RunOutcome · progress parser"]
+  cpa --> b1["B · runner W7, W18, W8 · error text · RunOutcome · CLI phase words · COM update spike, WingetInstaller (real percent)"]
   cpa --> b2["B · WingetReader W20 (and W21, W22)"]
   cpa --> b3["B · SnapshotCache · UpdatesGrouping · sources · UpdatesCatalog"]
   b1 --> b4["B · UpdateActions · queue hold (W18) · old pages through the queue (W2)"]
@@ -352,8 +352,8 @@ sequenceDiagram
   participant D as ConfirmDialog
   participant A as UpdateActions
   participant Q as ActionQueue (app-wide)
-  participant W as WingetService
-  participant R as WingetRunner
+  participant I as WingetInstaller (COM, main)
+  participant W as WingetService + WingetRunner (CLI, backup)
   participant B as ActivityBar
   P->>A: Update (one row, one click)
   P->>D: Update all or 2+ selected
@@ -361,21 +361,29 @@ sequenceDiagram
   P->>A: UpdateMany (list order)
   A->>Q: Enqueue(key = catalog id, kind Update)
   Q-->>B: Changed (Waiting, Working, batch "1 of N")
-  Q->>W: UpgradeAsync(id, progress, token)
-  W->>R: upgrade --id ID --exact --source winget --silent ...
-  R-->>W: each line
-  W-->>Q: ActionProgress (phase, printed percent only)
-  R-->>W: RunResult (exit code, ErrorLines, StillRunning)
-  W-->>A: RunOutcome (plain reason, restart needed)
+  Q->>A: run the work
+  A->>I: UpgradeAsync(id, progress, token)
+  I->>I: FindForActionAsync (exact id, one match) · UpgradePackageAsync (AllowHashMismatch false)
+  I-->>Q: ActionProgress (Downloading: real bytes percent · Installing: number only if reported)
+  I-->>A: ActionResult (ComResultMap: status, installer code, reboot)
+  alt COM result NotStarted (COM could not start)
+    A->>W: UpgradeAsync(id) · upgrade --id ID --exact --source winget
+    W-->>Q: ActionProgress (phase words only, no percent)
+    W-->>A: ActionResult (RunOutcome: exit code, ErrorLines)
+  end
   A->>A: success: UpdatesCatalog.MarkUpdated, report if signed in
-  alt stop incomplete (W18)
+  alt Cancel or 10-minute limit
+    A->>I: Cancel() · wait 10 s for an end state
+    I-->>A: no end state: StillRunning (W18 on the COM route)
+  end
+  alt StillRunning (COM operation open, or CLI process not stopped)
     A-->>Q: ActionOutcome with StillRunning
     Q-->>B: held: "could not stop ... next action starts when it ends"
-    Q->>Q: wait for the installer to end, then continue
+    Q->>Q: wait for the end state, then continue
   end
 ```
 
-Rules: `InstalledPage` and `MarketplacePage` (old pages) also put their actions into the same queue (W2). The shell drops `MicaBackdrop`: the opaque canvas `#131313` covers the window, so the look does not change (plan D1).
+Rules: `InstalledPage` and `MarketplacePage` (old pages) also put their actions into the same queue (W2). The CLI runs only when the COM route did not start, never after a COM operation started (plan D9). DeskVerve never kills an installer on the COM route (plan D10). Closing the window during an action asks first (plan D11). Spike 46.7.89 must pass before the COM route goes live; if it fails, the CLI is the only route, with phase words. The shell drops `MicaBackdrop`: the opaque canvas `#131313` covers the window, so the look does not change (plan D1).
 
 Diagram updates after Track B: move the two Updates diagrams, `ActionQueue`, `ActivityBar` and `UpdatesCatalog` into the built picture after the Design Architect gives PASS. Remove `CatalogSnapshot` from the Updates path (it stays for Installed until 46.7.17).
 
