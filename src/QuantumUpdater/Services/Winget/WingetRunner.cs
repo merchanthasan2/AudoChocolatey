@@ -4,8 +4,15 @@ using System.Text;
 
 namespace QuantumUpdater.Services.Winget;
 
-/// <summary>The result of one winget run. StopIncomplete is true when the process could not be stopped.</summary>
-public sealed record RunResult(int ExitCode, bool TimedOut, bool Cancelled, IReadOnlyList<string> Lines, bool StopIncomplete = false);
+/// <summary>
+/// The result of one winget run. StopIncomplete is true when the process could not be stopped.
+/// ErrorLines holds the last stderr lines (at most 20). Read them with Errors.
+/// </summary>
+public sealed record RunResult(int ExitCode, bool TimedOut, bool Cancelled, IReadOnlyList<string> Lines, bool StopIncomplete = false, IReadOnlyList<string>? ErrorLines = null)
+{
+    /// <summary>The last stderr lines. Empty when winget wrote none.</summary>
+    public IReadOnlyList<string> Errors => ErrorLines ?? Array.Empty<string>();
+}
 
 /// <summary>
 /// Runs winget.exe with a fixed argument list. Never uses a shell or one command string.
@@ -22,6 +29,10 @@ public sealed class WingetRunner
 
     // Time allowed for the output readers to finish after the process ends.
     private static readonly TimeSpan ReaderGrace = TimeSpan.FromSeconds(5);
+
+    // Only the last stderr lines are kept, and each one is cut to a fixed length.
+    private const int MaxErrorLines = 20;
+    private const int MaxErrorLineLength = 500;
 
     private readonly string _executablePath;
 
@@ -76,7 +87,26 @@ public sealed class WingetRunner
         process.Start();
 
         var collected = new List<string>();
+        var errorLines = new List<string>();
         Exception? callbackError = null;
+
+        void HandleStderrLine(string line)
+        {
+            if (string.IsNullOrWhiteSpace(line))
+            {
+                return;
+            }
+
+            var kept = line.Length > MaxErrorLineLength ? line[..MaxErrorLineLength] : line;
+            lock (errorLines)
+            {
+                errorLines.Add(kept);
+                if (errorLines.Count > MaxErrorLines)
+                {
+                    errorLines.RemoveAt(0);
+                }
+            }
+        }
 
         void HandleStdoutLine(string line)
         {
@@ -103,7 +133,7 @@ public sealed class WingetRunner
 
         // Read both pipes at the same time so the process never blocks on a full pipe.
         var stdoutTask = ReadLinesAsync(process.StandardOutput, HandleStdoutLine);
-        var stderrTask = ReadLinesAsync(process.StandardError, _ => { });
+        var stderrTask = ReadLinesAsync(process.StandardError, HandleStderrLine);
 
         bool cancelled = false;
         bool timedOut = false;
@@ -150,7 +180,13 @@ public sealed class WingetRunner
             snapshot = collected.ToList();
         }
 
-        return new RunResult(ReadExitCode(process), timedOut, cancelled, snapshot, stopIncomplete);
+        List<string> errorSnapshot;
+        lock (errorLines)
+        {
+            errorSnapshot = errorLines.ToList();
+        }
+
+        return new RunResult(ReadExitCode(process), timedOut, cancelled, snapshot, stopIncomplete, errorSnapshot);
     }
 
     /// <summary>

@@ -217,6 +217,14 @@ public sealed class ScanOrchestrator
                 return;
             }
 
+            // An earlier run that took too long may still run in the background. Do not start a second copy.
+            if (entry.Abandoned is { IsCompleted: false })
+            {
+                SetFinished(entry, success: false, summary: null, reason: "Still stopping. Try again in a moment.");
+                return;
+            }
+
+            entry.Abandoned = null;
             run = ++entry.Run;
             entry.State = ScanJobState.Working;
             entry.Fraction = null;
@@ -244,8 +252,7 @@ public sealed class ScanOrchestrator
 
             // Run the job on a thread pool thread, so sync work in the job cannot block this caller.
             Task<ScanResult> work = Task.Run(() => entry.Job.RunAsync(progress, cts.Token));
-            Task timeLimit = Task.Delay(_jobTimeout, cts.Token);
-            Task first = await Task.WhenAny(work, stopped.Task, timeLimit).ConfigureAwait(false);
+            Task first = await Task.WhenAny(work, stopped.Task).ConfigureAwait(false);
             if (first == work)
             {
                 ScanResult? result = await work.ConfigureAwait(false);
@@ -265,6 +272,17 @@ public sealed class ScanOrchestrator
             }
             else
             {
+                // The job ignores the stop. Keep watching it, so its fault is observed and a retry waits for it.
+                lock (_gate)
+                {
+                    entry.Abandoned = work;
+                }
+
+                _ = work.ContinueWith(
+                    t => CrashLog.Write("Scan: abandoned job faulted", t.Exception),
+                    CancellationToken.None,
+                    TaskContinuationOptions.OnlyOnFaulted | TaskContinuationOptions.ExecuteSynchronously,
+                    TaskScheduler.Default);
                 reason = token.IsCancellationRequested ? "Stopped" : "Took too long";
             }
         }
@@ -452,6 +470,9 @@ public sealed class ScanOrchestrator
         public int Run { get; set; }
 
         public Stopwatch Stopwatch { get; } = new();
+
+        /// <summary>The job task that did not stop in time. It may still run in the background.</summary>
+        public Task? Abandoned { get; set; }
 
         /// <summary>Set when the job leaves the wait for other jobs. Dependent jobs wait on it.</summary>
         public TaskCompletionSource Finished { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);

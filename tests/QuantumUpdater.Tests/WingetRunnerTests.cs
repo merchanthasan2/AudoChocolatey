@@ -108,6 +108,27 @@ public class WingetRunnerTests
     }
 
     [Fact]
+    public async Task Stderr_lines_are_kept()
+    {
+        var result = await NewRunner().RunAsync(["--stderr", "3"], LongTimeout, null, CancellationToken.None);
+
+        Assert.Equal(3, result.Errors.Count);
+        Assert.Equal("error line 1", result.Errors[0]);
+        Assert.Contains("done", result.Lines);
+        Assert.Equal(1, result.ExitCode);
+    }
+
+    [Fact]
+    public async Task Only_the_last_20_stderr_lines_are_kept()
+    {
+        var result = await NewRunner().RunAsync(["--stderr", "50"], LongTimeout, null, CancellationToken.None);
+
+        Assert.Equal(20, result.Errors.Count);
+        Assert.Equal("error line 31", result.Errors[0]);
+        Assert.Equal("error line 50", result.Errors[19]);
+    }
+
+    [Fact]
     public async Task Local_arp_id_is_rejected_before_start()
     {
         await Assert.ThrowsAsync<ArgumentException>(() =>

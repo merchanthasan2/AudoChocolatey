@@ -300,4 +300,55 @@ public class ScanOrchestratorTests
 
         Assert.Equal(ScanJobState.Done, Find(orchestrator, "quick").State);
     }
+
+    [Fact]
+    public async Task Retry_is_refused_while_the_abandoned_run_still_runs()
+    {
+        var calls = new int[1];
+        var jobs = new[]
+        {
+            new FakeJob("ignores", async (p, t) =>
+            {
+                Interlocked.Increment(ref calls[0]);
+                await Task.Delay(3000);
+                return ScanResult.Done("late");
+            }),
+        };
+        var orchestrator = new ScanOrchestrator(jobs, a => a(), TimeSpan.FromMilliseconds(300));
+        using var cts = new CancellationTokenSource(Limit);
+
+        await orchestrator.RunAsync(cts.Token).WaitAsync(Limit);
+        Assert.Equal("Took too long", Find(orchestrator, "ignores").Reason);
+
+        await orchestrator.RetryAsync("ignores", cts.Token).WaitAsync(Limit);
+
+        var job = Find(orchestrator, "ignores");
+        Assert.Equal(ScanJobState.Failed, job.State);
+        Assert.Equal("Still stopping. Try again in a moment.", job.Reason);
+        Assert.Equal(1, calls[0]);
+    }
+
+    [Fact]
+    public async Task Retry_runs_again_after_the_abandoned_run_ends()
+    {
+        var calls = new int[1];
+        var jobs = new[]
+        {
+            new FakeJob("ignores", async (p, t) =>
+            {
+                Interlocked.Increment(ref calls[0]);
+                await Task.Delay(600);
+                return ScanResult.Done("late");
+            }),
+        };
+        var orchestrator = new ScanOrchestrator(jobs, a => a(), TimeSpan.FromMilliseconds(200));
+        using var cts = new CancellationTokenSource(Limit);
+
+        await orchestrator.RunAsync(cts.Token).WaitAsync(Limit);
+        await Task.Delay(1000);
+
+        await orchestrator.RetryAsync("ignores", cts.Token).WaitAsync(Limit);
+
+        Assert.Equal(2, calls[0]);
+    }
 }
