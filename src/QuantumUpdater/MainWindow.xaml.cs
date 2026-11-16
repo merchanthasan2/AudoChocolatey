@@ -17,6 +17,7 @@ public sealed class MainWindow : Window
     private readonly Dictionary<string, Button> _navButtons = new();
     private string _current = "";
     private bool _readyAdvanced;
+    private readonly StackPanel _accountFooter = new() { Spacing = 4, Margin = new Thickness(16, 8, 16, 16) };
 
     public MainWindow()
     {
@@ -70,13 +71,21 @@ public sealed class MainWindow : Window
             _nav.Children.Add(button);
         }
 
+        var sidebarContent = new Grid();
+        sidebarContent.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
+        sidebarContent.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+        Grid.SetRow(_nav, 0);
+        sidebarContent.Children.Add(_nav);
+        Grid.SetRow(_accountFooter, 1);
+        sidebarContent.Children.Add(_accountFooter);
+
         var sidebar = new Border
         {
             Width = 240,
             Background = Theme.Sidebar,
             BorderBrush = Theme.Stroke,
             BorderThickness = new Thickness(0, 0, 1, 0),
-            Child = _nav,
+            Child = sidebarContent,
         };
 
         var body = new Grid
@@ -99,23 +108,81 @@ public sealed class MainWindow : Window
         root.Children.Add(body);
         Content = root;
 
-        if (_services.Session.IsSignedIn)
-        {
-            Show("Getting ready");
-        }
-        else
-        {
-            ShowSignIn();
-        }
+        Show("Getting ready");
+        RefreshAccountFooter();
     }
 
     private void ShowSignIn()
     {
-        _nav.Visibility = Visibility.Collapsed;
+        var returnTo = string.IsNullOrEmpty(_current) ? "Getting ready" : _current;
+        _current = "Sign in";
+        foreach (var pair in _navButtons)
+        {
+            pair.Value.Background = Theme.Sidebar;
+        }
+
         _host.Children.Clear();
         var page = new SignInPage(_services);
-        page.SignedIn += () => Show("Getting ready");
+        page.SignedIn += () =>
+        {
+            RefreshAccountFooter();
+            Show(returnTo);
+        };
+        page.Dismissed += () => Show(returnTo);
         _host.Children.Add(page);
+    }
+
+    private void RefreshAccountFooter()
+    {
+        _accountFooter.Children.Clear();
+        if (_services.Session.IsSignedIn)
+        {
+            _accountFooter.Children.Add(new TextBlock
+            {
+                Text = _services.Session.Email,
+                Foreground = Theme.Text,
+                FontFamily = Chrome.Font,
+                FontSize = 12,
+                TextTrimming = TextTrimming.CharacterEllipsis,
+            });
+            var signOut = new Button
+            {
+                Content = "Sign out",
+                HorizontalAlignment = HorizontalAlignment.Left,
+                Background = Theme.Sidebar,
+                Foreground = Theme.Accent,
+                BorderThickness = new Thickness(0),
+                Padding = new Thickness(0),
+                FontFamily = Chrome.Font,
+            };
+            signOut.Click += (_, _) =>
+            {
+                _services.Session.Clear();
+                RefreshAccountFooter();
+            };
+            _accountFooter.Children.Add(signOut);
+            return;
+        }
+
+        _accountFooter.Children.Add(new TextBlock
+        {
+            Text = "Not signed in",
+            Foreground = Theme.Muted,
+            FontFamily = Chrome.Font,
+            FontSize = 12,
+        });
+        var signIn = new Button
+        {
+            Content = "Sign in",
+            HorizontalAlignment = HorizontalAlignment.Left,
+            Background = Theme.Sidebar,
+            Foreground = Theme.Accent,
+            BorderThickness = new Thickness(0),
+            Padding = new Thickness(0),
+            FontFamily = Chrome.Font,
+        };
+        signIn.Click += (_, _) => ShowSignIn();
+        _accountFooter.Children.Add(signIn);
     }
 
     private void Show(string name)
