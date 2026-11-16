@@ -15,3 +15,7 @@ Owner later:
 - On-PC acceptance of sign-in through Updates (45.11)
 - Git push, GitHub release, winget, Microsoft Store, Chocolatey, download sites
 - Deploy the admin portal to quantumstep.in
+
+## Backups (owner, 16 Nov 2026)
+
+After every verified step, make a local git commit on `channel/windows` and update `tracker.html`. Commit before you start background agents. Push to GitHub only when the owner says yes.
