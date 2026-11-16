@@ -16,6 +16,7 @@
     <Compile Include="..\..\src\QuantumUpdater\Services\Scan\ScanOrchestrator.cs" Link="Linked\ScanOrchestrator.cs" />
     <Compile Include="..\..\src\QuantumUpdater\Models\AppEntry.cs" Link="Linked\AppEntry.cs" />
     <Compile Include="..\..\src\QuantumUpdater\Services\Inventory\RegistryInventory.cs" Link="Linked\RegistryInventory.cs" />
+    <Compile Include="..\..\src\QuantumUpdater\Services\Inventory\StoreAppRules.cs" Link="Linked\StoreAppRules.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\_winget_sample.txt" Link="Data\_winget_sample.txt" CopyToOutputDirectory="PreserveNewest" />
