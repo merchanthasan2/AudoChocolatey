@@ -54,47 +54,70 @@ public sealed class WingetReaderException : Exception
 /// Reads winget data through the COM API (in-proc factory).
 /// Installed and update data use the composite catalog (remote winget catalog plus local installed apps).
 /// Search, tag and details use the remote winget catalog only.
-/// Every COM call runs on a background thread, with a 15 second limit.
+/// Only one COM call runs at a time. Each COM call has a 15 second limit.
 /// </summary>
 public sealed class WingetReader : IDisposable
 {
     public const int MaxResultLimit = 200;
 
     private static readonly TimeSpan CallLimit = TimeSpan.FromSeconds(15);
+    private static readonly TimeSpan CancelGrace = TimeSpan.FromSeconds(5);
+    private static readonly TimeSpan CacheLimit = TimeSpan.FromMinutes(30);
 
     // Same rule as MarketplaceService.SearchQueryPattern. Copied, not moved.
     private static readonly Regex SearchTextPattern = new(
         @"^[A-Za-z0-9][A-Za-z0-9 ._+-]{0,79}$",
         RegexOptions.CultureInvariant | RegexOptions.Compiled);
 
-    private readonly SemaphoreSlim _connectGate = new(1, 1);
+    // One gate for all COM work.
+    private readonly SemaphoreSlim _gate = new(1, 1);
+
+    // Cancelled on Dispose. Not disposed on purpose: running calls still use it.
+    private readonly CancellationTokenSource _life = new();
+
     private PackageManager? _manager;
     private PackageCatalog? _composite;
+    private DateTime _compositeAt;
     private PackageCatalog? _remote;
+    private DateTime _remoteAt;
+    private CancellationTokenSource? _searchCts;
     private bool _disposed;
 
     /// <summary>Lists installed apps with update data. One FindPackages call.</summary>
     public async Task<IReadOnlyList<CatalogApp>> ListInstalledAsync(CancellationToken cancellationToken)
     {
-        var catalog = await GetCompositeAsync(cancellationToken).ConfigureAwait(false);
-        return await RunAsync(
-            () => MapMatches(Find(catalog, new FindPackagesOptions(), "list").Matches),
-            cancellationToken).ConfigureAwait(false);
+        ThrowIfDisposed();
+        using var linked = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _life.Token);
+        return await RunAsync(async token =>
+        {
+            var catalog = await GetCompositeAsync(token).ConfigureAwait(false);
+            var result = await FindAsync(composite: true, catalog, new FindPackagesOptions(), "list", token).ConfigureAwait(false);
+            return await Task.Run(() => MapMatches(result.Matches), token).ConfigureAwait(false);
+        }, linked.Token).ConfigureAwait(false);
     }
 
     /// <summary>Searches the remote winget catalog. Name, Id, Moniker or Tag contains the text.</summary>
     public async Task<IReadOnlyList<CatalogApp>> SearchAsync(string text, int limit, CancellationToken cancellationToken)
     {
+        ThrowIfDisposed();
         var query = (text ?? string.Empty).Trim();
         if (!SearchTextPattern.IsMatch(query))
         {
             throw new ArgumentException("Search text is not allowed.", nameof(text));
         }
 
-        var remote = await GetRemoteAsync(cancellationToken).ConfigureAwait(false);
+        // A new search cancels the previous search that is still running.
+        var search = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _life.Token);
+        // Read the token now. A newer search can dispose this source at any time after the swap.
+        var searchToken = search.Token;
+        var previous = Interlocked.Exchange(ref _searchCts, search);
+        previous?.Cancel();
+        previous?.Dispose();
+
         var max = ClampLimit(limit);
-        return await RunAsync(() =>
+        return await RunAsync(async token =>
         {
+            var remote = await GetRemoteAsync(token).ConfigureAwait(false);
             var options = new FindPackagesOptions { ResultLimit = (uint)max };
             foreach (var field in new[] { PackageMatchField.Name, PackageMatchField.Id, PackageMatchField.Moniker, PackageMatchField.Tag })
             {
@@ -105,23 +128,27 @@ public sealed class WingetReader : IDisposable
                     Value = query
                 });
             }
-            return MapMatches(Find(remote, options, "search").Matches);
-        }, cancellationToken).ConfigureAwait(false);
+
+            var result = await FindAsync(composite: false, remote, options, "search", token).ConfigureAwait(false);
+            return await Task.Run(() => MapMatches(result.Matches), token).ConfigureAwait(false);
+        }, searchToken).ConfigureAwait(false);
     }
 
     /// <summary>Lists remote winget packages with a tag. The tag must match exactly, ignoring case.</summary>
     public async Task<IReadOnlyList<CatalogApp>> ByTagAsync(string tag, int limit, CancellationToken cancellationToken)
     {
+        ThrowIfDisposed();
         var value = (tag ?? string.Empty).Trim();
         if (!SearchTextPattern.IsMatch(value))
         {
             throw new ArgumentException("Tag is not allowed.", nameof(tag));
         }
 
-        var remote = await GetRemoteAsync(cancellationToken).ConfigureAwait(false);
+        using var linked = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _life.Token);
         var max = ClampLimit(limit);
-        return await RunAsync(() =>
+        return await RunAsync(async token =>
         {
+            var remote = await GetRemoteAsync(token).ConfigureAwait(false);
             var options = new FindPackagesOptions { ResultLimit = (uint)max };
             options.Selectors.Add(new PackageMatchFilter
             {
@@ -129,8 +156,10 @@ public sealed class WingetReader : IDisposable
                 Option = PackageFieldMatchOption.EqualsCaseInsensitive,
                 Value = value
             });
-            return MapMatches(Find(remote, options, "tag search").Matches);
-        }, cancellationToken).ConfigureAwait(false);
+
+            var result = await FindAsync(composite: false, remote, options, "tag search", token).ConfigureAwait(false);
+            return await Task.Run(() => MapMatches(result.Matches), token).ConfigureAwait(false);
+        }, linked.Token).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -138,14 +167,16 @@ public sealed class WingetReader : IDisposable
     /// </summary>
     public async Task<CatalogDetails?> DetailsAsync(string catalogId, CancellationToken cancellationToken)
     {
+        ThrowIfDisposed();
         if (!PackageId.IsCatalogId(catalogId))
         {
             throw new ArgumentException("Catalog id is not allowed.", nameof(catalogId));
         }
 
-        var remote = await GetRemoteAsync(cancellationToken).ConfigureAwait(false);
-        return await RunAsync(() =>
+        using var linked = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _life.Token);
+        return await RunAsync(async token =>
         {
+            var remote = await GetRemoteAsync(token).ConfigureAwait(false);
             var options = new FindPackagesOptions { ResultLimit = 1 };
             options.Selectors.Add(new PackageMatchFilter
             {
@@ -153,34 +184,10 @@ public sealed class WingetReader : IDisposable
                 Option = PackageFieldMatchOption.EqualsCaseInsensitive,
                 Value = catalogId
             });
-            var matches = Find(remote, options, "details").Matches;
-            CatalogPackage? package = null;
-            for (var i = 0; matches is not null && i < matches.Count && package is null; i++)
-            {
-                var candidate = matches[i]?.CatalogPackage;
-                if (candidate is not null && string.Equals(candidate.Id, catalogId, StringComparison.OrdinalIgnoreCase))
-                {
-                    package = candidate;
-                }
-            }
 
-            if (package is null)
-            {
-                return null;
-            }
-
-            var version = package.DefaultInstallVersion;
-            var metadata = version?.GetCatalogPackageMetadata();
-            return new CatalogDetails(
-                CatalogId: package.Id,
-                Name: package.Name ?? string.Empty,
-                Publisher: metadata?.Publisher,
-                Description: metadata?.Description,
-                Homepage: metadata?.PackageUrl,
-                License: metadata?.License,
-                LatestVersion: version?.Version,
-                Icons: MapIcons(metadata?.Icons));
-        }, cancellationToken).ConfigureAwait(false);
+            var result = await FindAsync(composite: false, remote, options, "details", token).ConfigureAwait(false);
+            return await Task.Run(() => MapDetails(result.Matches, catalogId), token).ConfigureAwait(false);
+        }, linked.Token).ConfigureAwait(false);
     }
 
     public void Dispose()
@@ -191,71 +198,55 @@ public sealed class WingetReader : IDisposable
         }
 
         _disposed = true;
+
+        // _gate and _life are not disposed on purpose. Running calls still use them.
+        _life.Cancel();
         _composite = null;
         _remote = null;
         _manager = null;
-        _connectGate.Dispose();
+        Interlocked.Exchange(ref _searchCts, null)?.Cancel();
     }
 
-    private async Task<PackageCatalog> GetCompositeAsync(CancellationToken cancellationToken)
+    private async Task<PackageCatalog> GetCompositeAsync(CancellationToken token)
     {
-        ThrowIfDisposed();
-        if (_composite is not null)
+        if (_composite is not null && DateTime.UtcNow - _compositeAt < CacheLimit)
         {
             return _composite;
         }
 
-        await _connectGate.WaitAsync(cancellationToken).ConfigureAwait(false);
-        try
+        _composite = null;
+        var reference = await Task.Run(() =>
         {
-            ThrowIfDisposed();
-            _composite ??= await RunAsync(ConnectComposite, cancellationToken).ConfigureAwait(false);
-            return _composite;
-        }
-        finally
-        {
-            _connectGate.Release();
-        }
+            var manager = EnsureManager();
+            var remoteRef = manager.GetPredefinedPackageCatalog(PredefinedPackageCatalog.OpenWindowsCatalog);
+            var options = new CreateCompositePackageCatalogOptions();
+            options.Catalogs.Add(remoteRef);
+            options.CompositeSearchBehavior = CompositeSearchBehavior.LocalCatalogs;
+            return manager.CreateCompositePackageCatalog(options);
+        }, token).ConfigureAwait(false);
+
+        var catalog = await ConnectAsync(reference, "composite catalog", token).ConfigureAwait(false);
+        _composite = catalog;
+        _compositeAt = DateTime.UtcNow;
+        return catalog;
     }
 
-    private async Task<PackageCatalog> GetRemoteAsync(CancellationToken cancellationToken)
+    private async Task<PackageCatalog> GetRemoteAsync(CancellationToken token)
     {
-        ThrowIfDisposed();
-        if (_remote is not null)
+        if (_remote is not null && DateTime.UtcNow - _remoteAt < CacheLimit)
         {
             return _remote;
         }
 
-        await _connectGate.WaitAsync(cancellationToken).ConfigureAwait(false);
-        try
-        {
-            ThrowIfDisposed();
-            _remote ??= await RunAsync(ConnectRemote, cancellationToken).ConfigureAwait(false);
-            return _remote;
-        }
-        finally
-        {
-            _connectGate.Release();
-        }
-    }
+        _remote = null;
+        var reference = await Task.Run(
+            () => EnsureManager().GetPredefinedPackageCatalog(PredefinedPackageCatalog.OpenWindowsCatalog),
+            token).ConfigureAwait(false);
 
-    // Runs on a background thread. Only call from RunAsync.
-    private PackageCatalog ConnectComposite()
-    {
-        var manager = EnsureManager();
-        var remoteRef = manager.GetPredefinedPackageCatalog(PredefinedPackageCatalog.OpenWindowsCatalog);
-        var options = new CreateCompositePackageCatalogOptions();
-        options.Catalogs.Add(remoteRef);
-        options.CompositeSearchBehavior = CompositeSearchBehavior.LocalCatalogs;
-        return ConnectOrThrow(manager.CreateCompositePackageCatalog(options).Connect(), "composite catalog");
-    }
-
-    // Runs on a background thread. Only call from RunAsync.
-    private PackageCatalog ConnectRemote()
-    {
-        var manager = EnsureManager();
-        var remoteRef = manager.GetPredefinedPackageCatalog(PredefinedPackageCatalog.OpenWindowsCatalog);
-        return ConnectOrThrow(remoteRef.Connect(), "remote catalog");
+        var catalog = await ConnectAsync(reference, "remote catalog", token).ConfigureAwait(false);
+        _remote = catalog;
+        _remoteAt = DateTime.UtcNow;
+        return catalog;
     }
 
     private PackageManager EnsureManager()
@@ -264,8 +255,9 @@ public sealed class WingetReader : IDisposable
         return _manager;
     }
 
-    private static PackageCatalog ConnectOrThrow(ConnectResult connect, string name)
+    private static async Task<PackageCatalog> ConnectAsync(PackageCatalogReference reference, string name, CancellationToken token)
     {
+        ConnectResult connect = await WithLimitAsync(t => reference.ConnectAsync().AsTask(t), token).ConfigureAwait(false);
         if (connect.PackageCatalog is null || connect.Status != ConnectResultStatus.Ok)
         {
             throw new WingetReaderException($"Connect to the {name} failed: {connect.Status}");
@@ -274,15 +266,57 @@ public sealed class WingetReader : IDisposable
         return connect.PackageCatalog;
     }
 
-    private static FindPackagesResult Find(PackageCatalog catalog, FindPackagesOptions options, string operation)
+    // Cancels the COM call itself after CallLimit, so winget stops the work (W20).
+    // The extra wait is a backstop for a call that ignores the cancel.
+    private static async Task<T> WithLimitAsync<T>(Func<CancellationToken, Task<T>> start, CancellationToken token)
     {
-        var result = catalog.FindPackages(options);
-        if (result.Status != FindPackagesResultStatus.Ok)
+        using var limit = CancellationTokenSource.CreateLinkedTokenSource(token);
+        limit.CancelAfter(CallLimit);
+        try
         {
-            throw new WingetReaderException($"The {operation} failed: {result.Status}");
+            return await start(limit.Token).WaitAsync(CallLimit + CancelGrace, token).ConfigureAwait(false);
         }
+        catch (OperationCanceledException ex) when (!token.IsCancellationRequested)
+        {
+            throw new TimeoutException("The COM call did not finish in time.", ex);
+        }
+    }
 
-        return result;
+    // A failed or timed out find clears the catalog, so the next call connects again.
+    private async Task<FindPackagesResult> FindAsync(
+        bool composite,
+        PackageCatalog catalog,
+        FindPackagesOptions options,
+        string operation,
+        CancellationToken token)
+    {
+        try
+        {
+            FindPackagesResult result = await WithLimitAsync(t => catalog.FindPackagesAsync(options).AsTask(t), token).ConfigureAwait(false);
+            if (result.Status != FindPackagesResultStatus.Ok)
+            {
+                throw new WingetReaderException($"The {operation} failed: {result.Status}");
+            }
+
+            return result;
+        }
+        catch (Exception ex) when (ex is WingetReaderException or TimeoutException)
+        {
+            ResetCatalog(composite);
+            throw;
+        }
+    }
+
+    private void ResetCatalog(bool composite)
+    {
+        if (composite)
+        {
+            _composite = null;
+        }
+        else
+        {
+            _remote = null;
+        }
     }
 
     // One bad package is skipped. The rest of the list still returns.
@@ -316,6 +350,37 @@ public sealed class WingetReader : IDisposable
         return rows;
     }
 
+    // Index access, not foreach. Same reason as MapMatches.
+    private static CatalogDetails? MapDetails(IReadOnlyList<MatchResult>? matches, string catalogId)
+    {
+        CatalogPackage? package = null;
+        for (var i = 0; matches is not null && i < matches.Count && package is null; i++)
+        {
+            var candidate = matches[i]?.CatalogPackage;
+            if (candidate is not null && string.Equals(candidate.Id, catalogId, StringComparison.OrdinalIgnoreCase))
+            {
+                package = candidate;
+            }
+        }
+
+        if (package is null)
+        {
+            return null;
+        }
+
+        var version = package.DefaultInstallVersion;
+        var metadata = version?.GetCatalogPackageMetadata();
+        return new CatalogDetails(
+            CatalogId: package.Id,
+            Name: package.Name ?? string.Empty,
+            Publisher: metadata?.Publisher,
+            Description: metadata?.Description,
+            Homepage: metadata?.PackageUrl,
+            License: metadata?.License,
+            LatestVersion: version?.Version,
+            Icons: MapIcons(metadata?.Icons));
+    }
+
     private static CatalogApp MapPackage(CatalogPackage package)
     {
         var installed = package.InstalledVersion;
@@ -324,7 +389,7 @@ public sealed class WingetReader : IDisposable
             LocalId: package.Id ?? string.Empty,
             CatalogId: available is null ? null : package.Id,
             Name: package.Name ?? string.Empty,
-            Publisher: installed?.Publisher,
+            Publisher: installed?.Publisher ?? available?.Publisher,
             InstalledVersion: installed?.Version,
             AvailableVersion: available?.Version,
             IsUpdateAvailable: package.IsUpdateAvailable,
@@ -380,16 +445,18 @@ public sealed class WingetReader : IDisposable
         ObjectDisposedException.ThrowIf(_disposed, this);
     }
 
-    // Runs COM work on a background thread with a 15 second limit.
+    // Runs one COM call at a time, under the gate.
     // A COM failure, a timeout, or a bad status becomes a WingetReaderException.
-    private static async Task<T> RunAsync<T>(Func<T> work, CancellationToken cancellationToken)
+    // A cancel by the caller (or by Dispose) rethrows OperationCanceledException.
+    private async Task<T> RunAsync<T>(Func<CancellationToken, Task<T>> work, CancellationToken token)
     {
-        cancellationToken.ThrowIfCancellationRequested();
+        await _gate.WaitAsync(token).ConfigureAwait(false);
         try
         {
-            return await Task.Run(work, cancellationToken).WaitAsync(CallLimit, cancellationToken).ConfigureAwait(false);
+            ThrowIfDisposed();
+            return await work(token).ConfigureAwait(false);
         }
-        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        catch (OperationCanceledException) when (token.IsCancellationRequested)
         {
             throw;
         }
@@ -404,6 +471,10 @@ public sealed class WingetReader : IDisposable
         catch (Exception ex)
         {
             throw new WingetReaderException("WinGet COM read failed.", ex);
+        }
+        finally
+        {
+            _gate.Release();
         }
     }
 }
