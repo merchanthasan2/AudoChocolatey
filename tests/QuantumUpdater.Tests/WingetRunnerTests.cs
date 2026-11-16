@@ -119,6 +119,27 @@ public class WingetRunnerTests
     }
 
     [Fact]
+    public async Task Progress_mode_prints_the_file()
+    {
+        var path = Path.Combine(Path.GetTempPath(), $"progress-{Guid.NewGuid():N}.txt");
+        File.WriteAllText(path, "a\rb\rc\ndone\n");
+        try
+        {
+            var result = await NewRunner().RunAsync(["--progress", path], LongTimeout, null, CancellationToken.None);
+
+            Assert.Equal(0, result.ExitCode);
+            Assert.False(result.TimedOut);
+            Assert.False(result.Cancelled);
+            // The reader ends a line at \r, at \n and at \r\n. So "a\rb\rc\n" gives three lines.
+            Assert.Equal(new[] { "a", "b", "c", "done" }, result.Lines);
+        }
+        finally
+        {
+            File.Delete(path);
+        }
+    }
+
+    [Fact]
     public async Task Only_the_last_20_stderr_lines_are_kept()
     {
         var result = await NewRunner().RunAsync(["--stderr", "50"], LongTimeout, null, CancellationToken.None);
@@ -166,28 +187,62 @@ public class WingetRunnerTests
             Assert.True(result.TimedOut);
             Assert.False(result.Cancelled);
             Assert.True(result.StopIncomplete);
+            Assert.NotNull(result.StillRunning);
         }
         finally
         {
             // The fake could not be stopped by the runner. Stop it here so no test leaves it running.
-            foreach (var process in Process.GetProcessesByName("FakeWinget"))
+            KillRunningFakes();
+        }
+    }
+
+    [Fact]
+    public async Task Incomplete_stop_returns_still_running_that_ends_when_the_process_ends()
+    {
+        var runner = new WingetRunner(Path.Combine(AppContext.BaseDirectory, "FakeWinget", "FakeWinget.exe"))
+        {
+            // The kill does nothing, so the fake keeps running and the stop stays incomplete.
+            KillTree = _ => { },
+        };
+        try
+        {
+            var result = await runner.RunAsync(["--sleep"], TimeSpan.FromSeconds(1), null, CancellationToken.None);
+
+            Assert.True(result.TimedOut);
+            Assert.True(result.StopIncomplete);
+            Assert.NotNull(result.StillRunning);
+            Assert.False(result.StillRunning!.IsCompleted);
+
+            KillRunningFakes();
+
+            await result.StillRunning.WaitAsync(TimeSpan.FromSeconds(5));
+        }
+        finally
+        {
+            KillRunningFakes();
+        }
+    }
+
+    // Stops every running fake winget. A test uses it so no FakeWinget is left running.
+    private static void KillRunningFakes()
+    {
+        foreach (var process in Process.GetProcessesByName("FakeWinget"))
+        {
+            try
             {
-                try
-                {
-                    process.Kill(entireProcessTree: true);
-                }
-                catch (InvalidOperationException)
-                {
-                    // Already ended.
-                }
-                catch (Win32Exception)
-                {
-                    // Could not stop it. The test already checked the result.
-                }
-                finally
-                {
-                    process.Dispose();
-                }
+                process.Kill(entireProcessTree: true);
+            }
+            catch (InvalidOperationException)
+            {
+                // Already ended.
+            }
+            catch (Win32Exception)
+            {
+                // Could not stop it. The test already checked the result.
+            }
+            finally
+            {
+                process.Dispose();
             }
         }
     }

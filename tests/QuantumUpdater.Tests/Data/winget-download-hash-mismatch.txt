@@ -1,0 +1,5 @@
+Found Wget [JernejSimoncic.Wget] Version 1.21.4
+This application is licensed to you by its owner.
+Microsoft is not responsible for, nor does it grant any licenses to, third-party packages.
+Downloading https://eternallybored.org/misc/wget/1.21.4/64/wget.exe
+Installer hash does not match.

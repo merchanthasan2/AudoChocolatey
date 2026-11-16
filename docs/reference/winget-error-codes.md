@@ -1,0 +1,55 @@
+# Winget error codes (reference for task 46.7.55)
+
+Source: `src/AppInstallerSharedLib/Public/AppInstallerErrors.h` in Microsoft's winget-cli repository (MIT licence), branch `master`, read on 16 Nov 2026:
+https://raw.githubusercontent.com/microsoft/winget-cli/master/src/AppInstallerSharedLib/Public/AppInstallerErrors.h
+
+The Microsoft Learn page `windows/package-manager/winget/returncodes` returned "404 Not Found" on 16 Nov 2026, so the header file is the source.
+
+Rules:
+- Copy numbers only from this table. Do not guess a number.
+- The values are HRESULTs. Compare them as unsigned 32-bit numbers (`unchecked((uint)exitCode)`).
+
+## Winget codes
+
+| Name | Hex |
+|---|---|
+| APPINSTALLER_CLI_ERROR_DOWNLOAD_FAILED | 0x8A150008 |
+| APPINSTALLER_CLI_ERROR_NO_APPLICABLE_INSTALLER | 0x8A150010 |
+| APPINSTALLER_CLI_ERROR_INSTALLER_HASH_MISMATCH | 0x8A150011 |
+| APPINSTALLER_CLI_ERROR_UPDATE_NOT_APPLICABLE | 0x8A15002B |
+| APPINSTALLER_CLI_ERROR_PACKAGE_IS_PINNED | 0x8A150068 |
+| APPINSTALLER_CLI_ERROR_INSTALL_PACKAGE_IN_USE | 0x8A150101 |
+| APPINSTALLER_CLI_ERROR_INSTALL_INSTALL_IN_PROGRESS | 0x8A150102 |
+| APPINSTALLER_CLI_ERROR_INSTALL_FILE_IN_USE | 0x8A150103 |
+| APPINSTALLER_CLI_ERROR_INSTALL_MISSING_DEPENDENCY | 0x8A150104 |
+| APPINSTALLER_CLI_ERROR_INSTALL_DISK_FULL | 0x8A150105 |
+| APPINSTALLER_CLI_ERROR_INSTALL_INSUFFICIENT_MEMORY | 0x8A150106 |
+| APPINSTALLER_CLI_ERROR_INSTALL_NO_NETWORK | 0x8A150107 |
+| APPINSTALLER_CLI_ERROR_INSTALL_CONTACT_SUPPORT | 0x8A150108 |
+| APPINSTALLER_CLI_ERROR_INSTALL_REBOOT_REQUIRED_TO_FINISH | 0x8A150109 |
+| APPINSTALLER_CLI_ERROR_INSTALL_REBOOT_REQUIRED_FOR_INSTALL | 0x8A15010A |
+| APPINSTALLER_CLI_ERROR_INSTALL_REBOOT_INITIATED | 0x8A15010B |
+| APPINSTALLER_CLI_ERROR_INSTALL_CANCELLED_BY_USER | 0x8A15010C |
+| APPINSTALLER_CLI_ERROR_INSTALL_ALREADY_INSTALLED | 0x8A15010D |
+| APPINSTALLER_CLI_ERROR_INSTALL_DOWNGRADE | 0x8A15010E |
+| APPINSTALLER_CLI_ERROR_INSTALL_BLOCKED_BY_POLICY | 0x8A15010F |
+| APPINSTALLER_CLI_ERROR_INSTALL_DEPENDENCIES | 0x8A150110 |
+| APPINSTALLER_CLI_ERROR_INSTALL_PACKAGE_IN_USE_BY_APPLICATION | 0x8A150111 |
+| APPINSTALLER_CLI_ERROR_INSTALL_INVALID_PARAMETER | 0x8A150112 |
+| APPINSTALLER_CLI_ERROR_INSTALL_SYSTEM_NOT_SUPPORTED | 0x8A150113 |
+| APPINSTALLER_CLI_ERROR_INSTALL_UPGRADE_NOT_SUPPORTED | 0x8A150114 |
+| APPINSTALLER_CLI_ERROR_INSTALL_CUSTOM_ERROR | 0x8A150115 |
+
+Not in the file (do not invent): `INSTALL_REBOOT_REQUIRED_TO_INSTALL` (the real name is `..._FOR_INSTALL`, above) and `INTERNET_CONNECTION` (use `INSTALL_NO_NETWORK`).
+
+## Windows Installer (MSI) codes
+
+These are standard Windows Installer exit codes (decimal), named in plan row 46.7.55:
+
+| Code | Meaning |
+|---|---|
+| 1602 | The user cancelled the installation. |
+| 1603 | A fatal error occurred during installation. |
+| 1618 | Another installation is already in progress. |
+| 1641 | The installer started a restart. Success. |
+| 3010 | A restart is required to complete the install. Success. |
