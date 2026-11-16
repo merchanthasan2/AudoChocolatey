@@ -814,7 +814,7 @@ Existing tokens (`Canvas #131313`, `Sidebar #272727`, `Card #2C2C2C`, `Stroke #3
 
 | Check | Result |
 |---|---|
-| 46.5.27 update data way and count | Pending |
+| 46.5.27 update data way and count | Done 16 Nov 2026, run as ADMIN (owner approved UAC): composite catalog (remote OpenWindowsCatalog only + CompositeSearchBehavior.LocalCatalogs) works elevated. COM start 440 ms, connect 1,839 ms, FindPackages (no filter) 729 ms with 214 matches, IsUpdateAvailable 1 in 1,512 ms; `winget upgrade --include-unknown` also 1 (2,942 ms). Read path about 4.5 s (target 4 s): acceptable inside the parallel 5 s start scan. Pass. |
 | 46.7.30 full scan time (median of 3 starts) | Pending |
 | 46.7.21 icon coverage, installed (target 95 percent) | Pending |
 | 46.7.21 icon coverage, picks (target 90 percent) | Pending |

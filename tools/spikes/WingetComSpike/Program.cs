@@ -72,6 +72,11 @@ internal static class Program
             ("E async, Id contains \"\"", async () => await catalog.FindPackagesAsync(NewFindOptions(""))),
             ("F async, Id contains \".\"", async () => await catalog.FindPackagesAsync(NewFindOptions(".")))
         };
+        // --fast skips the two "." attempts (about 4 minutes each, known useless).
+        if (Environment.GetCommandLineArgs().Contains("--fast"))
+        {
+            attempts.RemoveAll(a => a.Label.Contains("\".\""));
+        }
 
         FindPackagesResult chosen = null;
         string chosenLabel = null;
