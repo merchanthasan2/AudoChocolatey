@@ -187,6 +187,7 @@ public sealed class MainWindow : Window
 
     private void Show(string name)
     {
+        CrashLog.Write("Mark:Show " + name, null); // TEMP DIAGNOSTIC
         _nav.Visibility = Visibility.Visible;
         _current = name;
         foreach (var pair in _navButtons)
@@ -204,6 +205,7 @@ public sealed class MainWindow : Window
             _ => ReadyPage(),
         };
         _host.Children.Add(page);
+        CrashLog.Write("Mark:Shown " + name, null); // TEMP DIAGNOSTIC
     }
 
     private GettingReadyPage ReadyPage()

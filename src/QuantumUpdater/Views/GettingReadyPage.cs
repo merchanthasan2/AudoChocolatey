@@ -47,8 +47,12 @@ public sealed class GettingReadyPage : StackPanel
         var upgradesTask = _services.Winget.ListUpgradesAsync();
         var installedTask = _services.Installed.ListInstalledAsync();
         var selfTask = _services.Update.CheckAsync();
+        _ = upgradesTask.ContinueWith(_ => CrashLog.Write("Mark:UpgradesDone", null)); // TEMP DIAGNOSTIC
+        _ = installedTask.ContinueWith(_ => CrashLog.Write("Mark:InstalledDone", null)); // TEMP DIAGNOSTIC
+        _ = selfTask.ContinueWith(_ => CrashLog.Write("Mark:SelfDone", null)); // TEMP DIAGNOSTIC
         await Task.WhenAll(upgradesTask, installedTask, selfTask).ConfigureAwait(true);
 
+        CrashLog.Write("Mark:ScansDone", null); // TEMP DIAGNOSTIC
         var upgrades = await upgradesTask.ConfigureAwait(true);
         var installed = await installedTask.ConfigureAwait(true);
         var self = await selfTask.ConfigureAwait(true);
@@ -84,6 +88,7 @@ public sealed class GettingReadyPage : StackPanel
             // A missed report does not hold the app.
         }
 
+        CrashLog.Write("Mark:Settled", null); // TEMP DIAGNOSTIC
         Settled?.Invoke();
     }
 
