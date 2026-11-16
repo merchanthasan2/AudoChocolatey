@@ -172,6 +172,109 @@ public class ActionQueueTests
         Assert.Equal(ActionState.Done, events.Last().State);
     }
 
+    [Fact]
+    public async Task Same_key_while_waiting_adds_nothing()
+    {
+        var queue = new ActionQueue(a => a());
+        var release = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        var blocker = queue.Enqueue("blocker", ActionKind.Update, "Blocker", UntilReleased(release));
+        await WaitUntilAsync(() => StateOf(queue, blocker) == ActionState.Working);
+
+        var first = queue.Enqueue("app", ActionKind.Update, "App", UntilReleased(release));
+        var second = queue.Enqueue("APP", ActionKind.Update, "App", UntilReleased(release));
+
+        Assert.Same(first, second);
+        Assert.Equal(2, queue.Items.Count);
+
+        release.SetResult();
+        await WaitIdleAsync(queue);
+    }
+
+    [Fact]
+    public async Task Same_key_after_the_first_ended_adds_a_new_item()
+    {
+        var queue = new ActionQueue(a => a());
+        var release = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        var first = queue.Enqueue("app", ActionKind.Update, "App", UntilReleased(release));
+        release.SetResult();
+        await WaitIdleAsync(queue);
+        Assert.Equal(ActionState.Done, StateOf(queue, first));
+
+        var second = queue.Enqueue("app", ActionKind.Update, "App", UntilReleased(release));
+        await WaitIdleAsync(queue);
+
+        Assert.NotSame(first, second);
+        Assert.Equal(2, queue.Items.Count);
+        Assert.Equal(ActionState.Done, StateOf(queue, second));
+    }
+
+    [Fact]
+    public async Task Phase_and_percent_reach_Changed()
+    {
+        var queue = new ActionQueue(a => a());
+        var seen = new ConcurrentQueue<(Guid Id, string? Phase, int? Percent)>();
+        queue.Changed += a => seen.Enqueue((a.Id, a.Phase, a.Percent));
+
+        var item = queue.Enqueue("app", ActionKind.Update, "App", (p, ct) =>
+        {
+            p.Report(new ActionProgress("Downloading", 45));
+            return Task.FromResult(new ActionOutcome(true, null));
+        });
+        await WaitIdleAsync(queue);
+
+        var events = seen.Where(e => e.Id == item.Id).ToArray();
+        Assert.Equal("Downloading", events.Last().Phase);
+        Assert.Equal(45, events.Last().Percent);
+        Assert.Contains(events, e => e.Phase == "Downloading" && e.Percent == 45);
+    }
+
+    [Fact]
+    public async Task Failed_outcome_sets_Message_and_failed_state()
+    {
+        var queue = new ActionQueue(a => a());
+
+        var item = queue.Enqueue("app", ActionKind.Install, "App", (p, ct) =>
+            Task.FromResult(new ActionOutcome(false, "Disk full")));
+        await WaitIdleAsync(queue);
+
+        Assert.Equal(ActionState.Failed, StateOf(queue, item));
+        Assert.Equal("Disk full", queue.Items.Single(i => i.Id == item.Id).Message);
+    }
+
+    [Fact]
+    public async Task Current_batch_counts_items_since_the_queue_was_idle()
+    {
+        var queue = new ActionQueue(a => a());
+        var release = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        var a = queue.Enqueue("a", ActionKind.Update, "A", UntilReleased(release));
+        var b = queue.Enqueue("b", ActionKind.Update, "B", UntilReleased(release));
+        var c = queue.Enqueue("c", ActionKind.Update, "C", UntilReleased(release));
+
+        Assert.Equal(new[] { a.Id, b.Id, c.Id }, queue.CurrentBatch.Select(i => i.Id).ToArray());
+
+        release.SetResult();
+        await WaitIdleAsync(queue);
+
+        var d = queue.Enqueue("d", ActionKind.Remove, "D", UntilReleased(release));
+        await WaitIdleAsync(queue);
+
+        Assert.Single(queue.CurrentBatch);
+        Assert.Same(d, queue.CurrentBatch[0]);
+    }
+
+    private static Func<IProgress<ActionProgress>, CancellationToken, Task<ActionOutcome>> UntilReleased(
+        TaskCompletionSource release)
+    {
+        return async (p, ct) =>
+        {
+            await release.Task.WaitAsync(ct);
+            return new ActionOutcome(true, null);
+        };
+    }
+
     private static ActionState StateOf(ActionQueue queue, QueuedAction item)
     {
         return queue.Items.Single(i => i.Id == item.Id).State;
