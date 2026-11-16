@@ -10,6 +10,8 @@
 
 **This picture:** refreshed 2026-11-16 after the DeskVerve rename and logo (ADR 046, ADR 047). It shows the Phase A app as built. The section "Planned: Phase 46 priority" shows proposed changes only. Those parts are not built.
 
+**Update 2026-11-16 (re-order):** the built screen flow now shows optional sign-in (46.7.31 to 46.7.34 are built). The section "Re-order 16 Nov: design base, then Updates" shows the new build order and the planned Updates flows.
+
 ## Protective middle layer
 
 **Required:** one C# service layer under `src/QuantumUpdater/Services/`.
@@ -102,31 +104,33 @@ Design source: Stitch project Modern Windows System Toolkit (`114373270976358487
 
 ```mermaid
 flowchart TD
-  open["Open app · UAC approve"] --> check{"Saved session?"}
-  check -- no --> signin["Sign in · sidebar hidden"]
-  check -- yes --> ready["Getting ready"]
-  signin -- "Sign in or Create account" --> ready
+  open["Open app · UAC approve"] --> ready["Getting ready · no sign-in wall (46.7.31)"]
   ready -- "scans settle · auto" --> updates["Updates and Health"]
   nav["Sidebar · any screen"] --> ready
   nav --> updates
   nav --> market["App Marketplace"]
   nav --> installed["Installed"]
   nav --> about["About This PC"]
+  nav -- "footer · Not signed in · Sign in (46.7.32)" --> signin["Sign in · Not now returns to the last screen (46.7.33)"]
+  signin -- "Sign in or Not now" --> back["Last screen"]
+  nav -- "footer · Sign out (46.7.34)" --> out["Session cleared · footer shows Not signed in"]
   signin -. "/api/register, /api/login" .-> account["Account service on this PC"]
-  ready -. heartbeat .-> account
-  updates -. "activity: upgrade" .-> account
-  market -. "activity: install" .-> account
-  installed -. "activity: remove" .-> account
+  ready -. "heartbeat · signed in only" .-> account
+  updates -. "activity: upgrade · signed in only" .-> account
+  market -. "activity: install · signed in only" .-> account
+  installed -. "activity: remove · signed in only" .-> account
   account --> admin["Admin site in a browser, separate from the window"]
 ```
 
-Getting ready runs three checks at the same time: winget upgrades, installed packages, and the DeskVerve release check. It then sends a heartbeat and opens Updates and Health one time.
+Getting ready runs three checks at the same time: winget upgrades, installed packages, and the DeskVerve release check. It then sends a heartbeat (signed in only) and opens Updates and Health one time.
+
+Known open problem (16 Nov): some starts end with 0xC000027B (a stowed WinUI error). Plan section 15.4 gives the test. TEMP start marks are in `App.xaml.cs`, `MainWindow.xaml.cs` and `GettingReadyPage.cs` (commit `a4956ce`).
 
 Disk & Storage, Cleanup, Settings waves, and Chocolatey are discussed in tracker phase 46 before they are built.
 
 ## Planned: Phase 46 priority (NOT BUILT)
 
-> **PLANNED.** This section is a proposal from 16 Nov 2026, revised after the owner answers in ADR 049. Plan: `docs/plans/2026-11-16-phase46-apps-first.md`. Mockups: `design/mockups/phase46/` (Getting ready: `00-getting-ready.html`). Nothing here is built, except `PackageId` (46.5.3) and `ActionQueue` (46.5.5). Move this section into the built picture only after the Design Architect gives PASS.
+> **PLANNED.** This section is a proposal from 16 Nov 2026, revised after the owner answers in ADR 049. Plan: `docs/plans/2026-11-16-phase46-apps-first.md`. Mockups: `design/mockups/phase46/` (Getting ready: `00-getting-ready.html`). Built so far (16 Nov, not yet used by every screen): `WingetLocator`, `WingetRunner`, `PackageId`, `WingetTextTable`, `ActionQueue` (no screen uses it yet), `AppEntry`, `RegistryInventory`, `StoreAppInventory`, `WingetReader` (COM), `ScanJob`, `ScanOrchestrator` (no screen uses it yet), and optional sign-in. The rest is not built. Move this section into the built picture only after the Design Architect gives PASS.
 
 ### Planned system picture
 
@@ -299,13 +303,89 @@ flowchart LR
   k -- "Protected" --> settings
 ```
 
+## Re-order 16 Nov: design base, then Updates (PLANNED)
+
+> **PLANNED.** Owner order of 16 Nov 2026. Plan: `docs/plans/2026-11-16-phase46-apps-first.md`, section 15. New mockup: `design/mockups/phase46/05-updates-states.html`. Installed and Marketplace rewrites come after Track B. Phase 49 needs its own plan.
+
+### Build order
+
+```mermaid
+flowchart LR
+  a0["A0 · start crash test · 46.7.36 to 46.7.40"] --> a9["46.7.9 shell rewrite · no Mica · SetTitleBar after Content"]
+  a1["A · tokens and parts · 46.7.2, 46.7.3, 46.7.41 to 46.7.43, 46.7.4 to 46.7.7"] --> gal["46.7.48 TEMP parts gallery"]
+  aq["A · queue key, kind, phase, batch · 46.7.44, 46.7.45 · ActivitySummary 46.7.46"] --> bar["46.7.8 ActivityBar"] --> a9
+  a9 --> cpa{"Checkpoint A · owner looks at shell and gallery"}
+  gal --> cpa
+  cpa --> b1["B · runner W7, W18, W8 · error text · RunOutcome · progress parser"]
+  cpa --> b2["B · WingetReader W20 (and W21, W22)"]
+  cpa --> b3["B · SnapshotCache · UpdatesGrouping · sources · UpdatesCatalog"]
+  b1 --> b4["B · UpdateActions · queue hold (W18) · old pages through the queue (W2)"]
+  b2 --> b3
+  b3 --> b4
+  b4 --> b5["B · Updates screen parts · UpdatesPage rewrite · badge · Getting ready interim"]
+  b5 --> cpb{"Checkpoint B · owner runs real updates"}
+  cpb --> later["Later · Installed, Marketplace, icons, Getting ready rewrite · phase 49 plan"]
+```
+
+### Planned Updates data flow
+
+```mermaid
+flowchart TD
+  ready["Getting ready (interim 46.7.83)"] --> cat["UpdatesCatalog · saved, then fresh · one refresh at a time"]
+  page["UpdatesPage · header, tiles, toolbar, VirtualList, state card"] --> cat
+  cat --> cache["SnapshotCache · upgrades.json"]
+  cat --> com["ComUpdatesSource · WingetReader · Microsoft catalog only"]
+  cat -. "COM fails" .-> cli["CliUpdatesSource · WingetService text list · --source winget"]
+  com --> reader["WingetReader · async COM with token · one call at a time (W20)"]
+  cli --> runner["WingetRunner · allowlist (W8)"]
+  cat --> group["UpdatesGrouping · Ready, Version not known, Updated today"]
+  cat -- Changed --> page
+  cat -- Changed --> badge["Sidebar badge · Ready + Version not known"]
+  page --> model["UpdatesListModel · flat list, counts, labels"]
+```
+
+### Planned update action flow (one action at a time)
+
+```mermaid
+sequenceDiagram
+  participant P as UpdatesPage
+  participant D as ConfirmDialog
+  participant A as UpdateActions
+  participant Q as ActionQueue (app-wide)
+  participant W as WingetService
+  participant R as WingetRunner
+  participant B as ActivityBar
+  P->>A: Update (one row, one click)
+  P->>D: Update all or 2+ selected
+  D-->>P: confirmed
+  P->>A: UpdateMany (list order)
+  A->>Q: Enqueue(key = catalog id, kind Update)
+  Q-->>B: Changed (Waiting, Working, batch "1 of N")
+  Q->>W: UpgradeAsync(id, progress, token)
+  W->>R: upgrade --id ID --exact --source winget --silent ...
+  R-->>W: each line
+  W-->>Q: ActionProgress (phase, printed percent only)
+  R-->>W: RunResult (exit code, ErrorLines, StillRunning)
+  W-->>A: RunOutcome (plain reason, restart needed)
+  A->>A: success: UpdatesCatalog.MarkUpdated, report if signed in
+  alt stop incomplete (W18)
+    A-->>Q: ActionOutcome with StillRunning
+    Q-->>B: held: "could not stop ... next action starts when it ends"
+    Q->>Q: wait for the installer to end, then continue
+  end
+```
+
+Rules: `InstalledPage` and `MarketplacePage` (old pages) also put their actions into the same queue (W2). The shell drops `MicaBackdrop`: the opaque canvas `#131313` covers the window, so the look does not change (plan D1).
+
+Diagram updates after Track B: move the two Updates diagrams, `ActionQueue`, `ActivityBar` and `UpdatesCatalog` into the built picture after the Design Architect gives PASS. Remove `CatalogSnapshot` from the Updates path (it stays for Installed until 46.7.17).
+
 ## Phase map
 
 | Phase | Screens / work | When |
 |---|---|---|
 | 44 | Packaging tools, archive Python, empty greenfield project | Done |
 | 45 | Sign-in, Getting ready, Updates & Health, Marketplace, Installed, About, self-update check, DeskVerve rename and logo | Built. Owner on-PC check and validation open |
-| 46 | ADR 048 order: first Installed, Marketplace, Updates, Getting ready full scan and original icons (46.5 to 46.7, planned in `docs/plans/2026-11-16-phase46-apps-first.md`, ADR 049); then Disk (46.1); then Cleanup (46.2); then old tool groups. Chocolatey later | Wave 1 started: 46.5.3 and 46.5.5 done |
+| 46 | ADR 048 order: first Installed, Marketplace, Updates, Getting ready full scan and original icons (46.5 to 46.7, planned in `docs/plans/2026-11-16-phase46-apps-first.md`, ADR 049); then Disk (46.1); then Cleanup (46.2); then old tool groups. Chocolatey later | Wave 1 done; Wave 2 partly done; optional sign-in built. Re-order 16 Nov: Track A design base, then Track B Updates (plan section 15) |
 | 47 | Installer first: the first public release is a setup program or MSIX (ADR 049 Q9). DeskVerve exe name. winget: close PR #480804, then a new request for `DeskVerve.Utility` ("DeskVerve Utility", moniker `deskverve`) (ADR 049 Q10). Then Store, Chocolatey, GitHub, download libraries | Planned. Submissions are owner later |
 | 48 | Admin portal | Local service built. Domain deploy is owner later |
 

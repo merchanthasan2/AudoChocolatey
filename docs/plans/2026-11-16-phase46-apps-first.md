@@ -1,7 +1,7 @@
 # Phase 46 priority plan: apps first (46.5, 46.6, 46.7)
 
-- **Status:** Revised 16 Nov 2026 after the owner answers in ADR 049. Author: Design Architect.
-- **Needs:** Manager review of this revision. The owner answered all 10 questions in section 10 (ADR 049).
+- **Status:** Revised 16 Nov 2026 after the owner answers in ADR 049. Author: Design Architect. **Re-ordered 16 Nov 2026 (owner order): design base first, then Updates. See section 15. Section 15 replaces the wave order in section 8 for Wave 3 and the Updates tasks.**
+- **Needs:** Manager review of section 15. The owner answered all 10 questions in section 10 (ADR 049). Section 15.8 has 3 new owner questions.
 - **Rules:** ADR 049 (owner answers; source of truth), ADR 048 (scope and order), ADR 043 (WinUI, Stitch shell, one service layer), ADR 020 and ADR 024 (show only numbers that an installer printed), ADR 046 (compatibility names stay until phase 47).
 - **Mockups:** `design/mockups/phase46/index.html`. Getting ready: `design/mockups/phase46/00-getting-ready.html`.
 - **Architecture:** `docs/ARCHITECTURE.md`, section "Planned: Phase 46 priority".
@@ -461,6 +461,8 @@ Each task changes one file or makes one small change. Do the tasks in wave order
 
 ### Wave 3: shared screen parts (look and feel) and optional sign-in
 
+> **Re-ordered 16 Nov 2026.** Section 15 gives the new order: Track A (design base: 46.7.2 to 46.7.9, 46.7.20, new 46.7.36 to 46.7.50) and Track B (Updates: 46.5.16, 46.7.10 to 46.7.12, new 46.7.51 to 46.7.87). 46.7.31 to 46.7.34 are built. Section 15 rows replace the rows below where they differ.
+
 | Id | Task | After | Test |
 |---|---|---|---|
 | 46.7.2 | `Theme.cs`: add tokens (section 11). | — | Build passes. Old tokens keep their values. |
@@ -752,6 +754,9 @@ The Manager asks these one at a time. Each has a recommendation.
 | `AccentPressed` | `#006CBE` | Accent button pressed |
 | `AccentText` | `#60B0F0` | Links and new version text on dark |
 | `CriticalText` | `#FF99A4` | Error text and Remove button text on dark |
+| `HealthyText` | `#6FD39A` | "Done" chip text, "Updated to" text (added 16 Nov re-order, from the mockups) |
+| `WarningText` | `#F0C64A` | "Waiting" and "Stopping" chip text, hold text (added 16 Nov re-order) |
+| `AccentChip`, `OkChip`, `WarnChip`, `BadChip` | `#0078D4` at 22 percent, `#27AC62` at 18 percent, `#D8A000` at 18 percent, `#E81123` at 18 percent | Chip backgrounds (added 16 Nov re-order) |
 | Spacing | 4, 8, 12, 16, 24, 32 | Gaps and padding |
 | Corner radius | 4 (buttons, chips), 8 (cards, dialogs) | Shapes |
 | Type sizes | 28 title, 20 section, 14 body, 12 caption | Text |
@@ -819,6 +824,10 @@ Existing tokens (`Canvas #131313`, `Sidebar #272727`, `Card #2C2C2C`, `Stroke #3
 | 46.7.21 icon coverage, installed (target 95 percent) | Pending |
 | 46.7.21 icon coverage, picks (target 90 percent) | Pending |
 | 46.7.21 apps that fall back to a letter tile, with reasons | Pending |
+| 46.7.39 start crash matrix (V0 to V7, 10 starts each: crashes, last mark, event, dump) | Pending (section 15.4) |
+| 46.7.39 cause and fix rule | Pending |
+| 46.7.50 20-start stability test after the shell rewrite | Pending |
+| 46.7.84 live update test (Checkpoint B) | Pending |
 
 ## 13. Diagram updates after this work
 
@@ -848,3 +857,291 @@ The planned diagrams are in `docs/ARCHITECTURE.md`, section "Planned: Phase 46 p
 14. The app opens and works signed out. Signed out, it makes no account calls.
 15. One click starts Update and Install. Remove, Update all and Update selected (2 or more) open a dialog.
 16. A user uninstall entry runs without admin rights (`TokenElevation` = 0).
+
+---
+
+## 15. Re-order 16 Nov: design base, then Updates
+
+**Owner order (16 Nov 2026):**
+
+1. "Firstly I want the design ready — the base structure." This is **Track A, design base**: the shared screen parts and the new window shell.
+2. "Secondly I want the updates function 100% ready to fire up." This is **Track B, Updates 100%**: the Updates screen and every update action, with the security items that touch updates (W2, W7, W8, W18, W20).
+
+Installed (46.5.15 to 46.5.22) and Marketplace (46.6.x) come after Track B. Phase 49 (tray, start with Windows, auto-update) needs its own plan later. This section does not plan it.
+
+**Already done (not planned again):** 46.5.2 to 46.5.13, 46.7.1, 46.7.18, 46.7.19, 46.7.31 to 46.7.34. Commits up to `a4956ce`.
+
+**Ids:** existing ids stay. New ids start at **46.7.36** (the highest id used before was 46.7.35).
+
+### 15.1 Rules for the worker bees
+
+- One task changes one file, or one small change in two files. The task row names each file.
+- Two worker bees work at the same time. They never change the same file in the same step. Section 15.7 gives the lanes.
+- `tests/QuantumUpdater.Tests/QuantumUpdater.Tests.csproj` links source files (`<Compile Include=... Link=...>`). A task marked **(link)** adds one link line there. Only one worker changes that file in a step.
+- A file with no WinUI and no WinRT types is **pure**. Pure files go into the test project and get unit tests. Keep decisions (texts, rules, order) in pure files. Keep WinUI files thin.
+- A task marked **TEMP** adds diagnostic code. Mark each TEMP line with `// TEMP DIAGNOSTIC`. Task 46.7.85 removes all of them.
+- Build: `C:\Users\merch\AppData\Local\Microsoft\dotnet\dotnet.exe build src/QuantumUpdater -c Debug -p:Platform=x64`. Test: `C:\Users\merch\AppData\Local\Microsoft\dotnet\dotnet.exe test tests/QuantumUpdater.Tests`. Each task ends with 0 build warnings and all tests passing.
+- Words on screen follow ADR 028: "Microsoft catalog", "Microsoft Store", "Installed directly". The word "winget" shows only in Advanced text and in logs (46.7.16).
+
+### 15.2 Blocking dependencies and smaller first versions
+
+| Blocker | Who waits | Decision |
+|---|---|---|
+| `IconService` (46.5.20) is not built | `AppIcon` (46.7.4) | **First version:** `AppIcon` shows a letter tile and has a `SetImage` slot that is safe on recycle (46.7.42). The owner sees the design at once. Real icons plug in later (46.7.87). The icon rule (ADR 049) does not change: a letter tile stays the last resort. Owner question Q-A decides when real icons come. |
+| `SnapshotCache` (46.5.16) is not built | `UpdatesCatalog` (46.7.10) | Build 46.5.16 first. It is small and has no dependency. A worker starts it in a free Track A lane (step A11). |
+| The start crash (0xC000027B) | `MainWindow` shell rewrite (46.7.9) and both owner checkpoints | Run the crash test (46.7.36 to 46.7.39) at the start of Track A, beside the first design tasks. 46.7.9 waits for the fix rule from 46.7.39. |
+| No `ActionQueue` instance in the app | `ActivityBar` (46.7.8), the Updates actions, W2 | 46.7.47 adds one app-wide queue to `AppServices`. |
+| `ActionQueue` has no key, kind, phase or batch | The activity bar text "Updating Firefox · 1 of 3 · Downloading 45%" | 46.7.44 and 46.7.45 add them in Track A. The hold for W18 (46.7.59) comes in Track B. |
+| No real winget progress sample | The progress parser (46.7.58) | 46.7.57: the Manager saves real output of `winget download` (no install) as a test file. |
+| `WingetReader` W20 (no real cancel, parallel COM calls) | `ComUpdatesSource` (46.7.67) | 46.7.60 to 46.7.62 come first. |
+| The Installed page and the Marketplace page start actions outside the queue (W2) | Owner acceptance | 46.7.73 and 46.7.74 route the old pages through the queue now. Their full rewrites come later. The tick box stays on those two old pages until the rewrite (Q6 applies to the new pages). |
+| Getting ready still writes updates into `CatalogSnapshot` | One source of update data | 46.7.83 makes Getting ready call `UpdatesCatalog.RefreshAsync`. The full Getting ready rewrite stays 46.7.28. `CatalogSnapshot` stays for Installed until 46.7.17. |
+
+### 15.3 Design decisions in this re-order (Design Architect)
+
+| # | Decision | Reason |
+|---|---|---|
+| D1 | **Remove `MicaBackdrop`.** The window keeps the opaque canvas `#131313`. | The root grid paints the opaque canvas over the whole window, so Mica never shows. Mica is also a suspect for the start crash. The look does not change. |
+| D2 | Call `SetTitleBar` only after `Content` is set and the title bar element is in the tree. | This is the documented order. The current code calls it before the element is in the tree. |
+| D3 | The activity bar has "View all" and "Cancel all". Each row and each "View all" line has "Cancel" for one item. | This matches `01-updates.html`. Section 5.4 said "Cancel"; the mockup wins. |
+| D4 | W18 hold: the stopped item shows "Stopping". New and waiting items show "Waiting · on hold". The activity bar shows a warning line. New clicks still join the queue. Nothing starts until the old installer ends. | Mockup `05-updates-states.html#hold`. The person sees why nothing starts. |
+| D5 | The Updates screen lists apps from the **Microsoft catalog** only (owner question Q-B). Actions add `--source winget` (W8). A note strip says "Microsoft Store apps get their updates from the Microsoft Store" with "Open Microsoft Store". | The COM read uses the Microsoft catalog only (46.5.27). W8 asks for `--source winget`. Store apps update in the Store. |
+| D6 | A **TEMP parts gallery** page (46.7.48) shows every shared part in every state. It opens only with `DESKVERVE_DIAG=gallery`. | The owner sees the whole design base at Checkpoint A, before the Updates page uses the parts. The Design Architect validates each part there. |
+| D7 | The failed-row "Details" flyout shows the reason, what to do, the time, and Advanced (package id, exit code, last installer lines). "Copy details" copies the same text. | Mockup `05-updates-states.html#hold`. W7 puts the installer error lines into the message. |
+| D8 | The progress bar fills from a printed percent, or from a printed "downloaded / total" size pair. Else the bar moves with no number and the row says the phase word ("Installing"). | ADR 020 allows a downloaded-versus-total line. ADR 024: no guessed numbers. |
+
+### 15.4 Start crash 0xC000027B: where it goes and what to test
+
+**Place in the order:** Track A, first steps. It runs beside 46.7.2 and 46.7.3, because those files are different. The shell rewrite 46.7.9 waits for the result. Both owner checkpoints wait for a clean 20-start test.
+
+**What we know (Design Architect check, 16 Nov):**
+
+- The app is unpackaged, elevated (`requireAdministrator`), uses `MicaBackdrop` and `ExtendsContentIntoTitleBar`, and loads the emblem from a file path.
+- `winui-crash.log` holds only one start (19:45:16, no crash). The 3 crashed starts left no `Mark:AppStart` line. So the log was cleared, or those starts did not reach the `App` constructor.
+- Windows Event Viewer has no "Application Error" event for `QuantumUpdater.exe` on 16 Nov. `%LOCALAPPDATA%\CrashDumps` has dumps from 15 Nov only. No WER report exists.
+- The log shows a file-sharing error (`IOException 0x80070020`) when two threads write the log at the same time. The TEMP first-chance handler can lose lines or fail.
+- This PC runs a Windows Insider build (10.0.28020). A fault can be specific to this build.
+- At 0.4 s after `Activate`, the Getting ready scans have already started (`Loaded` starts them). So "before any scan runs" is not certain.
+
+**Tasks:**
+
+| Id | File | Task | After | Test |
+|---|---|---|---|---|
+| 46.7.36 | `tools/diag/start-test.ps1` (new) | Parameters: `-Exe <path>`, `-Count 10`, `-Diag "<switches>"`. For each start: set `$env:DESKVERVE_DIAG`, start the exe, wait 6 s, record "alive" or the exit code in hex, stop the process, copy `winui-crash.log` to `start-<variant>-<n>.log`, then delete the log. Write one CSV line for each start to `%LOCALAPPDATA%\QuantumUpdater\logs\start-test.csv`. | — | Run it with `notepad.exe`, 3 starts: 3 CSV lines say "alive". |
+| 46.7.37 | `MainWindow.xaml.cs` (TEMP) | Read `DESKVERVE_DIAG` (comma list) one time. `nomica`: do not set `SystemBackdrop`. `notitlebar`: do not set `ExtendsContentIntoTitleBar` and do not call `SetTitleBar`. `titlebarlate`: call `SetTitleBar` after `Content = root`. `noemblem`: do not call `BrandAssets.Emblem`. | — | Build passes. With no variable set, the window is the same as before. |
+| 46.7.38 | `App.xaml.cs`, `Views/GettingReadyPage.cs` (TEMP) | Same variable. `nofirstchance`: do not add the FirstChance handler. `noscan`: Getting ready shows "Scan skipped (diagnostic)", does not start `RunAsync`, and does not raise `Settled`. | — | Build passes. A `noscan` start starts no winget process (Task Manager). |
+| 46.7.39 | Manager (no code) | 1. Build Release one time. Copy the output folder to a test folder outside `bin`, so worker builds do not lock or change it. 2. Open one elevated PowerShell window (one UAC prompt, Q-C). 3. Run 46.7.36 for each variant, 10 starts each: V0 none; V1 `nomica`; V2 `notitlebar`; V3 `titlebarlate`; V4 `noemblem`; V5 `noscan`; V6 `nofirstchance`; V7 `nomica,notitlebar,noemblem`. 4. For each crash, read the last mark in its log, Event Viewer (Application, ids 1000 and 1001), and `%LOCALAPPDATA%\CrashDumps`. 5. Write the table in section 12. | 46.7.36 to 46.7.38 | **Cause found** = V0 crashes 3 or more times in 10, one variant crashes 0 times in 10, and that variant passes again with 20 starts. **No cause found** = round 2 (below). |
+| 46.7.40 | The file that 46.7.39 names | Apply the fix rule. If the fix is in `MainWindow.xaml.cs`, it goes into 46.7.9 and this task closes. | 46.7.39 | 20 starts with 46.7.36: 0 crashes. |
+
+**Round 2 (only if round 1 finds no cause):** (a) a crash dump through Windows Error Reporting LocalDumps for `QuantumUpdater.exe`, read with WinDbg (`!analyze -v` shows the stowed error code and the native stack), owner question Q-C option B; (b) a local, never-committed build with `asInvoker`, to test without admin; (c) a start test on a second PC with a normal Windows release build.
+
+**Fix rules that 46.7.9 applies in every case:** D1 (no Mica) and D2 (`SetTitleBar` after `Content`).
+
+### 15.5 Track A: design base
+
+| Id | File(s) | Task | After | Test |
+|---|---|---|---|---|
+| 46.7.36–46.7.40 | See 15.4 | Start crash test and fix | — | See 15.4 |
+| 46.7.2 | `Theme.cs` | Add the tokens in section 11, including the rows added on 16 Nov. Add constants: `Space4`, `Space8`, `Space12`, `Space16`, `Space24`, `Space32`; `RadiusSmall` = 4; `RadiusLarge` = 8; `TypeTitle` = 28; `TypeSection` = 20; `TypeBody` = 14; `TypeCaption` = 12. | — | Build passes. The diff adds lines only. Old token values do not change. |
+| 46.7.3 | `Chrome.cs` | Add `SecondaryButton` (card fill, stroke border), `GhostButton` (no fill, `AccentText`), `DangerButton` (`Critical` fill), `Chip(text, ChipKind)` with kinds Neutral, Accent, Ok, Warn, Bad, `Caption`, `SectionHeader(text, count, expanded)` (chevron, bold text, count chip), `SearchBox(placeholder)` (240 px), `LetterTile(name, size)`. Sizes and colours come from the `01-updates.html` CSS. | 46.7.2 | Gallery (46.7.48) at 100 percent zoom matches `01-updates.html` and `05-updates-states.html`. |
+| 46.7.41 | `Views/Controls/LetterTileRules.cs` (new, pure, link) and a test file | `Letter(name)`: the first letter or digit, upper case; "?" when none. `ColourIndex(name)`: FNV-1a 32-bit hash of the upper-case name, modulo 8. **Never use `string.GetHashCode`** (it changes at each start). `Palette`: `#1F6FB5`, `#8A5CC2`, `#2E8B57`, `#C0504D`, `#B07D1A`, `#2F7F8F`, `#A0522D`, `#5A5A5A`. | — | Unit: "7-Zip" gives '7'; "" gives '?'; the index for "Mozilla Firefox" is a fixed value in the test; 1,000 names use all 8 colours. |
+| 46.7.42 | `Views/Controls/IconSlot.cs` (new, pure, link) and a test file | `int Begin(string key)` gives a new ticket and forgets older tickets. `bool IsCurrent(int ticket)`. | — | Unit: after a second `Begin`, the first ticket is not current. |
+| 46.7.43 | `Views/Controls/AppRowModel.cs` (new, pure, link) and a test file | Record: Key, Name, Publisher, FromVersion (null = not known), ToVersion, SourceLabel, State (Ready, Waiting, Working, Stopping, Updated, Failed), PlaceInLine, IsHeld, Phase, Percent, ErrorText, DoneVersion, DoneAt, IsSelected, CanSelect. Method `StatusText()`: Waiting place 1 = "Waiting · next"; place n = "Waiting · n in line"; held = "Waiting · on hold"; Working with a percent = "Downloading · 45%"; Working with no percent = the phase word, else "Working"; Stopping = "Stopping"; Updated = "Updated to 3.12.8 · 10:31". | — | Unit: one test for each text. A percent shows only when `Percent` has a value. |
+| 46.7.44 | `Services/ActionQueue.cs` and its test file | Add `enum ActionKind { Update, Install, Remove }`, `record struct ActionProgress(string? Phase, int? Percent)`, `record ActionOutcome(bool Success, string? Message)`. `QueuedAction` gets `Key`, `Kind`, `Phase`. New overload `Enqueue(string key, ActionKind kind, string title, Func<IProgress<ActionProgress>, CancellationToken, Task<ActionOutcome>> work)`. Title = the app name only. A second `Enqueue` with the key of a Waiting or Working item returns that item and adds nothing. Keep the old overload. | — | Unit: a duplicate key adds nothing; phase and percent reach `Changed`; a failed outcome sets `Message`; the old tests still pass. |
+| 46.7.45 | `Services/ActionQueue.cs` and its test file | `CurrentBatch`: the items added since the queue was last idle. Idle = no Waiting item and no Working item. | 46.7.44 | Unit: 3 items give a batch of 3; after all end, a new item starts a batch of 1. |
+| 46.7.46 | `Services/ActivitySummary.cs` (new, pure, link) and a test file | From the batch, give `Visible`, `Headline` ("Updating Mozilla Firefox"; verbs Updating, Installing, Removing), `Detail` ("1 of 3 · Downloading 45%"; the phase only when no percent; "Working" when neither), `Percent`. Visible when an item is Waiting or Working. | 46.7.45 | Unit: one test for each text; position = ended items + 1. |
+| 46.7.4 | `Views/Controls/AppIcon.cs` (new) | First version. 32 px (radius 6) or 48 px (radius 8). `Show(key, name)` starts a new `IconSlot` ticket and shows the letter tile. `SetImage(ticket, image)` shows the image only when the ticket is current. For screen readers the icon is decoration (the row has the name). | 46.7.3, 46.7.41, 46.7.42 | Gallery: tiles match the mockup. |
+| 46.7.5 | `Views/Controls/AppRow.cs` (new) | Columns 18, 32, star, 210, 140, 170 px; gap 12; padding 10 and 16; height 60 or more; top border `Stroke`. `Apply(AppRowModel)` sets every part: select box, icon, name (ellipsis), publisher, version "from → to" (Cascadia Mono 12; "Not known" in italics), source chip, action area, bar, status text, error text, done text. Event `Action(key, RowAction)` with Update, Cancel, Retry, Details, Select. Each button has an automation name, for example "Update Mozilla Firefox". | 46.7.4, 46.7.43 | Gallery: each state matches `01-updates.html` and `05-updates-states.html`. |
+| 46.7.6 | `Views/Controls/VirtualList.cs` (new) | `ItemsRepeater` in a `ScrollViewer`, with the factory from `tools/spikes/VirtualListSpike/MainWindow.cs`. Two item kinds: group header and app row, with one recycle pool for each kind. `SetItems(list)`. | 46.7.1, 46.7.5 | 2,000 rows scroll smoothly; fewer than 60 row elements are made; memory 150 MB or less. |
+| 46.7.7 | `Views/Controls/ConfirmDialog.cs` (new) | Code-only `ContentDialog` with `XamlRoot`, title, body, an optional app list (4 rows, then "And N more: …"), a note line, a main button and Cancel. Remove: red main button; Cancel is the default button. Only one dialog at a time: a second call returns Cancel (WinUI fails when two dialogs open). | 46.7.3 | Matches `01-updates.html#confirm-all` and `02-installed.html#confirm`. Esc cancels. |
+| 46.7.8 | `Views/Controls/ActivityBar.cs` (new) | Takes the `ActionQueue`. Uses `ActivitySummary`. Spinner, headline, detail, a 2 px top line (width = percent; moving when no percent), "View all" flyout (one line for each item, with Cancel), "Cancel all". Hidden when not visible. `AutomationProperties.LiveSetting` = Polite. | 46.7.3, 46.7.46 | Gallery demo (46.7.49) matches the bar in `01-updates.html`. |
+| 46.7.47 | `Services/AppServices.cs`, `MainWindow.xaml.cs` (one line) | `AppServices(Action<Action> post)` creates `public ActionQueue Queue`. `MainWindow` captures `DispatcherQueue.GetForCurrentThread()` one time on the UI thread and passes `a => dispatcher.TryEnqueue(() => a())`. | 46.7.44 | Build passes. One queue exists for the whole app. |
+| 46.7.9 | `MainWindow.xaml.cs` | Shell per the mockups: D1, D2 and the 46.7.39 fix rule; sidebar items with icons (`FontIcon`, font "Segoe Fluent Icons, Segoe MDL2 Assets"; Updates `E895`, App Marketplace `E719`, Installed `E71D`, About This PC `E7F4`); item height 40, radius 4, gap 12; active item fill `CardHover` and a 3 px accent mark; update badge with `SetUpdateCount(int?)` (hidden when null or 0; first value from the start scan); footer with a top border and `AccentText` links; content padding 24, 32, 32; a bottom row in the content column for `ActivityBar`; remove "Getting ready" from the sidebar (the app still opens on it). | 46.7.8, 46.7.39, 46.7.47 | Matches the shell in `01-updates.html`. 20 starts: 0 crashes (46.7.50). |
+| 46.7.20 | `Views/Controls/ScanJobRow.cs` (new) | If it fits: job icon, title, state line, small bar, state chip, "Try again" (section 5.8). | 46.7.3, 46.7.18 | Gallery: each state matches `00-getting-ready.html` and `#done`. |
+| 46.7.48 | `Views/Dev/PartsGalleryPage.cs` (new, TEMP) | One scroll page: buttons, chips, captions, section headers, search box, letter tiles, `AppRow` in each state (Ready, Waiting next, Waiting on hold, Working 45%, Working with no number, Stopping, Updated, Failed, Version not known), `ScanJobRow` states, and buttons that open both dialogs. | 46.7.5, 46.7.7, 46.7.20 | The Design Architect compares each part with the mockups. |
+| 46.7.49 | `MainWindow.xaml.cs` (TEMP) | `DESKVERVE_DIAG=gallery` opens the gallery page after start. `demoqueue` adds 3 fake actions of 4 s each (one reports 0 to 100 percent, one reports no percent, one fails). | 46.7.9, 46.7.48 | The activity bar shows all three in order, then hides. |
+| 46.7.50 | Manager (no code) | Stability test: the final Track A build, 20 starts with 46.7.36. | 46.7.9, 46.7.40 | 0 crashes. Write it in section 12. |
+
+**Then:** Manager verify, Security & Code Architect review (one batch), Design Architect validation, **Checkpoint A** (15.8).
+
+### 15.6 Track B: Updates 100%
+
+| Id | File(s) | Task | After | Test |
+|---|---|---|---|---|
+| 46.7.51 | `tests/FakeWinget/Program.cs` | Add two modes: `stderr` (2 lines to standard error, exit code 1) and `progress <file>` (prints the file, with `\r` between progress parts as winget does, then exit code 0). | — | Run each mode by hand: the output is as described. |
+| 46.5.16 | `Services/SnapshotCache.cs` (new, pure, link) | As section 8. Folder `%LOCALAPPDATA%\QuantumUpdater\cache\`. Refuse a reparse point (same rule as `CrashLog`). | — | Unit: round trip; a bad file is deleted; an old schema is ignored; 20 MB limit. |
+| 46.7.52 | `Services/Winget/WingetRunner.cs` | **W7:** collect standard error lines in `RunResult.ErrorLines`. | 46.7.51 | Unit with `stderr` mode: both lines are in `ErrorLines`. |
+| 46.7.53 | `Services/Winget/WingetRunner.cs` | **W18:** when the stop is incomplete, do not dispose the process. Return `RunResult.StillRunning`, a task that ends when the process ends and then disposes it. | 46.7.52 | Unit with a no-op `KillTree`: `StillRunning` is not null and ends when the fake ends. |
+| 46.7.54 | `Services/Winget/WingetRunner.cs` | **W8:** allowlist in `BuildArguments`. Verbs: `list`, `upgrade`, `search`, `show`, `install`, `uninstall`. Action form (`upgrade`, `install`, `uninstall` with an id): exactly one `--id` with a catalog id, no positional words, only allowed flags. `upgrade`: add `--source winget`; refuse another `--source` value. The forms that `InstalledService` and `MarketplaceService` use today keep working. | 46.7.53 | Unit: 10 allowed and 10 refused argument lists, including two `--id`, a positional word, `--source msstore` on upgrade, and `--query`. |
+| 46.7.55 | `Services/Winget/WingetErrorText.cs` (new, pure, link) | Exit code to a plain reason and "what to do". Compare codes as unsigned. Include MSI codes 1602, 1603, 1618, 1641, 3010 and the winget codes for: update not applicable, installer hash mismatch, no applicable installer, package in use, another install in progress, disk full, restart required. **Copy each winget number from the Microsoft Learn page "winget return codes". Do not guess a number.** | — | Unit: one test for each code; an unknown code gives "The update stopped (code N)." |
+| 46.7.56 | `Services/Winget/RunOutcome.cs` (new, pure, link) | `RunResult` to `(Success, RestartNeeded, Message, Detail, StillRunning)`. Cancelled with `StopIncomplete` = not success, message "DeskVerve could not stop the installer. The next action starts when it ends." Failed = `WingetErrorText` plus the last 3 error or output lines (300 characters maximum; the user profile path becomes `%USERPROFILE%`). 3010 and 1641 = success with restart needed. | 46.7.53, 46.7.55 | Unit: success, failed with stderr, cancelled, stop incomplete, timeout, 3010. |
+| 46.7.57 | Manager (no code) | Save real progress output. **CAUTION:** run `winget list --id <id> --exact` first; use an app that is not on the PC. Run `winget download --id <id> --exact --download-directory <scratch folder>` (download only, no install). Remove personal paths from the text. Save it as `tests/QuantumUpdater.Tests/Data/winget-download-progress.txt`. Do not change the test csproj (46.7.58 adds the file line). | — | The file has progress parts and no user name or profile path. |
+| 46.7.58 | `Services/Winget/WingetProgress.cs` (new, pure, link; also add the 46.7.57 data file to the test csproj as `None` with `CopyToOutputDirectory`) | `TryParse(line, out ActionProgress)`: a printed "NN%" gives the percent; a printed "a MB / b MB" (also KB and GB) gives round(a / b × 100); the lines that start the download, the hash check and the install set the phase "Downloading", "Checking", "Installing". Never make a number up (D8). | 46.7.57 | Unit with the saved file: the percent never goes down in one phase; the install line gives "Installing" with no percent. |
+| 46.7.59 | `Services/ActionQueue.cs` and its test file | **W18 hold:** `ActionOutcome` gets `Task? StillRunning`. When it is set, the item ends as Cancelled or Failed with the message, and the queue is **held**: `IsHeld` = true, `HeldBy` = the item. No next item starts until the task ends. Then `IsHeld` = false and the queue continues. `Changed` fires at hold start and at hold end. `ActivitySummary` gets the hold texts in D4. | 46.7.45 | Unit: a hold blocks the next item; it starts after the task ends; cancel of a waiting item during a hold works; summary texts. |
+| 46.7.60 | `Services/Winget/WingetReader.cs` | **W20 part 1:** use `ConnectAsync()` and `FindPackagesAsync()` with `AsTask(token)`. A linked token gives the 15 s limit and cancels the COM call. Remove the `Task.Run` plus `WaitAsync` pattern for these calls. | — | On the PC, as admin: the list works; a cancel during connect returns in 1 s or less. |
+| 46.7.61 | `Services/Winget/WingetReader.cs` | **W20 part 2:** one `SemaphoreSlim` gate around every COM call. A new `SearchAsync` cancels the search before it (the latest search wins). | 46.7.60 | On the PC: two lists at the same time run one after the other; two quick searches return only the second. |
+| 46.7.62 | `Services/Winget/WingetReader.cs` | **W21 and W22 (fold-in, recommended):** clear the saved catalogs after a failure or a timeout; connect again after 30 minutes; do not dispose the gate while a call runs. | 46.7.61 | On the PC: network off, Check again fails; network on, Check again works with no restart. |
+| 46.7.63 | `Models/UpgradeEntry.cs` (new, pure, link) | Record: CatalogId, Name, Publisher, InstalledVersion (null = not known), AvailableVersion, SourceLabel, Group (Ready, VersionNotKnown, UpdatedToday), UpdatedAt, UpdatedVersion. | — | Build passes. |
+| 46.7.64 | `Services/Updates/UpdatesGrouping.cs` (new, pure, link) | From the candidates: skip ids that fail `PackageId.IsCatalogId`; one row for each id; an installed version that is empty or "Unknown", with an available version, = VersionNotKnown; else Ready; add today's UpdatedToday records; drop a Ready row whose id was updated today to the same version; sort by name. | 46.7.63 | Unit with fixtures for each rule. |
+| 46.7.65 | `Services/Updates/IUpdatesSource.cs` (new, pure, link) | `record UpdateCandidate(...)` and `interface IUpdatesSource { Task<IReadOnlyList<UpdateCandidate>> ReadAsync(IProgress<int> step, CancellationToken token); }` | 46.7.63 | Build passes. |
+| 46.7.10 | `Services/UpdatesCatalog.cs` (new, pure, link) | `LoadSaved()` from `upgrades.json`; `RefreshAsync(IProgress<ScanProgress>, token)`: the COM source first, the text source when COM throws; 3 steps (connect, read, group and save); `Changed` event; `LastChecked`, `IsChecking`, `Error`, `SavedAt`; `MarkUpdated(id, version, time)` moves the row to UpdatedToday and saves. One refresh at a time: a second call joins the running one. | 46.5.16, 46.7.64, 46.7.65 | Unit with fake sources: COM fails, the text source is used; both fail, the saved list stays with its time; `MarkUpdated` saves; two refresh calls run one read. On the PC: saved open 0.3 s; fresh 4.5 s or less. |
+| 46.7.69 | `Services/WingetService.cs` | Upgrade: add `--source winget` (W8) to the upgrade action and to the text list; map the result with `RunOutcome`; no `LastError` for actions (W2: an error belongs to its own result). | 46.7.54, 46.7.56 | Build passes. The `RunOutcome` unit tests cover the texts. |
+| 46.7.70 | `Services/Updates/UpdateActions.cs` (new, pure, link) | `Update(entry)` and `UpdateMany(entries)` add queue items with key = catalog id, kind Update, title = name. The work calls an upgrade function (a delegate, so tests can use a fake). Success: `UpdatesCatalog.MarkUpdated`, then the activity report (signed in only). Stop incomplete: return `StillRunning` (hold). | 46.7.10, 46.7.59 | Unit: order kept; a duplicate id is refused; success moves the row; the hold passes through. |
+| 46.7.12 | `Services/WingetService.cs` | Upgrade progress: pass an `onLine` callback; each line goes through `WingetProgress`; report `ActionProgress` to the caller. | 46.7.58, 46.7.69 | On the PC (46.7.84): a real update shows the printed percent; an installer with no numbers shows "Installing". |
+| 46.7.66 | `Services/Updates/CliUpdatesSource.cs` (new) | Wraps `WingetService.ListUpgradesAsync`; maps each `WingetPackage`; throws when `LastError` is set. | 46.7.65, 46.7.69 | On the PC: the same rows as `winget upgrade --include-unknown --source winget`. |
+| 46.7.67 | `Services/Updates/ComUpdatesSource.cs` (new) | Wraps `WingetReader.ListInstalledAsync`. Keep rows with a catalog id and (`IsUpdateAvailable`, or a not-known installed version with an available version). Steps: 1 connect, 2 read. | 46.7.62, 46.7.65 | On the PC, as admin: the count equals `winget upgrade --include-unknown --source winget` within 1. |
+| 46.7.68 | `Services/AppServices.cs` | Add `Updates` (`UpdatesCatalog` with `ComUpdatesSource`, `CliUpdatesSource`, `SnapshotCache`) and `UpdateActions` (with `WingetService.UpgradeAsync` as the upgrade function). | 46.7.10, 46.7.12, 46.7.66, 46.7.67, 46.7.70 | Build passes. |
+| 46.7.71 | `Services/InstalledService.cs` | Uninstall: map the result with `RunOutcome` (W7, W18). | 46.7.56 | Build passes. |
+| 46.7.72 | `Services/MarketplaceService.cs` | Install: map the result with `RunOutcome` (W7, W18). | 46.7.56 | Build passes. |
+| 46.7.73 | `Views/InstalledPage.cs` | **W2:** Uninstall goes through `Services.Queue` (kind Remove). The button shows the item state. The page shows the result of its own item only. The tick box stays until the page rewrite. | 46.7.47, 46.7.71 | On the PC: two quick clicks on two apps run one after the other (live-test precheck first). |
+| 46.7.74 | `Views/MarketplacePage.cs` | **W2:** Install goes through `Services.Queue` (kind Install), as in 46.7.73. | 46.7.47, 46.7.72 | As 46.7.73. |
+| 46.7.75 | `Views/Updates/UpdatesListModel.cs` (new, pure, link) | From the catalog, the queue items, the filter text, the sort, the open groups and the selection: the flat list (group headers and `AppRowModel` rows), the tile numbers, and the labels "Update all (N)" and "Update selected (N)". Waiting places come from the queue order. | 46.7.10, 46.7.43, 46.7.59 | Unit: groups and counts; filter; sort; held rows show "on hold"; "Select all" selects Ready and Version not known rows only. |
+| 46.7.76 | `Views/Updates/UpdatesHeader.cs` (new) | Title; the "Last checked …" caption, with a spinner and "Checking for new updates" while a check runs; "Check again"; "Update all (N)" (hidden at 0). | 46.7.3 | Matches the `01-updates.html` header. |
+| 46.7.77 | `Views/Updates/SummaryTiles.cs` (new) | Three tiles: Updates ready, Apps up to date, Updated today, with captions. | 46.7.3 | Matches the `01-updates.html` tiles. |
+| 46.7.78 | `Views/Updates/UpdatesToolbar.cs` (new) | Select all, "N selected", "Update selected (N)" (shown at 1 or more), filter box, sort menu. | 46.7.3 | Matches the `01-updates.html` toolbar. |
+| 46.7.79 | `Views/Updates/UpdatesStateCard.cs` (new) | Empty state; the check-failed banner with the saved time; App Installer missing (link `ms-windows-store://pdp/?ProductId=9NBLGGH4NNS1`); the Microsoft Store strip (D5). | 46.7.3 | Matches `05-updates-states.html#empty`, `#error` and `#noinstaller`. |
+| 46.7.81 | `Views/Controls/ActivityBar.cs` | Hold state (D4): warning icon, warning line, hold texts. "Cancel all" cancels every waiting item and the working item. | 46.7.8, 46.7.59 | Matches `05-updates-states.html#hold`. |
+| 46.7.11 | `Views/UpdatesPage.cs` | **Rewrite part 1:** remove the tick box; layout with header, tiles, toolbar, state card and `VirtualList`; show the saved list at once, then refresh in the background; rebuild the list from `UpdatesListModel` on each `Changed` from the catalog and the queue. | 46.7.6, 46.7.68, 46.7.75 to 46.7.79 | Matches `01-updates.html` with real data. Opens in 0.3 s with a saved list. |
+| 46.7.80 | `Views/UpdatesPage.cs` | **Rewrite part 2:** "Update" on one row starts at once (no dialog). "Update all", and "Update selected" with 2 or more apps, open `ConfirmDialog` with the app list. "Update selected" with 1 app starts at once. Row Cancel, Retry, the Details flyout and "Copy details" (D7). | 46.7.7, 46.7.11, 46.7.70 | Matches `#confirm-all` and `05-updates-states.html`. Update all fills the queue in list order. |
+| 46.7.82 | `MainWindow.xaml.cs` | The update badge follows `UpdatesCatalog.Changed` (the Ready count plus the Version not known count). | 46.7.9, 46.7.68 | The badge number equals "Update all (N)". |
+| 46.7.83 | `Views/GettingReadyPage.cs` | Interim: call `Services.Updates.RefreshAsync` in place of `Winget.ListUpgradesAsync`; stop writing upgrades into `CatalogSnapshot`. | 46.7.68 | The Getting ready count equals the Updates screen. |
+| 46.7.84 | Manager (no code) | Checkpoint B tests (15.8). | All of Track B | All pass. Write the results in section 12. |
+| 46.7.85 | `App.xaml.cs`, `MainWindow.xaml.cs`, `Views/GettingReadyPage.cs`, `Views/Dev/PartsGalleryPage.cs` | Remove every `// TEMP DIAGNOSTIC` line, the switches and the gallery page. | Owner acceptance of Checkpoint B | A search for "TEMP DIAGNOSTIC" finds nothing. Build passes. Do this before any release build. |
+
+**Optional icon tail (only if the owner chooses Q-A option A):**
+
+| Id | File(s) | Task | After | Test |
+|---|---|---|---|---|
+| 46.5.20 | `Services/IconService.cs` | As section 8 (core only). | 46.5.10 | As section 8. |
+| 46.5.29 | `Services/Icons/DisplayIconSource.cs` | As section 8. | 46.5.20 | As section 8. |
+| 46.5.32 | `Services/Icons/MsixLogoSource.cs` | As section 8. | 46.5.20 | As section 8. |
+| 46.7.86 | `Services/Updates/UpdateIconKeys.cs` (new, pure, link) | Link an update row to its installed entry: the product code to the registry key name (`RegistryInventory`), or the package family name to the Store app (`StoreAppInventory`). | 46.5.11, 46.5.12 | Unit with fixtures. On the PC: 9 of 10 update rows get an entry. |
+| 46.7.87 | `Views/Controls/AppIcon.cs` | Ask `IconService` after `Show`; call `SetImage` with the current ticket. | 46.5.20, 46.7.4, 46.7.86 | Fast scroll shows no wrong icon. |
+
+### 15.7 Lanes (two worker bees, never the same file)
+
+Each step ends when both tasks pass the Manager check. A Track B task can fill a free Track A lane only when no Track A task is ready (step A11).
+
+**Track A**
+
+| Step | Worker bee 1 | Worker bee 2 | Manager |
+|---|---|---|---|
+| A1 | 46.7.2 `Theme.cs` | 46.7.36 `tools/diag/start-test.ps1` | — |
+| A2 | 46.7.3 `Chrome.cs` | 46.7.37 `MainWindow.xaml.cs` (TEMP) | — |
+| A3 | 46.7.41 `LetterTileRules.cs` (link) | 46.7.38 `App.xaml.cs`, `GettingReadyPage.cs` (TEMP) | — |
+| A4 | 46.7.42 `IconSlot.cs` (link) | 46.7.44 `ActionQueue.cs` | 46.7.39 crash test (copied build) |
+| A5 | 46.7.43 `AppRowModel.cs` (link) | 46.7.45 `ActionQueue.cs` | 46.7.39 continues |
+| A6 | 46.7.4 `AppIcon.cs` | 46.7.46 `ActivitySummary.cs` (link) | 46.7.40 fix decision |
+| A7 | 46.7.5 `AppRow.cs` | 46.7.7 `ConfirmDialog.cs` | — |
+| A8 | 46.7.6 `VirtualList.cs` | 46.7.8 `ActivityBar.cs` | — |
+| A9 | 46.7.47 `AppServices.cs` and one line in `MainWindow.xaml.cs` | 46.7.20 `ScanJobRow.cs` | — |
+| A10 | 46.7.9 `MainWindow.xaml.cs` | 46.7.48 `PartsGalleryPage.cs` (TEMP) | — |
+| A11 | 46.5.16 `SnapshotCache.cs` (link; Track B in a free lane) | 46.7.49 `MainWindow.xaml.cs` (TEMP) | — |
+| A12 | — | — | 46.7.50 stability test, then reviews and Checkpoint A |
+
+**Track B**
+
+| Step | Worker bee 1 | Worker bee 2 | Manager |
+|---|---|---|---|
+| B1 | 46.7.51 `FakeWinget/Program.cs` | 46.7.55 `WingetErrorText.cs` (link) | 46.7.57 progress sample |
+| B2 | 46.7.52 `WingetRunner.cs` | 46.7.63 `UpgradeEntry.cs` (link) | — |
+| B3 | 46.7.53 `WingetRunner.cs` | 46.7.64 `UpdatesGrouping.cs` (link) | — |
+| B4 | 46.7.54 `WingetRunner.cs` | 46.7.65 `IUpdatesSource.cs` (link) | — |
+| B5 | 46.7.56 `RunOutcome.cs` (link) | 46.7.60 `WingetReader.cs` | — |
+| B6 | 46.7.58 `WingetProgress.cs` (link) | 46.7.61 `WingetReader.cs` | — |
+| B7 | 46.7.59 `ActionQueue.cs` | 46.7.62 `WingetReader.cs` | — |
+| B8 | 46.7.10 `UpdatesCatalog.cs` (link) | 46.7.69 `WingetService.cs` | — |
+| B9 | 46.7.70 `UpdateActions.cs` (link) | 46.7.12 `WingetService.cs` | — |
+| B10 | 46.7.66 `CliUpdatesSource.cs` | 46.7.67 `ComUpdatesSource.cs` | — |
+| B11 | 46.7.68 `AppServices.cs` | 46.7.71 `InstalledService.cs` | — |
+| B12 | 46.7.73 `InstalledPage.cs` | 46.7.72 `MarketplaceService.cs` | — |
+| B13 | 46.7.75 `UpdatesListModel.cs` (link) | 46.7.74 `MarketplacePage.cs` | — |
+| B14 | 46.7.76 `UpdatesHeader.cs` | 46.7.77 `SummaryTiles.cs` | — |
+| B15 | 46.7.78 `UpdatesToolbar.cs` | 46.7.79 `UpdatesStateCard.cs` | — |
+| B16 | 46.7.11 `UpdatesPage.cs` | 46.7.81 `ActivityBar.cs` | Optional quick look by the owner |
+| B17 | 46.7.80 `UpdatesPage.cs` | 46.7.83 `GettingReadyPage.cs` | — |
+| B18 | — | 46.7.82 `MainWindow.xaml.cs` | 46.7.84 tests, reviews, Checkpoint B |
+
+The optional icon tail (Q-A) uses free lanes from B14 on (for example 46.5.20 and 46.7.86 in B14 to B15, 46.5.29 and 46.5.32 in B16 to B17, 46.7.87 in B18). It adds about one step.
+
+### 15.8 Owner checkpoints
+
+**Checkpoint A (after Track A, the design base).** The Manager prepares two desktop shortcuts. The owner looks at the app on the PC. The Updates screen is still the old screen at Checkpoint A. The Manager tells the owner this before step 1.
+
+1. The owner opens DeskVerve 3 times. It opens each time with no crash.
+2. The owner sees the new shell: sidebar icons, the accent mark, the update badge, the footer "Not signed in · Sign in", the new padding.
+3. The owner opens the gallery shortcut (`DESKVERVE_DIAG=gallery,demoqueue`). The owner sees every row state, the chips, the letter tiles, both dialogs, and the activity bar demo.
+4. The owner says "the look is right", or lists changes.
+
+**Optional quick look (after 46.7.11, step B16).** The owner sees the new Updates screen with real data, before the actions work. Small design changes cost little here.
+
+**Checkpoint B (after Track B, Updates 100%).** Task 46.7.84. The Manager runs the tests first. Then the owner tries steps 3 to 7.
+
+1. **CAUTION:** live-test precheck. Run `winget list --id <id> --exact` for each test app. Use only apps that are not on the PC. Ask the owner before each install.
+2. Install an older version of two small test apps (`winget install --id <id> --exact --version <older>`), with the owner's yes.
+3. Select Check again. Both apps show in "Ready to update". The badge shows the same number.
+4. Select Update on app 1 (one click, no dialog). The row shows "Downloading" with the printed percent, then "Installing", then the row moves to "Updated today".
+5. Install the older version of app 1 again. Select both apps. "Update selected (2)" opens the dialog. Confirm. The two apps update one after the other. The activity bar shows "1 of 2", then "2 of 2".
+6. Select Cancel during a download. The row goes back to Ready. No `winget.exe` process stays (`Get-Process winget`).
+7. Turn off the network. Select Check again. The failed banner shows the saved time. Turn on the network. Check again works with no restart (W21).
+8. Start an install on the old Marketplace page and an update at the same time. They run one after the other (W2).
+9. Start DeskVerve 10 times. 0 crashes.
+10. Uninstall the two test apps. They were not the owner's apps.
+
+The hold state (W18) is hard to cause on purpose. Unit tests cover it (46.7.53, 46.7.59). The gallery shows its look.
+
+### 15.9 Risks for this re-order
+
+| Risk | Effect | Control |
+|---|---|---|
+| The crash test finds no cause | Both checkpoints wait | Round 2 in 15.4. Rules D1 and D2 remove two suspects in every case. |
+| Each test start needs a UAC prompt | About 80 prompts for the owner | Run all starts from one elevated PowerShell window (one prompt). Q-C. |
+| Worker builds change the exe during the crash test | Wrong results | 46.7.39 copies the build to a test folder first. |
+| The real winget progress text differs from the sample | No percent shows | The parser shows the phase word when it finds no number (D8). 46.7.84 checks a real update. |
+| `--source winget` hides Microsoft Store updates | Fewer rows than `winget upgrade` shows today | D5 note strip and Q-B. |
+| The PC has only 1 real update (Java SE Development Kit 25) | "Update all" cannot be tested with the owner's own apps | Checkpoint B uses two test apps at older versions (owner yes). |
+| Letter tiles at Checkpoint A look unfinished | The owner rule says icons are the most important part | Q-A. The mockups already use letter tiles as stand-ins. |
+| The `AppServices` constructor change (46.7.47) breaks the build | Build fails | One-line change in `MainWindow`; the Manager builds after the task. |
+| TEMP code stays in a release | Extra log writes; a hidden gallery | 46.7.85 before any release build; search for "TEMP DIAGNOSTIC". |
+
+### 15.10 Diagram updates
+
+Done now in `docs/ARCHITECTURE.md`:
+
+- The built screen flow: sign-in is optional (built in 46.7.31 to 46.7.34). The sign-in gate is gone.
+- The "Planned" note lists the parts that are built now.
+- A new section "Re-order 16 Nov: design base, then Updates" with the build order, the Updates data flow and the Updates action flow (queue, progress, hold).
+
+After Track B: move the Updates flows, `ActionQueue`, `ActivityBar` and `UpdatesCatalog` into the built picture, after the Design Architect gives PASS. Remove `MicaBackdrop` from the shell notes (D1).
+
+### 15.11 Open questions for the owner (one at a time)
+
+**Q-A. Real app icons on the Updates screen.**
+
+| Option | What it means for you |
+|---|---|
+| **A. Add real icons for installed apps at the end of Track B (Recommended)** | Checkpoint A shows letters. Checkpoint B shows the real icon for most apps on the Updates screen. Track B gets 5 more tasks, about one more step. |
+| B. Letters until the Installed work | Checkpoint B comes a little sooner. The Updates screen shows letters until then. |
+| C. Build the full icon set first | Every screen has real icons from the start. Both checkpoints come much later. |
+
+Why A: your rule says icons are the most important part of a listing. The Updates screen lists installed apps, so their icons come from this PC, with no internet.
+
+**Q-B. Microsoft Store apps on the Updates screen.**
+
+| Option | What it means for you |
+|---|---|
+| **A. Show apps from the Microsoft catalog only; a note sends Store apps to the Microsoft Store (Recommended)** | The Updates list is exact and safe. Store apps keep their updates from the Microsoft Store, as Windows does today. |
+| B. Show Store app updates too | One list for everything. It needs a new test first. An update can ask for a Microsoft account sign-in. |
+
+Why A: it matches the security fix W8 and the tested read path. Windows already updates Store apps on its own.
+
+**Q-C. How to test the start crash.**
+
+| Option | What it means for you |
+|---|---|
+| **A. You approve one admin window; the Manager runs about 80 test starts from it (Recommended)** | One "Allow this app" prompt for you. The test takes about 15 minutes. |
+| B. Option A, then also turn on Windows crash files and install the free Microsoft debugger (WinDbg) | It finds a hidden cause faster if option A finds nothing. One Windows setting changes (you can turn it off again), and one free Microsoft tool is installed. |
+| C. You start DeskVerve by hand for each test | No setting changes. About 80 prompts and clicks for you. |
+
+Why A: it is the least work for you, and option B stays ready if needed.
+
