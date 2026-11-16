@@ -257,4 +257,47 @@ public class ScanOrchestratorTests
         Assert.Equal(2, flakyCalls[0]);
         Assert.Equal(1, steadyCalls[0]);
     }
+
+    // Blocks the thread for 3 seconds before its first await, and ignores the token.
+    private static Func<IProgress<ScanProgress>, CancellationToken, Task<ScanResult>> BlocksThenWaits()
+    {
+        return async (progress, token) =>
+        {
+            Thread.Sleep(3000);
+            await Task.Delay(10);
+            return ScanResult.Done("late");
+        };
+    }
+
+    [Fact]
+    public async Task Blocking_jobs_do_not_block_the_caller_or_the_quick_job()
+    {
+        var jobs = new[]
+        {
+            new FakeJob("slow1", BlocksThenWaits()),
+            new FakeJob("slow2", BlocksThenWaits()),
+            new FakeJob("quick", Succeeds(10)),
+        };
+        var orchestrator = new ScanOrchestrator(jobs, a => a(), TimeSpan.FromSeconds(1));
+        using var cts = new CancellationTokenSource(Limit);
+
+        var total = Stopwatch.StartNew();
+        var callClock = Stopwatch.StartNew();
+        Task run = orchestrator.RunAsync(cts.Token);
+        callClock.Stop();
+        Assert.True(callClock.ElapsedMilliseconds < 200, $"The call took {callClock.ElapsedMilliseconds} ms.");
+
+        await run.WaitAsync(Limit);
+        total.Stop();
+        Assert.True(total.ElapsedMilliseconds < 2000, $"Took {total.ElapsedMilliseconds} ms.");
+
+        foreach (string id in new[] { "slow1", "slow2" })
+        {
+            var slow = Find(orchestrator, id);
+            Assert.Equal(ScanJobState.Failed, slow.State);
+            Assert.Equal("Took too long", slow.Reason);
+        }
+
+        Assert.Equal(ScanJobState.Done, Find(orchestrator, "quick").State);
+    }
 }

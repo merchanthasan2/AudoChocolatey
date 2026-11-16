@@ -1,10 +1,11 @@
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Text;
 
 namespace QuantumUpdater.Services.Winget;
 
-/// <summary>The result of one winget run.</summary>
-public sealed record RunResult(int ExitCode, bool TimedOut, bool Cancelled, IReadOnlyList<string> Lines);
+/// <summary>The result of one winget run. StopIncomplete is true when the process could not be stopped.</summary>
+public sealed record RunResult(int ExitCode, bool TimedOut, bool Cancelled, IReadOnlyList<string> Lines, bool StopIncomplete = false);
 
 /// <summary>
 /// Runs winget.exe with a fixed argument list. Never uses a shell or one command string.
@@ -23,6 +24,9 @@ public sealed class WingetRunner
     private static readonly TimeSpan ReaderGrace = TimeSpan.FromSeconds(5);
 
     private readonly string _executablePath;
+
+    /// <summary>Stops the process tree. Tests replace it to make the stop fail.</summary>
+    internal Action<Process> KillTree { get; init; } = process => process.Kill(entireProcessTree: true);
 
     /// <param name="executablePath">Full path to winget.exe. The app passes WingetLocator.Find().</param>
     public WingetRunner(string executablePath)
@@ -103,6 +107,7 @@ public sealed class WingetRunner
 
         bool cancelled = false;
         bool timedOut = false;
+        bool stopIncomplete = false;
         using var timeoutCts = new CancellationTokenSource(timeout);
         using var linked = CancellationTokenSource.CreateLinkedTokenSource(token, timeoutCts.Token);
         try
@@ -113,8 +118,16 @@ public sealed class WingetRunner
         {
             cancelled = token.IsCancellationRequested;
             timedOut = !cancelled;
-            KillProcessTree(process);
-            await process.WaitForExitAsync().ConfigureAwait(false);
+            stopIncomplete = !KillProcessTree(process, KillTree);
+            try
+            {
+                // Bounded: a process that could not be killed must not block the caller.
+                await process.WaitForExitAsync().WaitAsync(ReaderGrace).ConfigureAwait(false);
+            }
+            catch (TimeoutException)
+            {
+                stopIncomplete = true;
+            }
         }
 
         try
@@ -137,7 +150,7 @@ public sealed class WingetRunner
             snapshot = collected.ToList();
         }
 
-        return new RunResult(process.ExitCode, timedOut, cancelled, snapshot);
+        return new RunResult(ReadExitCode(process), timedOut, cancelled, snapshot, stopIncomplete);
     }
 
     /// <summary>
@@ -230,18 +243,47 @@ public sealed class WingetRunner
         }
     }
 
-    private static void KillProcessTree(Process process)
+    /// <summary>Stops the process tree. Returns false when the stop failed. Never throws.</summary>
+    internal static bool KillProcessTree(Process process, Action<Process> kill)
     {
         try
         {
             if (!process.HasExited)
             {
-                process.Kill(entireProcessTree: true);
+                kill(process);
             }
+
+            return true;
         }
         catch (InvalidOperationException)
         {
             // The process ended on its own before the kill.
+            return true;
+        }
+        catch (Win32Exception)
+        {
+            return false;
+        }
+        catch (AggregateException)
+        {
+            return false;
+        }
+    }
+
+    // The exit code is not set while the process still runs. Return -1 then.
+    private static int ReadExitCode(Process process)
+    {
+        try
+        {
+            return process.HasExited ? process.ExitCode : -1;
+        }
+        catch (InvalidOperationException)
+        {
+            return -1;
+        }
+        catch (Win32Exception)
+        {
+            return -1;
         }
     }
 }

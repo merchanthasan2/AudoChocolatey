@@ -1,3 +1,4 @@
+using System.ComponentModel;
 using System.Diagnostics;
 using QuantumUpdater.Services.Winget;
 using Xunit;
@@ -128,5 +129,56 @@ public class WingetRunnerTests
     {
         await Assert.ThrowsAsync<ArgumentException>(() =>
             NewRunner().RunAsync(["uninstall", flag, "Mozilla.Firefox"], LongTimeout, null, CancellationToken.None));
+    }
+
+    [Fact]
+    public async Task Failed_kill_on_timeout_returns_timed_out_with_stop_incomplete()
+    {
+        var runner = new WingetRunner(Path.Combine(AppContext.BaseDirectory, "FakeWinget", "FakeWinget.exe"))
+        {
+            KillTree = _ => throw new Win32Exception(5, "Access is denied."),
+        };
+        try
+        {
+            var result = await runner.RunAsync(["--sleep"], TimeSpan.FromSeconds(1), null, CancellationToken.None);
+
+            Assert.True(result.TimedOut);
+            Assert.False(result.Cancelled);
+            Assert.True(result.StopIncomplete);
+        }
+        finally
+        {
+            // The fake could not be stopped by the runner. Stop it here so no test leaves it running.
+            foreach (var process in Process.GetProcessesByName("FakeWinget"))
+            {
+                try
+                {
+                    process.Kill(entireProcessTree: true);
+                }
+                catch (InvalidOperationException)
+                {
+                    // Already ended.
+                }
+                catch (Win32Exception)
+                {
+                    // Could not stop it. The test already checked the result.
+                }
+                finally
+                {
+                    process.Dispose();
+                }
+            }
+        }
+    }
+
+    [Fact]
+    public void Kill_failures_are_reported_and_never_thrown()
+    {
+        using var process = Process.GetCurrentProcess();
+
+        Assert.False(WingetRunner.KillProcessTree(process, _ => throw new Win32Exception(5)));
+        Assert.False(WingetRunner.KillProcessTree(process, _ => throw new AggregateException("kill failed")));
+        Assert.True(WingetRunner.KillProcessTree(process, _ => throw new InvalidOperationException("already ended")));
+        Assert.True(WingetRunner.KillProcessTree(process, _ => { }));
     }
 }

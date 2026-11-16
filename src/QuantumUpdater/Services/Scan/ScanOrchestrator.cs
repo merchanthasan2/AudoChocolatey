@@ -242,8 +242,10 @@ public sealed class ScanOrchestrator
             token.ThrowIfCancellationRequested();
             cts.CancelAfter(_jobTimeout);
 
-            Task<ScanResult> work = entry.Job.RunAsync(progress, cts.Token);
-            Task first = await Task.WhenAny(work, stopped.Task).ConfigureAwait(false);
+            // Run the job on a thread pool thread, so sync work in the job cannot block this caller.
+            Task<ScanResult> work = Task.Run(() => entry.Job.RunAsync(progress, cts.Token));
+            Task timeLimit = Task.Delay(_jobTimeout, cts.Token);
+            Task first = await Task.WhenAny(work, stopped.Task, timeLimit).ConfigureAwait(false);
             if (first == work)
             {
                 ScanResult? result = await work.ConfigureAwait(false);

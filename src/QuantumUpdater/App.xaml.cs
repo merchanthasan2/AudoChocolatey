@@ -35,22 +35,3 @@ public class App : Application, IXamlMetadataProvider
         }
     }
 }
-
-/// <summary>Writes error type and stack trace only. No emails, tokens, or file contents.</summary>
-internal static class CrashLog
-{
-    public static void Write(string where, Exception? ex)
-    {
-        try
-        {
-            var dir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "QuantumUpdater");
-            Directory.CreateDirectory(dir);
-            File.AppendAllText(Path.Combine(dir, "winui-crash.log"),
-                $"{DateTimeOffset.Now:O} [{where}] {ex?.GetType().FullName}: {ex?.Message}{Environment.NewLine}{ex?.StackTrace}{Environment.NewLine}{ex?.InnerException}{Environment.NewLine}{Environment.NewLine}");
-        }
-        catch
-        {
-            // Logging must never crash the app.
-        }
-    }
-}
