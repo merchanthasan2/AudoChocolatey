@@ -19,7 +19,7 @@
     <Compile Include="..\..\src\QuantumUpdater\Services\Inventory\StoreAppRules.cs" Link="Linked\StoreAppRules.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\..\_winget_sample.txt" Link="Data\_winget_sample.txt" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="Data\winget-sample.txt" CopyToOutputDirectory="PreserveNewest" />
     <None Include="Data\winget-list.txt" CopyToOutputDirectory="PreserveNewest" />
     <None Include="Data\winget-upgrade.txt" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>

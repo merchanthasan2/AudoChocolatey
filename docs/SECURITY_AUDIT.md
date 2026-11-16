@@ -141,3 +141,38 @@ Two skills are already installed and must be used: `vibe-security` (raroque) and
 - **Note:** A public or reachable Release is required before another PC can download. Private repo Actions minutes still apply.
 
 No full scored review of the whole app has been run under this list yet.
+
+## Wave 1 batch review — Phase 46 (16 Nov 2026)
+
+**Scope:** `git diff dcaa51c..9ff3f8a -- src tests`. Reviewer: Security & Code Architect. **Verdict: PASS WITH FIXES.** No Critical or High finding.
+
+| Earlier finding | Status |
+|---|---|
+| F3 fake winget on PATH | Closed |
+| F4 fuzzy id match | Closed for current callers |
+| F16 kill on cancel | Partly (W3, W7) |
+| F18 one action at a time | Open (W2): ActionQueue not used by the pages |
+| F22 crash log | Partly (W1) |
+| F24 copied process code | Closed |
+
+| ID | Sev | Problem | Fix | When |
+|---|---|---|---|---|
+| W1 | Medium | Crash log writes exception messages (user paths), no size cap, admin app appends to a user-writable folder (junction risk) | Type, HResult, stack only; strip profile paths; 1 MB cap; refuse reparse points | Before next release build |
+| W2 | Medium | Several installs/uninstalls can run at once; shared LastError | Route every action through one ActionQueue; per-result errors | Before owner acceptance |
+| W3 | Medium | Kill can throw Win32Exception/AggregateException; winget may keep running | Catch, report Cancelled/TimedOut with a note | Before next release build |
+| W4 | Medium | ScanOrchestrator starts jobs on the caller thread; sync work blocks parallelism and the limit | Task.Run each job; blocking-job test | Before the scan screen |
+| W5 | Low | Locator caches a path that App Installer updates can delete | Re-check File.Exists, re-locate once | Next batch |
+| W6 | Low | Highest version chosen before the trust check | Filter trusted + Store/System signature first | Next batch |
+| W7 | Low | stderr dropped from error messages | ErrorLines in RunResult | Next batch |
+| W8 | Low | Runner is a blocklist; action verbs accept positional/query flags | Allowlist: exactly one --id, add --source winget | Next batch |
+| W9 | Low | Abandoned reader tasks raise unobserved exceptions | Observe faults | Next batch |
+| W10 | Low | HKCU DisplayName can fake a header line; pin footers read as rows | Header only with dash separator; footer patterns; Version required | Next batch |
+| W11 | Low | No row caps + StackPanel: large search freezes the UI | Virtual list (46.7.6) or --count 200 | With Wave 3 |
+| W12 | Low | Same id twice (two versions) fails uninstall | Pass --version or group rows | With 46.5.15 |
+| W13 | Low | Events raised inside locks; live object passed; _post throw stops queue | Post after unlock; snapshot; try/catch | Next batch |
+| W14 | Low | Tests needed an ignored file; FakeWinget copied before build | Fixture moved to Data/ (fixed 16 Nov); after-build copy | Partly fixed |
+| W15 | Low | HKCU uninstall strings are user-writable; running them as admin is privilege escalation | Never run HKCU strings elevated; HKLM program must be under Program Files/System32 | Before 46.5.18/19 |
+| W16 | Low | Result-mapping code copied six times; duplicate result types; empty if; HKCU read twice | One helper and type; delete dead code; read HKCU once | Next batch |
+| W17 | Low (privacy) | Test fixture was the owner's real installed-app list | Replaced with synthetic rows on 16 Nov; old copy remains in public git history (owner decision) | Fixed in tree |
+
+Middleware: none new. WingetRunner is the gate between the admin app and winget; make it an allowlist (W8). A second gate is needed before the own-uninstaller route (W15).

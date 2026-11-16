@@ -1,0 +1,12 @@
+﻿Name                           Id                                     Version             Available            Source
+---------------------------------------------------------------------------------------------------------------------
+Antigravity 2.30.0             Google.Antigravity                     2.30.0              2.31.0               winget
+Claude                         Anthropic.Claude                       2.42304.2.0         3.6556.2             winget
+GitHub Desktop                 GitHub.GitHubDesktop                   3.6.10              3.6.11               winget
+Grok Bot 0.79.3                xAI.GrokBot                            0.79.3              0.79.4               winget
+Microsoft Teams                Microsoft.Teams                        26276.513.5241.9675 26288.2004.5269.3420 winget
+OBS Studio                     OBSProject.OBSStudio                   32.2.2              33.0.0               winget
+Visual Studio Build Tools 2022 Microsoft.VisualStudio.2022.BuildTools 17.14.44            17.14.45             winget
+Visual Studio Community 2026   Microsoft.VisualStudio.Community       18.11.3             18.12.0              winget
+Windows Subsystem for Linux    Microsoft.WSL                          2.7.14.0            3.0.5                winget
+9 upgrades available.

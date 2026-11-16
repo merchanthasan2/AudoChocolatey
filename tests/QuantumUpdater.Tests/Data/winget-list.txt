@@ -1,240 +1,240 @@
 Name                                                         Id                                                                                         Version              Available  Source
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-Adobe Acrobat                                                MSIX\AdobeAcrobatDCCoreApp_26.1.0.0_x64__33qsgwvbcw8mw                                     26.1.0.0                        
-Adobe Acrobat (64-bit)                                       Adobe.Acrobat.Pro                                                                          26.002.22031                    winget
-Adobe Creative Cloud                                         Adobe.CreativeCloud                                                                        6.11.0.478.6                    winget
-Adobe Native Client                                          MSIX\AdobeNotificationClient_7.0.7.25_x64__enpm4xejd91yc                                   7.0.7.25                        
-AI Noise Cancelation Audio Software                          ARP\Machine\X86\{ab5f014e-883d-470d-bc2d-127ef91e5611}                                     5.0.0                           
-AI Noise Cancelation Audio Software SDK                      ARP\Machine\X64\{9B441197-6389-46FC-BE60-56C8B6E5ADE9}                                     1.0.6                           
-AMD Radeon Software                                          MSIX\AdvancedMicroDevicesInc-2.AMDRadeonSoftware_10.22.20073.0_x64__0a9344xs7nr4m          10.22.20073.0                   
-Android Studio                                               ARP\Machine\X64\Android Studio                                                             2026.1                          
-Angry IP Scanner                                             angryziber.AngryIPScanner                                                                  3.10.0                          winget
-Antigravity 2.32.1                                           Google.Antigravity                                                                         2.32.1                          winget
-Antigravity IDE (User)                                       Google.AntigravityIDE                                                                      2.7.0                           winget
-AOMEI Partition Assistant Pro Edition 6.0                    ARP\Machine\X86\{02F850ED-FD0E-4ED1-BE0B-5498165BF300}_is1                                 Unknown                         
-App Installer                                                Microsoft.AppInstaller                                                                     1.30.300.0                      winget
-Armoury Crate                                                MSIX\B9ECED6F.ArmouryCrate_6.7.6.0_x64__qmba6cd70vzyy                                      6.7.6.0                         
-Armoury Crate Service                                        ARP\Machine\X64\Armoury Crate Service                                                      6.7.6.0                         
-ASUS Framework Service                                       ARP\Machine\X86\{339A6383-7862-46DA-8A9D-E84180EF9424}                                     4.2.5.4                         
-ASUS Smart Display Control                                   ARP\Machine\X86\{8714A8D1-0F08-4681-9DF6-A8C4607A58B4}                                     1.7.0                           
-AURA Creator                                                 MSIX\B9ECED6F.AURACreator_4.7.4.0_x64__qmba6cd70vzyy                                       4.7.4.0                         
-AURA lighting effect add-on                                  ARP\Machine\X86\{1E2EA04B-FCA7-457E-B6F4-F33E1858E859}                                     0.0.60                          
-AURA lighting effect add-on x64                              ARP\Machine\X64\{C5A4A164-4428-4931-B728-96EEF0FA3C44}                                     0.0.60                          
-AV1 Video Extension                                          MSIX\Microsoft.AV1VideoExtension_2.0.35.0_x64__8wekyb3d8bbwe                               2.0.35.0                        
-AVC Encoder Video Extension                                  MSIX\Microsoft.AVCEncoderVideoExtension_1.1.23.0_x64__8wekyb3d8bbwe                        1.1.23.0                        
-Bing Wallpaper                                               Microsoft.BingWallpaper                                                                    1.1.472.0                       winget
-Canva                                                        ARP\User\X64\3d0ba22d-e02b-5c6d-93a1-4e2a9af9c1f2                                          1.128.0                         
-Claude                                                       Anthropic.Claude                                                                           3.6556.2.0                      winget
-Cloudflare One Client                                        Cloudflare.Warp                                                                            26.8.2115.0                     winget
-CPUID CPU-Z 3.02                                             CPUID.CPU-Z                                                                                3.02                            winget
-Create React App Sample                                      ARP\User\X64\dae74e3c5b32b51d6b2e127ef9a3976e                                              1.0                             
-CrystalDiskInfo 9.9.4                                        CrystalDewWorld.CrystalDiskInfo                                                            9.9.4                           winget
-Cursor (User)                                                Anysphere.Cursor                                                                           3.30.14                         winget
-Dell Core Services                                           ARP\Machine\X64\{7AF25A53-31D7-4E74-8D7C-B5D59B3A92C7}                                     1.14.151.0                      
-Dell Display and Peripheral Manager                          Dell.DisplayAndPeripheralManager                                                           2.3.0.9                         winget
-Dell Peripheral Core                                         ARP\Machine\X64\Dell Peripheral Manager                                                    2.3.0.100                       
-Dev Home                                                     MSIX\Microsoft.Windows.DevHome_0.1700.597.0_x64__8wekyb3d8bbwe                             0.1700.597.0                    
-DirectX                                                      Microsoft.DirectX                                                                          9.29.1974.0                     winget
-DirectX                                                      Microsoft.DirectX                                                                          9.29.1974.0                     winget
-Docker Desktop                                               Docker.DockerDesktop                                                                       4.99.0                          winget
-DroidCam Audio & Video Drivers (X64)                         ARP\Machine\X64\DroidCamDrivers                                                            7.1.2                           
-DroidCam Client                                              dev47apps.DroidCamOBSClient                                                                7.2.1                           winget
-DroidCam OBS Plugin (X64)                                    dev47apps.DroidCamOBSPlugin                                                                2.5.1                           winget
-EMEET STUDIO version 2.0.4                                   ARP\Machine\X64\{C32F7F8G-973B-5G0B-B472-22F5633048CB}_is1                                 2.0.4                           
-English (United Kingdom) Local Experience Pack               MSIX\Microsoft.LanguageExperiencePacken-GB_28000.2.7.0_neutral__8wekyb3d8bbwe              28000.2.7.0                     
-EOS Lens Registration Tool                                   ARP\Machine\X86\{917435F9-51AD-49DA-A7D6-77CB74247DBC}                                     1.20.10.2                       
-EOS Utility 3                                                ARP\Machine\X86\{e4904794-f638-412d-b7ed-59543344c999}                                     3.20.10.2                       
-Feedback Hub                                                 MSIX\Microsoft.WindowsFeedbackHub_2.2610.102.0_x64__8wekyb3d8bbwe                          2.2610.102.0                    
-Game Bar                                                     MSIX\Microsoft.XboxGamingOverlay_7.326.11042.0_x64__8wekyb3d8bbwe                          7.326.11042.0                   
-Game Speech Window                                           MSIX\Microsoft.XboxSpeechToTextOverlay_1.111.30001.0_x64__8wekyb3d8bbwe                    1.111.30001.0                   
-Gaming Services                                              MSIX\Microsoft.GamingServices_39.118.30001.0_x64__8wekyb3d8bbwe                            39.118.30001.0                  
-Get Help                                                     MSIX\Microsoft.GetHelp_10.2409.42652.0_x64__8wekyb3d8bbwe                                  10.2409.42652.0                 
-Git                                                          Git.Git                                                                                    2.56.0.4                        winget
-GitHub CLI                                                   GitHub.cli                                                                                 2.104.0                         winget
-GitHub Desktop                                               GitHub.GitHubDesktop                                                                       3.6.11                          winget
-Google Chrome                                                ARP\Machine\X86\Google Chrome                                                              157.0.8103.78                   
-Google Drive                                                 Google.GoogleDrive                                                                         133.0.2.0                       winget
-Google Meet                                                  ARP\User\X64\ed2d06343bea9f79b3a1b7369f702095                                              1.0                             
-HandBrake 1.11.2                                             HandBrake.HandBrake                                                                        1.11.2                          winget
-HEIF Image Extension                                         MSIX\Microsoft.HEIFImageExtension_1.2.65.0_x64__8wekyb3d8bbwe                              1.2.65.0                        
-HEVC Video Extensions from Device Manufacturer               MSIX\Microsoft.HEVCVideoExtension_2.5.48.0_x64__8wekyb3d8bbwe                              2.5.48.0                        
-HP Print Support Application                                 MSIX\AD2F1837.HPPrinterDriver_2605.1.4767.0_x64__v10z8vjag6ke6                             2605.1.4767.0                   
-HP Smart                                                     MSIX\AD2F1837.HPPrinterControl_166.3.1118.0_x64__v10z8vjag6ke6                             166.3.1118.0                    
-Java(TM) SE Development Kit 25.0.5.0.3 (64-bit)              Oracle.JDK.25                                                                              25.0.5.0             25.0.5.0.3 winget
-Kaspersky                                                    ARP\Machine\X86\InstallWIX_{2AE381ED-A2A2-373C-8DB1-231B56332A0F}                          21.26.4.406                     
-Kaspersky VPN                                                ARP\Machine\X86\InstallWIX_{CE07BDE6-A004-3A5B-9885-1E5AEC1C530B}                          21.27.6.532                     
-Kiro (User)                                                  Amazon.Kiro                                                                                1.4.154                         winget
-LG Monitor App Installer                                     MSIX\LGElectronics.LGMonitorApp_1.2606.1601.0_x86__cfnzzhwkr8z5w                           1.2606.1601.0                   
-Local AI Manager for Microsoft 365                           MSIX\aimgr_0.20.63.0_x64__8wekyb3d8bbwe                                                    0.20.63.0                       
-Microsoft .NET Framework 4.8.1 SDK                           Microsoft.DotNet.Framework.DeveloperPack_4                                                 4.8.1                           winget
-Microsoft .NET Framework 4.8.1 Targeting Pack                Microsoft.DotNet.Framework.DeveloperPack.4.6                                               > 4.6.2                         winget
-Microsoft .NET Framework 4.8.1 Targeting Pack (ENU)          Microsoft.DotNet.Framework.DeveloperPack.4.6                                               > 4.6.2                         winget
-Microsoft .Net Native Framework Package 2.2                  MSIX\Microsoft.NET.Native.Framework.2.2_2.2.29512.0_x64__8wekyb3d8bbwe                     2.2.29512.0                     
-Microsoft .Net Native Framework Package 2.2                  MSIX\Microsoft.NET.Native.Framework.2.2_2.2.29512.0_x86__8wekyb3d8bbwe                     2.2.29512.0                     
-Microsoft .Net Native Runtime Package 2.2                    Microsoft.DotNet.Native.Runtime                                                            2.2.28604.0                     winget
-Microsoft .Net Native Runtime Package 2.2                    Microsoft.DotNet.Native.Runtime                                                            2.2.28604.0                     winget
-Microsoft .NET SDK 8.0.428 (x64)                             Microsoft.DotNet.SDK.8                                                                     8.0.428                         winget
-Microsoft 365 - en-us                                        ARP\Machine\X64\O365HomePremRetail - en-us                                                 16.0.20527.20196                
-Microsoft Bing                                               MSIX\Microsoft.BingSearch_1.1.43.0_x64__8wekyb3d8bbwe                                      1.1.43.0                        
-Microsoft Clipchamp                                          MSIX\Clipchamp.Clipchamp_4.7.10240.0_x64__yxz26nhyzhsrt                                    4.7.10240.0                     
-Microsoft Defender                                           MSIX\Microsoft.6365217CE6EB4_102.2504.16004.0_x64__8wekyb3d8bbwe                           102.2504.16004.0                
-Microsoft Edge                                               Microsoft.Edge                                                                             158.0.4370.21                   winget
-Microsoft Edge                                               MSIX\Microsoft.MicrosoftEdge.Stable_157.0.4341.16_neutral__8wekyb3d8bbwe                   157.0.4341.16                   
-Microsoft Edge For Game Bar                                  MSIX\Microsoft.Edge.GameAssist_1.0.4019.0_x64__8wekyb3d8bbwe                               1.0.4019.0                      
-Microsoft Engagement Framework                               MSIX\Microsoft.Services.Store.Engagement_10.0.23012.0_x64__8wekyb3d8bbwe                   10.0.23012.0                    
-Microsoft Engagement Framework                               MSIX\Microsoft.Services.Store.Engagement_10.0.23012.0_x86__8wekyb3d8bbwe                   10.0.23012.0                    
-Microsoft Family                                             MSIX\MicrosoftCorporationII.MicrosoftFamily_0.2.103.0_x64__8wekyb3d8bbwe                   0.2.103.0                       
-Microsoft GameInput                                          Microsoft.GameInput                                                                        4.0.306.0                       winget
-Microsoft News                                               MSIX\Microsoft.BingNews_1.0.2.0_x64__8wekyb3d8bbwe                                         1.0.2.0                         
-Microsoft OneDrive                                           Microsoft.OneDrive                                                                         26.212.1029.0006                winget
-Microsoft Photos                                             MSIX\Microsoft.Windows.Photos_2608.1401.18.0_x64__8wekyb3d8bbwe                            2608.1401.18.0                  
-Microsoft Sticky Notes                                       MSIX\Microsoft.MicrosoftStickyNotes_4.0.6105.0_x64__8wekyb3d8bbwe                          4.0.6105.0                      
-Microsoft Store                                              MSIX\Microsoft.WindowsStore_22610.1401.8.0_x64__8wekyb3d8bbwe                              22610.1401.8.0                  
-Microsoft Teams                                              Microsoft.Teams                                                                            26288.2004.5269.3420            winget
-Microsoft Teams Meeting Add-in for Microsoft Office          ARP\Machine\X64\{A7AB73A3-CB10-4AA5-9D38-6AEFFBDE4C91}                                     1.25.18302                      
-Microsoft To Do                                              MSIX\Microsoft.Todos_2.179.8901.0_x64__8wekyb3d8bbwe                                       2.179.8901.0                    
-Microsoft Visio - en-us                                      ARP\Machine\X64\VisioPro2021Retail - en-us                                                 16.0.20527.20196                
-Microsoft Visual C++ 2008 Redistributable - x86 9.0.21022    ARP\Machine\X86\{FF66E9F6-83E7-3A3E-AF14-8DE9A809A6A4}                                     9.0.21022                       
-Microsoft Visual C++ 2010  x86 Redistributable - 10.0.40219  Microsoft.VCRedist.2010.x86                                                                10.0.40219                      winget
-Microsoft Visual C++ 2012 UWP Desktop Runtime Package        MSIX\Microsoft.VCLibs.110.00.UWPDesktop_11.0.61135.0_x64__8wekyb3d8bbwe                    11.0.61135.0                    
-Microsoft Visual C++ 2012 UWP Desktop Runtime Package        MSIX\Microsoft.VCLibs.110.00.UWPDesktop_11.0.61135.0_x86__8wekyb3d8bbwe                    11.0.61135.0                    
-Microsoft Visual C++ 2013 Redistributable (x64) - 12.0.40664 Microsoft.VCRedist.2013.x64                                                                12.0.40664.0                    winget
-Microsoft Visual C++ 2013 Redistributable (x86) - 12.0.40664 Microsoft.VCRedist.2013.x86                                                                12.0.40664.0                    winget
-Microsoft Visual C++ 2013 UWP Desktop Runtime Package        MSIX\Microsoft.VCLibs.120.00.UWPDesktop_12.0.40653.0_x64__8wekyb3d8bbwe                    12.0.40653.0                    
-Microsoft Visual C++ 2013 UWP Desktop Runtime Package        MSIX\Microsoft.VCLibs.120.00.UWPDesktop_12.0.40653.0_x86__8wekyb3d8bbwe                    12.0.40653.0                    
-Microsoft Visual C++ 2015 UWP Desktop Runtime Package        Microsoft.VCLibs.Desktop.14                                                                14.0.33728.0                    winget
-Microsoft Visual C++ 2015 UWP Desktop Runtime Package        Microsoft.VCLibs.Desktop.14                                                                14.0.33728.0                    winget
-Microsoft Visual C++ 2015 UWP Runtime Package                Microsoft.VCLibs.14                                                                        14.0.33519.0                    winget
-Microsoft Visual C++ 2015 UWP Runtime Package                Microsoft.VCLibs.14                                                                        14.0.33519.0                    winget
-Microsoft Visual C++ v14 Redistributable (x64) - 14.52.37029 Microsoft.VCRedist.2015+.x64                                                               14.52.37029.0                   winget
-Microsoft Visual C++ v14 Redistributable (x86) - 14.52.37029 Microsoft.VCRedist.2015+.x86                                                               14.52.37029.0                   winget
-Microsoft Visual Studio Code (User)                          Microsoft.VisualStudioCode                                                                 1.146.0                         winget
-Microsoft Visual Studio Installer                            ARP\Machine\X64\{6F320B93-EE3C-4826-85E0-ADF79F8D4C61}                                     4.8.60.55523                    
-Microsoft Windows Desktop Runtime - 8.0.25 (x64)             Microsoft.DotNet.DesktopRuntime.8.x64                                                      8.0.25                          winget
-Microsoft Windows Desktop Runtime - 9.0.23 (x64)             Microsoft.DotNet.DesktopRuntime.9                                                          9.0.23                          winget
-Microsoft Windows Desktop Runtime 10.0.15 (x64)              Microsoft.DotNet.DesktopRuntime.10                                                         10.0.15                         winget
-Microsoft.Office.ActionsServer                               MSIX\Microsoft.Office.ActionsServer_16.0.20527.20196_neutral__8wekyb3d8bbwe                16.0.20527.20196                
-Microsoft.UI.Xaml.2.7                                        Microsoft.UI.Xaml.2.7                                                                      7.2409.9001.0                   winget
-Microsoft.UI.Xaml.2.7                                        Microsoft.UI.Xaml.2.7                                                                      7.2409.9001.0                   winget
-Microsoft.UI.Xaml.2.8                                        Microsoft.UI.Xaml.2.8                                                                      8.2501.31001.0                  winget
-Microsoft.UI.Xaml.2.8                                        Microsoft.UI.Xaml.2.8                                                                      8.2501.31001.0                  winget
-MobaXterm                                                    Mobatek.MobaXterm                                                                          26.6.0.5560                     winget
-Mobile devices                                               MSIX\MicrosoftWindows.CrossDevice_0.26102.70.0_x64__cw5n1h2txyewy                          0.26102.70.0                    
-MPEG-2 Video Extension                                       MSIX\Microsoft.MPEG2VideoExtension_1.2.32.0_x64__8wekyb3d8bbwe                             1.2.32.0                        
-MSN Weather                                                  MSIX\Microsoft.BingWeather_4.54.63045.0_x64__8wekyb3d8bbwe                                 4.54.63045.0                    
-MyASUS                                                       MSIX\B9ECED6F.ASUSPCAssistant_4.0.82.0_x64__qmba6cd70vzyy                                  4.0.82.0                        
-Net Speed Meter Plus                                         MSIX\4789ZeroByte.NetSpeedMeterPlus_3.0.5.0_neutral__gvheqymwk6zrr                         3.0.5.0                         
-Node.js                                                      OpenJS.NodeJS.LTS                                                                          26.13.1                         winget
-Notepad++                                                    MSIX\NotepadPlusPlus_1.0.0.0_neutral__2247w0b46hfww                                        1.0.0.0                         
-Notepad++ (64-bit x64)                                       Notepad++.Notepad++                                                                        8.9.9.1                         winget
-NVIDIA App 11.0.9.585                                        ARP\Machine\X64\{B2FE1952-0186-46C3-BAEC-A80AA35AC5B8}_Display.NvApp                       11.0.9.585                      
-NVIDIA Broadcast 2.2.0                                       ARP\Machine\X64\{B2FE1952-0186-46C3-BAEC-A80AA35AC5B8}_NVIDIABroadcast                     2.2.0                           
-NVIDIA Control Panel                                         MSIX\NVIDIACorp.NVIDIAControlPanel_8.1.969.0_x64__56jybvy8sckqj                            8.1.969.0                       
-NVIDIA FrameView SDK 1.9.12728.38614306                      ARP\Machine\X64\{B2FE1952-0186-46C3-BAEC-A80AA35AC5B8}_FrameViewSdk                        1.9.12728.38614306              
-NVIDIA Graphics Driver 621.01                                ARP\Machine\X64\{B2FE1952-0186-46C3-BAEC-A80AA35AC5B8}_Display.Driver                      621.01                          
-NVIDIA HD Audio Driver 1.4.6.6                               ARP\Machine\X64\{B2FE1952-0186-46C3-BAEC-A80AA35AC5B8}_HDAudio.Driver                      1.4.6.6                         
-NVIDIA PhysX System Software 9.26.0904                       Nvidia.PhysX                                                                               9.26.0904                       winget
-OfficePushNotificationsUtility                               MSIX\Microsoft.OfficePushNotificationUtility_16.0.20527.20196_neutral__8wekyb3d8bbwe       16.0.20527.20196                
-OneDrive                                                     MSIX\Microsoft.OneDriveSync_26212.1029.6.0_neutral__8wekyb3d8bbwe                          26212.1029.6.0                  
-OneNote Virtual Printer                                      MSIX\Microsoft.Office.OneNoteVirtualPrinter_1.0.0.0_x64__8wekyb3d8bbwe                     1.0.0.0                         
-OpenSSL 4.1.0 Light (64-bit)                                 ShiningLight.OpenSSL.Light                                                                 4.1.0                           winget
-OSV Scanner                                                  Google.OSVScanner                                                                          2.7.0                           winget
-Outlook for Windows                                          Microsoft.Outlook                                                                          1.2026.812.100                  winget
-Paint                                                        MSIX\Microsoft.Paint_11.2609.441.0_x64__8wekyb3d8bbwe                                      11.2609.441.0                   
-Phone Link                                                   MSIX\Microsoft.YourPhone_1.26101.115.0_x64__8wekyb3d8bbwe                                  1.26101.115.0                   
-Photos                                                       ARP\Machine\X64\ODPhotosOneDriveSetup.exe                                                  26.212.1029.0006                
-Photos                                                       MSIX\Microsoft.OneDrive.Photos_26.212.1029.6_neutral__8wekyb3d8bbwe                        26.212.1029.6                   
-Plex                                                         Plex.Plex                                                                                  1.115.0                         winget
-Power Automate                                               MSIX\Microsoft.PowerAutomateDesktop_1.0.2164.0_x64__8wekyb3d8bbwe                          1.0.2164.0                      
-PuTTY release 0.85 (64-bit)                                  PuTTY.PuTTY                                                                                0.85.0.0                        winget
-Python 3.13.17 (64-bit)                                      Python.Python.3.13                                                                         3.13.17                         winget
-Python Launcher                                              Python.Launcher                                                                            3.15.2                          winget
-qBittorrent                                                  ARP\Machine\X86\qBittorrent                                                                5.2.3                           
-Quantum Updater                                              ARP\Machine\X64\Quantum Updater                                                            3.0.0-alpha.1                   
-Quick Assist                                                 MSIX\MicrosoftCorporationII.QuickAssist_2.0.35.0_x64__8wekyb3d8bbwe                        2.0.35.0                        
-Raw Image Extension                                          MSIX\Microsoft.RawImageExtension_2.5.42.0_x64__8wekyb3d8bbwe                               2.5.42.0                        
-Razer Cortex                                                 ARP\Machine\X64\Razer Cortex_is1                                                           11.12.0.14                      
-Razer Synapse                                                ARP\Machine\X86\Razer Synapse                                                              4.0.503                         
-Realtek Audio Control                                        MSIX\RealtekSemiconductorCorp.RealtekAudioControl_1.1.137.0_x64__dt26b99r8h8gj             1.1.137.0                       
-ROG Live Service                                             ARP\Machine\X64\{2D87BFB6-C184-4A59-9BBE-3E20CE797631}                                     3.7.6.0                         
-Rustup: the Rust toolchain installer                         Rustlang.Rustup                                                                            1.29.3                          winget
-ShellEx Package                                              MSIX\Kaspersky.ShellEx26_1.0.0.15_neutral__78azx59njhjpr                                   1.0.0.15                        
-Snipping Tool                                                MSIX\Microsoft.ScreenSketch_11.2609.15.0_x64__8wekyb3d8bbwe                                11.2609.15.0                    
-Speech Pack - English (United Kingdom)                       MSIX\MicrosoftWindows.Speech.en-GB.1_1.0.19.0_x64__cw5n1h2txyewy                           1.0.19.0                        
-Spotify - Music and Podcasts                                 MSIX\SpotifyAB.SpotifyMusic_1.309.2055.0_x64__zpdnekdrzrea0                                1.309.2055.0                    
-Start Experiences App                                        MSIX\Microsoft.StartExperiencesApp_1.398.9.0_x64__8wekyb3d8bbwe                            1.398.9.0                       
-Steam                                                        Valve.Steam                                                                                2.10.91.91                      winget
-Store Experience Host                                        MSIX\Microsoft.StorePurchaseApp_22610.1401.2.0_x64__8wekyb3d8bbwe                          22610.1401.2.0                  
-Telegram Desktop                                             MSIX\TelegramMessengerLLP.TelegramDesktop_7.3.3.0_x64__t4vj0pshhgkwm                       7.3.3.0                         
-TerraSync                                                    MSIX\TerraSync_1.0.0.10_neutral__2scz7agafc17p                                             1.0.0.10                        
-TNAS PC                                                      ARP\Machine\X64\{C84BA041-A6D3-489A-95A8-9778569F0742}                                     5.2.560                         
-Visual Studio Build Tools 2022                               Microsoft.VisualStudio.2022.BuildTools                                                     17.14.45                        winget
-Visual Studio Community 2026                                 Microsoft.VisualStudio.Community                                                           18.12.0                         winget
-VLC media player                                             ARP\Machine\X64\{585C109D-9729-4B98-A2B8-EACD8885D115}                                     3.0.24.0                        
-VP9 Video Extensions                                         MSIX\Microsoft.VP9VideoExtensions_1.2.20.0_x64__8wekyb3d8bbwe                              1.2.20.0                        
-vs_CoreEditorFonts                                           ARP\Machine\X86\{1851460E-0E63-4117-B5BA-25A2F045801B}                                     17.7.40001                      
-Web Media Extensions                                         MSIX\Microsoft.WebMediaExtensions_2.1.51.0_x64__8wekyb3d8bbwe                              2.1.51.0                        
-WebP Image Extension                                         MSIX\Microsoft.WebpImageExtension_1.2.47.0_x64__8wekyb3d8bbwe                              1.2.47.0                        
-WhatsApp                                                     MSIX\5319275A.WhatsAppDesktop_2.2644.101.0_x64__cv1g1gvanyjgm                              2.2644.101.0                    
-WhatsApp Beta                                                MSIX\5319275A.51895FA4EA97F_2.2645.101.0_x64__cv1g1gvanyjgm                                2.2645.101.0                    
-Widgets Platform Runtime                                     MSIX\Microsoft.WidgetsPlatformRuntime_1.6.23.0_x64__8wekyb3d8bbwe                          1.6.23.0                        
-WinAppRuntime.Main.1.2-p1                                    MSIX\MicrosoftCorporationII.WinAppRuntime.Main.1.2-p1_2000.609.1413.0_x64__8wekyb3d8bbwe   2000.609.1413.0                 
-WinAppRuntime.Main.1.5                                       MSIX\MicrosoftCorporationII.WinAppRuntime.Main.1.5_5001.373.1736.0_x64__8wekyb3d8bbwe      5001.373.1736.0                 
-WinAppRuntime.Main.1.8                                       MSIX\MicrosoftCorporationII.WinAppRuntime.Main.1.8_8000.994.2142.0_x64__8wekyb3d8bbwe      8000.994.2142.0                 
-WinAppRuntime.Main.2                                         MSIX\MicrosoftCorporationII.WinAppRuntime.Main.2_2.6.5.0_x64__8wekyb3d8bbwe                2.6.5.0                         
-WinAppRuntime.Singleton                                      MSIX\MicrosoftCorporationII.WinAppRuntime.Singleton_8002.6.4.0_x64__8wekyb3d8bbwe          8002.6.4.0                      
-WinAppRuntime.Singleton-p1                                   MSIX\MicrosoftCorporationII.WinAppRuntime.Singleton-p1_2000.609.1413.0_x64__8wekyb3d8bbwe  2000.609.1413.0                 
-Windows App Runtime DDLM 2000.609.1413.0-x6-p1               MSIX\Microsoft.WinAppRuntime.DDLM.2000.609.1413.0-x6-p1_2000.609.1413.0_x64__8wekyb3d8bbwe 2000.609.1413.0                 
-Windows App Runtime DDLM 2000.609.1413.0-x8-p1               MSIX\Microsoft.WinAppRuntime.DDLM.2000.609.1413.0-x8-p1_2000.609.1413.0_x86__8wekyb3d8bbwe 2000.609.1413.0                 
-Windows Application Compatibility Enhancements               MSIX\Microsoft.ApplicationCompatibilityEnhancements_1.2511.9.0_x64__8wekyb3d8bbwe          1.2511.9.0                      
-Windows Calculator                                           MSIX\Microsoft.WindowsCalculator_11.2607.0.0_x64__8wekyb3d8bbwe                            11.2607.0.0                     
-Windows Camera                                               MSIX\Microsoft.WindowsCamera_2026.2608.1.0_x64__8wekyb3d8bbwe                              2026.2608.1.0                   
-Windows Clock                                                MSIX\Microsoft.WindowsAlarms_11.2607.20.0_x64__8wekyb3d8bbwe                               11.2607.20.0                    
-Windows Media Player                                         MSIX\Microsoft.ZuneMusic_11.2609.11.0_x64__8wekyb3d8bbwe                                   11.2609.11.0                    
-Windows Notepad                                              MSIX\Microsoft.WindowsNotepad_11.2609.11.0_x64__8wekyb3d8bbwe                              11.2609.11.0                    
-Windows Package Manager Manifest Creator                     Microsoft.WingetCreate                                                                     1.28.1.0                        winget
-Windows Package Manager Source (winget) V2                   MSIX\Microsoft.Winget.Source_2026.1116.1158.10_neutral__8wekyb3d8bbwe                      2026.1116.1158.10               
-Windows Package Manager Source (winget-font) V2              MSIX\Microsoft.Winget.Fonts.Source_2025.1016.311.49_neutral__8wekyb3d8bbwe                 2025.1016.311.49                
-Windows SDK AddOn                                            ARP\Machine\X86\{E83A632D-56E1-42B0-A945-DEC12727570C}                                     10.1.0.0                        
-Windows Security                                             MSIX\Microsoft.SecHealthUI_1000.29510.1001.0_x64__8wekyb3d8bbwe                            1000.29510.1001.0               
-Windows Software Development Kit - Windows 10.0.26100.9457   ARP\Machine\X86\{45e335f3-c807-43b8-9ed1-43666cfcf939}                                     10.1.26100.9457                 
-Windows Sound Recorder                                       MSIX\Microsoft.WindowsSoundRecorder_11.2607.1.0_x64__8wekyb3d8bbwe                         11.2607.1.0                     
-Windows Subsystem for Linux                                  Microsoft.WSL                                                                              3.0.5.0                         winget
-Windows Terminal                                             Microsoft.WindowsTerminal                                                                  1.25.3131.0                     winget
-Windows Web Experience Pack                                  MSIX\MicrosoftWindows.Client.WebExperience_526.30700.0.0_x64__cw5n1h2txyewy                526.30700.0.0                   
-WindowsAppRuntime.1.2                                        Microsoft.WindowsAppRuntime.1.2                                                            1.2.5                           winget
-WindowsAppRuntime.1.2                                        Microsoft.WindowsAppRuntime.1.2                                                            1.2.5                           winget
-WindowsAppRuntime.1.2-preview1                               MSIX\Microsoft.WindowsAppRuntime.1.2-preview1_2000.609.1413.0_x64__8wekyb3d8bbwe           2000.609.1413.0                 
-WindowsAppRuntime.1.2-preview1                               MSIX\Microsoft.WindowsAppRuntime.1.2-preview1_2000.609.1413.0_x86__8wekyb3d8bbwe           2000.609.1413.0                 
-WindowsAppRuntime.1.4                                        Microsoft.WindowsAppRuntime.1.4                                                            1.4.7                           winget
-WindowsAppRuntime.1.4                                        Microsoft.WindowsAppRuntime.1.4                                                            1.4.7                           winget
-WindowsAppRuntime.1.5                                        Microsoft.WindowsAppRuntime.1.5                                                            1.5.9                           winget
-WindowsAppRuntime.1.5                                        Microsoft.WindowsAppRuntime.1.5                                                            1.5.9                           winget
-WindowsAppRuntime.1.6                                        Microsoft.WindowsAppRuntime.1.6                                                            1.6.9                           winget
-WindowsAppRuntime.1.6                                        Microsoft.WindowsAppRuntime.1.6                                                            1.6.9                           winget
-WindowsAppRuntime.1.7                                        Microsoft.WindowsAppRuntime.1.7                                                            1.7.9                           winget
-WindowsAppRuntime.1.7                                        Microsoft.WindowsAppRuntime.1.7                                                            1.7.9                           winget
-WindowsAppRuntime.1.8                                        Microsoft.WindowsAppRuntime.1.8                                                            > 1.8.10                        winget
-WindowsAppRuntime.1.8                                        Microsoft.WindowsAppRuntime.1.8                                                            > 1.8.10                        winget
-WindowsAppRuntime.1.8                                        Microsoft.WindowsAppRuntime.1.8                                                            > 1.8.10                        winget
-WindowsAppRuntime.1.8                                        Microsoft.WindowsAppRuntime.1.8                                                            1.8.10                          winget
-WindowsAppRuntime.1.8                                        Microsoft.WindowsAppRuntime.1.8                                                            1.8.9                           winget
-WindowsAppRuntime.2                                          Microsoft.WindowsAppRuntime.2                                                              2.6.5.0                         winget
-WindowsAppRuntime.2                                          Microsoft.WindowsAppRuntime.2                                                              2.6.5.0                         winget
-WindowsAppRuntime.2                                          Microsoft.WindowsAppRuntime.2                                                              2.6.4.0                         winget
-WindowsAppRuntime.2                                          Microsoft.WindowsAppRuntime.2                                                              2.5.1.0                         winget
-WindowsAppRuntime.2                                          Microsoft.WindowsAppRuntime.2                                                              2.4.0.0                         winget
-WindowsAppRuntime.2                                          Microsoft.WindowsAppRuntime.2                                                              2.3.1.0                         winget
-WindowsAppRuntime.2                                          Microsoft.WindowsAppRuntime.2                                                              2.3.0.0                         winget
-WindowsAppRuntime.2                                          Microsoft.WindowsAppRuntime.2                                                              2.2.0.0                         winget
-WindowsAppRuntime.2                                          Microsoft.WindowsAppRuntime.2                                                              2.1.3.0                         winget
-WinRAR                                                       MSIX\WinRAR.ShellExtension_1.0.0.2_x64__d9ma7nkbkv4rp                                      1.0.0.2                         
-WinRAR 7.23 (64-bit)                                         RARLab.WinRAR                                                                              7.23.0                          winget
-WinSCP 6.5.6                                                 ARP\Machine\X86\winscp3_is1                                                                6.5.6                           
-WizTree v4.33                                                AntibodySoftware.WizTree                                                                   4.33                            winget
-Wondershare UniConverter(Build 12.5.0.17)                    ARP\Machine\X64\UniConverter_is1                                                           12.5.0.17                       
-XBOX                                                         MSIX\Microsoft.GamingApp_2701.1001.10.0_x64__8wekyb3d8bbwe                                 2701.1001.10.0                  
-Xbox Identity Provider                                       MSIX\Microsoft.XboxIdentityProvider_12.130.16001.0_x64__8wekyb3d8bbwe                      12.130.16001.0                  
-Xbox Service                                                 ARP\Machine\X64\{41D9BD44-575B-40EC-A6BD-8367F49EFD75}                                     4.0.305.0                       
-Xbox TCUI                                                    MSIX\Microsoft.Xbox.TCUI_1.24.10001.0_x64__8wekyb3d8bbwe                                   1.24.10001.0                    
-Zoom Workplace (64-bit)                                      Zoom.Zoom                                                                                  7.2.51704                       winget
+Sample App 001                                               MSIX\Sample.App001_1.0.0.0_x64__sample001                                                  1.1.0
+Sample App 002                                               SampleVendor.App002                                                                        1.2.0                           winget
+Sample App 003                                               SampleVendor.App003                                                                        1.3.0                           winget
+Sample App 004                                               MSIX\Sample.App004_1.0.0.0_x64__sample004                                                  1.4.0
+Sample App 005                                               ARP\Machine\X64\Sample A 005                                                               1.5.0
+Sample App 006                                               ARP\Machine\X64\SampleApp006                                                               1.6.0
+Sample App 007                                               MSIX\Sample.App007_1.0.0.0_x64__sample007                                                  1.7.0
+Sample App 008                                               ARP\Machine\X64\SampleApp008                                                               1.8.0
+Sample App 009                                               SampleVendor.App009                                                                        1.9.0                           winget
+Sample App 010                                               SampleVendor.App010                                                                        1.10.0                          winget
+Sample App 011                                               SampleVendor.App011                                                                        1.11.0                          winget
+Sample App 012                                               ARP\Machine\X64\SampleApp012                                                               1.12.0
+Sample App 013                                               SampleVendor.App013                                                                        1.13.0                          winget
+Sample App 014                                               MSIX\Sample.App014_1.0.0.0_x64__sample014                                                  1.14.0
+Sample App 015                                               ARP\Machine\X64\SampleApp015                                                               1.15.0
+Sample App 016                                               ARP\Machine\X64\SampleApp016                                                               1.16.0
+Sample App 017                                               ARP\Machine\X64\SampleApp017                                                               1.17.0
+Sample App 018                                               MSIX\Sample.App018_1.0.0.0_x64__sample018                                                  1.18.0
+Sample App 019                                               ARP\Machine\X64\SampleApp019                                                               1.19.0
+Sample App 020                                               ARP\Machine\X64\SampleApp020                                                               1.20.0
+Sample App 021                                               MSIX\Sample.App021_1.0.0.0_x64__sample021                                                  1.21.0
+Sample App 022                                               MSIX\Sample.App022_1.0.0.0_x64__sample022                                                  1.22.0
+Sample App 023                                               SampleVendor.App023                                                                        1.23.0                          winget
+Sample App 024                                               ARP\Machine\X64\SampleApp024                                                               1.24.0
+Sample App 025                                               SampleVendor.App025                                                                        1.25.0                          winget
+Sample App 026                                               SampleVendor.App026                                                                        1.26.0                          winget
+Sample App 027                                               SampleVendor.App027                                                                        1.27.0                          winget
+Sample App 028                                               ARP\Machine\X64\SampleApp028                                                               1.28.0
+Sample App 029                                               SampleVendor.App029                                                                        1.29.0                          winget
+Sample App 030                                               SampleVendor.App030                                                                        1.30.0                          winget
+Sample App 031                                               ARP\Machine\X64\SampleApp031                                                               1.31.0
+Sample App 032                                               SampleVendor.App032                                                                        1.32.0                          winget
+Sample App 033                                               ARP\Machine\X64\SampleApp033                                                               1.33.0
+Sample App 034                                               MSIX\Sample.App034_1.0.0.0_x64__sample034                                                  1.34.0
+Sample App 035                                               SampleVendor.App035                                                                        1.35.0                          winget
+Sample App 036                                               SampleVendor.App036                                                                        1.36.0                          winget
+Sample App 037                                               SampleVendor.App037                                                                        1.37.0                          winget
+Sample App 038                                               ARP\Machine\X64\SampleApp038                                                               1.38.0
+Sample App 039                                               SampleVendor.App039                                                                        1.39.0                          winget
+Sample App 040                                               SampleVendor.App040                                                                        1.40.0                          winget
+Sample App 041                                               ARP\Machine\X64\SampleApp041                                                               1.41.0
+Sample App 042                                               MSIX\Sample.App042_1.0.0.0_x64__sample042                                                  1.42.0
+Sample App 043                                               ARP\Machine\X64\SampleApp043                                                               1.43.0
+Sample App 044                                               ARP\Machine\X64\SampleApp044                                                               1.44.0
+Sample App 045                                               MSIX\Sample.App045_1.0.0.0_x64__sample045                                                  1.45.0
+Sample App 046                                               MSIX\Sample.App046_1.0.0.0_x64__sample046                                                  1.46.0
+Sample App 047                                               MSIX\Sample.App047_1.0.0.0_x64__sample047                                                  1.47.0
+Sample App 048                                               MSIX\Sample.App048_1.0.0.0_x64__sample048                                                  1.48.0
+Sample App 049                                               MSIX\Sample.App049_1.0.0.0_x64__sample049                                                  1.49.0
+Sample App 050                                               SampleVendor.App050                                                                        1.50.0                          winget
+Sample App 051                                               SampleVendor.App051                                                                        1.51.0                          winget
+Sample App 052                                               SampleVendor.App052                                                                        1.52.0                          winget
+Sample App 053                                               ARP\Machine\X64\SampleApp053                                                               1.53.0
+Sample App 054                                               SampleVendor.App054                                                                        1.54.0                          winget
+Sample App 055                                               ARP\Machine\X64\SampleApp055                                                               1.55.0
+Sample App 056                                               SampleVendor.App056                                                                        1.56.0                          winget
+Sample App 057                                               MSIX\Sample.App057_1.0.0.0_x64__sample057                                                  1.57.0
+Sample App 058                                               MSIX\Sample.App058_1.0.0.0_x64__sample058                                                  1.58.0
+Sample App 059                                               MSIX\Sample.App059_1.0.0.0_x64__sample059                                                  1.59.0
+Sample App 060                                               MSIX\Sample.App060_1.0.0.0_x64__sample060                                                  1.60.0
+Sample App 061                                               SampleVendor.App061                                                                        1.61.0               2.61.0     winget
+Sample App 062                                               ARP\Machine\X64\SampleApp062                                                               1.62.0
+Sample App 063                                               ARP\Machine\X64\SampleApp063                                                               1.63.0
+Sample App 064                                               SampleVendor.App064                                                                        1.64.0                          winget
+Sample App 065                                               MSIX\Sample.App065_1.0.0.0_x64__sample065                                                  1.65.0
+Sample App 066                                               MSIX\Sample.App066_1.0.0.0_x64__sample066                                                  1.66.0
+Sample App 067                                               SampleVendor.App067                                                                        1.67.0                          winget
+Sample App 068                                               SampleVendor.App068                                                                        1.68.0                          winget
+Sample App 069                                               SampleVendor.App069                                                                        1.69.0                          winget
+Sample App 070                                               MSIX\Sample.App070_1.0.0.0_x64__sample070                                                  1.70.0
+Sample App 071                                               MSIX\Sample.App071_1.0.0.0_x64__sample071                                                  1.71.0
+Sample App 072                                               SampleVendor.App072                                                                        1.72.0                          winget
+Sample App 073                                               SampleVendor.App073                                                                        1.73.0                          winget
+Sample App 074                                               SampleVendor.App074                                                                        1.74.0                          winget
+Sample App 075                                               ARP\Machine\X64\SampleApp075                                                               1.75.0
+Sample App 076                                               MSIX\Sample.App076_1.0.0.0_x64__sample076                                                  1.76.0
+Sample App 077                                               MSIX\Sample.App077_1.0.0.0_x64__sample077                                                  1.77.0
+Sample App 078                                               MSIX\Sample.App078_1.0.0.0_x64__sample078                                                  1.78.0
+Sample App 079                                               SampleVendor.App079                                                                        1.79.0                          winget
+Sample App 080                                               MSIX\Sample.App080_1.0.0.0_x64__sample080                                                  1.80.0
+Sample App 081                                               MSIX\Sample.App081_1.0.0.0_x64__sample081                                                  1.81.0
+Sample App 082                                               MSIX\Sample.App082_1.0.0.0_x64__sample082                                                  1.82.0
+Sample App 083                                               MSIX\Sample.App083_1.0.0.0_x64__sample083                                                  1.83.0
+Sample App 084                                               MSIX\Sample.App084_1.0.0.0_x64__sample084                                                  1.84.0
+Sample App 085                                               SampleVendor.App085                                                                        1.85.0                          winget
+Sample App 086                                               MSIX\Sample.App086_1.0.0.0_x64__sample086                                                  1.86.0
+Sample App 087                                               SampleVendor.App087                                                                        1.87.0                          winget
+Sample App 088                                               MSIX\Sample.App088_1.0.0.0_x64__sample088                                                  1.88.0
+Sample App 089                                               MSIX\Sample.App089_1.0.0.0_x64__sample089                                                  1.89.0
+Sample App 090                                               MSIX\Sample.App090_1.0.0.0_x64__sample090                                                  1.90.0
+Sample App 091                                               SampleVendor.App091                                                                        1.91.0                          winget
+Sample App 092                                               ARP\Machine\X64\SampleApp092                                                               1.92.0
+Sample App 093                                               MSIX\Sample.App093_1.0.0.0_x64__sample093                                                  1.93.0
+Sample App 094                                               ARP\Machine\X64\SampleApp094                                                               1.94.0
+Sample App 095                                               ARP\Machine\X64\SampleApp095                                                               1.95.0
+Sample App 096                                               SampleVendor.App096                                                                        1.96.0                          winget
+Sample App 097                                               MSIX\Sample.App097_1.0.0.0_x64__sample097                                                  1.97.0
+Sample App 098                                               MSIX\Sample.App098_1.0.0.0_x64__sample098                                                  1.98.0
+Sample App 099                                               SampleVendor.App099                                                                        1.99.0                          winget
+Sample App 100                                               SampleVendor.App100                                                                        1.100.0                         winget
+Sample App 101                                               MSIX\Sample.App101_1.0.0.0_x64__sample101                                                  1.101.0
+Sample App 102                                               MSIX\Sample.App102_1.0.0.0_x64__sample102                                                  1.102.0
+Sample App 103                                               SampleVendor.App103                                                                        1.103.0                         winget
+Sample App 104                                               SampleVendor.App104                                                                        1.104.0                         winget
+Sample App 105                                               SampleVendor.App105                                                                        1.105.0                         winget
+Sample App 106                                               SampleVendor.App106                                                                        1.106.0                         winget
+Sample App 107                                               SampleVendor.App107                                                                        1.107.0                         winget
+Sample App 108                                               SampleVendor.App108                                                                        1.108.0                         winget
+Sample App 109                                               SampleVendor.App109                                                                        1.109.0                         winget
+Sample App 110                                               ARP\Machine\X64\SampleApp110                                                               1.110.0
+Sample App 111                                               SampleVendor.App111                                                                        1.111.0                         winget
+Sample App 112                                               SampleVendor.App112                                                                        1.112.0                         winget
+Sample App 113                                               SampleVendor.App113                                                                        1.113.0                         winget
+Sample App 114                                               MSIX\Sample.App114_1.0.0.0_x64__sample114                                                  1.114.0
+Sample App 115                                               SampleVendor.App115                                                                        1.115.0                         winget
+Sample App 116                                               SampleVendor.App116                                                                        1.116.0                         winget
+Sample App 117                                               SampleVendor.App117                                                                        1.117.0                         winget
+Sample App 118                                               SampleVendor.App118                                                                        1.118.0                         winget
+Sample App 119                                               SampleVendor.App119                                                                        1.119.0                         winget
+Sample App 120                                               MSIX\Sample.App120_1.0.0.0_x64__sample120                                                  1.120.0
+Sample App 121                                               MSIX\Sample.App121_1.0.0.0_x64__sample121                                                  1.121.0
+Sample App 122                                               MSIX\Sample.App122_1.0.0.0_x64__sample122                                                  1.122.0
+Sample App 123                                               MSIX\Sample.App123_1.0.0.0_x64__sample123                                                  1.123.0
+Sample App 124                                               MSIX\Sample.App124_1.0.0.0_x64__sample124                                                  1.124.0
+Sample App 125                                               SampleVendor.App125                                                                        1.125.0                         winget
+Sample App 126                                               MSIX\Sample.App126_1.0.0.0_x64__sample126                                                  1.126.0
+Sample App 127                                               SampleVendor.App127                                                                        1.127.0                         winget
+Sample App 128                                               ARP\Machine\X64\SampleApp128                                                               1.128.0
+Sample App 129                                               ARP\Machine\X64\SampleApp129                                                               1.129.0
+Sample App 130                                               MSIX\Sample.App130_1.0.0.0_x64__sample130                                                  1.130.0
+Sample App 131                                               ARP\Machine\X64\SampleApp131                                                               1.131.0
+Sample App 132                                               ARP\Machine\X64\SampleApp132                                                               1.132.0
+Sample App 133                                               ARP\Machine\X64\SampleApp133                                                               1.133.0
+Sample App 134                                               SampleVendor.App134                                                                        1.134.0                         winget
+Sample App 135                                               MSIX\Sample.App135_1.0.0.0_x64__sample135                                                  1.135.0
+Sample App 136                                               MSIX\Sample.App136_1.0.0.0_x64__sample136                                                  1.136.0
+Sample App 137                                               MSIX\Sample.App137_1.0.0.0_x64__sample137                                                  1.137.0
+Sample App 138                                               SampleVendor.App138                                                                        1.138.0                         winget
+Sample App 139                                               SampleVendor.App139                                                                        1.139.0                         winget
+Sample App 140                                               SampleVendor.App140                                                                        1.140.0                         winget
+Sample App 141                                               MSIX\Sample.App141_1.0.0.0_x64__sample141                                                  1.141.0
+Sample App 142                                               MSIX\Sample.App142_1.0.0.0_x64__sample142                                                  1.142.0
+Sample App 143                                               ARP\Machine\X64\SampleApp143                                                               1.143.0
+Sample App 144                                               MSIX\Sample.App144_1.0.0.0_x64__sample144                                                  1.144.0
+Sample App 145                                               SampleVendor.App145                                                                        1.145.0                         winget
+Sample App 146                                               MSIX\Sample.App146_1.0.0.0_x64__sample146                                                  1.146.0
+Sample App 147                                               SampleVendor.App147                                                                        1.147.0                         winget
+Sample App 148                                               SampleVendor.App148                                                                        1.148.0                         winget
+Sample App 149                                               SampleVendor.App149                                                                        1.149.0                         winget
+Sample App 150                                               ARP\Machine\X64\SampleApp150                                                               1.150.0
+Sample App 151                                               ARP\Machine\X64\SampleApp151                                                               1.151.0
+Sample App 152                                               MSIX\Sample.App152_1.0.0.0_x64__sample152                                                  1.152.0
+Sample App 153                                               MSIX\Sample.App153_1.0.0.0_x64__sample153                                                  1.153.0
+Sample App 154                                               ARP\Machine\X64\SampleApp154                                                               1.154.0
+Sample App 155                                               ARP\Machine\X64\SampleApp155                                                               1.155.0
+Sample App 156                                               MSIX\Sample.App156_1.0.0.0_x64__sample156                                                  1.156.0
+Sample App 157                                               ARP\Machine\X64\SampleApp157                                                               1.157.0
+Sample App 158                                               SampleVendor.App158                                                                        1.158.0                         winget
+Sample App 159                                               MSIX\Sample.App159_1.0.0.0_x64__sample159                                                  1.159.0
+Sample App 160                                               MSIX\Sample.App160_1.0.0.0_x64__sample160                                                  1.160.0
+Sample App 161                                               MSIX\Sample.App161_1.0.0.0_x64__sample161                                                  1.161.0
+Sample App 162                                               MSIX\Sample.App162_1.0.0.0_x64__sample162                                                  1.162.0
+Sample App 163                                               MSIX\Sample.App163_1.0.0.0_x64__sample163                                                  1.163.0
+Sample App 164                                               SampleVendor.App164                                                                        1.164.0                         winget
+Sample App 165                                               MSIX\Sample.App165_1.0.0.0_x64__sample165                                                  1.165.0
+Sample App 166                                               MSIX\Sample.App166_1.0.0.0_x64__sample166                                                  1.166.0
+Sample App 167                                               MSIX\Sample.App167_1.0.0.0_x64__sample167                                                  1.167.0
+Sample App 168                                               ARP\Machine\X64\SampleApp168                                                               1.168.0
+Sample App 169                                               SampleVendor.App169                                                                        1.169.0                         winget
+Sample App 170                                               SampleVendor.App170                                                                        1.170.0                         winget
+Sample App 171                                               ARP\Machine\X64\SampleApp171                                                               1.171.0
+Sample App 172                                               MSIX\Sample.App172_1.0.0.0_x64__sample172                                                  1.172.0
+Sample App 173                                               ARP\Machine\X64\SampleApp173                                                               1.173.0
+Sample App 174                                               MSIX\Sample.App174_1.0.0.0_x64__sample174                                                  1.174.0
+Sample App 175                                               MSIX\Sample.App175_1.0.0.0_x64__sample175                                                  1.175.0
+Sample App 176                                               MSIX\Sample.App176_1.0.0.0_x64__sample176                                                  1.176.0
+Sample App 177                                               MSIX\Sample.App177_1.0.0.0_x64__sample177                                                  1.177.0
+Sample App 178                                               MSIX\Sample.App178_1.0.0.0_x64__sample178                                                  1.178.0
+Sample App 179                                               MSIX\Sample.App179_1.0.0.0_x64__sample179                                                  1.179.0
+Sample App 180                                               MSIX\Sample.App180_1.0.0.0_x64__sample180                                                  1.180.0
+Sample App 181                                               MSIX\Sample.App181_1.0.0.0_x64__sample181                                                  1.181.0
+Sample App 182                                               MSIX\Sample.App182_1.0.0.0_x64__sample182                                                  1.182.0
+Sample App 183                                               MSIX\Sample.App183_1.0.0.0_x64__sample183                                                  1.183.0
+Sample App 184                                               MSIX\Sample.App184_1.0.0.0_x64__sample184                                                  1.184.0
+Sample App 185                                               MSIX\Sample.App185_1.0.0.0_x64__sample185                                                  1.185.0
+Sample App 186                                               MSIX\Sample.App186_1.0.0.0_x64__sample186                                                  1.186.0
+Sample App 187                                               MSIX\Sample.App187_1.0.0.0_x64__sample187                                                  1.187.0
+Sample App 188                                               MSIX\Sample.App188_1.0.0.0_x64__sample188                                                  1.188.0
+Sample App 189                                               MSIX\Sample.App189_1.0.0.0_x64__sample189                                                  1.189.0
+Sample App 190                                               MSIX\Sample.App190_1.0.0.0_x64__sample190                                                  1.190.0
+Sample App 191                                               MSIX\Sample.App191_1.0.0.0_x64__sample191                                                  1.191.0
+Sample App 192                                               MSIX\Sample.App192_1.0.0.0_x64__sample192                                                  1.192.0
+Sample App 193                                               SampleVendor.App193                                                                        1.193.0                         winget
+Sample App 194                                               MSIX\Sample.App194_1.0.0.0_x64__sample194                                                  1.194.0
+Sample App 195                                               MSIX\Sample.App195_1.0.0.0_x64__sample195                                                  1.195.0
+Sample App 196                                               ARP\Machine\X64\SampleApp196                                                               1.196.0
+Sample App 197                                               MSIX\Sample.App197_1.0.0.0_x64__sample197                                                  1.197.0
+Sample App 198                                               ARP\Machine\X64\SampleApp198                                                               1.198.0
+Sample App 199                                               MSIX\Sample.App199_1.0.0.0_x64__sample199                                                  1.199.0
+Sample App 200                                               SampleVendor.App200                                                                        1.200.0                         winget
+Sample App 201                                               SampleVendor.App201                                                                        1.201.0                         winget
+Sample App 202                                               MSIX\Sample.App202_1.0.0.0_x64__sample202                                                  1.202.0
+Sample App 203                                               SampleVendor.App203                                                                        1.203.0                         winget
+Sample App 204                                               SampleVendor.App204                                                                        1.204.0                         winget
+Sample App 205                                               MSIX\Sample.App205_1.0.0.0_x64__sample205                                                  1.205.0
+Sample App 206                                               MSIX\Sample.App206_1.0.0.0_x64__sample206                                                  1.206.0
+Sample App 207                                               SampleVendor.App207                                                                        1.207.0                         winget
+Sample App 208                                               SampleVendor.App208                                                                        1.208.0                         winget
+Sample App 209                                               SampleVendor.App209                                                                        1.209.0                         winget
+Sample App 210                                               SampleVendor.App210                                                                        1.210.0                         winget
+Sample App 211                                               SampleVendor.App211                                                                        1.211.0                         winget
+Sample App 212                                               SampleVendor.App212                                                                        1.212.0                         winget
+Sample App 213                                               SampleVendor.App213                                                                        1.213.0                         winget
+Sample App 214                                               SampleVendor.App214                                                                        1.214.0                         winget
+Sample App 215                                               SampleVendor.App215                                                                        1.215.0                         winget
+Sample App 216                                               SampleVendor.App216                                                                        1.216.0                         winget
+Sample App 217                                               SampleVendor.App217                                                                        1.217.0                         winget
+Sample App 218                                               SampleVendor.App218                                                                        1.218.0                         winget
+Sample App 219                                               SampleVendor.App219                                                                        1.219.0                         winget
+Sample App 220                                               SampleVendor.App220                                                                        1.220.0                         winget
+Sample App 221                                               SampleVendor.App221                                                                        1.221.0                         winget
+Sample App 222                                               SampleVendor.App222                                                                        1.222.0                         winget
+Sample App 223                                               SampleVendor.App223                                                                        1.223.0                         winget
+Sample App 224                                               SampleVendor.App224                                                                        1.224.0                         winget
+Sample App 225                                               SampleVendor.App225                                                                        1.225.0                         winget
+Sample App 226                                               SampleVendor.App226                                                                        1.226.0                         winget
+Sample App 227                                               SampleVendor.App227                                                                        1.227.0                         winget
+Sample App 228                                               SampleVendor.App228                                                                        1.228.0                         winget
+Sample App 229                                               MSIX\Sample.App229_1.0.0.0_x64__sample229                                                  1.229.0
+Sample App 230                                               SampleVendor.App230                                                                        1.230.0                         winget
+Sample App 231                                               ARP\Machine\X64\SampleApp231                                                               1.231.0
+Sample App 232                                               SampleVendor.App232                                                                        1.232.0                         winget
+Sample App 233                                               ARP\Machine\X64\SampleApp233                                                               1.233.0
+Sample App 234                                               MSIX\Sample.App234_1.0.0.0_x64__sample234                                                  1.234.0
+Sample App 235                                               MSIX\Sample.App235_1.0.0.0_x64__sample235                                                  1.235.0
+Sample App 236                                               ARP\Machine\X64\SampleApp236                                                               1.236.0
+Sample App 237                                               MSIX\Sample.App237_1.0.0.0_x64__sample237                                                  1.237.0
+Sample App 238                                               SampleVendor.App238                                                                        1.238.0                         winget

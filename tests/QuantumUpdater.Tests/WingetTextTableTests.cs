@@ -62,7 +62,7 @@ public class WingetTextTableTests
     [Fact]
     public void Sample_KeepsEveryDataRow()
     {
-        var text = ReadData("_winget_sample.txt");
+        var text = ReadData("winget-sample.txt");
 
         var rows = WingetTextTable.Parse(text);
 
@@ -73,7 +73,7 @@ public class WingetTextTableTests
     [Fact]
     public void Sample_GivesAvailableValues()
     {
-        var rows = WingetTextTable.Parse(ReadData("_winget_sample.txt"));
+        var rows = WingetTextTable.Parse(ReadData("winget-sample.txt"));
 
         var teams = Assert.Single(rows, row => row.Name == "Microsoft Teams");
         Assert.Equal("Microsoft.Teams", teams.Id);
@@ -126,9 +126,9 @@ public class WingetTextTableTests
     {
         var rows = WingetTextTable.Parse(ReadData("winget-list.txt"));
 
-        var studio = Assert.Single(rows, row => row.Name == "Android Studio");
-        Assert.Equal(@"ARP\Machine\X64\Android Studio", studio.Id);
-        Assert.Equal("2026.1", studio.Version);
+        var studio = Assert.Single(rows, row => row.Name == "Sample App 005");
+        Assert.Equal(@"ARP\Machine\X64\Sample A 005", studio.Id);
+        Assert.Equal("1.5.0", studio.Version);
         Assert.True(studio.IsLocal);
     }
 
@@ -137,7 +137,7 @@ public class WingetTextTableTests
     {
         var rows = WingetTextTable.Parse(ReadData("winget-list.txt"));
 
-        var acrobat = Assert.Single(rows, row => row.Name == "Adobe Acrobat");
+        var acrobat = Assert.Single(rows, row => row.Name == "Sample App 001");
         Assert.StartsWith(@"MSIX\", acrobat.Id);
         Assert.Null(acrobat.Source);
         Assert.Null(acrobat.Available);
