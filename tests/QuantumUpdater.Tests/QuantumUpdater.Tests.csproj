@@ -10,6 +10,8 @@
     <Compile Include="..\..\src\QuantumUpdater\Services\Winget\PackageId.cs" Link="Linked\PackageId.cs" />
     <Compile Include="..\..\src\QuantumUpdater\Services\Winget\WingetPathRules.cs" Link="Linked\WingetPathRules.cs" />
     <Compile Include="..\..\src\QuantumUpdater\Services\Winget\WingetErrorText.cs" Link="Linked\WingetErrorText.cs" />
+    <Compile Include="..\..\src\QuantumUpdater\Services\Winget\RunOutcome.cs" Link="Linked\RunOutcome.cs" />
+    <Compile Include="..\..\src\QuantumUpdater\Services\Winget\ComResultMap.cs" Link="Linked\ComResultMap.cs" />
     <Compile Include="..\..\src\QuantumUpdater\Services\ActionQueue.cs" Link="Linked\ActionQueue.cs" />
     <Compile Include="..\..\src\QuantumUpdater\Services\ActivitySummary.cs" Link="Linked\ActivitySummary.cs" />
     <Compile Include="..\..\src\QuantumUpdater\Services\SnapshotCache.cs" Link="Linked\SnapshotCache.cs" />
@@ -24,6 +26,9 @@
     <Compile Include="..\..\src\QuantumUpdater\Views\Controls\LetterTileRules.cs" Link="Linked\LetterTileRules.cs" />
     <Compile Include="..\..\src\QuantumUpdater\Views\Controls\IconSlot.cs" Link="Linked\IconSlot.cs" />
     <Compile Include="..\..\src\QuantumUpdater\Views\Controls\AppRowModel.cs" Link="Linked\AppRowModel.cs" />
+    <Compile Include="..\..\src\QuantumUpdater\Models\UpgradeEntry.cs" Link="Linked\UpgradeEntry.cs" />
+    <Compile Include="..\..\src\QuantumUpdater\Services\Updates\IUpdatesSource.cs" Link="Linked\IUpdatesSource.cs" />
+    <Compile Include="..\..\src\QuantumUpdater\Services\Updates\UpdatesGrouping.cs" Link="Linked\UpdatesGrouping.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Data\winget-sample.txt" CopyToOutputDirectory="PreserveNewest" />
