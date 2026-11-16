@@ -176,3 +176,30 @@ No full scored review of the whole app has been run under this list yet.
 | W17 | Low (privacy) | Test fixture was the owner's real installed-app list | Replaced with synthetic rows on 16 Nov; old copy remains in public git history (owner decision) | Fixed in tree |
 
 Middleware: none new. WingetRunner is the gate between the admin app and winget; make it an allowlist (W8). A second gate is needed before the own-uninstaller route (W15).
+
+### Re-check of commit fb479f6 (16 Nov 2026): PASS WITH FIXES
+
+Scope: W1, W3 and W4 fixes, and 46.5.13 WingetReader (COM). Manager result: build 0 warnings, 202 of 202 tests pass.
+
+| Id | Status |
+|---|---|
+| W1 crash log | Closed (one Low item: W19) |
+| W3 kill errors | Partly: no caller reads StopIncomplete (W18) |
+| W4 background jobs | Closed (Low follow-ups: W25, W26) |
+
+| ID | Sev | Problem | Fix | When |
+|---|---|---|---|---|
+| W18 | Medium | No service reads RunResult.StopIncomplete; the user sees "Cancelled" while winget can still run | Clear message; block new actions until the process ends; one test per service | Before next release build |
+| W19 | Low | CrashLog check-then-write race; hard links; moved known folder | Open once, check final path under the profile, refuse link count over 1 | Next batch |
+| W20 | Medium | WingetReader timeout stops only the wait; sync COM call keeps a thread busy; no gate for parallel COM calls | Use ConnectAsync/FindPackagesAsync with the token; one COM call at a time; new search replaces old; search debounce | Before next release build |
+| W21 | Low | Cached catalog kept after a failure, and grows old | Clear cache on failure or timeout; reconnect after 30 minutes | Next batch |
+| W22 | Low | Dispose frees the gate while a connect runs | Do not dispose the SemaphoreSlim, or cancel a private token | Next batch |
+| W23 | Low | Search results have no publisher | Fall back to DefaultInstallVersion.Publisher | Next batch |
+| W24 | Low | Homepage, icon URL and description come from public manifests | https only; check icon Sha256, size and type; plain text with a length cap | Rule for 46.7 screens |
+| W25 | Low | Extra Task.Delay in ScanOrchestrator repeats CancelAfter; timer stays 15 s | Remove it, or tie it to a token cancelled at job end | Next batch |
+| W26 | Low | Abandoned job or COM task faults are not observed; retry can start a second copy | Observe faults with one "abandoned job" log line; no retry while the old run runs | Next batch (with W9) |
+| W27 | Low | Search rule copied from MarketplaceService; ASCII only | One shared rule; owner decides on non-ASCII search | Next batch (with W16) |
+| W28 | Low | No packages.lock.json; COM DLL in a user-writable app folder could be replaced | RestorePackagesWithLockFile; install under Program Files only; test on Windows 10 1809 | Before the installer |
+| W29 | Low (privacy) | Shipped PDBs put the build folder path in crash stacks | PathMap or ContinuousIntegrationBuild for release builds | Before next release build |
+
+Middleware: not needed. DeskVerve has no backend server of its own. The needed protection is in the code: W20 (call gate and cancel route) and W24 (URL and icon checks).
