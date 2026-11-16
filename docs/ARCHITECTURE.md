@@ -126,43 +126,55 @@ Disk & Storage, Cleanup, Settings waves, and Chocolatey are discussed in tracker
 
 ## Planned: Phase 46 priority (NOT BUILT)
 
-> **PLANNED.** This section is a proposal from 16 Nov 2026. Plan: `docs/plans/2026-11-16-phase46-apps-first.md`. Mockups: `design/mockups/phase46/`. Nothing here is built. Parts marked "if Q2 = A" depend on an owner answer. Move this section into the built picture only after the Design Architect gives PASS.
+> **PLANNED.** This section is a proposal from 16 Nov 2026, revised after the owner answers in ADR 049. Plan: `docs/plans/2026-11-16-phase46-apps-first.md`. Mockups: `design/mockups/phase46/` (Getting ready: `00-getting-ready.html`). Nothing here is built, except `PackageId` (46.5.3) and `ActionQueue` (46.5.5). Move this section into the built picture only after the Design Architect gives PASS.
 
 ### Planned system picture
 
 ```mermaid
 flowchart TD
-  exe["DeskVerve window · normal user (if Q2 = A)"]
-  views["Views · Updates and Health, App Marketplace, Installed, About · shared rows, cards, dialog, activity bar"]
+  exe["DeskVerve window · admin at every start (ADR 049 Q2)"]
+  views["Views · Getting ready, Updates and Health, App Marketplace, Installed, About, Sign in (optional) · shared rows, cards, dialogs, activity bar"]
   facade["AppServices facade"]
-  queue["ActionQueue · one action at a time (F18)"]
+  scan["ScanOrchestrator · all jobs at the same time · 15 s limit each"]
+  queue["ActionQueue · one action at a time (F18) · built"]
   inst["InstalledCatalog · saved, then fresh"]
   upd["UpdatesCatalog · saved, then fresh"]
   mkt["MarketplaceCatalog · picks, search, tags, details"]
   picks["Assets/catalog-picks.json · curated picks"]
+  disk["DiskService · space and health (read only)"]
+  self["UpdateService · DeskVerve version"]
   reg["RegistryInventory · HKLM 64/32, HKCU 64/32"]
   store["StoreAppInventory · Store apps for this user"]
   merge["InstalledMerger · exact match, then likely"]
   plan["UninstallPlanner · winget, MSI, own uninstaller, Store, none"]
   urun["UninstallRunner · run, then read the key again"]
-  reader["WingetReader · COM API reads"]
+  normal["NormalUserLauncher · HKCU uninstallers without admin"]
+  reader["WingetReader · COM API reads (in-proc factory)"]
   cli["WingetCliReader · text fallback"]
   runner["WingetRunner · argv only, --exact, kill on cancel"]
   locator["WingetLocator · App Installer package path (F3)"]
   cache["SnapshotCache · LOCALAPPDATA/QuantumUpdater/cache"]
-  icons["IconService · local icons, publisher site icons, cache"]
-  worker["Admin helper · same exe --worker · one prompt (if Q2 = A)"]
+  icons["IconService · icon pipeline (see below)"]
+  acct["AccountClient · only when signed in"]
   com["winget COM server"]
   pc["winget.exe on this PC"]
   win["Windows registry and package manager"]
 
   exe --> views
   views --> facade
+  facade --> scan
   facade --> inst
   facade --> upd
   facade --> mkt
   facade --> queue
   facade --> icons
+  facade -. "signed in only" .-> acct
+  scan --> upd
+  scan --> inst
+  scan --> mkt
+  scan --> icons
+  scan --> disk
+  scan --> self
   inst --> reg
   inst --> store
   inst --> reader
@@ -181,12 +193,56 @@ flowchart TD
   queue --> runner
   queue --> urun
   urun --> plan
-  queue -. "needs admin (if Q2 = A)" .-> worker
-  worker --> runner
-  worker --> urun
+  urun -. "HKCU entry" .-> normal
   runner --> locator
   locator --> pc
 ```
+
+### Planned scan at start (ScanOrchestrator)
+
+```mermaid
+flowchart LR
+  start["App opens · admin prompt"] --> ready["Getting ready · sidebar locked"]
+  ready --> orch["ScanOrchestrator · start all jobs"]
+  orch --> j1["App updates · UpdatesCatalog · step N of 3"]
+  orch --> j2["Installed apps · InstalledCatalog · step N of 3"]
+  orch --> j3["App Marketplace · MarketplaceCatalog · step N of 2"]
+  orch --> j5["Drives · DiskService · step N of 2"]
+  orch --> j6["DeskVerve version · UpdateService"]
+  orch -. "46.2 later slice" .-> j7["Space you can free · cleanup estimate · not built"]
+  j2 --> j4["App icons · IconService · N of M"]
+  j3 --> j4
+  j1 & j2 & j3 & j4 & j5 & j6 --> done{"Every job Done or Failed?"}
+  done -- "all Done" --> updates["Open Updates and Health after 1 s"]
+  done -- "a job Failed" --> cont["Stay · show reason, Try again, Continue"]
+  updates --> unlock["Sidebar unlocked"]
+  cont --> unlock
+```
+
+Rules: each job has a 15 s limit (the icon job 8 s on the first start); a failed job never traps the app; the overall percent comes only from real counts and steps; target 5 s on the owner's PC with a warm icon cache.
+
+### Planned icon pipeline (IconService)
+
+```mermaid
+flowchart TD
+  ask["AppIcon asks for an icon"] --> memc{"In memory or disk cache (30 days)?"}
+  memc -- yes --> show["Show the icon"]
+  memc -- no --> kind{"Installed app?"}
+  kind -- yes --> s1["1 Registry DisplayIcon · path,index"]
+  s1 -- "not found or blank-program icon" --> s2["2 Program file via Shell · IShellItemImageFactory, SHGetFileInfo"]
+  s2 -- "not found" --> s3["3 MSI ARPPRODUCTICON · MsiGetProductInfo"]
+  s3 -- "not found" --> s4["4 MSIX or AppX logo · AppxManifest Square44x44Logo"]
+  s4 -- "not found" --> s5["5 Start menu shortcut (Manager to approve)"]
+  s5 -- "not found, exact catalog match" --> m1
+  kind -- "no · Marketplace app" --> m1["1 winget manifest Icons · SHA-256 check"]
+  m1 -- "not found" --> m2["2 Maker homepage · apple-touch-icon, link rel icon, manifest.json, favicon"]
+  m2 -- "not found" --> tile["Letter tile · last resort"]
+  s5 -- "not found, no catalog match" --> tile
+  s1 & s2 & s3 & s4 & s5 & m1 & m2 -- "original icon" --> save["Save in cache with the source name"] --> show
+  m1 & m2 -.-> fetch["SafeIconFetcher · HTTPS, maker domain, 256 KB, PNG ICO JPEG, no SVG"]
+```
+
+A Marketplace app that is on the PC uses its installed icon first. Task 46.7.21 measures coverage: target 95 percent of installed apps and 90 percent of popular picks with an original icon.
 
 Planned changes to the built picture:
 
@@ -194,33 +250,36 @@ Planned changes to the built picture:
 - `CatalogSnapshot` is retired. `InstalledCatalog` and `UpdatesCatalog` replace it.
 - Reads use the winget COM API. Changes (install, upgrade, uninstall) use the hardened winget command.
 - The Installed list comes from Windows first (registry and Store apps). winget adds the catalog id and the update state.
-- Protective middle layer: still one C# service layer. If Q2 = A, the admin helper is part of that layer. It checks every request again and never runs a command line from the window.
+- `GettingReadyPage` runs `ScanOrchestrator` at every start. It replaces the three fixed checks.
+- The sign-in gate goes away. Sign-in is optional (ADR 049 Q1).
+- No admin helper. The app keeps `requireAdministrator` (ADR 049 Q2). `NormalUserLauncher` runs user uninstall entries without admin rights.
+- Protective middle layer: still one C# service layer. `NormalUserLauncher` and `SafeIconFetcher` are part of it. The Security & Code Architect reviews both.
 
 ### Planned screen flow
 
 ```mermaid
 flowchart TD
-  open["Open app · no admin prompt (if Q2 = A)"] --> saved{"Saved results?"}
-  saved -- "no · first run" --> ready["Getting ready · first run only"]
-  saved -- yes --> updates["Updates and Health · saved results at once"]
-  ready --> updates
-  updates -. "background check" .-> updates
-  nav["Sidebar · any screen"] --> updates
+  open["Open app · UAC approve"] --> ready["Getting ready · full scan · every start · sidebar locked"]
+  ready -- "every job Done" --> updates["Updates and Health"]
+  ready -- "a job Failed · Continue" --> updates
+  nav["Sidebar · unlocked after the scan"] --> updates
   nav --> market["App Marketplace home · popular and categories"]
   nav --> installed["Installed · every app on the PC"]
   nav --> about["About This PC"]
+  nav -- "footer · Sign in (optional)" --> signin["Sign in · Not now returns"]
   market -- "type · 250 ms pause" --> results["Search results and details panel"]
   market -- "See all" --> results
   results -- "Esc or cross" --> market
-  updates -- "Update or Update all" --> queue["ActionQueue"]
-  market -- Install --> queue
-  results -- Install --> queue
+  updates -- "Update · one click" --> queue["ActionQueue"]
+  updates -- "Update all or 2+ selected" --> dlgall["Update all dialog · app list"]
+  dlgall -- "Update all" --> queue
+  market -- "Install · one click" --> queue
+  results -- "Install · one click" --> queue
   installed -- Uninstall --> dialog["Remove dialog · names the route"]
   dialog -- Remove --> queue
   queue --> bar["Activity bar · every screen · N of M · Cancel"]
-  queue -- "needs admin (if Q2 = A)" --> uac["One admin prompt for the session"]
   queue -- "done" --> refresh["Refresh the changed rows"]
-  signin["Sign in · optional (if Q1 = A)"] -. "sidebar link" .- nav
+  signin -. "signed in only" .-> account["Account service · reports"]
 ```
 
 ### Planned uninstall routes
@@ -230,9 +289,11 @@ flowchart LR
   row["Installed row"] --> m{"Exact winget match?"}
   m -- yes --> w["winget uninstall --id --exact --silent"]
   m -- no --> k{"Row type"}
-  k -- "MSI key" --> msi["msiexec /x{GUID}"]
+  k -- "MSI key" --> msi["msiexec /x{GUID} /passive"]
   k -- "Other registry key" --> own{"Passes strict rules?"}
-  own -- yes --> exe["App's own uninstaller · user entries never as admin"]
+  own -- "yes · HKLM" --> exe["App's own uninstaller · admin"]
+  own -- "yes · HKCU" --> nu["App's own uninstaller · NormalUserLauncher · no admin"]
+  nu -- "launch fails" --> settings
   own -- no --> settings["Open Windows Settings"]
   k -- "Store app" --> appx["Remove for this user"]
   k -- "Protected" --> settings
@@ -244,8 +305,8 @@ flowchart LR
 |---|---|---|
 | 44 | Packaging tools, archive Python, empty greenfield project | Done |
 | 45 | Sign-in, Getting ready, Updates & Health, Marketplace, Installed, About, self-update check, DeskVerve rename and logo | Built. Owner on-PC check and validation open |
-| 46 | ADR 048 order: first Installed, Marketplace and Updates (46.5 to 46.7, planned in `docs/plans/2026-11-16-phase46-apps-first.md`); then Disk (46.1); then Cleanup (46.2); then old tool groups. Chocolatey later | Planned — not built |
-| 47 | Installer, portable zip, then Store, Chocolatey, winget, GitHub, download libraries. DeskVerve exe and zip names | Zip can be built here. Installer and submissions are owner later |
+| 46 | ADR 048 order: first Installed, Marketplace, Updates, Getting ready full scan and original icons (46.5 to 46.7, planned in `docs/plans/2026-11-16-phase46-apps-first.md`, ADR 049); then Disk (46.1); then Cleanup (46.2); then old tool groups. Chocolatey later | Wave 1 started: 46.5.3 and 46.5.5 done |
+| 47 | Installer first: the first public release is a setup program or MSIX (ADR 049 Q9). DeskVerve exe name. winget: close PR #480804, then a new request for `DeskVerve.Utility` ("DeskVerve Utility", moniker `deskverve`) (ADR 049 Q10). Then Store, Chocolatey, GitHub, download libraries | Planned. Submissions are owner later |
 | 48 | Admin portal | Local service built. Domain deploy is owner later |
 
 ## Parts

@@ -18,6 +18,12 @@ code{font-family:'Cascadia Mono',Consolas,monospace;font-size:12px;color:#D1D1D1
 <h1>Phase 46 mockups: apps first</h1>
 <p class="lead">Stitch dark shell from <code>Theme.cs</code>: canvas #131313, sidebar #272727, cards #2C2C2C, accent #0078D4, Segoe UI Variable. Each frame is a 1280 by 800 window at 50 percent. Open a frame for full size. Plan: <code>docs/plans/2026-11-16-phase46-apps-first.md</code>.</p>
 <div class="pair">
+  <div><div class="cap"><span><b>00 Getting ready</b> · full scan at every start</span><a href="00-getting-ready.html" target="_blank">Open full size</a></div>
+    <a class="shot" href="00-getting-ready.html" target="_blank" aria-label="Open Getting ready"><iframe src="00-getting-ready.html" title="Getting ready" scrolling="no" tabindex="-1"></iframe></a></div>
+  <div><div class="cap"><span><b>00 Getting ready</b> · finished, one check failed</span><a href="00-getting-ready.html#done" target="_blank">Open full size</a></div>
+    <a class="shot" href="00-getting-ready.html#done" target="_blank" aria-label="Open Getting ready finished"><iframe src="00-getting-ready.html#done" title="Getting ready finished" scrolling="no" tabindex="-1"></iframe></a></div>
+</div>
+<div class="pair">
   <div><div class="cap"><span><b>01 Updates and Health</b> · row states, activity bar</span><a href="01-updates.html" target="_blank">Open full size</a></div>
     <a class="shot" href="01-updates.html" target="_blank" aria-label="Open Updates"><iframe src="01-updates.html" title="Updates" scrolling="no" tabindex="-1"></iframe></a></div>
   <div><div class="cap"><span><b>02 Installed</b> · every app on the PC</span><a href="02-installed.html" target="_blank">Open full size</a></div>
@@ -35,13 +41,13 @@ code{font-family:'Cascadia Mono',Consolas,monospace;font-size:12px;color:#D1D1D1
   <div>
     <div class="cap"><span><b>What changes</b></span></div>
     <ul>
-      <li>Getting ready leaves the sidebar. It shows on the first run only (plan Q7).</li>
+      <li>Getting ready runs a full scan at every start (ADR 049, Q7). All checks run at the same time. The menu opens when the scan is done. Getting ready is not a menu item.</li>
       <li>Sidebar: icons, a 3 px accent mark on the active item, an update count badge.</li>
-      <li>"Not signed in · Sign in" at the bottom of the sidebar (plan Q1 = A).</li>
-      <li>No "I confirm" tick box. Remove and Update all use a dialog (plan Q6).</li>
+      <li>Sign-in is optional (Q1). "Not signed in · Sign in" sits at the bottom of the sidebar.</li>
+      <li>No "I confirm" tick box. One click for Update and Install. Remove, Update all and Update selected (2 or more apps) use a dialog (Q6). <a href="01-updates.html#confirm-all" target="_blank" style="color:#60B0F0">Update all dialog</a>.</li>
       <li>One activity bar at the bottom of every screen. One action runs at a time.</li>
       <li>Friendly source names: Microsoft catalog, Microsoft Store, Installed directly.</li>
-      <li>Letter tiles stand in for real icons. The app shows real icons and uses letter tiles only as a fallback.</li>
+      <li>Letter tiles in these mockups stand in for icons. The app must show each app's original icon on every screen (owner rule, ADR 049). A letter tile is the last resort only.</li>
     </ul>
   </div>
 </div>
