@@ -26,7 +26,9 @@ public sealed class UpdateService
             Timeout = TimeSpan.FromSeconds(30),
         };
         client.DefaultRequestHeaders.UserAgent.Clear();
-        client.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("QuantumUpdater"));
+        // Product name and version. A single string would be read as a comment and throw.
+        var version = typeof(UpdateService).Assembly.GetName().Version?.ToString(3) ?? "3.0.0";
+        client.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("DeskVerve", version));
         client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/vnd.github.v3+json"));
         return client;
     }

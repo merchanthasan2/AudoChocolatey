@@ -21,6 +21,9 @@
     <Version>3.0.0</Version>
     <Product>DeskVerve</Product>
     <Company>Quantum Step</Company>
+    <AssemblyTitle>DeskVerve</AssemblyTitle>
+    <Description>DeskVerve keeps your Windows apps up to date.</Description>
+    <Copyright>© 2026 Quantum Step. All rights reserved.</Copyright>
   </PropertyGroup>
   <ItemGroup>
     <Content Include="..\..\brand\desk-verve-emblem.png" Link="Assets\Brand\desk-verve-emblem.png" CopyToOutputDirectory="PreserveNewest" />
