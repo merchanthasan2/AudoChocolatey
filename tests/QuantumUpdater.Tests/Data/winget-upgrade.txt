@@ -1,0 +1,4 @@
+Name                                            Id            Version  Available  Source
+----------------------------------------------------------------------------------------
+Java(TM) SE Development Kit 25.0.5.0.3 (64-bit) Oracle.JDK.25 25.0.5.0 25.0.5.0.3 winget
+1 upgrades available.

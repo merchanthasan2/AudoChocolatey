@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using System.Text;
 using System.Text.RegularExpressions;
+using QuantumUpdater.Services.Winget;
 
 namespace QuantumUpdater.Services;
 
@@ -142,26 +143,13 @@ public sealed class WingetService
 
     internal static string? FindWingetExecutable()
     {
-        var pathEnv = Environment.GetEnvironmentVariable("PATH");
-        if (!string.IsNullOrEmpty(pathEnv))
+        var located = WingetLocator.Find();
+        if (located is not null)
         {
-            foreach (var segment in pathEnv.Split(';', StringSplitOptions.RemoveEmptyEntries))
-            {
-                var candidate = Path.Combine(segment.Trim(), "winget.exe");
-                if (File.Exists(candidate))
-                {
-                    return candidate;
-                }
-            }
+            return located;
         }
 
-        var localAppData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-        var windowsApps = Path.Combine(localAppData, "Microsoft", "WindowsApps", "winget.exe");
-        if (File.Exists(windowsApps))
-        {
-            return windowsApps;
-        }
-
+        // No fallback to %LOCALAPPDATA%\Microsoft\WindowsApps: a normal user can write there (security F3).
         var programFiles = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles);
         var pfWindowsApps = Path.Combine(programFiles, "WindowsApps");
         if (Directory.Exists(pfWindowsApps))

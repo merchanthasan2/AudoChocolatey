@@ -8,7 +8,14 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="..\..\src\QuantumUpdater\Services\Winget\PackageId.cs" Link="Linked\PackageId.cs" />
+    <Compile Include="..\..\src\QuantumUpdater\Services\Winget\WingetPathRules.cs" Link="Linked\WingetPathRules.cs" />
     <Compile Include="..\..\src\QuantumUpdater\Services\ActionQueue.cs" Link="Linked\ActionQueue.cs" />
+    <Compile Include="..\..\src\QuantumUpdater\Services\Winget\WingetTextTable.cs" Link="Linked\WingetTextTable.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\_winget_sample.txt" Link="Data\_winget_sample.txt" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="Data\winget-list.txt" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="Data\winget-upgrade.txt" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.12.0" />
