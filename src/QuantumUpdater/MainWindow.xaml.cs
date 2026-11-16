@@ -6,6 +6,7 @@ using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Media.Imaging;
 using QuantumUpdater.Services;
 using QuantumUpdater.Views;
+using QuantumUpdater.Views.Dev; // TEMP DIAGNOSTIC 46.7.49
 
 namespace QuantumUpdater;
 
@@ -133,7 +134,13 @@ public sealed class MainWindow : Window
             SetTitleBar(titleBar);
         }
 
-        Show("Getting ready");
+        // TEMP DIAGNOSTIC 46.7.49: the gallery replaces Getting ready; demoqueue adds 3 demo actions.
+        Show(DiagSwitches.Has("gallery") ? "Parts gallery" : "Getting ready"); // TEMP DIAGNOSTIC 46.7.49
+        if (DiagSwitches.Has("demoqueue")) // TEMP DIAGNOSTIC 46.7.49
+        {
+            PartsGalleryPage.AddDemoActions(_services.Queue); // TEMP DIAGNOSTIC 46.7.49
+        }
+
         RefreshAccountFooter();
     }
 
@@ -227,6 +234,7 @@ public sealed class MainWindow : Window
             "App Marketplace" => new MarketplacePage(_services),
             "Installed" => new InstalledPage(_services),
             "About This PC" => new AboutPage(_services),
+            "Parts gallery" => new PartsGalleryPage(_services), // TEMP DIAGNOSTIC 46.7.49
             _ => ReadyPage(),
         };
         _host.Children.Add(page);
