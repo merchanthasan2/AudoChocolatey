@@ -63,7 +63,7 @@ public sealed class MarketplacePage : Grid
 
             _status.Text = packages.Count == 0 ? "No packages matched." : $"{packages.Count} package(s).";
             _status.Foreground = Theme.Text;
-            foreach (var package in packages.Take(40))
+            foreach (var package in packages)
             {
                 _list.Children.Add(Row(package));
             }

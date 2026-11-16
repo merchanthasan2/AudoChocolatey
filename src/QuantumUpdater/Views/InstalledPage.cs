@@ -74,7 +74,7 @@ public sealed class InstalledPage : Grid
 
             _status.Text = $"{catalog.Installed.Count} installed package(s).";
             _status.Foreground = Theme.Text;
-            foreach (var package in catalog.Installed.Take(80))
+            foreach (var package in catalog.Installed)
             {
                 _list.Children.Add(Row(package));
             }
@@ -98,6 +98,7 @@ public sealed class InstalledPage : Grid
         body.Children.Add(Chrome.Line($"{package.Name}  ·  {package.Id}\n{package.Version}", Theme.Text));
         var button = Chrome.Action("Uninstall");
         button.Tag = package;
+        button.IsEnabled = package.CanAct;
         button.Click += async (_, _) => await UninstallAsync(button).ConfigureAwait(true);
         Grid.SetColumn(button, 1);
         body.Children.Add(button);

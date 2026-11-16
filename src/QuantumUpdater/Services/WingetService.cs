@@ -30,7 +30,7 @@ public sealed class WingetService
 
     public WingetService()
     {
-        ExecutablePath = FindWingetExecutable();
+        ExecutablePath = WingetLocator.Find();
     }
 
     /// <summary>Runs <c>winget upgrade --include-unknown</c> (aligned with core/winget_engine.py).</summary>
@@ -171,12 +171,6 @@ public sealed class WingetService
             LastError = ex.Message;
             return new WingetResult(false, ex.Message, -1);
         }
-    }
-
-    /// <summary>Finds winget.exe through WingetLocator only. Kept for InstalledService and MarketplaceService.</summary>
-    internal static string? FindWingetExecutable()
-    {
-        return WingetLocator.Find();
     }
 
     private static WingetPackage ToPackage(WingetRow row)
