@@ -11,7 +11,7 @@ namespace QuantumUpdater;
 
 public sealed class MainWindow : Window
 {
-    private readonly AppServices _services = new();
+    private readonly AppServices _services;
     private readonly StackPanel _nav = new() { Spacing = 4, Margin = new Thickness(8) };
     private readonly Grid _host = new() { Margin = new Thickness(24) };
     private readonly Dictionary<string, Button> _navButtons = new();
@@ -21,6 +21,8 @@ public sealed class MainWindow : Window
 
     public MainWindow()
     {
+        var dispatcher = Microsoft.UI.Dispatching.DispatcherQueue.GetForCurrentThread();
+        _services = new AppServices(a => dispatcher.TryEnqueue(() => a()));
         Title = "DeskVerve";
         // TEMP DIAGNOSTIC 46.7.37: the switches are read one time (DiagSwitches is static).
         var noTitleBar = DiagSwitches.Has("notitlebar"); // TEMP DIAGNOSTIC 46.7.37

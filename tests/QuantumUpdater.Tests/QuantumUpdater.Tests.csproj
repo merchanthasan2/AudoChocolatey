@@ -11,6 +11,7 @@
     <Compile Include="..\..\src\QuantumUpdater\Services\Winget\WingetPathRules.cs" Link="Linked\WingetPathRules.cs" />
     <Compile Include="..\..\src\QuantumUpdater\Services\ActionQueue.cs" Link="Linked\ActionQueue.cs" />
     <Compile Include="..\..\src\QuantumUpdater\Services\ActivitySummary.cs" Link="Linked\ActivitySummary.cs" />
+    <Compile Include="..\..\src\QuantumUpdater\Services\SnapshotCache.cs" Link="Linked\SnapshotCache.cs" />
     <Compile Include="..\..\src\QuantumUpdater\Services\Winget\WingetTextTable.cs" Link="Linked\WingetTextTable.cs" />
     <Compile Include="..\..\src\QuantumUpdater\Services\Winget\WingetRunner.cs" Link="Linked\WingetRunner.cs" />
     <Compile Include="..\..\src\QuantumUpdater\Services\Scan\ScanJob.cs" Link="Linked\ScanJob.cs" />

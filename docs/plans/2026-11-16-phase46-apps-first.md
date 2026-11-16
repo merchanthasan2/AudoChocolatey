@@ -265,7 +265,7 @@ DeskVerve writes a list of every app that falls back to a letter tile. The Manag
 
 ### 5.8 Getting ready: a full scan at every start (owner rule, ADR 049, Q7)
 
-**Owner rule (his words):** "the idea was to have a fully scanned ready system when the user starts up the app. The app will scan what updates are available, what marketplace apps are there, what system tools need improvement e.g. disk clear; every function should hold for app readiness, and once the scan completed the user can navigate and use its features. We need a way to show people progress."
+**Owner rule (owner's words):** "the idea was to have a fully scanned ready system when the user starts up the app. The app will scan what updates are available, what marketplace apps are there, what system tools need improvement e.g. disk clear; every function should hold for app readiness, and once the scan completed the user can navigate and use its features. We need a way to show people progress."
 
 **Mockup:** `design/mockups/phase46/00-getting-ready.html` (running state) and `00-getting-ready.html#done` (finished state).
 
