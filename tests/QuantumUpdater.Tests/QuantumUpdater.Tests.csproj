@@ -9,6 +9,7 @@
   <ItemGroup>
     <Compile Include="..\..\src\QuantumUpdater\Services\Winget\PackageId.cs" Link="Linked\PackageId.cs" />
     <Compile Include="..\..\src\QuantumUpdater\Services\Winget\WingetPathRules.cs" Link="Linked\WingetPathRules.cs" />
+    <Compile Include="..\..\src\QuantumUpdater\Services\Winget\WingetErrorText.cs" Link="Linked\WingetErrorText.cs" />
     <Compile Include="..\..\src\QuantumUpdater\Services\ActionQueue.cs" Link="Linked\ActionQueue.cs" />
     <Compile Include="..\..\src\QuantumUpdater\Services\ActivitySummary.cs" Link="Linked\ActivitySummary.cs" />
     <Compile Include="..\..\src\QuantumUpdater\Services\SnapshotCache.cs" Link="Linked\SnapshotCache.cs" />

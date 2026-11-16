@@ -43,7 +43,7 @@ public class WingetRunnerTests
         using var cts = new CancellationTokenSource(TimeSpan.FromMilliseconds(500));
         var watch = Stopwatch.StartNew();
 
-        var result = await NewRunner().RunAsync(["--sleep"], LongTimeout, null, cts.Token);
+        var result = await NewRunner().StartCheckedAsync(["--sleep"], LongTimeout, null, cts.Token);
 
         watch.Stop();
         Assert.True(result.Cancelled);
@@ -57,7 +57,7 @@ public class WingetRunnerTests
     {
         var watch = Stopwatch.StartNew();
 
-        var result = await NewRunner().RunAsync(["--sleep"], TimeSpan.FromSeconds(1), null, CancellationToken.None);
+        var result = await NewRunner().StartCheckedAsync(["--sleep"], TimeSpan.FromSeconds(1), null, CancellationToken.None);
 
         watch.Stop();
         Assert.True(result.TimedOut);
@@ -71,7 +71,7 @@ public class WingetRunnerTests
     {
         var seen = new List<string>();
 
-        var result = await NewRunner().RunAsync(["alpha"], LongTimeout, seen.Add, CancellationToken.None);
+        var result = await NewRunner().StartCheckedAsync(["alpha", "--disable-interactivity", "--accept-source-agreements"], LongTimeout, seen.Add, CancellationToken.None);
 
         Assert.Equal(ExpectedLines, result.Lines);
         Assert.Equal(ExpectedLines, seen);
@@ -83,7 +83,7 @@ public class WingetRunnerTests
     [Fact]
     public async Task Exit_code_is_returned()
     {
-        var result = await NewRunner().RunAsync(["--fail"], LongTimeout, null, CancellationToken.None);
+        var result = await NewRunner().StartCheckedAsync(["--fail"], LongTimeout, null, CancellationToken.None);
 
         Assert.Equal(7, result.ExitCode);
         Assert.False(result.TimedOut);
@@ -93,7 +93,7 @@ public class WingetRunnerTests
     [Fact]
     public async Task Exact_is_added_when_id_is_present()
     {
-        var result = await NewRunner().RunAsync(["--id", "Git.Git"], LongTimeout, null, CancellationToken.None);
+        var result = await NewRunner().RunAsync(["install", "--id", "Git.Git"], LongTimeout, null, CancellationToken.None);
 
         Assert.Single(result.Lines, line => line == "--exact");
     }
@@ -101,7 +101,7 @@ public class WingetRunnerTests
     [Fact]
     public async Task Disable_interactivity_is_added_once()
     {
-        var result = await NewRunner().RunAsync(["--disable-interactivity"], LongTimeout, null, CancellationToken.None);
+        var result = await NewRunner().RunAsync(["list", "--disable-interactivity"], LongTimeout, null, CancellationToken.None);
 
         Assert.Single(result.Lines, line => line == "--disable-interactivity");
         Assert.Single(result.Lines, line => line == "--accept-source-agreements");
@@ -110,7 +110,7 @@ public class WingetRunnerTests
     [Fact]
     public async Task Stderr_lines_are_kept()
     {
-        var result = await NewRunner().RunAsync(["--stderr", "3"], LongTimeout, null, CancellationToken.None);
+        var result = await NewRunner().StartCheckedAsync(["--stderr", "3"], LongTimeout, null, CancellationToken.None);
 
         Assert.Equal(3, result.Errors.Count);
         Assert.Equal("error line 1", result.Errors[0]);
@@ -125,7 +125,7 @@ public class WingetRunnerTests
         File.WriteAllText(path, "a\rb\rc\ndone\n");
         try
         {
-            var result = await NewRunner().RunAsync(["--progress", path], LongTimeout, null, CancellationToken.None);
+            var result = await NewRunner().StartCheckedAsync(["--progress", path], LongTimeout, null, CancellationToken.None);
 
             Assert.Equal(0, result.ExitCode);
             Assert.False(result.TimedOut);
@@ -142,7 +142,7 @@ public class WingetRunnerTests
     [Fact]
     public async Task Only_the_last_20_stderr_lines_are_kept()
     {
-        var result = await NewRunner().RunAsync(["--stderr", "50"], LongTimeout, null, CancellationToken.None);
+        var result = await NewRunner().StartCheckedAsync(["--stderr", "50"], LongTimeout, null, CancellationToken.None);
 
         Assert.Equal(20, result.Errors.Count);
         Assert.Equal("error line 31", result.Errors[0]);
@@ -161,6 +161,13 @@ public class WingetRunnerTests
     {
         await Assert.ThrowsAsync<ArgumentException>(() =>
             NewRunner().RunAsync(["a\nb"], LongTimeout, null, CancellationToken.None));
+    }
+
+    [Fact]
+    public async Task Public_run_refuses_a_non_verb_before_start()
+    {
+        await Assert.ThrowsAsync<ArgumentException>(() =>
+            NewRunner().RunAsync(["--sleep"], LongTimeout, null, CancellationToken.None));
     }
 
     [Theory]
@@ -182,7 +189,7 @@ public class WingetRunnerTests
         };
         try
         {
-            var result = await runner.RunAsync(["--sleep"], TimeSpan.FromSeconds(1), null, CancellationToken.None);
+            var result = await runner.StartCheckedAsync(["--sleep"], TimeSpan.FromSeconds(1), null, CancellationToken.None);
 
             Assert.True(result.TimedOut);
             Assert.False(result.Cancelled);
@@ -206,7 +213,7 @@ public class WingetRunnerTests
         };
         try
         {
-            var result = await runner.RunAsync(["--sleep"], TimeSpan.FromSeconds(1), null, CancellationToken.None);
+            var result = await runner.StartCheckedAsync(["--sleep"], TimeSpan.FromSeconds(1), null, CancellationToken.None);
 
             Assert.True(result.TimedOut);
             Assert.True(result.StopIncomplete);
@@ -256,5 +263,94 @@ public class WingetRunnerTests
         Assert.False(WingetRunner.KillProcessTree(process, _ => throw new AggregateException("kill failed")));
         Assert.True(WingetRunner.KillProcessTree(process, _ => throw new InvalidOperationException("already ended")));
         Assert.True(WingetRunner.KillProcessTree(process, _ => { }));
+    }
+
+    // Argument lists the app may pass. The first six are the forms the callers use today.
+    public static IEnumerable<object[]> AllowedLists()
+    {
+        // InstalledService.cs:45
+        yield return new object[] { new[] { "list", "--disable-interactivity", "--accept-source-agreements" } };
+        // InstalledService.cs:110
+        yield return new object[] { new[] { "uninstall", "--id", "Mozilla.Firefox" } };
+        // MarketplaceService.cs:58 (the search text is a plain word)
+        yield return new object[] { new[] { "search", "zoom" } };
+        // MarketplaceService.cs:130
+        yield return new object[] { new[] { "install", "--id", "Mozilla.Firefox", "--accept-package-agreements" } };
+        // WingetService.cs:50
+        yield return new object[] { new[] { "upgrade", "--include-unknown", "--disable-interactivity", "--accept-source-agreements" } };
+        // WingetService.cs:128
+        yield return new object[]
+        {
+            new[]
+            {
+                "upgrade", "--id", "Mozilla.Firefox", "--include-unknown", "--disable-interactivity",
+                "--silent", "--accept-package-agreements", "--accept-source-agreements",
+            },
+        };
+        // Extra allowed forms.
+        yield return new object[] { new[] { "upgrade", "--id", "Mozilla.Firefox" } };
+        yield return new object[] { new[] { "list" } };
+        yield return new object[] { new[] { "search", "--query", "zoom", "--count", "50" } };
+        yield return new object[] { new[] { "show", "--id", "Mozilla.Firefox" } };
+        yield return new object[] { new[] { "install", "--id", "7zip.7zip", "--silent", "--accept-package-agreements" } };
+        yield return new object[] { new[] { "uninstall", "--id", "Mozilla.Firefox", "--silent" } };
+    }
+
+    // Argument lists the app must refuse before any process starts.
+    public static IEnumerable<object[]> RefusedLists()
+    {
+        yield return new object[] { new[] { "configure" } };
+        yield return new object[] { new[] { "upgrade", "--id", "Mozilla.Firefox", "--id", "Git.Git" } };
+        yield return new object[] { new[] { "upgrade", "--id", "Mozilla.Firefox", "extra" } };
+        yield return new object[] { new[] { "upgrade", "--id", "Mozilla.Firefox", "--source", "msstore" } };
+        yield return new object[] { new[] { "install", "--query", "zoom" } };
+        yield return new object[] { new[] { "upgrade", "--all" } };
+        yield return new object[] { new[] { "uninstall", "--id", "Mozilla.Firefox", "--purge" } };
+        yield return new object[] { new[] { "install", "--id", "Mozilla.Firefox", "--override", "/S" } };
+        yield return new object[] { new[] { "list", "--id" } };
+        yield return new object[] { new[] { "search", "--query", "--silent" } };
+    }
+
+    [Theory]
+    [MemberData(nameof(AllowedLists))]
+    public void Allowed_argument_lists_are_accepted(string[] args)
+    {
+        var result = WingetRunner.BuildArguments(args);
+
+        Assert.Equal(args[0], result[0]);
+    }
+
+    [Theory]
+    [MemberData(nameof(RefusedLists))]
+    public void Refused_argument_lists_are_rejected(string[] args)
+    {
+        Assert.Throws<ArgumentException>(() => WingetRunner.BuildArguments(args));
+    }
+
+    [Fact]
+    public void Upgrade_with_id_gets_source_winget_and_exact()
+    {
+        var result = WingetRunner.BuildArguments(["upgrade", "--id", "Mozilla.Firefox"]);
+
+        Assert.Equal(1, result.Count(a => a == "--source"));
+        Assert.Equal("winget", result[result.IndexOf("--source") + 1]);
+        Assert.Single(result, a => a == "--exact");
+    }
+
+    [Fact]
+    public void Upgrade_keeps_a_given_winget_source_once()
+    {
+        var result = WingetRunner.BuildArguments(["upgrade", "--source", "winget"]);
+
+        Assert.Equal(1, result.Count(a => a == "--source"));
+        Assert.Equal("winget", result[result.IndexOf("--source") + 1]);
+    }
+
+    [Fact]
+    public void Install_does_not_get_a_source_flag()
+    {
+        var result = WingetRunner.BuildArguments(["install", "--id", "7zip.7zip"]);
+
+        Assert.DoesNotContain("--source", result);
     }
 }

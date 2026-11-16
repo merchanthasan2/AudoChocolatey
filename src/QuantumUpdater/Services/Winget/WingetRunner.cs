@@ -23,7 +23,6 @@ public sealed record RunResult(int ExitCode, bool TimedOut, bool Cancelled, IRea
 public sealed class WingetRunner
 {
     private const string IdFlag = "--id";
-    private const string IdFlagPrefix = "--id=";
     private const string ExactFlag = "--exact";
     private const string DisableInteractivityFlag = "--disable-interactivity";
     private const string AcceptSourceAgreementsFlag = "--accept-source-agreements";
@@ -64,6 +63,18 @@ public sealed class WingetRunner
         }
 
         var finalArgs = BuildArguments(args);
+        return await StartCheckedAsync(finalArgs, timeout, onLine, token).ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// Arguments must come from BuildArguments. Only tests call this directly, to run FakeWinget modes.
+    /// </summary>
+    internal async Task<RunResult> StartCheckedAsync(
+        List<string> finalArgs,
+        TimeSpan timeout,
+        Action<string>? onLine,
+        CancellationToken token)
+    {
         if (token.IsCancellationRequested)
         {
             return new RunResult(-1, false, true, []);
@@ -211,14 +222,62 @@ public sealed class WingetRunner
         }
     }
 
+    // The only winget verbs the app may run.
+    private const string UpgradeVerb = "upgrade";
+    private const string SourceFlag = "--source";
+    private const string WingetSource = "winget";
+    private const string CountFlag = "--count";
+    private const string QueryFlag = "--query";
+    private const string VersionFlag = "--version";
+
+    // Flags that take no value. Every verb may use them.
+    private static readonly string[] SwitchFlagsForAll =
+    [
+        "--accept-source-agreements",
+        "--accept-package-agreements",
+        "--disable-interactivity",
+        "--silent",
+        "--exact",
+        "--include-unknown",
+    ];
+
+    // Flags that take one value. Every verb may use them.
+    private static readonly string[] ValueFlagsForAll = [IdFlag, SourceFlag, CountFlag];
+
+    private sealed record VerbRules(bool AllowsPositional, bool IsAction, HashSet<string> SwitchFlags, HashSet<string> ValueFlags);
+
+    private static readonly Dictionary<string, VerbRules> Verbs = new(StringComparer.OrdinalIgnoreCase)
+    {
+        // list and search take a plain word (the search text) and --query. show also takes --version.
+        ["list"] = MakeRules(allowsPositional: true, isAction: false, QueryFlag),
+        ["search"] = MakeRules(allowsPositional: true, isAction: false, QueryFlag),
+        ["show"] = MakeRules(allowsPositional: true, isAction: false, QueryFlag, VersionFlag),
+        // Action verbs never take a plain word. With an --id they are the action form.
+        ["install"] = MakeRules(allowsPositional: false, isAction: true, VersionFlag),
+        ["upgrade"] = MakeRules(allowsPositional: false, isAction: true, VersionFlag),
+        ["uninstall"] = MakeRules(allowsPositional: false, isAction: true, VersionFlag),
+    };
+
+    private static VerbRules MakeRules(bool allowsPositional, bool isAction, params string[] extraValueFlags)
+    {
+        var switches = new HashSet<string>(SwitchFlagsForAll, StringComparer.OrdinalIgnoreCase);
+        var values = new HashSet<string>(ValueFlagsForAll, StringComparer.OrdinalIgnoreCase);
+        values.UnionWith(extraValueFlags);
+        return new VerbRules(allowsPositional, isAction, switches, values);
+    }
+
     /// <summary>
-    /// Checks the arguments and adds the required flags. Returns a new list.
-    /// Throws ArgumentException when an argument is null, has a control character,
-    /// or when an --id value is not a catalog id.
+    /// Checks the arguments against the allowlist and adds the required flags. Returns a new list.
+    /// The first argument must be an allowed verb, and every flag must be allowed for that verb.
+    /// A flag that takes a value takes the next argument, which must not start with "--".
+    /// install, upgrade and uninstall with an --id take exactly one --id and no plain words.
+    /// upgrade gets "--source winget" when no --source is given, and refuses any other source.
+    /// Throws ArgumentException when an argument is null, has a control character, is a short flag,
+    /// is not allowed, or when an --id value is not a catalog id.
     /// </summary>
     internal static List<string> BuildArguments(IReadOnlyList<string> args)
     {
-        var result = new List<string>(args.Count + 3);
+        var result = new List<string>(args.Count + 4);
         foreach (var arg in args)
         {
             if (arg is null)
@@ -240,24 +299,69 @@ public sealed class WingetRunner
             result.Add(arg);
         }
 
-        bool hasId = false;
-        for (int i = 0; i < result.Count; i++)
+        if (result.Count == 0 || !Verbs.TryGetValue(result[0], out var rules))
+        {
+            throw new ArgumentException("The first argument must be an allowed winget verb.", nameof(args));
+        }
+
+        int idCount = 0;
+        var sources = new List<string>();
+        for (int i = 1; i < result.Count; i++)
         {
             var arg = result[i];
-            if (string.Equals(arg, IdFlag, StringComparison.OrdinalIgnoreCase))
+            if (!arg.StartsWith("--", StringComparison.Ordinal))
             {
-                if (i + 1 >= result.Count)
+                if (!rules.AllowsPositional)
                 {
-                    throw new ArgumentException("--id needs a package id.", nameof(args));
+                    throw new ArgumentException("This verb does not take a plain word.", nameof(args));
                 }
 
-                ValidateCatalogId(result[i + 1], args);
-                hasId = true;
+                continue;
             }
-            else if (arg.StartsWith(IdFlagPrefix, StringComparison.OrdinalIgnoreCase))
+
+            if (rules.ValueFlags.Contains(arg))
             {
-                ValidateCatalogId(arg[IdFlagPrefix.Length..], args);
-                hasId = true;
+                if (i + 1 >= result.Count || result[i + 1].StartsWith("--", StringComparison.Ordinal))
+                {
+                    throw new ArgumentException($"{arg} needs a value.", nameof(args));
+                }
+
+                i++;
+                var value = result[i];
+                if (string.Equals(arg, IdFlag, StringComparison.OrdinalIgnoreCase))
+                {
+                    ValidateCatalogId(value, args);
+                    idCount++;
+                }
+                else if (string.Equals(arg, SourceFlag, StringComparison.OrdinalIgnoreCase))
+                {
+                    sources.Add(value);
+                }
+
+                continue;
+            }
+
+            if (!rules.SwitchFlags.Contains(arg))
+            {
+                throw new ArgumentException("A winget flag is not allowed for this verb.", nameof(args));
+            }
+        }
+
+        if (rules.IsAction && idCount > 1)
+        {
+            throw new ArgumentException("Use exactly one --id.", nameof(args));
+        }
+
+        if (string.Equals(result[0], UpgradeVerb, StringComparison.OrdinalIgnoreCase))
+        {
+            if (sources.Count == 0)
+            {
+                result.Add(SourceFlag);
+                result.Add(WingetSource);
+            }
+            else if (sources.Any(source => !string.Equals(source, WingetSource, StringComparison.OrdinalIgnoreCase)))
+            {
+                throw new ArgumentException("upgrade only uses the winget source.", nameof(args));
             }
         }
 
@@ -271,7 +375,7 @@ public sealed class WingetRunner
             result.Add(AcceptSourceAgreementsFlag);
         }
 
-        if (hasId && !ContainsFlag(result, ExactFlag))
+        if (idCount > 0 && !ContainsFlag(result, ExactFlag))
         {
             result.Add(ExactFlag);
         }
