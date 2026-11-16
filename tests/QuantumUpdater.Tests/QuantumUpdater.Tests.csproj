@@ -11,12 +11,17 @@
     <Compile Include="..\..\src\QuantumUpdater\Services\Winget\WingetPathRules.cs" Link="Linked\WingetPathRules.cs" />
     <Compile Include="..\..\src\QuantumUpdater\Services\ActionQueue.cs" Link="Linked\ActionQueue.cs" />
     <Compile Include="..\..\src\QuantumUpdater\Services\Winget\WingetTextTable.cs" Link="Linked\WingetTextTable.cs" />
+    <Compile Include="..\..\src\QuantumUpdater\Services\Winget\WingetRunner.cs" Link="Linked\WingetRunner.cs" />
     <Compile Include="..\..\src\QuantumUpdater\Services\Scan\ScanJob.cs" Link="Linked\ScanJob.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\_winget_sample.txt" Link="Data\_winget_sample.txt" CopyToOutputDirectory="PreserveNewest" />
     <None Include="Data\winget-list.txt" CopyToOutputDirectory="PreserveNewest" />
     <None Include="Data\winget-upgrade.txt" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\FakeWinget\FakeWinget.csproj" ReferenceOutputAssembly="false" />
+    <None Include="..\FakeWinget\bin\$(Configuration)\net10.0\FakeWinget.*" Link="FakeWinget\%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.12.0" />
