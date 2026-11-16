@@ -1,0 +1,17 @@
+---
+description: DeskVerve work status
+alwaysApply: true
+---
+
+# Active
+
+On 16 Nov 2026 the owner resumed product work on DeskVerve for Windows.
+
+Read `docs/HANDOVER.md` and `tracker.html` before you change the app. Update `tracker.html` after every step.
+
+Owner later:
+
+- Install the WinUI packaging workload (needs elevation)
+- On-PC acceptance of sign-in through Updates (45.11)
+- Git push, GitHub release, winget, Microsoft Store, Chocolatey, download sites
+- Deploy the admin portal to quantumstep.in

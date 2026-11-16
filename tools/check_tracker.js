@@ -3,7 +3,7 @@ const t = fs.readFileSync("tracker.html", "utf8");
 const s = t.split("<script>")[1].split("</script>")[0];
 new Function(s);
 const start = s.indexOf("const TRACKER = ");
-const end = s.indexOf("/* ========== END TRACKER DATA ========== */");
+const end = s.indexOf("const ROLE = ");
 const obj = s.slice(start + "const TRACKER = ".length, end).trim().replace(/;$/, "");
 const TRACKER = eval("(" + obj + ")");
 let w = 0;

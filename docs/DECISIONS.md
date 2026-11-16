@@ -1,5 +1,5 @@
 # Architecture Decision Records (ADRs)
-## Quantum Updater
+## DeskVerve (formerly Quantum Updater)
 **Company:** Quantum Step ([quantumstep.in](https://quantumstep.in))
 
 ---
@@ -198,16 +198,58 @@
 - **Decision:** No new protective middle layer. `main.py` starts `preload_self_update_check` and waits up to 8s before opening the window. Getting ready includes a **Quantum Updater** row. Catalog bootstrap starts only after that check settles (or times out at 10s in the UI). Offline or failed checks do not hold the app. The install banner still offers the update; applying it remains user-confirmed via the existing Install path. Official Releases rules from ADR 026 stay.
 - **Consequences:** Tracker 42.5. A tagged Release is still required before an installed EXE can download a newer build.
 
+### ADR 043: Owner-locked greenfield WinUI plan
+- **Status:** Accepted (2026-11-15). Owner answered all six questions. Supersedes the provisional defaults in ADR 042.
+- **Decision:**
+  1. **Q1 = B.** Wipe the Phase 1 WinUI seed. Greenfield a new WinUI 3 project. Do not evolve the current `src/QuantumUpdater` shell.
+  2. **Q2 = NOW.** Python is no longer the product and is not shipped.
+  3. **Q3 = A.** Phase A first (Getting ready, Updates, Marketplace, Installed, About, self-update). Phase B (Cleanup and Settings tools) after that.
+  4. **Q4 = Stitch.** Visual design comes from the owner’s Google Stitch project (colors, type, assets, material). Not Fluent-default, not cream, not Park, until that project is applied.
+  5. **Q5 = installable + portable, multi-channel.** Primary artifact is an installer. A portable zip remains for direct download. GitHub and winget are two channels only. Later submissions include Microsoft Store, Chocolatey, and established download libraries.
+  6. **Q6 = B.** When the greenfield project starts, move the Python app into `archive/` as reference. Do not delete it.
+- **Protective middle layer:** one C# service layer. UI does not start processes directly.
+- **Feature split (2026-11-15):**
+  - **Build in Phase A (tracker 45):** Stitch shell, Updates & Health, App Marketplace, Installed, About This PC, Getting ready, self-update check. Catalog is winget.
+  - **Discuss before any build (tracker 46):** how deep Disk & Storage goes; Cleanup, startup apps, large files, leftovers, activity log; Settings waves; Chocolatey as a second engine.
+  - **Delivery after Phase A (tracker 47):** installer first, portable zip second, then GitHub, winget, Microsoft Store, Chocolatey, and download libraries.
+- **Consequences:** Tracker phases 44–48. The headline percent counts only those phases. Older Python rows stay as history and do not count. The Phase 1 WinUI shell is not extended. Python moves to `archive/` when the greenfield project is created.
+
+### ADR 045: Keep building and park owner actions
+- **Status:** Accepted (2026-11-15). Owner instruction.
+- **Decision:** Finish the tracker without stopping for questions. Decisions and outside actions stay on the Owner later list: phase 46 choices, the elevated packaging install, on-PC acceptance, git push, GitHub release, winget, Store, Chocolatey, download sites, and deploying the admin portal to quantumstep.in.
+- **Consequences:** Phase 45 and the local account service proceed. Phase 46 stays unbuilt.
+
+### ADR 044: Mandatory sign-in and a separate admin portal
+- **Status:** Accepted (2026-11-15). Owner added this after ADR 043.
+- **Decision:** The Windows app does not open its tools until the person signs in. A separate site at `quantumstep.in/quantumupdater/admin` is the only admin view. It shows install counts, who is signed in, updates run, apps installed or removed through Quantum Updater, and a system summary (Windows version, CPU, memory, disk headline).
+- **Boundary:** The app does not send passwords, recovery keys, or file contents. The desktop app cannot open admin routes. One account service feeds both the app and the portal.
+- **Consequences:** Tracker 45.8 and phase 48. Security review before the first client that uploads this data.
+
+### ADR 042: Full WinUI 3 cutover now (replace dual-track ship)
+- **Status:** Superseded by ADR 043 (2026-11-15). Provisional defaults are withdrawn.
+- **Context:** Dual-track left Python as ship path and felt like migration stalled. Owner wants no wasted later rewrite.
+- **Decision (provisional defaults — owner may override via multi-choice):**
+  1. **From-scratch WinUI product** under `src/QuantumUpdater/` (evolve Phase 1 seed into full app structure).
+  2. **Python is read-only behaviour reference** — no new Python features; ship path switches to WinUI after Phase A.
+  3. **Phase A (core):** Getting ready, Updates, Marketplace, Installed, self-update, About.
+  4. **Phase B (rest):** Cleanup, Startup, Large files, Leftovers, Activity log, Settings Waves 2–5.
+  5. **UI:** Fluent WinUI native first; Park/cream visual lock owner-later.
+  6. **Packaging:** self-contained win-x64 portable zip named `QuantumUpdater-Windows.zip`; MSIX later.
+  7. **Elevation:** requireAdministrator every launch (ADR 004/006).
+  8. **Protective middle layer:** single C# service layer (`Services/` + facade) — UI does not spawn processes directly.
+- **Consequences:** Tracker Phase 44. CI/release retarget after Phase A. Winget PR stays valid against zip asset name.
+
 ### ADR 041: Migrate shell to C# + WinUI 3
-- **Status:** Accepted (2026-11-15). Owner accepted Manager recommendation. Design Architect seat at model limit — Manager provisional plan; independent Design review pending.
+- **Status:** Superseded in part by ADR 042 (2026-11-15). Dual-track ship path ends at Phase A cutover. Scaffold work from 041 remains the seed.
 - **Context:** Python + pywebview + WebView2 + PyInstaller onedir is heavy and does not feel like a proper Windows system utility.
 - **Decision:** Dual-track. **Target stack:** C# + WinUI 3. Protective middle layer: a single C# service layer (mirrors `web_api.py`) — no second ad-hoc bridge. Phase 1 screens: Getting ready, Updates, Installed, self-update. Packaging goal: MSIX when ready; portable folder/zip until then. Python app remains the behaviour reference and ship path until Phase 1 WinUI is owner-tested on this PC. Do not change live Park CSS. Folder: `src/QuantumUpdater/` (WinUI project).
+- **Phase 1 build note (2026-11-15):** This PC lacks `Microsoft.Build.Packaging.Pri.Tasks.dll` (UWP/MSIX MSBuild). Phase 1 ships as **code-only WinUI** (`WindowsPackageType=None`, `EnablePriGenTooling=false`, no XAML `ms-appx` LoadComponent) so Release EXE can show a window without elevated VS Build Tools. Restore XAML + PRI tooling when owner installs the UWP MSBuild component.
 - **Consequences:** Tracker Phase 43. Install .NET SDK + WinUI workload before scaffold. Security reviews every verified WinUI slice.
 
 ### ADR 040: Winget community submit for 2.0.3
-- **Status:** Accepted (2026-11-15).
+- **Status:** Accepted (2026-11-15). Updated same day for validator fixes.
 - **Context:** Tagged Releases publish `QuantumUpdater-Windows.zip`. Tracker 42.4 needed a public winget-pkgs PR.
-- **Decision:** No new protective middle layer. Manifests use `InstallerType: zip` + `NestedInstallerType: portable` + `ElevationRequirement: elevationRequired`. Submitted via `wingetcreate submit` as PR https://github.com/microsoft/winget-pkgs/pull/480804. Local mirror kept under `mirrors/winget-pkgs/manifests/q/QuantumStep/QuantumUpdater/2.0.3/`.
+- **Decision:** No new protective middle layer. Manifests use `InstallerType: zip` + `NestedInstallerType: portable` (elevation field removed after CI). Publisher/License URLs are GitHub (quantumstep.in timed out for validators). ManifestVersion **1.10.0** with schema headers on all three YAML files. Submitted via `wingetcreate submit` as PR https://github.com/microsoft/winget-pkgs/pull/480804. Local copies under `manifests/w/QuantumStep/QuantumUpdater/2.0.3/`.
 - **Consequences:** `winget install QuantumStep.QuantumUpdater` works only after Microsoft merges. Until then use the GitHub zip.
 
 ### ADR 039: Self-update applies QuantumUpdater-Windows.zip
@@ -294,3 +336,43 @@
 - **Decision:** No new protective middle layer. `web_api.py` stays the only path that starts a program, a scan, or a delete. A percent is shown only when the installer, the cleanup category count, or the storage-scan category count reported it. Otherwise the island says Working and the bar moves with no number. Words may say "Updating 2 of 5". That count is not drawn as a percent. A large-file scan shows the current folder and the files checked. The cream file `design/mockups/cream/01-shell-or-settings.html` is for review only. Do not change the live colours in this slice. Owner choices left pending with recommendation: cream stays review-only; sidebar unknown scan uses a moving mark and the job name.
 - **Consequences:** Workers finish the remaining 36.8 holes. They do not change consent, path checks, or the uninstall plan. `core/progress.py` stays for its unit test. The screen stops reading guessed percents.
 
+### ADR 046: Product renamed to DeskVerve
+- **Status:** Accepted (2026-11-15)
+- **Context:** On 2026-11-15 the owner renamed the product **DeskVerve** for Windows and **DeskVerve** for Mac. Publisher/company remains **Quantum Step**. The Design Architect Task seat produced the compatibility-first plan and the Manager approved it.
+- **Decision:** Change current user-facing product text in the Windows app and admin portal, current shared naming docs and brand accessibility labels, and Windows file Product metadata to **DeskVerve** now. Reuse the existing emblem unchanged. Do not change Mac host code on `channel/windows`.
+- **Compatibility boundary:** Until the packaging migration, retain source/project/folder/namespace/executable names; local `%LOCALAPPDATA%\QuantumUpdater` data; portal routes, cookies, and API; GitHub repo and update User-Agent; the `QuantumUpdater-Windows.zip` asset matcher; winget package ID, manifests, and PR #480804; release workflows; and archive, mirrors, dist, and generated output.
+- **Future packaging target:** `DeskVerve.exe`, `DeskVerve-Windows.zip`, and DeskVerve installer names will be handled separately in Phase 47 with backward compatibility for existing update and account channels.
+- **Consequences:** Tracker 45.9 implements the approved visible-text and Windows Product metadata slice without migrating technical identifiers. Phase 46 remains undecided and unstarted. This ADR does not start Phase 46 and does not authorize release/push/deploy.
+
+### ADR 047: Supplied DeskVerve logo replaces Quantum emblem
+- **Status:** Accepted (2026-11-15)
+- **Context:** Owner supplied the actual DeskVerve logo artwork; Design Architect confirmed transparent and opaque-white 2000x667 PNG masters. ADR 046's no-new-logo compatibility note is superseded only for product artwork.
+- **Source fidelity:** Preserve both original attachments unchanged under `brand/source/`; retain the transparent and opaque-white full lockups unchanged as masters. Derive the V-only transparent emblem from the transparent master by cropping/scaling only; do not recolour, trace, or redraw.
+- **Outputs:** `brand/desk-verve-emblem.png`, `brand/desk-verve-lockup-transparent.png`, `brand/desk-verve-lockup-white.png`, `brand/desk-verve-icon.ico`, and `brand/png/desk-verve-emblem-{32,64,128,256,512}.png`.
+- **Dark surfaces and placement:** Use transparent V for dark/small UI: Windows titlebar 24x24, Sign in 64x64, About 40x40, and tracker 52x52 with 4px padding. README uses the opaque-white full lockup at 320px width. The full black wordmark must not be placed directly on dark surfaces.
+- **Compatibility:** Technical identifiers stay unchanged in this package; existing compatibility paths and old brand filenames may remain where needed, but visible old Q artwork is replaced. Quantum Step publisher logo stays unchanged. Phase 47 still owns the later DeskVerve exe/installer/download rename. No Mac host code, release, push, or deploy.
+
+### ADR 048: Phase 46 scope and order (owner, 2026-11-16)
+- **Status:** Accepted (2026-11-16)
+- **Primary goal (owner):** The best-functioning app: fast, quick and easy to use. Any change to fundamentals goes to the owner as a choice first.
+- **Order:**
+  1. Highest priority: Updates and App Marketplace. Fix three owner-reported problems: Installed/Uninstall does not show all apps on the PC; the update screens look and feel poor; Marketplace shows only a handful of apps.
+  2. Then Disk & Storage: full view plus delete. Every physical drive with free space and health, external drives labelled, no cloud volumes. Big files go to the Recycle Bin; delete permanently needs a second confirmation.
+  3. Then the Cleanup set, all four: Startup apps (view, turn off, undo), Activity history (read-only), Temporary files (Windows-supported route only), Leftover folders (Recycle Bin per folder; registry backup before stale uninstall entries are removed).
+  4. Then the old tool groups, one at a time, each tested before the next starts.
+- **Catalog:** The full winget catalog comes first, with browse, categories, popular apps and real icons. Chocolatey comes later, as a second catalog for apps that winget does not have.
+- **Root causes found (Manager, 2026-11-16):** The Installed list parses winget's text table and its id rule drops ids with a backslash (`ARP\...`, `MSIX\...`) and cut-short ids. Apps that winget does not know never appear. Marketplace is search-only, shows nothing before a search, and drops wide or cut-short rows.
+
+### ADR 049: Phase 46 fundamentals (owner, 2026-11-16)
+- **Status:** Accepted (2026-11-16). Questions from `docs/plans/2026-11-16-phase46-apps-first.md` section 10.
+- **Q1 Sign in:** Optional. DeskVerve opens and works at once on any PC. A "Sign in" button stays. Signed-in users send reports when the public service is live (45.24).
+- **Q2 Admin rights:** Keep the admin prompt at every start (owner choice). The COM read path must be proven in an admin process (spike 46.5.1); the text reader stays as the backup. Tasks 46.5.23-46.5.26 (admin helper, asInvoker) are dropped.
+- **Q3 App data:** Microsoft's direct data connection (winget COM API) for reads, with text reading as the backup.
+- **Q4 Apps that winget does not know:** Remove them with the app's own uninstaller, after a confirm dialog and strict safety rules. Unsafe entries fall back to Windows Settings.
+- **Q5 Tech stack:** The owner delegated stack choices to the Manager, with one rule: DeskVerve must run on every Windows desktop version from Windows 10 onward. Manager choice: .NET 10 (LTS, fixes to 2028), Windows App SDK 1.8, `TargetPlatformMinVersion` 10.0.17763.0 (Windows 10 version 1809). WinUI 3 does not run on Windows 10 before 1809; those versions have no Microsoft support. Builds: win-x64 and win-arm64.
+- **Icons (owner rule):** Each app shows its own original icon in every list: Installed, Updates, Marketplace, and installs. Installed apps: the icon from the app's own program file or its Store logo. Marketplace apps: the icon from the maker's own site or package. A letter tile is a last resort only. This answers Q8.
+- **Q6 Confirm style:** One click for Update and Install. A dialog for Remove and Update all. The tick box goes away.
+- **Q7 Start (owner rule):** At every start, DeskVerve scans the whole system before use: updates, installed apps, Marketplace catalog and icons, disk health and space, and cleanup estimates. Every function waits for readiness. The scan shows progress: one line per job (Waiting, Working with percent, Done, Failed) and an overall percent. Manager design: all jobs run at the same time; target is a full scan in about 5 s on the owner's PC; a failed job never traps the app.
+- **Spike results (16 Nov):** winget COM API (Microsoft.WindowsPackageManager.ComInterop 1.29.380, needs target windows10.0.26100.0) listed 238 installed packages in 1.9 s as a normal user (98 ARP, 140 MSIX). Composite catalog for update data is not yet working; admin run is open. Virtual list: 2,000 rows with 47 row elements and 120 MB.
+- **Q9 Packaging (owner):** Wait for the installer. The first public release is a setup program or MSIX, not a portable zip. The Manager picks the installer tool in phase 47 (stack delegated in Q5).
+- **Q10 winget name (owner):** Close PR #480804 (old Python 2.0.3). After the Phase 46 fixes, the installer, and owner acceptance, open a new request with id `DeskVerve.Utility`, package name "DeskVerve Utility", and moniker `deskverve`, so anyone can run `winget install deskverve`. winget ids cannot contain spaces. The app window keeps the name "DeskVerve" unless the owner says otherwise.

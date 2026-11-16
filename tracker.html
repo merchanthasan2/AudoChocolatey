@@ -25,7 +25,7 @@ h2 { font-size: 22px; }
 h3 { font-size: 16px; }
 p { margin: 0; }
 .brand { display: flex; gap: 16px; align-items: center; }
-.brand img { width: 52px; height: 52px; border-radius: 12px; border: 1px solid var(--line); background: var(--sunk); }
+.brand img { width: 52px; height: 52px; border-radius: 12px; border: 1px solid var(--line); background: transparent; object-fit: contain; padding: 4px; }
 .eyebrow { font-size: 12px; text-transform: uppercase; letter-spacing: 0.09em; color: var(--muted); font-weight: 700; }
 .muted { color: var(--muted); }
 .meta { display: flex; flex-wrap: wrap; gap: 6px 18px; color: var(--muted); font-size: 14px; }
@@ -121,9 +121,9 @@ tr.grp td { background: #18243a; font-weight: 700; }
 <div class="wrap">
   <header>
     <div class="brand">
-      <img src="web/quantum-updater-icon.svg" alt="">
+      <img src="brand/desk-verve-emblem.png" alt="">
       <div>
-        <p class="eyebrow">Quantum Updater · Windows app</p>
+        <p class="eyebrow">DeskVerve · Windows app</p>
         <h1>Development tracker</h1>
       </div>
     </div>
@@ -134,22 +134,20 @@ tr.grp td { background: #18243a; font-weight: 700; }
   <section class="resume" aria-label="Resume point">
     <div>
       <span class="next-pill">RESUME POINT</span>
-      <h2>Standing workflow on · WinUI Phase 1 plan approved</h2>
-      <p>Manager cycle recorded (user + repo rules). ADR 041: C# + WinUI 3 dual-track. Version stamp source is 2.0.3. Winget PR CLA agree posted. Python remains ship path until Phase 1 WinUI is on-PC accepted.</p>
+      <h2>16 Nov 2026 · owner resumed · Phase 46 choices next</h2>
+      <p>The owner restarted product work on 16 Nov 2026. The account service was rebuilt and restarted (45.14 done). The Security architect (45.12) and the Design Architect (45.13) check the Phase A app now. Phase 46 choices come next, one question at a time.</p>
       <ol>
-        <li>Scaffold <code>src/QuantumUpdater</code> WinUI 3 shell (Getting ready / Updates / Installed).</li>
-        <li>Independent Design Architect review of ADR 041 (seat was provisional).</li>
-        <li>Winget PR https://github.com/microsoft/winget-pkgs/pull/480804 — watch validation after CLA.</li>
-        <li>Owner later: Park D lock; on-PC accept WinUI Phase 1.</li>
+        <li>Waiting on you: Phase 46 choices (Disk depth, Cleanup set, Settings waves, Chocolatey).</li>
+        <li>Waiting on you: 45.11 open the fixed EXE on this PC and look at the V logo.</li>
+        <li>Releases, push, installer, GitHub, winget, Store, Chocolatey, download sites, and quantumstep.in stay owner-later.</li>
       </ol>
     </div>
     <div>
-      <span class="eyebrow">Owner later (non-blocking)</span>
+      <span class="eyebrow">Now</span>
       <ul class="prio">
-        <li class="now"><span>Team: WinUI Phase 1 scaffold</span><span class="muted">now</span></li>
-        <li><span>Winget-pkgs merge after CLA/checks</span><span class="muted">later</span></li>
-        <li><span>Lock Park D / on-PC looks</span><span class="muted">later</span></li>
-        <li><span>Design Architect independent re-check ADR 041</span><span class="muted">pending</span></li>
+        <li class="now"><span>You: 46 choices, one question at a time</span><span class="muted">now</span></li>
+        <li><span>45.12 Security review · 45.13 Design validation</span><span class="muted">running</span></li>
+        <li><span>You: 45.11 owner look at the fixed DeskVerve EXE</span><span class="muted">when free</span></li>
       </ul>
     </div>
   </section>
@@ -241,9 +239,10 @@ tr.grp td { background: #18243a; font-weight: 700; }
 </div>
 <script>
 const TRACKER = {
-  updated: "12 Nov 2026, 17:50",
+  updated: "16 Nov 2026, owner resumed work",
   ownerDecisions: [
-    "Live colours are Cream, Orange, and Black. Dark is near-black with orange marks. Teal is retired.",
+    "Product name is DeskVerve for Windows and DeskVerve for Mac; publisher remains Quantum Step. Compatibility identifiers stay until packaging migration (ADR 046).",
+    "Live colours are the Stitch dark shell: #131313 canvas, #272727 sidebar, accent #0078D4 (ADR 043 Q4). Cream and Park are retired.",
     "Real application icons everywhere they appear in the product",
     "About page exactly like the approved mockup with a hardware illustration library",
     "Every physical drive shown; cloud volumes never; external drives labelled",
@@ -532,7 +531,7 @@ const TRACKER = {
         { id: "42.1", text: "Official self-update uses Releases zip (ADR 026 + 038 + 039). Prefers setup, then QuantumUpdater-Windows.zip, applies onedir via robocopy. Bare exe last.", status: "done", owner: "engine", parts: { plan: "done", build: "done", verify: "done", sec: "todo", valid: "todo", pc: "todo", acc: "todo" } },
         { id: "42.2", text: "Tagged v2.0.2+ with QuantumUpdater-Windows.zip (full onedir). Prefer zip over any bare bootloader exe.", status: "done", owner: "engine", stage: "Tag release", with: "Manager" },
         { id: "42.3", text: "Winget package QuantumStep.QuantumUpdater: portable manifests + release Action prepare script (ADR 028). Not in community index until a public Release exists and the winget-pkgs PR merges.", status: "done", owner: "engine", parts: { plan: "done", build: "done", verify: "todo", sec: "todo", valid: "todo", pc: "todo", acc: "todo" } },
-        { id: "42.4", text: "PR https://github.com/microsoft/winget-pkgs/pull/480804 — CLA posted; locale URLs switched to GitHub (quantumstep.in timed out for validators). Await re-check.", status: "waiting", owner: "security", stage: "Await winget-pkgs revalidation", with: "Manager" },
+        { id: "42.4", text: "PR https://github.com/microsoft/winget-pkgs/pull/480804 — Validation-Completed / Azure-Pipeline-Passed. Await Microsoft merge.", status: "done", owner: "security", parts: { plan: "done", build: "done", verify: "done", sec: "done", valid: "done", pc: "todo", acc: "todo" } },
         { id: "42.5", text: "Check for a newer Quantum Updater build before the app starts work. Preload in main.py, show on Getting ready, then start catalog scans. Offer Install so this PC can run the better build. Offline does not block. ADR 032.", status: "done", owner: "engine", parts: { plan: "done", build: "done", verify: "todo", sec: "todo", valid: "todo", pc: "todo", acc: "todo" } }
       ]
     },
@@ -541,11 +540,99 @@ const TRACKER = {
       title: "C# WinUI 3 shell (ADR 041)",
       items: [
         { id: "43.0", text: "Standing workflow: user-level team-workflow + repo TEAM.md / team-and-release rule. Seats: Manager (main), Design/Security/Workers via Task when available.", status: "done", owner: "manager", parts: { plan: "done", build: "done", verify: "done", sec: "na", valid: "na", pc: "na", acc: "done" } },
-        { id: "43.1", text: "Plan approved (Manager provisional): Phase 1 Getting ready, Updates, Installed, self-update; C# service layer mirrors web_api; Python stays reference. Independent Design Architect review pending.", status: "in-progress", owner: "design", stage: "Plan approved — build scaffold", with: "Manager", parts: { plan: "done", build: "todo", verify: "todo", sec: "todo", valid: "todo", pc: "todo", acc: "todo" } },
-        { id: "43.2", text: "Install .NET 8 SDK on this PC for WinUI scaffold.", status: "done", owner: "engine", parts: { plan: "done", build: "done", verify: "todo", sec: "na", valid: "na", pc: "todo", acc: "todo" } },
-        { id: "43.3", text: "Scaffold src/QuantumUpdater WinUI 3 shell created (manual). Build blocked until nuget.org restore succeeds on this PC.", status: "in-progress", owner: "engine", stage: "Build — restore packages", with: "Worker bees", parts: { plan: "done", build: "doing", verify: "todo", sec: "todo", valid: "todo", pc: "todo", acc: "todo" } },
-        { id: "43.4", text: "Wire winget list/upgrade behind C# service layer (confirm gates). Port behaviour from core/winget_engine.py — no design changes.", status: "waiting", owner: "engine", parts: { plan: "todo", build: "todo", verify: "todo", sec: "todo", valid: "todo", pc: "todo", acc: "todo" } },
-        { id: "43.5", text: "Version stamp must match release tag (2.0.3+). Source stamp fixed; rebuild packaged Python app when next ship needed.", status: "done", owner: "engine", parts: { plan: "done", build: "done", verify: "todo", sec: "todo", valid: "todo", pc: "todo", acc: "todo" } }
+        { id: "43.1", text: "Plan approved (Manager provisional): Phase 1 Getting ready, Updates, Installed, self-update; C# service layer mirrors web_api; Python stays reference. Independent Design Architect review pending.", status: "done", owner: "design", parts: { plan: "done", build: "done", verify: "done", sec: "done", valid: "todo", pc: "todo", acc: "todo" } },
+        { id: "43.2", text: "Install .NET 8 SDK on this PC for WinUI scaffold.", status: "done", owner: "engine", parts: { plan: "done", build: "done", verify: "done", sec: "na", valid: "na", pc: "todo", acc: "todo" } },
+        { id: "43.3", text: "WinUI Phase 1 shell builds and shows a window (code-only; PriGen disabled — no UWP MSBuild on this PC). EXE under src/QuantumUpdater/bin/.../QuantumUpdater.exe.", status: "done", owner: "engine", parts: { plan: "done", build: "done", verify: "done", sec: "done", valid: "todo", pc: "todo", acc: "todo" } },
+        { id: "43.4", text: "C# WingetService list/upgrade wired to Updates tab (confirm checkbox gate). Mirrors winget upgrade --include-unknown argv from Python.", status: "done", owner: "engine", parts: { plan: "done", build: "done", verify: "done", sec: "todo", valid: "todo", pc: "todo", acc: "todo" } },
+        { id: "43.5", text: "Version stamp 2.0.3 · Build 10 packaged; zip on GitHub Release v2.0.3.", status: "done", owner: "engine", parts: { plan: "done", build: "done", verify: "done", sec: "todo", valid: "todo", pc: "todo", acc: "todo" } }
+      ]
+    },
+    {
+      id: "44",
+      title: "Foundations — greenfield WinUI (ADR 043)",
+      items: [
+        { id: "44.0", text: "Decisions locked. Q1 greenfield wipe. Q2 Python stops now. Q3 Phase A first. Q4 Stitch Modern Windows System Toolkit (11437327097635848724). Q5 installer plus portable zip, then more sites than GitHub and winget. Q6 move Python to archive/ when the new project is created.", status: "done", owner: "manager", parts: { plan: "done", build: "done", verify: "done", sec: "na", valid: "todo", pc: "na", acc: "todo" } },
+        { id: "44.1", text: "Design source recorded: dark Fluent shell, Segoe UI Variable, accent #0078D4. Use the later copy of each screen: Updates & Health, App Marketplace, About This PC, Disk & Storage. Phase 1 WinUI seed is not the product.", status: "done", owner: "design", parts: { plan: "done", build: "done", verify: "done", sec: "na", valid: "todo", pc: "na", acc: "todo" } },
+        { id: "44.2", text: "No longer needed for the app to run: Windows App SDK 1.8 builds the resource index without Visual Studio (45.25). Was: install the missing WinUI packaging workload (PRI / MSIX). Needs elevation on this PC. Owner later. .NET 8 SDK, winget, Windows App Runtime 1.6, and Windows SDK 10.0.26100 are already installed.", status: "done", owner: "owner", stage: "Needs elevation", with: "You", parts: { plan: "done", build: "parked", verify: "todo", sec: "na", valid: "na", pc: "todo", acc: "todo" } },
+        { id: "44.3", text: "Python app moved to archive/python-app (main.py, web/, web_api.py, core/, build_exe.py). Not deleted.", status: "done", owner: "engine", parts: { plan: "done", build: "done", verify: "done", sec: "todo", valid: "na", pc: "na", acc: "todo" } },
+        { id: "44.4", text: "New WinUI project at src/QuantumUpdater. Phase 1 seed is in archive/winui-phase1. AppServices is the only service door. Release build succeeds.", status: "done", owner: "engine", parts: { plan: "done", build: "done", verify: "done", sec: "todo", valid: "todo", pc: "todo", acc: "todo" } }
+      ]
+    },
+    {
+      id: "45",
+      title: "Phase A — agreed features",
+      items: [
+        { id: "45.1", text: "App shell from Stitch: 40px title bar, 240px sidebar, dark surfaces, accent blue. Navigation lists the Phase A screens.", status: "done", owner: "engine", parts: { plan: "done", build: "done", verify: "done", sec: "done", valid: "todo", pc: "todo", acc: "todo" } },
+        { id: "45.2", text: "Updates & Health: list available winget upgrades, confirm before upgrade, show healthy / pending / failed.", status: "done", owner: "engine", parts: { plan: "done", build: "done", verify: "done", sec: "done", valid: "todo", pc: "todo", acc: "todo" } },
+        { id: "45.3", text: "App Marketplace: search winget and install one package after confirm.", status: "done", owner: "engine", parts: { plan: "done", build: "done", verify: "done", sec: "done", valid: "todo", pc: "todo", acc: "todo" } },
+        { id: "45.4", text: "Installed: list installed packages and uninstall one after confirm. Not its own Stitch screen; it stays in Phase A because we agreed it.", status: "done", owner: "engine", parts: { plan: "done", build: "done", verify: "done", sec: "done", valid: "todo", pc: "todo", acc: "todo" } },
+        { id: "45.5", text: "About This PC: machine summary (name, Windows, CPU, memory, storage headline). Deep hardware tools are not in this slice.", status: "done", owner: "engine", parts: { plan: "done", build: "done", verify: "done", sec: "done", valid: "todo", pc: "todo", acc: "todo" } },
+        { id: "45.6", text: "Getting ready: on launch, run the updates and installed scans, show each job, then open Updates. A failed job does not trap the app.", status: "done", owner: "engine", parts: { plan: "done", build: "done", verify: "done", sec: "done", valid: "todo", pc: "todo", acc: "todo" } },
+        { id: "45.7", text: "Self-update check against the official release. Offer install. Offline does not block. Applying the new installer waits until the installer exists.", status: "done", owner: "engine", parts: { plan: "done", build: "done", verify: "done", sec: "done", valid: "todo", pc: "todo", acc: "todo" } },
+        { id: "45.8", text: "Mandatory sign-in before Getting ready. The app sends install id, signed-in user, update results, apps installed or removed here, and a system summary. It does not send passwords, recovery keys, or file contents.", status: "done", owner: "engine", parts: { plan: "done", build: "done", verify: "done", sec: "done", valid: "todo", pc: "todo", acc: "todo" } },
+        { id: "45.9", text: "Rename visible product text to DeskVerve in the Windows app and admin portal; update current shared naming docs and brand accessibility labels. Keep account data, routes, update URLs, namespaces, executable names, and release IDs unchanged. Phase 47 handles DeskVerve executable/installer names. Evidence: desktop Release build passed with 0 warnings/errors and DeskVerve/Quantum Step metadata; Manager verified it. Portal compilation generated correct metadata, but final copy is blocked by running PID 42984 and will be retried at package end.", status: "done", owner: "engine", parts: { plan: "done", build: "done", verify: "done", sec: "due", valid: "todo", pc: "todo", acc: "todo" } },
+        { id: "45.10", text: "Apply owner-supplied DeskVerve logo per ADR 047. Artwork assets and every UI reference point to brand/desk-verve-emblem.png. Launch blocker diagnosed: WinUI ms-appx:///Assets/Brand/desk-verve-emblem.png cannot resolve in this unpackaged/self-contained build. Fix: new src/QuantumUpdater/BrandAssets.cs replaced the three image loads with safe absolute file-URI loading; QuantumUpdater.csproj unchanged; temporary diagnostics removed. Fixed desktop Release build passed 0 warnings/0 errors. One UAC-approved instrumented launch stayed alive through complete UI construction: ModuleInit, MainWindow, title bar, SetTitleBar, SignInPage including emblem, page added. A final fresh window-title capture was not completed because later UAC prompts were denied. EXE src/QuantumUpdater/bin/Release/net8.0-windows10.0.19041.0/win-x64/QuantumUpdater.exe, ProductName DeskVerve, CompanyName Quantum Step. Not done until a fresh successful launch/window verification and Manager check; your on-PC visual check is task 45.11. Portal final exe copy stays blocked by the running account service; retry is task 45.14.", status: "in-progress", owner: "engine", with: "Worker bee", parts: { plan: "done", build: "done", verify: "doing", sec: "todo", valid: "todo", pc: "todo", acc: "todo" } },
+        { id: "45.11", text: "Owner on-PC test: approve the UAC prompt for the fixed dev EXE, confirm DeskVerve window opens, V shows in titlebar and Sign in, then after sign-in confirm About V. EXE path: src/QuantumUpdater/bin/Release/net8.0-windows10.0.19041.0/win-x64/QuantumUpdater.exe.", status: "needs-owner", owner: "owner", stage: "Approve UAC and look", with: "You", parts: { plan: "done", build: "done", verify: "done", sec: "todo", valid: "todo", pc: "todo", acc: "todo" } },
+        { id: "45.12", text: "Security Architect review, 16 Nov 2026. Verdict PASS WITH FIXES for use on this PC. Rename, artwork, safe image loading and compatibility names pass. 28 findings (F1-F28); the fixes are tasks 45.17 to 45.21. Do not deploy the account service to the public internet in its current form.", status: "done", owner: "security", parts: { plan: "done", build: "done", verify: "done", sec: "done", valid: "na", pc: "na", acc: "na" } },
+        { id: "45.13", text: "Design Architect validation, 16 Nov 2026. Verdict VALID WITH FIXES. Naming, V-only emblem, icon and sizes pass. Fixes: Sign in emblem alignment (45.15) and old doc text (45.16). The Design Architect redrew the system and screen flow in docs/ARCHITECTURE.md. Current colours: Stitch dark shell, accent #0078D4 (ADR 043 Q4).", status: "done", owner: "design", parts: { plan: "done", build: "done", verify: "done", sec: "na", valid: "done", pc: "na", acc: "na" } },
+        { id: "45.14", text: "Portal Release EXE rebuilt and restarted on 16 Nov 2026. Evidence: build 0 warnings/0 errors; EXE ProductName DeskVerve, CompanyName Quantum Step; admin page returns 200 at http://127.0.0.1:8787/quantumupdater/admin. Account data, routes and cookies unchanged.", status: "done", owner: "engine", parts: { plan: "done", build: "done", verify: "done", sec: "todo", valid: "na", pc: "done", acc: "na" } },
+        { id: "45.15", text: "Sign in: align the 64px V emblem to the left edge of the text, with an 8px gap below (Design finding 1). Done 16 Nov by a worker bee; two unused usings removed; Debug build 0 warnings/0 errors; Manager screenshot shows the V aligned left with the title.", status: "done", owner: "engine", parts: { plan: "done", build: "done", verify: "done", sec: "todo", valid: "todo", pc: "todo", acc: "todo" } },
+        { id: "45.16", text: "Docs: fix the tracker colour line, retitle docs/DESIGN_SYSTEM.md to DeskVerve with the Stitch dark shell banner, fix HANDOVER.md exe path and web/ line, rename the DECISIONS.md heading (Design findings 3-6, 8). Done 16 Nov by worker bee 2; Manager checked the four files. Tracker colour line fixed earlier by the Manager.", status: "done", owner: "engine", parts: { plan: "done", build: "done", verify: "done", sec: "todo", valid: "todo", pc: "todo", acc: "todo" } },
+        { id: "45.17", text: "One hardened WingetRunner for the three winget services: find winget through App Installer, not PATH (F3); add --exact to install and uninstall (F4); stop winget on cancel (F16); one action at a time and clear the confirm box (F18); remove the copied code (F24). Fix before the owner tests a new build. Part done 16 Nov: --exact added to install and uninstall (worker bee 1, Debug build 0 errors, Manager checked lines).", status: "in-progress", owner: "engine", parts: { plan: "done", build: "todo", verify: "todo", sec: "todo", valid: "todo", pc: "todo", acc: "todo" } },
+        { id: "45.18", text: "Session check: add GET /api/me, call it at start, and on any 401 clear the session and show Sign in (F7). Fix before the owner tests a new build.", status: "waiting", owner: "engine", parts: { plan: "done", build: "todo", verify: "todo", sec: "todo", valid: "todo", pc: "todo", acc: "todo" } },
+        { id: "45.19", text: "Account service hardening for this PC: owner setup code in place of create-on-first-login (F5); login and register rate limits, hashing outside the lock (F6); safe store write with a .bak copy (F8); request size limits (F9); heartbeat matched to user (F10); hashed tokens and cleanup (F11); 600,000 hash rounds (F12); security headers, logout, 12 h admin session (F13); generic error text (F14).", status: "waiting", owner: "engine", parts: { plan: "done", build: "todo", verify: "todo", sec: "todo", valid: "todo", pc: "todo", acc: "todo" } },
+        { id: "45.20", text: "Runtime upgrade done 16 Nov: both projects on .NET 10 (SDK 10.0.404, user folder), Windows App SDK 1.8 (45.25), x64 and ARM64. Evidence: x64, ARM64 and portal Debug builds 0 warnings/0 errors; x64 app opens and stays open (worker bee; Manager checked csproj lines).", status: "done", owner: "engine", parts: { plan: "done", build: "done", verify: "done", sec: "todo", valid: "na", pc: "todo", acc: "todo" } },
+        { id: "45.21", text: "Small fixes: AssemblyTitle DeskVerve (F17), activity log written before the sign-in check (F20), heartbeat without email (F21), crash log with no personal data (F22), empty if block and unused usings (F26), square emblem PNG with DecodePixelWidth (F25).", status: "waiting", owner: "engine", parts: { plan: "done", build: "todo", verify: "todo", sec: "todo", valid: "todo", pc: "todo", acc: "todo" } },
+        { id: "45.22", text: "Rebuild dist/QuantumUpdater-WinUI and the 3.0.0 zip after 45.15-45.21. The current copies predate the logo fix. Do not hand the old copies to the owner (Design finding 7).", status: "waiting", owner: "engine", parts: { plan: "done", build: "todo", verify: "todo", sec: "todo", valid: "todo", pc: "todo", acc: "todo" } },
+        { id: "45.23", text: "Commit the greenfield C# work to channel/windows. All Phase 44/45 source is untracked and has no backup (F23). Owner decides when.", status: "needs-owner", owner: "owner", stage: "Say when to commit", with: "You", parts: { plan: "done", build: "done", verify: "todo", sec: "na", valid: "na", pc: "na", acc: "todo" } },
+        { id: "45.24", text: "Before any public deploy of the account service: move it from HttpListener to ASP.NET Core with rate limiter, antiforgery, HSTS, behind a TLS proxy. Phase 48 dependency.", status: "waiting", owner: "engine", parts: { plan: "done", build: "todo", verify: "todo", sec: "todo", valid: "todo", pc: "todo", acc: "todo" } },
+        { id: "45.25", text: "LAUNCH FIX, 16 Nov 2026. The new app closed right after the admin prompt (exit 0xC000027B). Cause 1: no resources.pri, so the standard control styles could not load. Cause 2: a code-only app must point the XAML parser at the control types (IXamlMetadataProvider). Fix: Windows App SDK 1.6 to 1.8.260921001 (also security F2), SDK BuildTools 10.0.26100.4654, EnableMsixTooling true, PRI generation on, XamlControlsResources merged, crash log added (F22). Evidence: Debug and Release build 0 warnings/0 errors; QuantumUpdater.pri generated; window stays open titled DeskVerve and Sign in draws (screenshot). Packaging workload 44.2 is no longer needed for this.", status: "done", owner: "manager", parts: { plan: "done", build: "done", verify: "done", sec: "todo", valid: "todo", pc: "todo", acc: "todo" } },
+        { id: "45.26", text: "Owner opens the fixed Release EXE on this PC and approves UAC: src/QuantumUpdater/bin/Release/net8.0-windows10.0.19041.0/win-x64/QuantumUpdater.exe. Look only; Install and Uninstall are safe now (--exact added) but use an app you do not need.", status: "needs-owner", owner: "owner", stage: "Open and look", with: "You", parts: { plan: "done", build: "done", verify: "done", sec: "todo", valid: "todo", pc: "todo", acc: "todo" } }
+      ]
+    },
+    {
+      id: "46",
+      title: "Phase 46 — Apps first, then Disk, Cleanup, tool groups (ADR 048)",
+      items: [
+        { id: "46.1", text: "Owner decided 16 Nov 2026: Disk & Storage is a full view plus delete. Every physical drive with free space and health, external drives labelled, cloud volumes never shown. Big files can go to the Recycle Bin; delete permanently needs an extra confirmation.", status: "planning", owner: "design", stage: "Design Architect plan", with: "Design Architect", parts: { plan: "doing", build: "todo", verify: "todo", sec: "todo", valid: "todo", pc: "todo", acc: "todo" } },
+        { id: "46.2", text: "Owner decided 16 Nov 2026: Cleanup set is all four. Startup apps (view, turn off, undo), Activity history (read-only), Temporary files (Windows-supported route only), Leftover folders (Recycle Bin per folder, registry backup before stale uninstall entries are removed).", status: "planning", owner: "design", stage: "Design Architect plan", with: "Design Architect", parts: { plan: "doing", build: "todo", verify: "todo", sec: "todo", valid: "todo", pc: "todo", acc: "todo" } },
+        { id: "46.3", text: "Owner decided 16 Nov 2026 (ADR 048): Updates and Marketplace first, then Disk, then Cleanup, then the old tool groups one at a time. Primary goal: fast, quick, easy to use. Fundamental changes go to the owner first.", status: "done", owner: "owner", parts: { plan: "done", build: "na", verify: "na", sec: "na", valid: "na", pc: "na", acc: "done" } },
+        { id: "46.4", text: "Owner decided 16 Nov 2026: full winget catalog first (browse, categories, popular, icons). Chocolatey later as a second catalog.", status: "done", owner: "owner", parts: { plan: "done", build: "na", verify: "na", sec: "na", valid: "na", pc: "na", acc: "done" } },
+        { id: "46.5", text: "PRIORITY. Installed shows every app on the PC: winget plus the Windows installed-programs list plus Store apps. Uninstall works for apps winget does not know. Measured 16 Nov: 141 of 236 apps dropped (45 ARP, 96 MSIX); page also caps at 80 rows, Marketplace at 40. Cause: id rule drops ARP and MSIX ids; text table cuts rows.", status: "in-progress", owner: "manager", stage: "Plan done; owner questions Q1-Q10", with: "Manager", parts: { plan: "done", build: "todo", verify: "todo", sec: "todo", valid: "todo", pc: "todo", acc: "todo" } },
+        { id: "46.6", text: "PRIORITY. Marketplace shows the full winget catalog: open with popular apps and categories, fast search, real icons, nothing dropped. Plan: docs/plans/2026-11-16-phase46-apps-first.md; mockups design/mockups/phase46/.", status: "in-progress", owner: "manager", stage: "Plan done; owner questions Q1-Q10", with: "Manager", parts: { plan: "done", build: "todo", verify: "todo", sec: "todo", valid: "todo", pc: "todo", acc: "todo" } },
+        { id: "46.7", text: "PRIORITY. Updates and the whole app look and feel: fast, clear, easy. Visual redesign of Updates, Installed and Marketplace, update all, progress per app.", status: "in-progress", owner: "manager", stage: "Plan done; owner questions Q1-Q10", with: "Manager", parts: { plan: "done", build: "todo", verify: "todo", sec: "todo", valid: "todo", pc: "todo", acc: "todo" } },
+        { id: "46.8", text: "All 10 fundamentals answered 16 Nov (ADR 049): sign-in optional; admin at every start; COM API with text backup; own uninstaller with strict rules; Manager picks stack (.NET 10, WinAppSDK 1.8, Windows 10 1809+, x64 and ARM64); one click, dialog for risky; full parallel scan with progress at every start; original icon for every app; installer before release; winget id DeskVerve.Utility, moniker deskverve.", status: "done", owner: "owner", parts: { plan: "done", build: "na", verify: "na", sec: "na", valid: "na", pc: "na", acc: "done" } },
+        { id: "46.9", text: "Wave 0 spikes: 46.5.1 winget COM API console spike (normal user and admin, counts and times); 46.7.1 virtual list with 2,000 rows (smooth, 150 MB or less). Results 16 Nov: list PASS run 2 (47 rows, 120 MB); COM PASS as normal user (238 apps, 1.9 s); update data via composite catalog not yet working (rerun); admin run needs owner UAC.", status: "in-progress", owner: "engine", parts: { plan: "done", build: "todo", verify: "todo", sec: "todo", valid: "todo", pc: "todo", acc: "todo" } },
+        { id: "46.10", text: "Wave 1 base services (security 45.17): 46.5.2 WingetLocator (F3), 46.5.3 PackageId, 46.5.4 WingetRunner (F4, F16), 46.5.5 ActionQueue (F18), 46.5.6 WingetTextTable, 46.5.7-46.5.9 refactor the three services (F24). 16 Nov: 46.5.3 PackageId done, tests/QuantumUpdater.Tests created, Manager tightened the end anchor (\z). 46.5.5 ActionQueue done (one action at a time, cancel, percent; no WinUI types). 93 tests pass (Manager reran).", status: "in-progress", owner: "engine", parts: { plan: "done", build: "todo", verify: "todo", sec: "todo", valid: "todo", pc: "todo", acc: "todo" } },
+        { id: "46.11", text: "Wave 2 data: AppEntry, RegistryInventory, StoreAppInventory, WingetReader (COM), WingetCliReader, InstalledMerger, SnapshotCache, InstalledCatalog, UninstallPlanner, UninstallRunner, IconService (46.5.10-46.5.20). Security review of UninstallPlanner before any live uninstall test.", status: "waiting", owner: "engine", parts: { plan: "done", build: "todo", verify: "todo", sec: "todo", valid: "todo", pc: "todo", acc: "todo" } },
+        { id: "46.12", text: "Wave 3 UI kit: Theme tokens, Chrome helpers, AppIcon, AppRow, VirtualList, ConfirmDialog, ActivityBar, MainWindow shell (46.7.2-46.7.9).", status: "waiting", owner: "engine", parts: { plan: "done", build: "todo", verify: "todo", sec: "todo", valid: "todo", pc: "todo", acc: "todo" } },
+        { id: "46.13", text: "Wave 4 screens: Installed page and uninstall flow; Updates catalog, page and progress; Marketplace picks (about 120 apps, 10 categories), catalog, icons, cards, home, results, details, install states (46.5.21-22, 46.7.10-12, 46.6.1-11).", status: "waiting", owner: "engine", parts: { plan: "done", build: "todo", verify: "todo", sec: "todo", valid: "todo", pc: "todo", acc: "todo" } },
+        { id: "46.14", text: "Wave 5 finish: admin helper and asInvoker (if Q2 = A), Getting ready first run only, speed log, keyboard and Narrator pass, words pass, retire CatalogSnapshot (46.5.23-26, 46.7.13-17). Speed targets: start 1.0 s with saved results, screens 0.3 s, search 1.5 s.", status: "waiting", owner: "engine", parts: { plan: "done", build: "todo", verify: "todo", sec: "todo", valid: "todo", pc: "todo", acc: "todo" } }
+      ]
+    },
+    {
+      id: "47",
+      title: "Delivery — after Phase A",
+      items: [
+        { id: "47.1", text: "Primary download is an installer (MSIX or setup). Blocked until the packaging workload is installed (44.2). Owner later.", status: "needs-owner", owner: "owner", stage: "After 44.2", with: "You", parts: { plan: "done", build: "parked", verify: "todo", sec: "todo", valid: "todo", pc: "todo", acc: "todo" } },
+        { id: "47.2", text: "Portable zip of the self-contained 3.0.0 folder: dist/QuantumUpdater-Windows-3.0.0.zip. Not uploaded yet.", status: "done", owner: "engine", parts: { plan: "done", build: "done", verify: "done", sec: "done", valid: "todo", pc: "todo", acc: "todo" } },
+        { id: "47.3", text: "GitHub Release of the WinUI installer and zip. Needs a push and a published release. Owner later.", status: "needs-owner", owner: "owner", stage: "Needs a release", with: "You", parts: { plan: "done", build: "parked", verify: "todo", sec: "todo", valid: "todo", pc: "na", acc: "todo" } },
+        { id: "47.4", text: "New winget request for DeskVerve.Utility (moniker deskverve) after the installer and owner acceptance; close PR #480804 (ADR 049 Q10). Current PR #480804 is the old Python zip. Owner later, after the new release exists.", status: "needs-owner", owner: "owner", stage: "After the release", with: "You", parts: { plan: "done", build: "parked", verify: "todo", sec: "todo", valid: "todo", pc: "na", acc: "todo" } },
+        { id: "47.5", text: "Submit to Microsoft Store, Chocolatey, and download libraries (Softpedia, MajorGeeks, and similar). Owner later, after the installer exists.", status: "needs-owner", owner: "owner", stage: "After the installer", with: "You", parts: { plan: "done", build: "parked", verify: "todo", sec: "todo", valid: "todo", pc: "na", acc: "todo" } },
+        { id: "47.6", text: "Packaging migration: rename user-facing executable and release assets to DeskVerve.exe and DeskVerve-Windows.zip while preserving old QuantumUpdater update/account compatibility.", status: "waiting", owner: "engine", parts: { plan: "done", build: "todo", verify: "todo", sec: "todo", valid: "todo", pc: "todo", acc: "todo" } },
+        { id: "47.7", text: "Create the real MSIX/setup installer after packaging workload is installed; include DeskVerve icon and product metadata.", status: "waiting", owner: "engine", parts: { plan: "done", build: "todo", verify: "todo", sec: "todo", valid: "todo", pc: "todo", acc: "todo" } }
+      ]
+    },
+    {
+      id: "48",
+      title: "Admin portal — quantumstep.in/quantumupdater/admin",
+      items: [
+        { id: "48.0", text: "Separate admin site, owner login only, not inside the WinUI window. Local address http://127.0.0.1:8787/quantumupdater/admin. Publishing to quantumstep.in is owner later.", status: "done", owner: "engine", parts: { plan: "done", build: "done", verify: "done", sec: "done", valid: "todo", pc: "na", acc: "todo" } },
+        { id: "48.1", text: "Home counts: installs, users signed in now, and users signed in over time.", status: "done", owner: "engine", parts: { plan: "done", build: "done", verify: "done", sec: "done", valid: "todo", pc: "na", acc: "todo" } },
+        { id: "48.2", text: "Updates report: which packages were updated, when, and whether they succeeded, tied to the signed-in user.", status: "done", owner: "engine", parts: { plan: "done", build: "done", verify: "done", sec: "done", valid: "todo", pc: "na", acc: "todo" } },
+        { id: "48.3", text: "Apps report: packages people install, upgrade, and remove through Quantum Updater.", status: "done", owner: "engine", parts: { plan: "done", build: "done", verify: "done", sec: "done", valid: "todo", pc: "na", acc: "todo" } },
+        { id: "48.4", text: "System report: Windows version, CPU, memory, and disk headline per install. Same exclusions as 45.8.", status: "done", owner: "engine", parts: { plan: "done", build: "done", verify: "done", sec: "done", valid: "todo", pc: "na", acc: "todo" } },
+        { id: "48.5", text: "One account service for the Windows app and the portal. Admin pages are not reachable from the desktop app.", status: "done", owner: "security", parts: { plan: "done", build: "done", verify: "done", sec: "done", valid: "todo", pc: "na", acc: "todo" } }
       ]
     }
   ]
@@ -596,7 +683,8 @@ const GROUPS = [
   ["Waiting on a check", ["25", "28", "29"]],
   ["Waves", ["30", "31", "32", "33", "34"]],
   ["From your test", ["36", "38", "39", "40"]],
-  ["Now", ["41", "43"]]
+  ["Now", ["44", "45"]],
+  ["Later", ["46", "47", "48"]]
 ];
 const NOTES = {
   GOV: "The team and this board. Standing Manager workflow active.",
@@ -606,12 +694,17 @@ const NOTES = {
   "35": "Upgrade hang fix + Waves 2–5 in Build 9 line.",
   "30": "Starts after cream theme, ready gate, and first speed wins.",
   "36": "36.8 and 36.9 Security PASS. Your look stays pending.",
-  "38": "Source stamp is 2.0.3 · Build 9. Rebuild EXE to show it in a packaged window.",
+  "38": "Packaged stamp is 2.0.3 · Build 10 on Release v2.0.3.",
   "39": "The pink Clean button starts the scan and opens the review.",
   "40": "DisplayLink is under USB devices as External in Build 3.",
   "41": "Park D owner lock still pending for live CSS.",
-  "42": "Winget PR #480804 + zip self-update. CLA agree posted.",
-  "43": "ADR 041 WinUI 3. Plan approved provisional. Scaffold next. Independent Design review pending."
+  "42": "Winget PR #480804 Validation-Completed. Await Microsoft merge.",
+  "43": "Old Phase 1 shell. Superseded. Do not extend it.",
+  "44": "Foundations: packaging tools, archive Python, empty greenfield project.",
+  "45": "This tracker is the single source of truth and is updated after every work package. Immediate order: 1) your on-PC look at the fixed EXE (45.11), 2) Security Architect review (45.12), 3) Design Architect validation (45.13), 4) portal stale-copy retry (45.14). 45.10 logo startup is fixed: safe file-URI image loading via src/QuantumUpdater/BrandAssets.cs, fixed Release build 0 warnings/0 errors, and a UAC-approved instrumented launch reached full sign-in construction; it is not marked done until a fresh window verification and Manager check. Phase A is in the 3.0.0 window: sign-in, Getting ready, Updates, Marketplace, Installed, About.",
+  "46": "Discuss first: Disk depth, Cleanup, Settings waves, Chocolatey. Not in the window.",
+  "47": "Portable zip is dist/QuantumUpdater-Windows-3.0.0.zip. Installer and public submissions are later.",
+  "48": "Admin site runs on this PC at http://127.0.0.1:8787/quantumupdater/admin. Counts stay zero until the app signs in. Not on quantumstep.in."
 };
 const AUDIT = [
   ["1", "Secrets and passwords", "Every change"],
@@ -653,10 +746,12 @@ function derive(item) {
   return { p, stage, who };
 }
 
+const CURRENT = new Set(["44", "45", "46", "47", "48"]);
 const rows = [];
 TRACKER.phases.forEach((ph) => {
   ph.items.forEach((it) => rows.push(Object.assign({ phase: ph.id, phaseTitle: ph.title }, it, derive(it))));
 });
+const currentRows = rows.filter((r) => CURRENT.has(r.phase));
 const phaseById = Object.fromEntries(TRACKER.phases.map((p) => [p.id, p]));
 
 const PART_SCORE = { done: 1, doing: 0.5, due: 0, todo: 0, parked: 0 };
@@ -685,22 +780,22 @@ const dot = (k, s) => `<span class="dot ${s}" style="--c:var(${PART_STATE[s].c})
 const withTag = (who) => `<span class="with" style="--c:var(${ROLES[who] || "--muted"})"><i></i>${esc(who)}</span>`;
 
 function renderSummary() {
-  const total = rows.length;
-  const totalPct = scoreOf(rows);
-  const built = rows.filter((r) => r.status === "done" || r.status === "checked").length;
-  const progress = rows.filter((r) => r.status === "in-progress" || r.status === "planning").length;
-  const todo = rows.filter((r) => r.status === "waiting").length;
-  const secDue = rows.filter((r) => r.p.sec === "due").length;
-  const accepted = rows.filter((r) => r.p.acc === "done").length;
-  $("#total").innerHTML = `<div class="pct">${pctText(totalPct)}<small>%</small></div><div><div class="meter"><span style="width:${(totalPct * 100).toFixed(1)}%"></span></div><div class="sub"><span>Total complete across this app</span><span>Built: <b>${pctText(built / total)}%</b> of tasks</span><span>Accepted by you: <b>${pctText(accepted / total)}%</b></span></div><div class="how">Each task has 7 parts. A finished part counts full. A part in progress counts half. A part that is not needed is left out.</div></div>`;
+  const total = currentRows.length;
+  const totalPct = scoreOf(currentRows);
+  const built = currentRows.filter((r) => r.status === "done" || r.status === "checked").length;
+  const progress = currentRows.filter((r) => r.status === "in-progress" || r.status === "planning").length;
+  const todo = currentRows.filter((r) => r.status === "waiting").length;
+  const secDue = currentRows.filter((r) => r.p.sec === "due").length;
+  const accepted = currentRows.filter((r) => r.p.acc === "done").length;
+  $("#total").innerHTML = `<div class="pct">${pctText(totalPct)}<small>%</small></div><div><div class="meter"><span style="width:${(totalPct * 100).toFixed(1)}%"></span></div><div class="sub"><span>New WinUI app and admin portal only</span><span>Built: <b>${pctText(built / total)}%</b> of these tasks</span><span>Accepted by you: <b>${pctText(accepted / total)}%</b></span></div><div class="how">The big number ignores the old Python app. Those rows stay on the board as history. A finished part counts full. A part in progress counts half.</div></div>`;
   $("#big").innerHTML = `<div><strong>${total}</strong><span>tasks tracked</span></div><div><strong>${built}</strong><span>built</span></div><div><strong>${progress}</strong><span>in progress</span></div><div><strong>${todo}</strong><span>not started</span></div><div><strong>${secDue}</strong><span>waiting for the security check</span></div><div><strong>${accepted}</strong><span>accepted by you</span></div>`;
   const counts = {};
-  ORDER.forEach((k) => { counts[k] = rows.filter((r) => r.status === k).length; });
+  ORDER.forEach((k) => { counts[k] = currentRows.filter((r) => r.status === k).length; });
   $("#bar").innerHTML = ORDER.filter((k) => counts[k]).map((k) => `<span style="--c:var(${STATUS[k].c});width:${(counts[k] / total) * 100}%"></span>`).join("");
   $("#legend").innerHTML = ORDER.filter((k) => counts[k]).map((k) => `<button type="button" data-st="${esc(k)}" aria-pressed="${state.status === k}"><span class="chip" style="--c:var(${STATUS[k].c})">${STATUS[k].label} <span class="n">${counts[k]}</span></span></button>`).join("");
   $("#legend").querySelectorAll("button").forEach((b) => b.addEventListener("click", () => { state.status = state.status === b.dataset.st ? "" : b.dataset.st; sync(true); }));
   const wc = {};
-  rows.forEach((r) => { wc[r.who] = (wc[r.who] || 0) + 1; });
+  currentRows.forEach((r) => { wc[r.who] = (wc[r.who] || 0) + 1; });
   $("#whorow").innerHTML = `<span class="muted">Who has the work now:</span>` + Object.keys(ROLES).filter((k) => wc[k]).map((k) => `<button type="button" data-who="${esc(k)}" aria-pressed="${state.who === k}">${withTag(k)} <span class="n">${wc[k]}</span></button>`).join("");
   $("#whorow").querySelectorAll("button").forEach((b) => b.addEventListener("click", () => { state.who = state.who === b.dataset.who ? "" : b.dataset.who; sync(true); }));
 }

@@ -45,3 +45,14 @@ Thumbs.db
 .mcp.json
 
 
+
+# .NET build output (tests and spikes)
+tests/**/bin/
+tests/**/obj/
+tools/spikes/**/bin/
+tools/spikes/**/obj/
+
+# Local clone of microsoft/winget-pkgs (157 MB), not project source
+mirrors/winget-pkgs-git/
+archive/**/bin/
+archive/**/obj/

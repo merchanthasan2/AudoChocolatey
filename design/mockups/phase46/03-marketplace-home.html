@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<title>DeskVerve · Phase 46 mockup · 03 App Marketplace home</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--canvas:#131313;--sidebar:#272727;--card:#2C2C2C;--stroke:#383838;--accent:#0078D4;--accent-hover:#1A86D9;--accent-text:#60B0F0;--text:#FFFFFF;--muted:#D1D1D1;--secondary:#9E9E9E;--subtle:#1C1C1C;--chip:#383838;--hover:#333333;--healthy:#27AC62;--warning:#D8A000;--critical:#E81123;--critical-text:#FF99A4}
+html,body{height:100%}
+body{background:var(--canvas);color:var(--text);font-family:'Segoe UI Variable Text','Segoe UI Variable','Segoe UI',sans-serif;font-size:14px;line-height:20px;min-width:1280px}
+button{font:inherit;color:inherit;cursor:pointer}
+.win{display:grid;grid-template-rows:40px 1fr;height:100vh;min-height:800px}
+.titlebar{background:var(--sidebar);display:flex;align-items:center;gap:8px;padding-left:16px;font-weight:600}
+.titlebar img{width:24px;height:24px;object-fit:contain}
+.caps{margin-left:auto;display:flex;height:40px}.caps span{width:46px;display:grid;place-items:center;color:var(--muted);font-weight:400}
+.body{display:grid;grid-template-columns:240px 1fr;min-height:0}
+.side{background:var(--sidebar);border-right:1px solid var(--stroke);padding:8px;display:flex;flex-direction:column;gap:2px}
+.nav{display:flex;align-items:center;gap:12px;height:40px;padding:0 12px;border-radius:4px;color:var(--text);position:relative;text-decoration:none}
+.nav:hover{background:var(--hover)}.nav.on{background:#333}
+.nav.on::before{content:"";position:absolute;left:0;top:11px;bottom:11px;width:3px;border-radius:2px;background:var(--accent)}
+.nav svg{width:16px;height:16px;flex:none;stroke:currentColor;fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+.badge{margin-left:auto;background:var(--accent);border-radius:10px;font-size:12px;line-height:18px;padding:0 7px;font-weight:600}
+.acct{margin-top:auto;border-top:1px solid var(--stroke);padding:12px;font-size:12px;color:var(--secondary)}.acct a{color:var(--accent-text);text-decoration:none}
+.main{display:grid;grid-template-rows:1fr auto;min-height:0}
+.content{overflow:auto;padding:24px 32px 32px}
+h1{font-family:'Segoe UI Variable Display','Segoe UI',sans-serif;font-size:28px;line-height:36px;font-weight:600}
+h2{font-size:20px;line-height:28px;font-weight:600}
+.cap{color:var(--secondary);font-size:12px;line-height:16px}
+.head{margin-bottom:16px}.head .cap{margin-top:4px}
+.btn{background:var(--accent);border:0;border-radius:4px;padding:6px 16px;font-weight:600}.btn:hover{background:var(--accent-hover)}
+.btn2{background:var(--card);border:1px solid var(--stroke);border-radius:4px;padding:5px 14px}.btn2:hover{background:var(--hover)}
+.installed{display:inline-flex;align-items:center;gap:6px;color:#6FD39A;font-size:13px}
+.installed svg{width:14px;height:14px;stroke:#6FD39A;fill:none;stroke-width:2.2}
+.ghost{background:none;border:0;color:var(--accent-text);padding:4px 6px;text-decoration:none;font-size:13px}
+.spin{width:12px;height:12px;border:2px solid #3A3A3A;border-top-color:var(--accent);border-radius:50%;animation:r .9s linear infinite;display:inline-block}
+@keyframes r{to{transform:rotate(360deg)}}
+.bigsearch{display:flex;align-items:center;gap:10px;background:var(--card);border:1px solid var(--stroke);border-bottom:2px solid var(--accent);border-radius:6px;padding:10px 14px;color:var(--secondary);font-size:15px;max-width:720px;margin-bottom:14px}
+.bigsearch svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.8}
+.bigsearch kbd{margin-left:auto;font:11px 'Segoe UI';border:1px solid var(--stroke);border-radius:3px;padding:0 4px}
+.cats{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:24px}
+.cats span{background:var(--card);border:1px solid var(--stroke);border-radius:16px;padding:4px 12px;font-size:13px;color:var(--muted)}
+.cats span.on{background:rgba(0,120,212,.22);border-color:var(--accent);color:#fff}
+.sec{display:flex;align-items:baseline;gap:10px;margin:8px 0 12px}
+.sec .ghost{margin-left:auto}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:28px}
+.card{background:var(--card);border:1px solid var(--stroke);border-radius:8px;padding:16px;display:flex;flex-direction:column;gap:10px;min-height:168px}
+.card:hover{background:var(--hover);border-color:#4A4A4A}
+.top{display:flex;gap:12px;align-items:center}
+.ic{width:48px;height:48px;border-radius:10px;display:grid;place-items:center;font-weight:700;font-size:20px;color:#fff;flex:none}
+.top b{display:block;font-weight:600}
+.top span{font-size:12px;color:var(--secondary)}
+.top span.ic{font-size:20px;color:#fff}
+.desc{color:var(--muted);font-size:13px;line-height:18px;flex:1}
+.foot{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.bar{height:4px;background:#3A3A3A;border-radius:2px;overflow:hidden;flex:1}
+.bar i{display:block;height:100%;background:var(--accent)}
+.prog{font-size:12px;color:var(--accent-text);white-space:nowrap}
+.chip{display:inline-block;background:var(--chip);border-radius:4px;padding:1px 8px;font-size:12px;line-height:18px;color:var(--muted)}
+.chip.warn{background:rgba(216,160,0,.18);color:#F0C64A}
+.activity{position:relative;background:var(--sidebar);border-top:1px solid var(--stroke);display:flex;align-items:center;gap:14px;padding:10px 32px;min-height:52px}
+.activity .line{position:absolute;top:-1px;left:0;height:2px;width:30%;background:var(--accent)}
+.grow{flex:1}
+.note{position:fixed;right:12px;bottom:64px;background:#000c;border:1px solid var(--stroke);border-radius:6px;padding:6px 10px;font-size:11px;color:var(--secondary);max-width:330px}
+.note a{color:var(--accent-text)}
+</style></head>
+<body>
+<div class="win">
+  <div class="titlebar"><img src="../../../brand/desk-verve-emblem.png" alt="">DeskVerve
+    <div class="caps"><span>&#8212;</span><span>&#9633;</span><span>&#10005;</span></div></div>
+  <div class="body">
+    <nav class="side" aria-label="Main">
+      <a class="nav" href="01-updates.html"><svg viewBox="0 0 16 16"><path d="M13.5 6.5A5.5 5.5 0 0 0 3 4.6M2.5 9.5A5.5 5.5 0 0 0 13 11.4"/><path d="M3 1.8v2.9h2.9M13 14.2v-2.9h-2.9"/></svg>Updates &amp; Health<span class="badge">7</span></a>
+      <a class="nav on" href="03-marketplace-home.html"><svg viewBox="0 0 16 16"><path d="M2.5 5.5h11l-1 8h-9z"/><path d="M5.5 5.5V4a2.5 2.5 0 0 1 5 0v1.5"/></svg>App Marketplace</a>
+      <a class="nav" href="02-installed.html"><svg viewBox="0 0 16 16"><rect x="2" y="2" width="5" height="5" rx="1"/><rect x="9" y="2" width="5" height="5" rx="1"/><rect x="2" y="9" width="5" height="5" rx="1"/><rect x="9" y="9" width="5" height="5" rx="1"/></svg>Installed</a>
+      <a class="nav" href="#"><svg viewBox="0 0 16 16"><rect x="2" y="3" width="12" height="8" rx="1"/><path d="M5.5 14h5M8 11v3"/></svg>About This PC</a>
+      <div class="acct">Not signed in · <a href="#">Sign in</a></div>
+    </nav>
+    <div class="main">
+      <main class="content">
+        <div class="head"><h1>App Marketplace</h1><p class="cap">Apps from the Microsoft catalog. DeskVerve installs and updates them for you.</p></div>
+
+        <a class="bigsearch" href="04-marketplace-search.html" style="text-decoration:none"><svg viewBox="0 0 16 16"><circle cx="7" cy="7" r="4.5"/><path d="M10.5 10.5 14 14"/></svg>Search apps, for example Firefox or Zoom<kbd>Ctrl+F</kbd></a>
+
+        <div class="cats" role="tablist" aria-label="Categories">
+          <span class="on" role="tab" aria-selected="true">All</span><span role="tab">Browsers</span><span role="tab">Productivity</span><span role="tab">Developer tools</span><span role="tab">Photo and video</span><span role="tab">Music</span><span role="tab">Communication</span><span role="tab">Utilities</span><span role="tab">Security</span><span role="tab">Gaming</span><span role="tab">AI tools</span>
+        </div>
+
+        <div class="sec"><h2>Popular apps</h2><span class="cap">Picked by DeskVerve</span><a class="ghost" href="#">See all 24</a></div>
+        <div class="grid">
+          <div class="card"><div class="top"><span class="ic" style="background:#1A73E8">G</span><div><b>Google Chrome</b><span>Google</span></div></div><p class="desc">Fast web browser from Google, with sync for your Google account.</p><div class="foot"><span class="cap">Version 131.0</span><button class="btn">Install</button></div></div>
+          <div class="card"><div class="top"><span class="ic" style="background:#E66000">F</span><div><b>Mozilla Firefox</b><span>Mozilla</span></div></div><p class="desc">Private, open web browser from a non-profit maker.</p><div class="foot"><span class="cap">Installed · 128.0.3</span><button class="btn">Update</button></div></div>
+          <div class="card"><div class="top"><span class="ic" style="background:#FF8800">V</span><div><b>VLC media player</b><span>VideoLAN</span></div></div><p class="desc">Plays almost every video and music file, with no extra codecs.</p><div class="foot"><div class="bar"><i style="width:30%"></i></div><span class="prog">Installing · 30%</span></div></div>
+          <div class="card"><div class="top"><span class="ic" style="background:#2D8CFF">Z</span><div><b>Zoom Workplace</b><span>Zoom Communications</span></div></div><p class="desc">Video meetings, chat and phone in one app.</p><div class="foot"><span class="cap">Installed · 6.2.5</span><button class="btn">Update</button></div></div>
+          <div class="card"><div class="top"><span class="ic" style="background:#25D366">W</span><div><b>WhatsApp</b><span>WhatsApp Inc.</span></div></div><p class="desc">Messages and calls with your phone contacts, on your PC.</p><div class="foot"><span class="chip warn">Waiting · next</span><button class="btn2">Cancel</button></div></div>
+          <div class="card"><div class="top"><span class="ic" style="background:#78B13F">N</span><div><b>Notepad++</b><span>Notepad++ Team</span></div></div><p class="desc">Light text and code editor with tabs and many languages.</p><div class="foot"><span class="installed"><svg viewBox="0 0 14 14"><path d="M3 7.5l2.5 2.5L11 4.5"/></svg>Installed</span><span class="cap">8.7.1</span></div></div>
+          <div class="card"><div class="top"><span class="ic" style="background:#5865F2">D</span><div><b>Discord</b><span>Discord Inc.</span></div></div><p class="desc">Voice, video and text chat for groups and communities.</p><div class="foot"><span class="cap">Version 1.0.9171</span><button class="btn">Install</button></div></div>
+          <div class="card"><div class="top"><span class="ic" style="background:#3B3B3B">7</span><div><b>7-Zip</b><span>Igor Pavlov</span></div></div><p class="desc">Opens and makes zip, 7z and other archive files.</p><div class="foot"><span class="cap">Installed · 24.07</span><button class="btn">Update</button></div></div>
+        </div>
+
+        <div class="sec"><h2>Browsers</h2><a class="ghost" href="04-marketplace-search.html">See all</a></div>
+        <div class="grid">
+          <div class="card"><div class="top"><span class="ic" style="background:#FB542B">B</span><div><b>Brave</b><span>Brave Software</span></div></div><p class="desc">Browser that blocks ads and trackers by default.</p><div class="foot"><span class="cap">Version 1.71</span><button class="btn">Install</button></div></div>
+          <div class="card"><div class="top"><span class="ic" style="background:#FF1B2D">O</span><div><b>Opera</b><span>Opera Norway</span></div></div><p class="desc">Browser with a built-in free VPN and sidebar apps.</p><div class="foot"><span class="cap">Version 114.0</span><button class="btn">Install</button></div></div>
+          <div class="card"><div class="top"><span class="ic" style="background:#EF3939">V</span><div><b>Vivaldi</b><span>Vivaldi Technologies</span></div></div><p class="desc">Browser you can shape with tabs, panels and themes.</p><div class="foot"><span class="cap">Version 7.0</span><button class="btn">Install</button></div></div>
+          <div class="card"><div class="top"><span class="ic" style="background:#0C7CD5">E</span><div><b>Microsoft Edge</b><span>Microsoft Corporation</span></div></div><p class="desc">The browser that comes with Windows.</p><div class="foot"><span class="installed"><svg viewBox="0 0 14 14"><path d="M3 7.5l2.5 2.5L11 4.5"/></svg>Installed</span><span class="cap">131.0</span></div></div>
+        </div>
+
+        <div class="sec"><h2>Developer tools</h2><a class="ghost" href="#">See all</a></div>
+        <div class="grid">
+          <div class="card"><div class="top"><span class="ic" style="background:#F05032">G</span><div><b>Git</b><span>The Git Development Community</span></div></div><p class="desc">Tracks changes in code and files.</p><div class="foot"><span class="cap">Version 2.47.0</span><button class="btn">Install</button></div></div>
+          <div class="card"><div class="top"><span class="ic" style="background:#3776AB">P</span><div><b>Python 3.13</b><span>Python Software Foundation</span></div></div><p class="desc">The Python language, with pip.</p><div class="foot"><span class="cap">Version 3.13.1</span><button class="btn">Install</button></div></div>
+          <div class="card"><div class="top"><span class="ic" style="background:#5FA04E">N</span><div><b>Node.js LTS</b><span>OpenJS Foundation</span></div></div><p class="desc">Runs JavaScript outside the browser, with npm.</p><div class="foot"><span class="cap">Version 22.11.0</span><button class="btn">Install</button></div></div>
+          <div class="card"><div class="top"><span class="ic" style="background:#1F6FB5">V</span><div><b>Visual Studio Code</b><span>Microsoft Corporation</span></div></div><p class="desc">Code editor with extensions for every language.</p><div class="foot"><span class="cap">Installed · 1.94.2</span><button class="btn">Update</button></div></div>
+        </div>
+      </main>
+      <footer class="activity" aria-live="polite">
+        <span class="line"></span><span class="spin" aria-hidden="true"></span>
+        <span><b>Installing VLC media player</b> <span class="cap">· 1 of 2 · 30%</span></span>
+        <span class="grow"></span>
+        <button class="ghost">View all</button><button class="btn2">Cancel all</button>
+      </footer>
+    </div>
+  </div>
+</div>
+<div class="note">Mockup · Phase 46 · Marketplace home. Opens before any search. Card states: Install, Update, Installing, Waiting, Installed. The catalog gives no download size, so cards show the version. <a href="04-marketplace-search.html">Open search results</a>.</div>
+</body></html>

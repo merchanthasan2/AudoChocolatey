@@ -1,0 +1,9 @@
+Virtual list spike (task 46.7.1)
+Elapsed seconds: 10.3
+Rows created: 47
+Memory MB: 120.3
+Peak memory MB: 120.3
+Rows in list: 2000
+Icon loaded: yes
+Scroll phase: done
+Scroll target px: 95290

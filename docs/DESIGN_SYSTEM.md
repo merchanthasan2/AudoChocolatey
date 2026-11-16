@@ -1,8 +1,8 @@
-# Design System & UI/UX Specification: Quantum Updater
+# Design System & UI/UX Specification: DeskVerve
 **Company:** Quantum Step ([quantumstep.in](https://quantumstep.in))  
 **Design Philosophy:** Modern Glassmorphism & Enterprise Clarity
 
-> **Live theme, 12 Nov 2026.** Cream, orange, and black replace teal, mint, and ocean. Token names and both light and dark values are in `docs/ARCHITECTURE.md`. The live screens are `design/mockups/cream/`. Section 3 below is the retired palette. Do not paint the Windows app from it.
+> **Live colours.** The live colours are the Stitch dark shell (canvas `#131313`, sidebar `#272727`, cards `#2C2C2C`, accent `#0078D4`) per ADR 043 Q4. Tokens are in `docs/ARCHITECTURE.md` under "Live colours". Cream, orange/black, and Park sections below are retired history. Do not use them.
 
 ---
 
@@ -32,11 +32,11 @@ Quantum Updater rejects generic templates in favor of a handcrafted, hardware-ac
 
 ---
 
-## 3. Official 6-Color Palette Tokens & Glassmorphic Surfaces
+## 3. Official 6-Color Palette Tokens & Glassmorphic Surfaces (retired)
 
 Quantum Updater uses the **Uxintace 6-Color Design System** harmonized with frosted glassmorphism:
 
-### 3.1 Master 6-Color Palette
+### 3.1 Master 6-Color Palette (retired)
 | Token | Hex Value | Semantic Role |
 |---|---|---|
 | `--c-midnight-teal` | `#073A4B` | **Canvas & Deep Glass Surface**: Application backdrop, frosted panels, navigation chrome |
@@ -46,7 +46,7 @@ Quantum Updater uses the **Uxintace 6-Color Design System** harmonized with fros
 | `--c-coral-peach` | `#F78C6A` | **Categorization & Architecture Tags**: Category pills (`.badge-cat`), `x64`/`ARM64` tags, repo tags |
 | `--c-coral-pink` | `#F04770` | **Executive CTAs & High-Priority Actions**: "Update All" (`.btn-coral`), Explore install triggers |
 
-### 3.2 Dark Mode Surface Mapping (Default)
+### 3.2 Dark Mode Surface Mapping (Default) (retired)
 | Token | Value | Purpose |
 |---|---|---|
 | `--bg-canvas` | `#073A4B` | Deep midnight teal backdrop |
@@ -63,7 +63,7 @@ Quantum Updater uses the **Uxintace 6-Color Design System** harmonized with fros
 | `--golden-yellow` | `#FFD167` | Sunny Golden Yellow diff accent |
 | `--emerald-mint` | `#06D7A0` | Electric Emerald Mint status accent |
 
-### 3.3 Light Mode (1-Click Switchable)
+### 3.3 Light Mode (1-Click Switchable) (retired)
 | Token | Value | Purpose |
 |---|---|---|
 | `--bg-canvas` | `#f1f7fa` | Crisp glacial pearl backdrop |

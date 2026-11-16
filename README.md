@@ -1,28 +1,31 @@
-# Quantum Updater
+# DeskVerve
 
-Windows app by [Quantum Step](https://quantumstep.in). It updates and installs software, and it includes the system tools already on this branch.
+<img src="brand/desk-verve-lockup-white.png" alt="DeskVerve" width="320">
 
-This branch is `channel/windows`. The program you open is `dist\QuantumUpdater\QuantumUpdater.exe`. Mac work stays on `channel/macos` and is not part of this build.
+DeskVerve for Windows is a C# WinUI 3 app by [Quantum Step](https://quantumstep.in) for updating and installing software with winget. The current app requires administrator approval at every launch and opens at **Sign in**. Accounts and the account service are local to this PC.
 
-The screens, colours, type, and brand are shared. The normal theme is Direction B (Deep Teal). Dark mode is Direction A (Graphite Prism). The emblem is in `brand/`. Windows supplies the window through WebView2. Mac will use the same screens later, with its own window material.
+## Source and local programs
 
-## What is in this branch
+- Windows app source: `src/QuantumUpdater` (`src/QuantumUpdater/QuantumUpdater.csproj`).
+- Local account service source: `src/QuantumUpdater.Portal` (`src/QuantumUpdater.Portal/QuantumUpdater.Portal.csproj`).
+- Release app: `src/QuantumUpdater/bin/Release/net8.0-windows10.0.19041.0/win-x64/QuantumUpdater.exe`
+- Release portal: `src/QuantumUpdater.Portal/bin/Release/net8.0/QuantumUpdater.Portal.exe`
 
-- `main.py` opens the window and asks for administrator.
-- `web/` is the shared interface (`index.html`, `style.css`, `app.js`).
-- `web_api.py` is the bridge from the screens to Python.
-- `core/` is the Windows work: Winget, Chocolatey, cleanup, and the other system tools.
-- `design/` holds the approved mockups.
-- `python build_exe.py QuantumUpdater` writes `dist\QuantumUpdater\QuantumUpdater.exe`.
+The local admin address is `http://127.0.0.1:8787/quantumupdater/admin`. The desktop app does not open admin routes.
 
-## Build and open
+Build either project with the standard .NET command:
 
 ```powershell
-pip install -r requirements.txt
-pip install pyinstaller
-python build_exe.py QuantumUpdater
+dotnet build src/QuantumUpdater/QuantumUpdater.csproj
+dotnet build src/QuantumUpdater.Portal/QuantumUpdater.Portal.csproj
 ```
 
-Then start `dist\QuantumUpdater\QuantumUpdater.exe`. `Run_QuantumUpdater.vbs` starts that same file and asks for administrator.
+## Current status
 
-Do not start `python main.py` when you want to test the app. That is the unpackaged script. The test is the exe.
+The Release build includes Sign in, Getting ready, Updates & Health, App Marketplace, Installed, and About This PC. Phase 46 (Disk & Storage, Cleanup, Settings waves, and Chocolatey scope) is not built.
+
+An existing self-contained portable package is at `dist/QuantumUpdater-Windows-3.0.0.zip`; it has not been uploaded. There is no public 3.0.0 release or MSIX installer yet.
+
+Legacy technical names—including `QuantumUpdater.exe`, project paths, package names, `%LOCALAPPDATA%\QuantumUpdater`, `/quantumupdater/admin`, and `QuantumStep.QuantumUpdater`—remain unchanged for compatibility until the packaging migration.
+
+Mac work is a later, separate branch and product: **DeskVerve for Mac** on `channel/macos`. It is not part of this Windows build.

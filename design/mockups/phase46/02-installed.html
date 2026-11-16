@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<title>DeskVerve · Phase 46 mockup · 02 Installed</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--canvas:#131313;--sidebar:#272727;--card:#2C2C2C;--stroke:#383838;--accent:#0078D4;--accent-hover:#1A86D9;--accent-text:#60B0F0;--text:#FFFFFF;--muted:#D1D1D1;--secondary:#9E9E9E;--subtle:#1C1C1C;--chip:#383838;--hover:#333333;--healthy:#27AC62;--warning:#D8A000;--critical:#E81123;--critical-text:#FF99A4}
+html,body{height:100%}
+body{background:var(--canvas);color:var(--text);font-family:'Segoe UI Variable Text','Segoe UI Variable','Segoe UI',sans-serif;font-size:14px;line-height:20px;min-width:1280px}
+button{font:inherit;color:inherit;cursor:pointer}
+.win{display:grid;grid-template-rows:40px 1fr;height:100vh;min-height:800px}
+.titlebar{background:var(--sidebar);display:flex;align-items:center;gap:8px;padding-left:16px;font-weight:600}
+.titlebar img{width:24px;height:24px;object-fit:contain}
+.caps{margin-left:auto;display:flex;height:40px}.caps span{width:46px;display:grid;place-items:center;color:var(--muted);font-weight:400}
+.body{display:grid;grid-template-columns:240px 1fr;min-height:0}
+.side{background:var(--sidebar);border-right:1px solid var(--stroke);padding:8px;display:flex;flex-direction:column;gap:2px}
+.nav{display:flex;align-items:center;gap:12px;height:40px;padding:0 12px;border-radius:4px;color:var(--text);position:relative;text-decoration:none}
+.nav:hover{background:var(--hover)}.nav.on{background:#333}
+.nav.on::before{content:"";position:absolute;left:0;top:11px;bottom:11px;width:3px;border-radius:2px;background:var(--accent)}
+.nav svg{width:16px;height:16px;flex:none;stroke:currentColor;fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+.badge{margin-left:auto;background:var(--accent);border-radius:10px;font-size:12px;line-height:18px;padding:0 7px;font-weight:600}
+.acct{margin-top:auto;border-top:1px solid var(--stroke);padding:12px;font-size:12px;color:var(--secondary)}.acct a{color:var(--accent-text);text-decoration:none}
+.main{display:grid;grid-template-rows:1fr auto;min-height:0}
+.content{overflow:auto;padding:24px 32px 32px}
+h1{font-family:'Segoe UI Variable Display','Segoe UI',sans-serif;font-size:28px;line-height:36px;font-weight:600}
+.cap{color:var(--secondary);font-size:12px;line-height:16px}
+.head{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:20px}
+.head .cap{margin-top:4px}
+.btn{background:var(--accent);border:0;border-radius:4px;padding:7px 14px;font-weight:600}.btn:hover{background:var(--accent-hover)}
+.btn2{background:var(--card);border:1px solid var(--stroke);border-radius:4px;padding:6px 14px}.btn2:hover{background:var(--hover)}
+.danger{background:transparent;border:1px solid #5A2A2F;color:var(--critical-text);border-radius:4px;padding:6px 14px}.danger:hover{background:rgba(232,17,35,.12)}
+.danger-fill{background:var(--critical);border:0;border-radius:4px;padding:7px 18px;font-weight:600}
+.off{opacity:.45;cursor:not-allowed}
+.ghost{background:none;border:0;color:var(--accent-text);padding:6px 8px}
+.spin{width:12px;height:12px;border:2px solid #3A3A3A;border-top-color:var(--accent);border-radius:50%;animation:r .9s linear infinite;display:inline-block}
+@keyframes r{to{transform:rotate(360deg)}}
+.tool{display:flex;align-items:center;gap:12px;margin-bottom:12px}
+.search{display:flex;align-items:center;gap:8px;background:var(--card);border:1px solid var(--stroke);border-bottom:1px solid #8A8A8A;border-radius:4px;padding:6px 10px;width:340px;color:var(--secondary)}
+.search svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:1.8}
+.search kbd{margin-left:auto;font:11px 'Segoe UI';border:1px solid var(--stroke);border-radius:3px;padding:0 4px}
+.seg{display:flex;gap:6px}
+.seg span{background:var(--card);border:1px solid var(--stroke);border-radius:16px;padding:4px 12px;font-size:13px;color:var(--muted)}
+.seg span.on{background:rgba(0,120,212,.22);border-color:var(--accent);color:#fff}
+.seg em{font-style:normal;color:var(--secondary);margin-left:4px}.seg .on em{color:var(--accent-text)}
+.grow{flex:1}
+.sel{background:var(--card);border:1px solid var(--stroke);border-radius:4px;padding:5px 10px;color:var(--muted)}
+.toggle{display:flex;align-items:center;gap:8px;color:var(--muted);font-size:13px}
+.toggle i{width:36px;height:18px;border:1px solid #8A8A8A;border-radius:10px;position:relative}
+.toggle i::after{content:"";position:absolute;left:3px;top:3px;width:10px;height:10px;border-radius:50%;background:#C8C8C8}
+.chip{display:inline-block;background:var(--chip);border-radius:4px;padding:1px 8px;font-size:12px;line-height:18px;color:var(--muted);white-space:nowrap}
+.chip.acc{background:rgba(0,120,212,.22);color:var(--accent-text)}
+.list{background:var(--card);border:1px solid var(--stroke);border-radius:8px;overflow:hidden}
+.cols,.row{display:grid;grid-template-columns:32px minmax(220px,1fr) 120px 80px 110px 140px 120px;gap:12px;align-items:center;padding:0 16px}
+.cols{background:var(--subtle);height:36px;font-size:12px;color:var(--secondary);border-bottom:1px solid var(--stroke)}
+.row{min-height:58px;padding-top:9px;padding-bottom:9px;border-top:1px solid var(--stroke)}
+.cols+.row{border-top:0}.row:hover{background:var(--hover)}
+.ic{width:32px;height:32px;border-radius:6px;display:grid;place-items:center;font-weight:700;font-size:14px;color:#fff}
+.nm b{font-weight:600;white-space:nowrap}
+.nm span{display:block;font-size:12px;color:var(--secondary)}
+.nm span.chip{display:inline-block;margin-left:8px;vertical-align:1px}
+.mono{font-family:'Cascadia Mono',Consolas,monospace;font-size:12px;color:var(--muted)}
+.sm{font-size:12px;color:var(--muted)}
+.act{display:flex;justify-content:flex-end}
+.bar{height:4px;background:#3A3A3A;border-radius:2px;overflow:hidden;margin-top:6px;position:relative}
+.bar.ind i{position:absolute;top:0;bottom:0;width:30%;background:var(--accent);animation:slide 1.4s ease-in-out infinite}
+@keyframes slide{0%{left:-30%}100%{left:100%}}
+.prog{font-size:12px;color:var(--accent-text);margin-top:2px}
+.activity{position:relative;background:var(--sidebar);border-top:1px solid var(--stroke);display:flex;align-items:center;gap:14px;padding:10px 32px;min-height:52px}
+.activity .line{position:absolute;top:-1px;left:0;right:0;height:2px;overflow:hidden}
+.activity .line i{position:absolute;top:0;bottom:0;width:20%;background:var(--accent);animation:slide 1.6s ease-in-out infinite}
+/* dialog: shown when the address ends with #confirm */
+.scrim{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);align-items:center;justify-content:center}
+.scrim:target{display:flex}
+.dlg{width:460px;background:#2B2B2B;border:1px solid #4A4A4A;border-radius:8px;box-shadow:0 16px 48px rgba(0,0,0,.6);overflow:hidden}
+.dlg .in{padding:24px}
+.dlg h2{font-size:20px;line-height:28px;font-weight:600;margin:12px 0 10px}
+.dlg p{color:var(--muted);margin-bottom:10px}
+.dlg .route{display:flex;gap:10px;background:#232323;border:1px solid var(--stroke);border-radius:6px;padding:10px 12px;font-size:13px;color:var(--muted)}
+.dlg .route svg{width:16px;height:16px;flex:none;stroke:var(--accent-text);fill:none;stroke-width:1.8;margin-top:2px}
+.dlg .foot{background:#202020;border-top:1px solid var(--stroke);padding:16px 24px;display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.dlg .foot a{color:#fff;text-decoration:none}.dlg .foot button{width:100%;color:#fff}
+.note{position:fixed;right:12px;bottom:64px;background:#000c;border:1px solid var(--stroke);border-radius:6px;padding:6px 10px;font-size:11px;color:var(--secondary);max-width:330px}
+.note a{color:var(--accent-text)}
+</style></head>
+<body>
+<div class="win">
+  <div class="titlebar"><img src="../../../brand/desk-verve-emblem.png" alt="">DeskVerve
+    <div class="caps"><span>&#8212;</span><span>&#9633;</span><span>&#10005;</span></div></div>
+  <div class="body">
+    <nav class="side" aria-label="Main">
+      <a class="nav" href="01-updates.html"><svg viewBox="0 0 16 16"><path d="M13.5 6.5A5.5 5.5 0 0 0 3 4.6M2.5 9.5A5.5 5.5 0 0 0 13 11.4"/><path d="M3 1.8v2.9h2.9M13 14.2v-2.9h-2.9"/></svg>Updates &amp; Health<span class="badge">7</span></a>
+      <a class="nav" href="03-marketplace-home.html"><svg viewBox="0 0 16 16"><path d="M2.5 5.5h11l-1 8h-9z"/><path d="M5.5 5.5V4a2.5 2.5 0 0 1 5 0v1.5"/></svg>App Marketplace</a>
+      <a class="nav on" href="02-installed.html"><svg viewBox="0 0 16 16"><rect x="2" y="2" width="5" height="5" rx="1"/><rect x="9" y="2" width="5" height="5" rx="1"/><rect x="2" y="9" width="5" height="5" rx="1"/><rect x="9" y="9" width="5" height="5" rx="1"/></svg>Installed</a>
+      <a class="nav" href="#"><svg viewBox="0 0 16 16"><rect x="2" y="3" width="12" height="8" rx="1"/><path d="M5.5 14h5M8 11v3"/></svg>About This PC</a>
+      <div class="acct">Not signed in · <a href="#">Sign in</a></div>
+    </nav>
+    <div class="main">
+      <main class="content">
+        <div class="head">
+          <div><h1>Installed</h1><p class="cap">214 apps on this PC · Updated just now</p></div>
+          <button class="btn2">Check again</button>
+        </div>
+
+        <div class="tool">
+          <span class="search"><svg viewBox="0 0 16 16"><circle cx="7" cy="7" r="4.5"/><path d="M10.5 10.5 14 14"/></svg>Search installed apps<kbd>Ctrl+F</kbd></span>
+          <span class="grow"></span>
+          <span class="sel">Sort: Name &#9662;</span>
+          <span class="toggle"><i></i>Show Windows parts</span>
+        </div>
+        <div class="tool">
+          <div class="seg" role="tablist" aria-label="Source">
+            <span class="on" role="tab" aria-selected="true">All<em>214</em></span>
+            <span role="tab">Microsoft catalog<em>96</em></span>
+            <span role="tab">Microsoft Store<em>72</em></span>
+            <span role="tab">Installed directly<em>46</em></span>
+          </div>
+        </div>
+
+        <div class="list" role="table" aria-label="Installed apps">
+          <div class="cols" role="row"><span></span><span>App</span><span>Version</span><span>Size</span><span>Installed on</span><span>Source</span><span></span></div>
+          <div class="row" role="row">
+            <span class="ic" style="background:#B30B00">A</span>
+            <div class="nm"><b>Adobe Acrobat (64-bit)</b><span>Adobe</span></div>
+            <span class="mono">26.002.22031</span><span class="sm">1.2 GB</span><span class="sm">2 Nov 2026</span>
+            <span><span class="chip">Microsoft catalog</span></span>
+            <span class="act"><button class="danger">Uninstall</button></span>
+          </div>
+          <div class="row" role="row">
+            <span class="ic" style="background:#DA1F26">A</span>
+            <div class="nm"><b>Adobe Native Client</b><span>Adobe</span></div>
+            <span class="mono">7.0.7.25</span><span class="sm">18 MB</span><span class="sm">28 Oct 2026</span>
+            <span><span class="chip">Installed directly</span></span>
+            <span class="act"><button class="danger">Uninstall</button></span>
+          </div>
+          <div class="row" role="row">
+            <span class="ic" style="background:#4C4C4C">C</span>
+            <div class="nm"><b>Calculator</b><span>Microsoft Corporation</span></div>
+            <span class="mono">11.2409.0.0</span><span class="sm">28 MB</span><span class="sm">14 Sep 2026</span>
+            <span><span class="chip">Microsoft Store</span></span>
+            <span class="act"><button class="danger">Uninstall</button></span>
+          </div>
+          <div class="row" role="row">
+            <span class="ic" style="background:#C00000">C</span>
+            <div class="nm"><b>Canon IJ Scan Utility</b><span>Canon Inc.</span></div>
+            <span class="mono">2.3.0</span><span class="sm">54 MB</span><span class="sm">3 Jul 2026</span>
+            <span><span class="chip">Installed directly</span></span>
+            <span class="act"><a href="#confirm"><button class="danger">Uninstall</button></a></span>
+          </div>
+          <div class="row" role="row">
+            <span class="ic" style="background:#2F3B47">D</span>
+            <div class="nm"><b>DisplayLink Graphics</b><span>DisplayLink Corp.</span></div>
+            <span class="mono">11.4.9</span><span class="sm">210 MB</span><span class="sm">3 Jul 2026</span>
+            <span><span class="chip">Installed directly</span></span>
+            <span class="act"><button class="danger">Uninstall</button></span>
+          </div>
+          <div class="row" role="row">
+            <span class="ic" style="background:#0C7CD5">E</span>
+            <div class="nm"><b>Microsoft Edge</b><span>Microsoft Corporation</span></div>
+            <span class="mono">131.0.2903</span><span class="sm">640 MB</span><span class="sm">12 Nov 2026</span>
+            <span><span class="chip">Microsoft catalog</span></span>
+            <span class="act"><button class="btn2 off" title="Windows protects this app" aria-disabled="true">Protected</button></span>
+          </div>
+          <div class="row" role="row">
+            <span class="ic" style="background:#E66000">F</span>
+            <div class="nm"><b>Mozilla Firefox</b><span class="chip acc">Update ready</span><span>Mozilla</span></div>
+            <span class="mono">128.0.3</span><span class="sm">260 MB</span><span class="sm">9 Oct 2026</span>
+            <span><span class="chip">Microsoft catalog</span></span>
+            <span class="act"><button class="danger">Uninstall</button></span>
+          </div>
+          <div class="row" role="row">
+            <span class="ic" style="background:#1DB954">S</span>
+            <div class="nm"><b>Spotify</b><span class="chip acc">Update ready</span><span>Spotify AB</span></div>
+            <span class="mono">1.2.48</span><span class="sm">380 MB</span><span class="sm">1 Oct 2026</span>
+            <span><span class="chip">Microsoft Store</span></span>
+            <span class="act"><button class="danger">Uninstall</button></span>
+          </div>
+          <div class="row" role="row">
+            <span class="ic" style="background:#2D8CFF">Z</span>
+            <div class="nm"><b>Zoom Workplace</b><span>Zoom Communications</span><div class="bar ind"><i></i></div><div class="prog">Removing · Working</div></div>
+            <span class="mono">6.2.5</span><span class="sm">310 MB</span><span class="sm">22 Aug 2026</span>
+            <span><span class="chip">Microsoft catalog</span></span>
+            <span class="act"><button class="btn2">Cancel</button></span>
+          </div>
+        </div>
+        <p class="cap" style="margin-top:12px">Protected apps are part of Windows. Windows Settings manages them.</p>
+      </main>
+      <footer class="activity" aria-live="polite">
+        <span class="line"><i></i></span><span class="spin" aria-hidden="true"></span>
+        <span><b>Removing Zoom Workplace</b> <span class="cap">· 1 of 1 · Working</span></span>
+        <span class="grow"></span>
+        <button class="ghost">View all</button><button class="btn2">Cancel</button>
+      </footer>
+    </div>
+  </div>
+</div>
+
+<div class="scrim" id="confirm" role="dialog" aria-modal="true" aria-labelledby="dlgTitle">
+  <div class="dlg">
+    <div class="in">
+      <span class="ic" style="background:#C00000;width:40px;height:40px">C</span>
+      <h2 id="dlgTitle">Remove Canon IJ Scan Utility?</h2>
+      <p>DeskVerve runs Canon's own uninstaller. A Canon window can open. Follow its steps to finish.</p>
+      <div class="route"><svg viewBox="0 0 16 16"><circle cx="8" cy="8" r="6"/><path d="M8 7v4M8 5h.01"/></svg><span>Your documents, photos and other files stay on this PC. Windows can ask for permission.</span></div>
+    </div>
+    <div class="foot"><a href="#"><button class="danger-fill">Remove</button></a><a href="#"><button class="btn2">Cancel</button></a></div>
+  </div>
+</div>
+
+<div class="note">Mockup · Phase 46 · Installed. Counts add up: 96 + 72 + 46 = 214. <a href="#confirm">Show the remove dialog</a>. Other dialog texts: catalog app "DeskVerve removes this app quietly." · Store app "DeskVerve removes this app for your account."</div>
+</body></html>

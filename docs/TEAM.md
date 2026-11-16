@@ -24,14 +24,14 @@ If Other Models / seat limits block architects, the Manager fills the seat the s
 6. Design Architect validates finished work against plan/mockups/flows.
 7. Manager updates `tracker.html` (offline board in this folder). Reload in the browser.
 
-## Product-specific rules (Quantum Updater)
+## Product-specific rules (DeskVerve)
 
 - Product is the **Windows** app. A real test is a new `QuantumUpdater.exe` (full onedir / zip) opened on this PC. There is no website test copy.
 - Offline tracker: `tracker.html` in the project root. Update it in the same turn as any plan or status change.
 - Official releases: `merchanthasan2/AudoChocolatey` tags `v*` → `QuantumUpdater-Windows.zip`.
 - Do not wait on owner decisions; queue Owner later and keep building the recommended provisional path (`development-tracker` rule).
 - Park D live theme stays locked until owner approve; do not change live CSS for Park without that lock.
-- Active stack today: Python + pywebview + WebView2. Accepted direction: **C# + WinUI 3** migration (ADR 041) while Python remains the reference until Phase 1 WinUI is owner-tested.
+- Active stack today: **C# + WinUI 3** (ADR 043). The Python app is reference only in `archive/python-app`.
 
 ## Session start checklist
 

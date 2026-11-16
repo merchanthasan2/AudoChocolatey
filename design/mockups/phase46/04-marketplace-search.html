@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<title>DeskVerve · Phase 46 mockup · 04 App Marketplace search results</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--canvas:#131313;--sidebar:#272727;--card:#2C2C2C;--stroke:#383838;--accent:#0078D4;--accent-hover:#1A86D9;--accent-text:#60B0F0;--text:#FFFFFF;--muted:#D1D1D1;--secondary:#9E9E9E;--subtle:#1C1C1C;--chip:#383838;--hover:#333333;--healthy:#27AC62;--warning:#D8A000;--critical:#E81123;--critical-text:#FF99A4}
+html,body{height:100%}
+body{background:var(--canvas);color:var(--text);font-family:'Segoe UI Variable Text','Segoe UI Variable','Segoe UI',sans-serif;font-size:14px;line-height:20px;min-width:1280px}
+button{font:inherit;color:inherit;cursor:pointer}
+.win{display:grid;grid-template-rows:40px 1fr;height:100vh;min-height:800px}
+.titlebar{background:var(--sidebar);display:flex;align-items:center;gap:8px;padding-left:16px;font-weight:600}
+.titlebar img{width:24px;height:24px;object-fit:contain}
+.caps{margin-left:auto;display:flex;height:40px}.caps span{width:46px;display:grid;place-items:center;color:var(--muted);font-weight:400}
+.body{display:grid;grid-template-columns:240px 1fr;min-height:0}
+.side{background:var(--sidebar);border-right:1px solid var(--stroke);padding:8px;display:flex;flex-direction:column;gap:2px}
+.nav{display:flex;align-items:center;gap:12px;height:40px;padding:0 12px;border-radius:4px;color:var(--text);position:relative;text-decoration:none}
+.nav:hover{background:var(--hover)}.nav.on{background:#333}
+.nav.on::before{content:"";position:absolute;left:0;top:11px;bottom:11px;width:3px;border-radius:2px;background:var(--accent)}
+.nav svg{width:16px;height:16px;flex:none;stroke:currentColor;fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+.badge{margin-left:auto;background:var(--accent);border-radius:10px;font-size:12px;line-height:18px;padding:0 7px;font-weight:600}
+.acct{margin-top:auto;border-top:1px solid var(--stroke);padding:12px;font-size:12px;color:var(--secondary)}.acct a{color:var(--accent-text);text-decoration:none}
+.main{display:grid;grid-template-rows:auto 1fr;min-height:0}
+.top{padding:24px 32px 0}
+h1{font-family:'Segoe UI Variable Display','Segoe UI',sans-serif;font-size:28px;line-height:36px;font-weight:600;margin-bottom:16px}
+h2{font-size:20px;line-height:28px;font-weight:600}
+.cap{color:var(--secondary);font-size:12px;line-height:16px}
+.btn{background:var(--accent);border:0;border-radius:4px;padding:6px 16px;font-weight:600}.btn:hover{background:var(--accent-hover)}
+.btn.big{width:100%;padding:10px 16px;font-size:15px}
+.btn2{background:var(--card);border:1px solid var(--stroke);border-radius:4px;padding:5px 14px}.btn2:hover{background:var(--hover)}
+.ghost{background:none;border:0;color:var(--accent-text);padding:4px 6px;text-decoration:none;font-size:13px}
+.bigsearch{display:flex;align-items:center;gap:10px;background:var(--card);border:1px solid var(--stroke);border-bottom:2px solid var(--accent);border-radius:6px;padding:10px 14px;font-size:15px;max-width:720px;margin-bottom:14px}
+.bigsearch svg{width:18px;height:18px;stroke:var(--secondary);fill:none;stroke-width:1.8}
+.bigsearch .x{margin-left:auto;color:var(--secondary);text-decoration:none}
+.cats{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px}
+.cats span{background:var(--card);border:1px solid var(--stroke);border-radius:16px;padding:4px 12px;font-size:13px;color:var(--muted)}
+.cats span.on{background:rgba(0,120,212,.22);border-color:var(--accent);color:#fff}
+.count{display:flex;align-items:center;gap:12px;margin-bottom:10px}
+.count .grow{flex:1}
+.sel{background:var(--card);border:1px solid var(--stroke);border-radius:4px;padding:5px 10px;color:var(--muted);font-size:13px}
+.split{display:grid;grid-template-columns:1fr 360px;gap:16px;padding:0 32px 24px;min-height:0}
+.list{background:var(--card);border:1px solid var(--stroke);border-radius:8px;overflow:auto;align-self:start;max-height:100%}
+.row{display:grid;grid-template-columns:32px 1fr 110px 120px;gap:12px;align-items:center;padding:10px 16px;min-height:58px;border-top:1px solid var(--stroke);position:relative}
+.row:first-child{border-top:0}.row:hover{background:var(--hover)}
+.row.on{background:#333}.row.on::before{content:"";position:absolute;left:0;top:12px;bottom:12px;width:3px;border-radius:2px;background:var(--accent)}
+.ic{width:32px;height:32px;border-radius:6px;display:grid;place-items:center;font-weight:700;font-size:14px;color:#fff}
+.nm b{font-weight:600}.nm span{display:block;font-size:12px;color:var(--secondary)}
+.mono{font-family:'Cascadia Mono',Consolas,monospace;font-size:12px;color:var(--muted)}
+.act{display:flex;justify-content:flex-end}
+.installed{display:inline-flex;align-items:center;gap:6px;color:#6FD39A;font-size:13px}
+.installed svg{width:14px;height:14px;stroke:#6FD39A;fill:none;stroke-width:2.2}
+mark{background:none;color:var(--accent-text);font-weight:700}
+.panel{background:var(--card);border:1px solid var(--stroke);border-radius:8px;padding:20px;align-self:start;display:flex;flex-direction:column;gap:14px}
+.ptop{display:flex;gap:14px;align-items:center}
+.pic{width:64px;height:64px;border-radius:12px;display:grid;place-items:center;font-weight:700;font-size:26px;color:#fff;background:#0F5FA8;flex:none}
+.ptop a{color:var(--accent-text);text-decoration:none;font-size:13px}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{display:inline-block;background:var(--chip);border-radius:4px;padding:1px 8px;font-size:12px;line-height:18px;color:var(--muted)}
+.panel p{color:var(--muted);font-size:13px;line-height:19px}
+.facts{display:grid;grid-template-columns:90px 1fr;gap:6px 10px;font-size:13px}
+.facts dt{color:var(--secondary)}.facts dd a{color:var(--accent-text);text-decoration:none}
+.adv{border-top:1px solid var(--stroke);padding-top:12px;font-size:12px;color:var(--secondary)}
+.adv summary{cursor:pointer;color:var(--muted);font-size:13px}
+.adv code{font-family:'Cascadia Mono',Consolas,monospace;color:var(--muted)}
+.note{position:fixed;right:12px;bottom:12px;background:#000c;border:1px solid var(--stroke);border-radius:6px;padding:6px 10px;font-size:11px;color:var(--secondary);max-width:330px}
+.note a{color:var(--accent-text)}
+</style></head>
+<body>
+<div class="win">
+  <div class="titlebar"><img src="../../../brand/desk-verve-emblem.png" alt="">DeskVerve
+    <div class="caps"><span>&#8212;</span><span>&#9633;</span><span>&#10005;</span></div></div>
+  <div class="body">
+    <nav class="side" aria-label="Main">
+      <a class="nav" href="01-updates.html"><svg viewBox="0 0 16 16"><path d="M13.5 6.5A5.5 5.5 0 0 0 3 4.6M2.5 9.5A5.5 5.5 0 0 0 13 11.4"/><path d="M3 1.8v2.9h2.9M13 14.2v-2.9h-2.9"/></svg>Updates &amp; Health<span class="badge">7</span></a>
+      <a class="nav on" href="03-marketplace-home.html"><svg viewBox="0 0 16 16"><path d="M2.5 5.5h11l-1 8h-9z"/><path d="M5.5 5.5V4a2.5 2.5 0 0 1 5 0v1.5"/></svg>App Marketplace</a>
+      <a class="nav" href="02-installed.html"><svg viewBox="0 0 16 16"><rect x="2" y="2" width="5" height="5" rx="1"/><rect x="9" y="2" width="5" height="5" rx="1"/><rect x="2" y="9" width="5" height="5" rx="1"/><rect x="9" y="9" width="5" height="5" rx="1"/></svg>Installed</a>
+      <a class="nav" href="#"><svg viewBox="0 0 16 16"><rect x="2" y="3" width="12" height="8" rx="1"/><path d="M5.5 14h5M8 11v3"/></svg>About This PC</a>
+      <div class="acct">Not signed in · <a href="#">Sign in</a></div>
+    </nav>
+    <div class="main">
+      <div class="top">
+        <h1>App Marketplace</h1>
+        <div class="bigsearch"><svg viewBox="0 0 16 16"><circle cx="7" cy="7" r="4.5"/><path d="M10.5 10.5 14 14"/></svg>zoom<a class="x" href="03-marketplace-home.html" aria-label="Clear search and go back">&#10005;</a></div>
+        <div class="cats" role="tablist" aria-label="Categories">
+          <span class="on" role="tab" aria-selected="true">All</span><span role="tab">Browsers</span><span role="tab">Productivity</span><span role="tab">Developer tools</span><span role="tab">Photo and video</span><span role="tab">Music</span><span role="tab">Communication</span><span role="tab">Utilities</span><span role="tab">Security</span><span role="tab">Gaming</span><span role="tab">AI tools</span>
+        </div>
+        <div class="count"><b>38 apps match "zoom"</b><span class="cap">Microsoft catalog</span><span class="grow"></span><span class="sel">Sort: Best match &#9662;</span></div>
+      </div>
+      <div class="split">
+        <div class="list" role="list" aria-label="Search results">
+          <div class="row" role="listitem"><span class="ic" style="background:#2D8CFF">Z</span><div class="nm"><b><mark>Zoom</mark> Workplace</b><span>Zoom Communications</span></div><span class="mono">6.3.0</span><span class="act"><button class="btn">Update</button></span></div>
+          <div class="row on" role="listitem" aria-selected="true"><span class="ic" style="background:#0F5FA8">Z</span><div class="nm"><b><mark>Zoom</mark>It</b><span>Microsoft Sysinternals</span></div><span class="mono">9.0</span><span class="act"><button class="btn">Install</button></span></div>
+          <div class="row" role="listitem"><span class="ic" style="background:#2D8CFF">Z</span><div class="nm"><b><mark>Zoom</mark> Rooms</b><span>Zoom Communications</span></div><span class="mono">6.2.0</span><span class="act"><button class="btn">Install</button></span></div>
+          <div class="row" role="listitem"><span class="ic" style="background:#2D8CFF">Z</span><div class="nm"><b><mark>Zoom</mark> Outlook Plugin</b><span>Zoom Communications</span></div><span class="mono">5.17.10</span><span class="act"><button class="btn">Install</button></span></div>
+          <div class="row" role="listitem"><span class="ic" style="background:#2D8CFF">Z</span><div class="nm"><b><mark>Zoom</mark> VDI Universal Plugin</b><span>Zoom Communications</span></div><span class="mono">6.2.10</span><span class="act"><button class="btn">Install</button></span></div>
+          <div class="row" role="listitem"><span class="ic" style="background:#7A3FB0">Z</span><div class="nm"><b><mark>Zoom</mark> Player MAX</b><span>Inmatrix</span></div><span class="mono">18.0</span><span class="act"><button class="btn">Install</button></span></div>
+          <div class="row" role="listitem"><span class="ic" style="background:#4C4C4C">M</span><div class="nm"><b>Magnifier Pro</b><span>Example Software · tag: <mark>zoom</mark></span></div><span class="mono">2.4.1</span><span class="act"><span class="installed"><svg viewBox="0 0 14 14"><path d="M3 7.5l2.5 2.5L11 4.5"/></svg>Installed</span></span></div>
+          <div class="row" role="listitem"><span class="ic" style="background:#2D8CFF">Z</span><div class="nm"><b><mark>Zoom</mark> Workplace (for all users)</b><span>Zoom Communications</span></div><span class="mono">6.3.0</span><span class="act"><button class="btn">Install</button></span></div>
+        </div>
+
+        <aside class="panel" aria-label="App details">
+          <div class="ptop"><span class="pic">Z</span><div><h2>ZoomIt</h2><a href="#">Microsoft Sysinternals</a></div></div>
+          <div class="chips"><span class="chip">Version 9.0</span><span class="chip">Free</span><span class="chip">Utilities</span></div>
+          <button class="btn big">Install</button>
+          <p class="cap">Installs for your account. Windows can ask for permission.</p>
+          <p>Zoom in on any part of the screen, draw on it and show a break timer. Good for presentations and screen sharing.</p>
+          <dl class="facts">
+            <dt>Publisher</dt><dd>Microsoft Sysinternals</dd>
+            <dt>Website</dt><dd><a href="#">learn.microsoft.com</a></dd>
+            <dt>License</dt><dd>Free, Microsoft license</dd>
+            <dt>Source</dt><dd>Microsoft catalog</dd>
+          </dl>
+          <details class="adv"><summary>Advanced</summary><p style="margin-top:8px">Package ID <code>Microsoft.Sysinternals.ZoomIt</code> · source <code>winget</code></p></details>
+        </aside>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="note">Mockup · Phase 46 · Search results. Results show 250 ms after typing stops. Full names, no cut rows. Esc or the cross goes back to the home page. <a href="03-marketplace-home.html">Back to home</a>.</div>
+</body></html>

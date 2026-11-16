@@ -19,6 +19,27 @@ Two skills are already installed and must be used: `vibe-security` (raroque) and
 
 ## Results
 
+### Greenfield Phase 45 and local account service — 15 Nov 2026
+- **Seat:** Manager (provisional)
+- **Verdict:** Pass for source. Winget list, search, install, upgrade, and uninstall use ArgumentList only. Package ids must match the allow-list. Search text must match a short allow-list and cannot start a flag. Install, upgrade, and uninstall stay behind a confirm checkbox that starts unchecked. Self-update reads the public GitHub release API and does not download or run an installer.
+- **Account service:** Listens on 127.0.0.1:8787 only. Passwords are stored as PBKDF2-SHA256 hashes. The desktop client can register, sign in, send a heartbeat, and send install/upgrade/remove results. It cannot open `/quantumupdater/admin`. Admin pages need an owner cookie. Heartbeat stores Windows, CPU, memory, and disk headline only. Reports do not include passwords, recovery keys, or file contents.
+- **Follow-up:** Deploying that service to quantumstep.in, and the elevated MSIX workload, stay on the Owner later list.
+
+### WinUI Phase 44.2–44.3 core screens — 15 Nov 2026
+- **Seat:** Manager (provisional)
+- **Verdict:** Pass for Phase A core source so far. Services use ArgumentList only; package-id allow-list; uninstall/install/upgrade gated by UI confirm checkbox (default off). Self-update CheckAsync is HTTPS GitHub API read-only; Apply stubbed until packaging cutover. Manifest requireAdministrator restored.
+- **Scope:** `src/QuantumUpdater/Services/*`, `Views/*`, `MainWindow.xaml.cs`, `app.manifest`, ADR 042.
+- **Middleware:** AppServices facade + Winget/Installed/Marketplace/Update services.
+- **Follow-up:** Owner elevated on-PC smoke; 44.4 zip; Security seat when available.
+
+### WinUI Phase 1 shell + winget 2.0.3 refresh — 15 Nov 2026
+- **Seat:** Manager (provisional)
+- **Verdict:** Pass for Phase 1 shell source. Unpackaged self-contained WinUI EXE launches with a real window (code-only UI; no PRI). No secrets; Windows App SDK from nuget.org. Crash log path under `%LOCALAPPDATA%\QuantumUpdater\winui-crash.log`. Python ship path remains 2.0.3 · Build 10 zip on Release `v2.0.3`. Winget PR #480804: CLA done; URLs on GitHub; schema headers required by CI.
+- **Scope:** `src/QuantumUpdater/*`, `manifests/w/QuantumStep/QuantumUpdater/2.0.3/*`, release asset `QuantumUpdater-Windows.zip`, ADR 040/041.
+- **43.4 addendum:** `WingetService` uses `ProcessStartInfo` ArgumentList only (no shell). Package ids filtered by allow-list regex. Upgrade UI gated by confirm checkbox (default off).
+- **Middleware:** C# `WingetService` is the start of the planned single service layer. Python `web_api.py` remains the live ship bridge.
+- **Follow-up:** Owner on-PC accept WinUI Phase 1; wait for winget-pkgs merge; install UWP MSBuild before XAML/PRI Phase 2.
+
 ### Zip self-update (ADR 039) — 15 Nov 2026
 - **Seat:** Manager (provisional)
 - **Verdict:** Pass for source. Asset pick prefers official zip; apply only when frozen; unpack then robocopy over install dir via detached cmd; official URL checks unchanged.

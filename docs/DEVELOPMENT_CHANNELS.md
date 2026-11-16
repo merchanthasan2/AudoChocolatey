@@ -1,15 +1,18 @@
 # Development Channels & Multi-Platform Architecture
 
-**Product:** Quantum Updater  
-**Publisher:** Quantum Step ([quantumstep.in](https://quantumstep.in))  
-**Design System:** Quantum Modern Prism (Apple Obsidian Charcoal & Silver Snow)  
-**Policy:** Strict Zero-Emoji • 0.5px Specular Glassmorphism • Unified Look & Feel  
+**Products:** DeskVerve for Windows; DeskVerve for Mac (later, separate branch)
+
+**Publisher:** Quantum Step ([quantumstep.in](https://quantumstep.in))
+
+**Design System:** Quantum Modern Prism (Apple Obsidian Charcoal & Silver Snow)
+
+**Policy:** Strict Zero-Emoji • 0.5px Specular Glassmorphism • Unified Look & Feel
 
 ---
 
 ## 1. Multi-Channel Branching Strategy
 
-To enable independent development and release cycles without cross-platform friction, Quantum Updater utilizes a structured multi-channel branching architecture:
+To enable independent development and release cycles without cross-platform friction, DeskVerve for Windows and the later DeskVerve for Mac use a structured multi-channel branching architecture:
 
 ```
                   ┌───────────────────────────────────────────────┐
