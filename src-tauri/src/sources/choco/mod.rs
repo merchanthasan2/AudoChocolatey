@@ -120,6 +120,7 @@ impl<R: Runner> ChocoSource<R> {
                 label: super::label::SourceLabel::CommunityCatalog,
                 component: false,
                 linked: false,
+                removable: false,
             })
             .collect())
     }

@@ -21,7 +21,7 @@ import type { SourceLabel } from '../ipc/bindings/SourceLabel';
 const message = (e: unknown) => (e as { message?: string })?.message ?? String(e);
 
 /* ---------------------------------------------------------------- router */
-export type View = 'marketplace' | 'updates' | 'installed' | 'history' | 'settings';
+export type View = 'marketplace' | 'updates' | 'installed' | 'history' | 'startup' | 'settings';
 class Router {
   view = $state<View>('updates');
   go(v: View) { this.view = v; }

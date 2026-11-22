@@ -5,7 +5,7 @@
 > **Spec:** [superpowers/specs/2026-10-12-quantum-updater-v3-redesign-design.md](superpowers/specs/2026-10-12-quantum-updater-v3-redesign-design.md)
 > **Detailed phase plans:** `docs/superpowers/plans/`. Each phase's plan is written just before the phase starts, because it depends on code from earlier phases.
 
-**Status:** P0–P5 done, including P3 extras + sources · P6a nearly done (live check pending) · next: P6b–e → P7 → P8 · **Last updated:** 2026-10-17
+**Status:** P0–P6 built · owner acceptance checks come before any new phase · drivers stay in scope · **Last updated:** 2026-10-23
 
 | Phase | Name | Status | Detailed plan |
 |---|---|---|---|
@@ -15,11 +15,11 @@
 | P3 | Queue and real progress | Done (core: v3/p3-core; extras + sources: v3/p3x-sources) | [p3-core-queue](superpowers/plans/2026-10-12-p3-core-queue.md), [p3x-sources](superpowers/plans/2026-10-13-p3x-sources.md) |
 | P4 | New interface (Warm Store + springy motion) | Done (branch v3/p4-ui) | [p4-interface](superpowers/plans/2026-10-12-p4-interface.md) |
 | P5 | Real icons | Done, pulled forward (branch v3/p4-ui) | [p5-icons](superpowers/plans/2026-10-12-p5-icons.md) |
-| P6 | Background (a), Control (b), Safety (c), Lists (d), Everyday polish (e) | In progress (branch v3/p6); d and e added 2026-10-17 | [p6](superpowers/plans/2026-10-13-p6.md) |
+| P6 | Background (a), Control (b), Safety (c), Lists (d), Everyday polish (e) | Built (branch v3/p6); owner checks still open | [p6](superpowers/plans/2026-10-13-p6.md) |
 | P7 | Distribution (signing, auto-update, winget) | Not started | (to be written) |
 | PDev | Developer pack (Pip, Npm, PowerShell Gallery, Cargo), off by default | Approved by owner 2026-10-17; after P7 (ADR 029) | (to be written) |
-| P7b | Payment and licensing | Not started; questions for the owner first | (to be written) |
-| PD | Drivers (signed Windows Update drivers, maker tools, driver list) | **Approved by owner 2026-10-13**; build after payment and licensing | [drivers](superpowers/plans/2026-10-13-drivers.md) |
+| P7b | Payment and licensing | Not started. Split and a per-PC license key are decided; build this phase later | (to be written) |
+| PD | Drivers (signed Windows Update drivers, maker tools, driver list) | Confirmed 2026-10-23. After licensing, on only for a paid key | [drivers](superpowers/plans/2026-10-13-drivers.md) |
 | P8 | Docs and hardening | Not started | (to be written) |
 
 ---
@@ -93,12 +93,12 @@ Goal: one runtime, a fresh Svelte shell, admin manifest really embedded, locked-
 - [x] P6b Per-app policy, automatic mode with battery, metered, quiet hours and minimum update age (`bec1e88`), My bundles (add selection, export and import, scheduled backup), remove several, Settings (`bb13395`)
 - [x] P6c Restore point, history, rollback, signer note, security first, download site changed (`fe3c15f`, `cec51e5`, next commit); architect review 2026-10-17 applied (page can't pin versions or roll back; rollback never falls back; strict verify; site keys include the owner on shared hosts)
 - [x] P6d Lists: toolbar, table, friendly sources and filter, hide Windows components, views, What's new and date, CSV, installer window and reinstall, link "Installed directly" apps ([plan](superpowers/plans/2026-10-17-p6d-lists.md); `058e81c`…`afba5ba`; ADR 030–032). Download size deferred (no honest source). Live checks (browser opens unelevated, FileZilla/WinSCP link in Windows Sandbox, reinstall) are in UAT
-- [ ] P6e Polish: desktop shortcut cleanup, close the app first, restart needed, better retry, startup manager, live log, searchable Settings
+- [x] P6e Polish: desktop shortcut cleanup, close the app first, restart needed, better retry, startup manager, live log, searchable Settings (startup manager: this change; the rest already in the tree). Owner checks are in UAT. Turning a startup item off never deletes it; Windows, security software, policy, and this app's own sign-in task have no switch (ADR 034)
 
 ## P7: Distribution
 - [ ] Updater key generation + offline backup procedure; `tauri-plugin-updater` via Rust `updater.rs` + UI
 - [ ] `release.yml`: version check, conditional updater artifacts, conditional Azure Trusted Signing `signCommand`, tauri-action draft → publish
-- [ ] winget: first manual `komac new`, then `winget-releaser` job (needs `WINGET_TOKEN`)
+- [ ] winget: first manual `komac new`, then `winget-releaser` job (needs `WINGET_TOKEN`). Owner, 2026-10-23: the listing ships in the same release as the first public build
 - [ ] RC rehearsal: v3.0.0-rc.1 → rc.2 auto-update on a fork
 
 ## P8: Docs and hardening
@@ -109,9 +109,9 @@ Goal: one runtime, a fresh Svelte shell, admin manifest really embedded, locked-
 ---
 
 ## Things the owner must provide
-- [ ] Code-signing: Azure Trusted Signing account (org eligibility) or an OV certificate (needed by P7)
+- [x] Code signing method: Azure Trusted Signing (owner, 2026-10-23). The Azure account itself is still to be opened
 - [ ] `WINGET_TOKEN` (GitHub PAT with a fork of microsoft/winget-pkgs) (P7)
-- [ ] Decide final repo name before the first public v3 release (the updater endpoint depends on it)
+- [x] Public repository is `quantumstep/quantum-updater` (owner, 2026-10-23). The updater endpoint uses this name
 
 ## Course corrections log
 | Date | Change | Why |
@@ -159,3 +159,10 @@ Goal: one runtime, a fresh Svelte shell, admin manifest really embedded, locked-
 | 2026-10-17 | `start_at_login` default changed to off, and a settings file without `backgroundPrompted` loads it as off | Plan says off until the person says yes; the P0 default was on, so the toggle showed on with no task |
 | 2026-10-17 | Owner compared UniGetUI 2026.3.x (installed on their PC): added P6a 7, minimum update age, My bundles, download site changed, P6d Lists and P6e Everyday polish | Owner picked 8 of 10 ideas plus 4 web-found extras; see COMPETITIVE.md |
 | 2026-10-17 | Source column with friendly names (ADR 028); Developer pack incl. Cargo approved for after P7 (ADR 029) | Owner wants version and source per app like UniGetUI, and its full source list |
+| 2026-10-23 | P6e startup manager disables with the Task Manager flag (`StartupApproved`) or a task's Enabled bit, and never deletes. Windows paths, security products, policy-held items, and this app's own sign-in task are read-only | Review focus: the page must not be able to switch security software off (ADR 034) |
+| 2026-10-23 | Public repository is `quantumstep/quantum-updater` | Owner decision. The self-update address is built from this name (ADR 035) |
+| 2026-10-23 | Public releases use Azure Trusted Signing | Owner confirmed the preference already in ADR 013 |
+| 2026-10-23 | Free tier is search, install, manual updates, catalog, and bundles. Paid tier is automatic updates, drivers, restore and rollback, and commercial use. A paid copy is a license key on that PC, with no account, built in the licensing phase | Owner decision (ADR 036) |
+| 2026-10-23 | winget listing ships in the same release as the first public build | Owner decision. Self-update is still part of that release (ADR 037) |
+| 2026-10-23 | Acceptance checks on this PC come before any new phase. Drivers are built after licensing and switch on only for a paid key | Owner decision |
+| 2026-10-23 | Directly installed apps can be uninstalled here with the uninstaller they registered. Updates stay only where a catalog link already exists | Owner decision (ADR 039). Batch removal stays on catalog apps |

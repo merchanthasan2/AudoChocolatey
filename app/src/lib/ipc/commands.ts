@@ -3,19 +3,22 @@ import type { Overview } from './bindings/Overview';
 import type { Diagnostics } from './bindings/Diagnostics';
 import type { Listing } from './bindings/Listing';
 import type { InstalledPackage } from './bindings/InstalledPackage';
+import type { DirectRemoval } from './bindings/DirectRemoval';
 import type { UpgradeCandidate } from './bindings/UpgradeCandidate';
 import type { SourcePackage } from './bindings/SourcePackage';
 import type { Settings } from './bindings/Settings';
 import type { SettingsPatch } from './bindings/SettingsPatch';
 
 // The only module allowed to call invoke(). Types are generated from Rust by ts-rs.
-export type { Overview, Diagnostics, Listing, InstalledPackage, UpgradeCandidate, SourcePackage, Settings, SettingsPatch };
+export type { Overview, Diagnostics, Listing, InstalledPackage, UpgradeCandidate, SourcePackage, Settings, SettingsPatch, DirectRemoval };
 export type { SourceStatus } from './bindings/SourceStatus';
 export type { AppError } from './bindings/AppError';
 
 export const getOverview = () => invoke<Overview>('get_overview');
 export const getDiagnostics = () => invoke<Diagnostics>('get_diagnostics');
 export const listInstalled = () => invoke<Listing<InstalledPackage>>('list_installed');
+/** Opens the uninstaller an app installed directly registered. */
+export const removeDirect = (id: string) => invoke<DirectRemoval>('remove_direct', { id });
 export const listUpdates = () => invoke<UpdatesListing>('list_updates');
 export const setRule = (target: SourceRef, name: string, kind: RuleKind) => invoke<UpdatesListing>('set_rule', { target, name, kind });
 export const removeRule = (key: string) => invoke<UpdatesListing>('remove_rule', { key });
@@ -122,3 +125,11 @@ export type { LinkedUpdate };
 export const listLinkedUpdates = () => invoke<LinkedUpdate[]>('list_linked_updates');
 /** Restarts Windows in 30 seconds. Only after the person confirmed. */
 export const restartNow = () => invoke<void>('restart_now');
+
+import type { StartupList } from './bindings/StartupList';
+import type { StartupItem } from './bindings/StartupItem';
+import type { StartupRef } from './bindings/StartupRef';
+export type { StartupList, StartupItem, StartupRef };
+/** Apps that open at sign-in. Turning one off never deletes it. */
+export const listStartup = () => invoke<StartupList>('list_startup');
+export const setStartup = (item: StartupRef, enabled: boolean) => invoke<StartupItem>('set_startup', { item, enabled });

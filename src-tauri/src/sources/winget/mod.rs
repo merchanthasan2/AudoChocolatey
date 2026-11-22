@@ -91,6 +91,7 @@ impl<R: Runner> WingetSource<R> {
                     label: super::label::classify(source, &r.id),
                     component: false,
                     linked: false,
+                    removable: false,
                     name: r.name,
                     id: r.id,
                     version: r.version,

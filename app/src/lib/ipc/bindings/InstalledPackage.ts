@@ -4,7 +4,8 @@ import type { SourceLabel } from "./SourceLabel";
 
 export type InstalledPackage = { name: string, id: string, version: string, available: string | null, 
 /**
- * `None` for rows winget only knows locally (ARP/MSIX entries): display-only, not updatable.
+ * `None` for rows winget only knows locally (ARP/MSIX entries). Not updated here
+ * unless linked. `removable` is set when that app's own uninstaller can be opened.
  */
 source: SourceKind | null, 
 /**
@@ -18,4 +19,8 @@ component: boolean,
 /**
  * Installed directly, but linked to a catalog app this app can update.
  */
-linked: boolean, };
+linked: boolean, 
+/**
+ * Its own uninstaller can be opened. Catalog apps stay on the normal remove path.
+ */
+removable: boolean, };

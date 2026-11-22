@@ -1,7 +1,7 @@
 <script lang="ts">
   import { SvelteSet } from 'svelte/reactivity';
-  import { installed, queue, myBundles, lists } from '../lib/stores/app.svelte';
-  import type { InstalledPackage } from '../lib/ipc/commands';
+  import { installed, queue, myBundles, lists, toasts } from '../lib/stores/app.svelte';
+  import { removeDirect, type InstalledPackage } from '../lib/ipc/commands';
   import AppRow from '../lib/components/AppRow.svelte';
   import AppTile from '../lib/components/AppTile.svelte';
   import AppList from '../lib/components/AppList.svelte';
@@ -29,7 +29,15 @@
   const keys = $derived(uniqueKeys(shown, (p) => `${p.source ?? 'local'}:${p.id}`));
   const managed = $derived(installed.items.filter((p) => p.source).length);
   const note = (p: InstalledPackage) =>
-    p.component ? 'Windows component' : p.source || p.linked ? 'Kept up to date here' : 'Updates handled by Windows';
+    p.component
+      ? 'Windows component'
+      : p.source || p.linked
+        ? 'Kept up to date here'
+        : p.removable
+          ? p.label === 'microsoftStore'
+            ? 'Uninstall uses Windows'
+            : 'Uninstall opens its own uninstaller'
+          : 'Updates handled by Windows';
 
   const jobOf = (p: InstalledPackage) => (p.source ? queue.jobFor(p.source, p.id, 'uninstall') : undefined);
   const busy = (p: InstalledPackage) => {
@@ -61,6 +69,27 @@
   }
 
   let confirming = $state(false);
+  let direct = $state<InstalledPackage | null>(null);
+  let directBusy = $state<string | null>(null);
+  async function removeOne() {
+    const p = direct;
+    if (!p || directBusy) return;
+    direct = null;
+    directBusy = p.id;
+    try {
+      const result = await removeDirect(p.id);
+      toasts.push({
+        text: result.opened ? `${p.name}'s uninstaller is open. Finish it there.` : `${p.name} was uninstalled.`,
+        tone: 'ok',
+      });
+      await installed.refresh();
+    } catch (e) {
+      const err = e as { code?: string; message?: string };
+      toasts.push({ text: err.message ?? "Couldn't open its uninstaller.", tone: err.code === 'cancelled' ? 'warn' : 'error' });
+    } finally {
+      directBusy = null;
+    }
+  }
   async function removeSelected() {
     const items = picked.map((p) => ({ source: p.source!, id: p.id, name: p.name }));
     confirming = false;
@@ -131,6 +160,10 @@
           <JobButton {job} mode="uninstall" name={p.name}
             onstart={() => queue.uninstall({ source: p.source!, id: p.id, name: p.name })}
             oncancel={(id) => queue.cancel(id)} onretry={(id) => queue.retry(id)} />
+        {:else if p.removable}
+          <JobButton job={undefined} mode="uninstall" name={p.name}
+            onstart={() => { if (directBusy !== p.id) direct = p; }}
+            oncancel={() => {}} onretry={() => {}} />
         {/if}
       {/snippet}
     </AppRow>
@@ -146,11 +179,25 @@
           <JobButton {job} mode="uninstall" name={p.name}
             onstart={() => queue.uninstall({ source: p.source!, id: p.id, name: p.name })}
             oncancel={(id) => queue.cancel(id)} onretry={(id) => queue.retry(id)} />
+        {:else if p.removable}
+          <JobButton job={undefined} mode="uninstall" name={p.name}
+            onstart={() => { if (directBusy !== p.id) direct = p; }}
+            oncancel={() => {}} onretry={() => {}} />
         {/if}
       {/snippet}
     </AppTile>
   {/snippet}
 </AppList>
+
+{#if direct}
+  <Dialog title="Uninstall {direct.name}?" onclose={() => (direct = null)}>
+    <p class="muted">{direct.label === 'microsoftStore' ? 'Windows will uninstall it.' : 'Its own uninstaller will open. Nothing is removed until you finish that window.'}</p>
+    {#snippet buttons()}
+      <button class="btn btn-primary" onclick={() => (direct = null)}>Keep it</button>
+      <button class="btn btn-quiet danger" onclick={removeOne}>Uninstall</button>
+    {/snippet}
+  </Dialog>
+{/if}
 
 {#if confirming}
   <Dialog title="Remove {picked.length} {picked.length === 1 ? 'app' : 'apps'}?" onclose={() => (confirming = false)}>

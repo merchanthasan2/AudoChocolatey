@@ -15,8 +15,8 @@
 | Tray notifications, automatic updates | Yes | IObit Pro, UCheck Premium, Patch My PC | Planned (P6a, P6b) |
 | Minimum update age; warning when the installer's website changes | Yes | No | Planned (P6b, P6c) |
 | Export and import the app list; add a selection to a bundle; scheduled list backup | Yes (local file or GitHub Gist) | Ninite: custom installer; Patch My PC: list import and export | Planned (P6b "My bundles", local only) |
-| Desktop shortcut cleanup, close the app before updating, restart needed, retry options | Yes | Patch My PC: stop shortcut creation | Planned (P6e) |
-| Startup manager | No | Patch My PC (2026) | Planned (P6e) |
+| Desktop shortcut cleanup, close the app before updating, restart needed, retry options | Yes | Patch My PC: stop shortcut creation | Yes (P6e) |
+| Startup manager | No | Patch My PC (2026) | Yes (P6e): off disables, never deletes; Windows and security stay on |
 | Release notes link, download size, release date | Yes | Patch My PC: size | Planned (P6d) |
 | Update apps installed straight from a website | Only when winget recognises them | Patch My PC: its own detection rules | Planned (P6d, catalog-declared rules only) |
 | Curated catalog and bundles | Experimental "Software Catalog" (2026.3.2) | Ninite: about 100 apps | Yes: 96 hand-checked apps, 10 categories, 5 bundles |
@@ -79,7 +79,7 @@ Version 2026.3.1, read from its install folder and its 1,844 English text string
 | 1 | P6a Background | Tray, scheduled checks, notifications and their choices, start at login, single instance | Table stakes; every paid competitor has it |
 | 2 | P6b Control | Per-app update policy (auto, notify, never), quiet hours, battery and metered limits, minimum update age, My bundles, multi-select remove, complete Settings | Matches UniGetUI and the paid tiers |
 | 3 | P6c Safety | Restore point before batches, update history with rollback, verified-publisher badge, security updates first, download site changed | Our differentiator |
-| 4 | P6d Lists, P6e Polish | Toolbar and table, friendly sources and filter, hide Windows components, What's new, link directly installed apps, shortcut cleanup, close-app prompt, restart needed, startup manager | Owner review of UniGetUI, 2026-10-17 |
+| 4 | P6d Lists, P6e Polish | Toolbar and table, friendly sources and filter, hide Windows components, What's new, link directly installed apps, shortcut cleanup, close-app prompt, restart needed, startup manager | Built; owner checks still open |
 | 5 | P7 Distribution | Code signing, self-update, winget listing | Needed before selling; also stops antivirus alerts |
 | 6 | Developer pack | Pip, Npm, PowerShell Gallery, Cargo, off by default | Owner decision 2026-10-17 (ADR 029) |
 | 7 | Payment and licensing | Free vs Pro | See the split below |
@@ -87,7 +87,7 @@ Version 2026.3.1, read from its install folder and its 1,844 English text string
 | 9 | P8 Hardening | Security review, accessibility, docs | Last, so it covers everything |
 | Later | Optional | More languages, multi-PC dashboard | Only if users ask |
 
-## Proposed free vs Pro split (to confirm before the licensing phase)
+## Free vs Pro split (owner, 2026-10-23)
 
 - **Free:** search, install, manual updates, catalog, bundles, skip and ignore.
 - **Pro:** automatic and scheduled updates, drivers, restore points and rollback, security alerts, commercial use.
