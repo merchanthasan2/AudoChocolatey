@@ -11,15 +11,17 @@ public static class WingetLocator
 {
     private const string AppInstallerFamilyName = "Microsoft.DesktopAppInstaller_8wekyb3d8bbwe";
 
-    private static readonly Lazy<string?> Cached = new(FindCore, LazyThreadSafetyMode.ExecutionAndPublication);
+    // W5: App Installer updates move winget.exe to a new versioned folder and delete the old one.
+    // The cached path is checked on every read and looked up again when it is gone.
+    private static readonly RecheckedPath Cached = new(FindCore, IsTrustedPath);
 
     /// <summary>
     /// Full path to winget.exe inside the App Installer package, or null when it is not found or not trusted.
-    /// The result is cached for the life of the process.
+    /// The path is cached, and found again when the cached file no longer exists.
     /// </summary>
     public static string? Find()
     {
-        return Cached.Value;
+        return Cached.Get();
     }
 
     /// <summary>The folder that holds the installed Windows packages. Only files here are trusted.</summary>
@@ -36,16 +38,9 @@ public static class WingetLocator
     {
         try
         {
-            var package = HighestPackage(QueryPackagesForCurrentUser())
-                ?? HighestPackage(QueryPackagesAnyWay());
-            var installedPath = package?.InstalledLocation?.Path;
-            if (string.IsNullOrEmpty(installedPath))
-            {
-                return null;
-            }
-
-            var candidate = Path.Combine(installedPath, "winget.exe");
-            return IsTrustedPath(candidate) ? candidate : null;
+            var package = HighestTrustedPackage(QueryPackagesForCurrentUser())
+                ?? HighestTrustedPackage(QueryPackagesAnyWay());
+            return package is null ? null : WingetPathOf(package);
         }
         catch (Exception)
         {
@@ -83,14 +78,41 @@ public static class WingetLocator
         }
     }
 
-    private static Package? HighestPackage(List<Package> packages)
+    // W6: the trust check runs before the version pick, so a newer untrusted package cannot hide a trusted one.
+    private static Package? HighestTrustedPackage(List<Package> packages)
     {
-        return packages
-            .OrderByDescending(p => new Version(
+        return WingetPathRules.HighestTrusted(
+            packages,
+            p => new Version(
                 p.Id.Version.Major,
                 p.Id.Version.Minor,
                 p.Id.Version.Build,
-                p.Id.Version.Revision))
-            .FirstOrDefault();
+                p.Id.Version.Revision),
+            IsTrustedPackage);
+    }
+
+    // Trusted: signed by the Store or by Windows, and winget.exe is under the WindowsApps folder.
+    private static bool IsTrustedPackage(Package package)
+    {
+        var signature = package.SignatureKind;
+        if (signature != PackageSignatureKind.Store && signature != PackageSignatureKind.System)
+        {
+            return false;
+        }
+
+        return WingetPathOf(package) is not null;
+    }
+
+    // The winget.exe path of the package, or null when it is missing or not under WindowsApps.
+    private static string? WingetPathOf(Package package)
+    {
+        var installedPath = package.InstalledLocation?.Path;
+        if (string.IsNullOrEmpty(installedPath))
+        {
+            return null;
+        }
+
+        var candidate = Path.Combine(installedPath, "winget.exe");
+        return IsTrustedPath(candidate) ? candidate : null;
     }
 }

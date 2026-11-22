@@ -32,15 +32,20 @@ public static class WingetTextTable
         @"(?<!\S)(Name|Id|Version|Available|Match|Source)(?!\S)",
         RegexOptions.CultureInvariant | RegexOptions.Compiled);
 
+    // W10: the footer lines winget prints after a table: "N upgrades available.",
+    // "N package(s) have pins that prevent upgrade ..." and
+    // "N package(s) have version numbers that cannot be determined ...".
     private static readonly Regex FooterPattern = new(
-        @"^\d+\s+upgrades?\s+available",
+        @"^\d+\s+(upgrades?\s+available|packages?(\(s\))?\s+ha(s|ve)\s+(pins?|version\s+numbers?)\b)",
         RegexOptions.CultureInvariant | RegexOptions.IgnoreCase | RegexOptions.Compiled);
 
     private const string NoiseChars = "-\\|/█▒▓░";
 
     /// <summary>
-    /// Parses winget text output into rows. Never drops a data row.
-    /// Footer lines, separator lines and progress lines are skipped.
+    /// Parses winget text output into rows.
+    /// Footer lines, separator lines, progress lines and rows without a version are skipped.
+    /// W10: a line counts as a header only when a dash separator line comes next, so an app whose
+    /// DisplayName reads like a header cannot change the columns. Such a line is read as a row.
     /// </summary>
     public static IReadOnlyList<WingetRow> Parse(string output)
     {
@@ -58,6 +63,10 @@ public static class WingetTextTable
         var lines = output.Split('\n');
         List<Column>? columns = null;
 
+        // A header candidate waits for the next non-empty line. It becomes the header only when that line is a separator.
+        string? pendingLine = null;
+        List<Column>? pendingColumns = null;
+
         foreach (var rawLine in lines)
         {
             var line = rawLine.TrimEnd('\r');
@@ -68,28 +77,70 @@ public static class WingetTextTable
                 line = line[(lastCr + 1)..];
             }
 
+            var clean = line.Trim();
+            if (clean.Length == 0)
+            {
+                continue;
+            }
+
+            if (pendingColumns is not null)
+            {
+                var candidate = pendingLine!;
+                var candidateColumns = pendingColumns;
+                pendingLine = null;
+                pendingColumns = null;
+                if (IsSeparator(clean))
+                {
+                    columns = candidateColumns;
+                    continue;
+                }
+
+                // Not a header after all. Read it as an ordinary line under the current columns.
+                AddRow(rows, candidate, columns);
+            }
+
             var headerColumns = TryReadHeader(line);
             if (headerColumns is not null)
             {
-                columns = headerColumns;
+                pendingLine = line;
+                pendingColumns = headerColumns;
                 continue;
             }
 
-            if (columns is null)
-            {
-                continue;
-            }
+            AddRow(rows, line, columns);
+        }
 
-            var clean = line.Trim();
-            if (clean.Length == 0 || IsSeparator(clean) || IsNoise(clean) || IsFooter(clean))
-            {
-                continue;
-            }
-
-            rows.Add(ReadRow(line, columns));
+        if (pendingLine is not null)
+        {
+            AddRow(rows, pendingLine, columns);
         }
 
         return rows;
+    }
+
+    // Adds the line as a row when it is a data row under the current columns.
+    private static void AddRow(List<WingetRow> rows, string line, List<Column>? columns)
+    {
+        if (columns is null)
+        {
+            return;
+        }
+
+        var clean = line.Trim();
+        if (clean.Length == 0 || IsSeparator(clean) || IsNoise(clean) || IsFooter(clean))
+        {
+            return;
+        }
+
+        var row = ReadRow(line, columns);
+
+        // W10: every real row has a version. A footer or a wrapped line has none.
+        if (row.Version.Length == 0)
+        {
+            return;
+        }
+
+        rows.Add(row);
     }
 
     /// <summary>Returns the column list when the line is a header (has Name, Id and Version). Otherwise null.</summary>

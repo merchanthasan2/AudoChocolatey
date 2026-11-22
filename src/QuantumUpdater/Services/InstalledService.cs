@@ -12,143 +12,48 @@ public sealed record InstalledPackage(string Id, string Name, string Version, bo
     public bool CanAct => PackageId.IsCatalogId(Id) && !IsCut;
 }
 
-/// <summary>Runs winget list/uninstall through WingetRunner and WingetTextTable (Phase 46, F24).</summary>
+/// <summary>Runs winget list/uninstall through WingetCli (Phase 46, F24, W16).</summary>
 public sealed class InstalledService
 {
-    private const int CatalogQueryTimeoutMs = 60_000;
+    private static readonly TimeSpan CatalogQueryTimeout = TimeSpan.FromSeconds(60);
     private static readonly TimeSpan UninstallTimeout = TimeSpan.FromMinutes(10);
 
-    /// <summary>Last error from list or uninstall; cleared at the start of each operation.</summary>
+    /// <summary>Last error from the installed list; cleared at the start of each list.</summary>
     public string? LastError { get; private set; }
 
-    /// <summary>Resolved path to winget.exe, or null when not found.</summary>
-    public string? ExecutablePath { get; private set; }
-
-    public InstalledService()
-    {
-        ExecutablePath = WingetLocator.Find();
-    }
+    /// <summary>Path to winget.exe, or null when not found. Looked up again when App Installer moved it (W5).</summary>
+    public string? ExecutablePath => WingetLocator.Find();
 
     /// <summary>Runs <c>winget list</c> and parses the tabular output. Keeps every row, including local rows.</summary>
     public async Task<IReadOnlyList<InstalledPackage>> ListInstalledAsync(CancellationToken cancellationToken = default)
     {
         LastError = null;
-        if (ExecutablePath is null)
-        {
-            LastError = "winget.exe was not found.";
-            return Array.Empty<InstalledPackage>();
-        }
+        var (packages, error) = await WingetCli.RunQueryAsync(
+            ["list", "--disable-interactivity", "--accept-source-agreements"],
+            CatalogQueryTimeout,
+            ParseInstalled,
+            cancellationToken).ConfigureAwait(false);
 
-        try
-        {
-            var run = await new WingetRunner(ExecutablePath).RunAsync(
-                ["list", "--disable-interactivity", "--accept-source-agreements"],
-                TimeSpan.FromMilliseconds(CatalogQueryTimeoutMs),
-                null,
-                cancellationToken).ConfigureAwait(false);
-
-            if (run.Cancelled)
-            {
-                LastError = "Cancelled.";
-                return Array.Empty<InstalledPackage>();
-            }
-
-            if (run.TimedOut)
-            {
-                LastError = "winget timed out.";
-                return Array.Empty<InstalledPackage>();
-            }
-
-            // Every row is kept. The same id can appear twice (for example two installed versions).
-            var packages = new List<InstalledPackage>();
-            foreach (var row in WingetTextTable.Parse(string.Join("\n", run.Lines)))
-            {
-                var name = string.IsNullOrEmpty(row.Name) ? row.Id : row.Name;
-                packages.Add(new InstalledPackage(row.Id, name, row.Version, row.IsLocal, row.IsCut));
-            }
-
-            return packages;
-        }
-        catch (OperationCanceledException)
-        {
-            LastError = "Cancelled.";
-            return Array.Empty<InstalledPackage>();
-        }
-        catch (Exception ex)
-        {
-            LastError = ex.Message;
-            return Array.Empty<InstalledPackage>();
-        }
+        LastError = error;
+        return packages;
     }
 
     /// <summary>Uninstalls one package by id (<c>winget uninstall --id … --exact</c>; the runner adds --exact).</summary>
-    public async Task<WingetResult> UninstallAsync(string packageId, CancellationToken cancellationToken = default)
+    public Task<ActionResult> UninstallAsync(string packageId, CancellationToken cancellationToken = default)
     {
-        LastError = null;
-        if (string.IsNullOrWhiteSpace(packageId))
+        return WingetCli.RunActionAsync(ActionKind.Remove, "uninstall", packageId, [], UninstallTimeout, cancellationToken);
+    }
+
+    // Every row is kept. The same id can appear twice (for example two installed versions).
+    private static IReadOnlyList<InstalledPackage> ParseInstalled(RunResult run)
+    {
+        var packages = new List<InstalledPackage>();
+        foreach (var row in WingetTextTable.Parse(string.Join("\n", run.Lines)))
         {
-            LastError = "Package id is required.";
-            return new WingetResult(false, LastError, -1);
+            var name = string.IsNullOrEmpty(row.Name) ? row.Id : row.Name;
+            packages.Add(new InstalledPackage(row.Id, name, row.Version, row.IsLocal, row.IsCut));
         }
 
-        packageId = packageId.Trim();
-        if (!PackageId.IsCatalogId(packageId))
-        {
-            LastError = "Package id contains invalid characters.";
-            return new WingetResult(false, LastError, -1);
-        }
-
-        if (ExecutablePath is null)
-        {
-            LastError = "winget.exe was not found.";
-            return new WingetResult(false, LastError, -1);
-        }
-
-        try
-        {
-            var run = await new WingetRunner(ExecutablePath).RunAsync(
-                ["uninstall", "--id", packageId],
-                UninstallTimeout,
-                null,
-                cancellationToken).ConfigureAwait(false);
-
-            if (run.Cancelled)
-            {
-                LastError = "Cancelled.";
-                return new WingetResult(false, LastError, -1);
-            }
-
-            if (run.TimedOut)
-            {
-                LastError = "winget timed out.";
-                return new WingetResult(false, LastError, -1);
-            }
-
-            var output = string.Join("\n", run.Lines);
-            var exitCode = run.ExitCode;
-            var success = exitCode == 0;
-            var message = success
-                ? $"Uninstall completed for {packageId}."
-                : string.IsNullOrWhiteSpace(output)
-                    ? $"Uninstall failed for {packageId} (exit {exitCode})."
-                    : output.Trim();
-
-            if (!success)
-            {
-                LastError = message;
-            }
-
-            return new WingetResult(success, message, exitCode);
-        }
-        catch (OperationCanceledException)
-        {
-            LastError = "Cancelled.";
-            return new WingetResult(false, LastError, -1);
-        }
-        catch (Exception ex)
-        {
-            LastError = ex.Message;
-            return new WingetResult(false, ex.Message, -1);
-        }
+        return packages;
     }
 }

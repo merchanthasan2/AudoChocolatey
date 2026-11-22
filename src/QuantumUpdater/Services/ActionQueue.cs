@@ -57,6 +57,26 @@ public sealed class QueuedAction
     public string? Message { get; internal set; }
 
     internal CancellationTokenSource Cts { get; } = new();
+
+    /// <summary>W13: a copy with the same id and values, for events. Changes to the live item do not reach it.</summary>
+    internal QueuedAction Snapshot()
+    {
+        return new QueuedAction(Id, Key, Kind, Title)
+        {
+            State = State,
+            Phase = Phase,
+            Percent = Percent,
+            Message = Message,
+        };
+    }
+
+    private QueuedAction(Guid id, string key, ActionKind kind, string title)
+    {
+        Id = id;
+        Key = key;
+        Kind = kind;
+        Title = title;
+    }
 }
 
 /// <summary>
@@ -70,6 +90,10 @@ public sealed class ActionQueue
     private readonly List<QueuedAction> _items = new();
     private readonly List<QueuedAction> _batch = new();
     private readonly List<Entry> _pending = new();
+
+    // W13: events wait here, in order, and are posted after _gate is released.
+    private readonly Queue<QueuedAction> _outbox = new();
+    private readonly object _flushGate = new();
     private bool _running;
 
     /// <param name="post">Runs an event on the screen thread. Tests pass <c>a =&gt; a()</c>.</param>
@@ -78,7 +102,10 @@ public sealed class ActionQueue
         _post = post ?? throw new ArgumentNullException(nameof(post));
     }
 
-    /// <summary>Raised on every state, phase or percent change. Runs through the post function.</summary>
+    /// <summary>
+    /// Raised on every state, phase or percent change. Runs through the post function, never inside the queue lock.
+    /// The item is a snapshot taken at the change. Use its Id with Cancel, and Items or CurrentBatch for the live list.
+    /// </summary>
     public event Action<QueuedAction>? Changed;
 
     /// <summary>Snapshot of every action in this queue, in the order they were added.</summary>
@@ -153,6 +180,7 @@ public sealed class ActionQueue
     /// <summary>A waiting action is removed and set to Cancelled. A working action gets its token cancelled.</summary>
     public void Cancel(Guid id)
     {
+        CancellationTokenSource? toCancel = null;
         lock (_gate)
         {
             var item = _items.FirstOrDefault(i => i.Id == id);
@@ -170,9 +198,22 @@ public sealed class ActionQueue
             }
             else if (item.State == ActionState.Working)
             {
-                item.Cts.Cancel();
+                toCancel = item.Cts;
             }
         }
+
+        // Cancel runs token callbacks. Run them outside the lock. The source is disposed only under the lock
+        // after the work ends, so a race can only find it disposed, which is ignored.
+        try
+        {
+            toCancel?.Cancel();
+        }
+        catch (ObjectDisposedException)
+        {
+            // The action ended between the check and the cancel.
+        }
+
+        Flush();
     }
 
     private static async Task<ActionOutcome> RunLegacyAsync(
@@ -191,6 +232,7 @@ public sealed class ActionQueue
         string title,
         Func<IProgress<ActionProgress>, CancellationToken, Task<ActionOutcome>> work)
     {
+        QueuedAction added;
         lock (_gate)
         {
             var existing = _items.FirstOrDefault(i =>
@@ -219,8 +261,11 @@ public sealed class ActionQueue
                 _ = Task.Run(RunAsync);
             }
 
-            return item;
+            added = item;
         }
+
+        Flush();
+        return added;
     }
 
     private async Task RunAsync()
@@ -242,6 +287,7 @@ public sealed class ActionQueue
                 Raise(entry.Item);
             }
 
+            Flush();
             await ExecuteAsync(entry).ConfigureAwait(false);
         }
     }
@@ -279,6 +325,8 @@ public sealed class ActionQueue
             item.Cts.Dispose();
             Raise(item);
         }
+
+        Flush();
     }
 
     private void Report(QueuedAction item, ActionProgress report)
@@ -300,12 +348,47 @@ public sealed class ActionQueue
             item.Percent = percent;
             Raise(item);
         }
+
+        Flush();
     }
 
-    // Call only while holding _gate, so events keep their order.
+    // Call only while holding _gate. Takes a snapshot in change order. Flush posts it after the lock is released.
     private void Raise(QueuedAction item)
     {
-        _post(() => Changed?.Invoke(item));
+        _outbox.Enqueue(item.Snapshot());
+    }
+
+    /// <summary>
+    /// Posts waiting events in order. Call after releasing _gate.
+    /// W13: a post function or handler that throws never stops the queue or drops later events.
+    /// </summary>
+    private void Flush()
+    {
+        lock (_flushGate)
+        {
+            while (true)
+            {
+                QueuedAction snapshot;
+                lock (_gate)
+                {
+                    if (_outbox.Count == 0)
+                    {
+                        return;
+                    }
+
+                    snapshot = _outbox.Dequeue();
+                }
+
+                try
+                {
+                    _post(() => Changed?.Invoke(snapshot));
+                }
+                catch (Exception)
+                {
+                    // A failed event must not stop the queue. The live list still has the state.
+                }
+            }
+        }
     }
 
     private sealed record Entry(

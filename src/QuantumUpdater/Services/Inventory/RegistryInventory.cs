@@ -39,7 +39,8 @@ public static class RegistryInventory
     private static readonly Regex KbName = new(@"^KB[0-9]+$", RegexOptions.CultureInvariant);
 
     /// <summary>
-    /// Reads the four views: machine and user, each in 64-bit and 32-bit.
+    /// Reads three views: machine in 64-bit and 32-bit, and the user once.
+    /// W16: the user Uninstall key is not split by 32-bit and 64-bit, so a second user read gave the same rows.
     /// One bad key or view is skipped. The rest still load.
     /// </summary>
     public static IReadOnlyList<AppEntry> Read()
@@ -48,7 +49,6 @@ public static class RegistryInventory
         ReadView(RegistryHive.LocalMachine, RegistryView.Registry64, rows);
         ReadView(RegistryHive.LocalMachine, RegistryView.Registry32, rows);
         ReadView(RegistryHive.CurrentUser, RegistryView.Registry64, rows);
-        ReadView(RegistryHive.CurrentUser, RegistryView.Registry32, rows);
         return RemoveDuplicates(rows);
     }
 

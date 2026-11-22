@@ -147,8 +147,11 @@ public sealed class WingetRunner
             }
 
             // Read both pipes at the same time so the process never blocks on a full pipe.
+            // W9: a reader left behind after the grace time can still fail later. Observe its fault.
             var stdoutTask = ReadLinesAsync(process.StandardOutput, HandleStdoutLine);
             var stderrTask = ReadLinesAsync(process.StandardError, HandleStderrLine);
+            _ = ObserveFaults(stdoutTask);
+            _ = ObserveFaults(stderrTask);
 
             bool cancelled = false;
             bool timedOut = false;
@@ -167,7 +170,9 @@ public sealed class WingetRunner
                 try
                 {
                     // Bounded: a process that could not be killed must not block the caller.
-                    await process.WaitForExitAsync().WaitAsync(ReaderGrace).ConfigureAwait(false);
+                    var exitWait = process.WaitForExitAsync();
+                    _ = ObserveFaults(exitWait);
+                    await exitWait.WaitAsync(ReaderGrace).ConfigureAwait(false);
                 }
                 catch (TimeoutException)
                 {
@@ -177,7 +182,9 @@ public sealed class WingetRunner
 
             try
             {
-                await Task.WhenAll(stdoutTask, stderrTask).WaitAsync(ReaderGrace).ConfigureAwait(false);
+                var readers = Task.WhenAll(stdoutTask, stderrTask);
+                _ = ObserveFaults(readers);
+                await readers.WaitAsync(ReaderGrace).ConfigureAwait(false);
             }
             catch (TimeoutException)
             {
@@ -244,7 +251,8 @@ public sealed class WingetRunner
     // Flags that take one value. Every verb may use them.
     private static readonly string[] ValueFlagsForAll = [IdFlag, SourceFlag, CountFlag];
 
-    private sealed record VerbRules(bool AllowsPositional, bool IsAction, HashSet<string> SwitchFlags, HashSet<string> ValueFlags);
+    // NeedsId: the verb is always an action and must name exactly one package (W8).
+    private sealed record VerbRules(bool AllowsPositional, bool IsAction, bool NeedsId, HashSet<string> SwitchFlags, HashSet<string> ValueFlags);
 
     private static readonly Dictionary<string, VerbRules> Verbs = new(StringComparer.OrdinalIgnoreCase)
     {
@@ -253,17 +261,27 @@ public sealed class WingetRunner
         ["search"] = MakeRules(allowsPositional: true, isAction: false, QueryFlag),
         ["show"] = MakeRules(allowsPositional: true, isAction: false, QueryFlag, VersionFlag),
         // Action verbs never take a plain word. With an --id they are the action form.
-        ["install"] = MakeRules(allowsPositional: false, isAction: true, VersionFlag),
+        // upgrade without an --id is the list of available updates, so only install and uninstall need one.
+        ["install"] = MakeRules(allowsPositional: false, isAction: true, VersionFlag, needsId: true),
         ["upgrade"] = MakeRules(allowsPositional: false, isAction: true, VersionFlag),
-        ["uninstall"] = MakeRules(allowsPositional: false, isAction: true, VersionFlag),
+        ["uninstall"] = MakeRules(allowsPositional: false, isAction: true, VersionFlag, needsId: true),
     };
 
-    private static VerbRules MakeRules(bool allowsPositional, bool isAction, params string[] extraValueFlags)
+    private static VerbRules MakeRules(bool allowsPositional, bool isAction, string? extraValueFlag = null, string? secondValueFlag = null, bool needsId = false)
     {
         var switches = new HashSet<string>(SwitchFlagsForAll, StringComparer.OrdinalIgnoreCase);
         var values = new HashSet<string>(ValueFlagsForAll, StringComparer.OrdinalIgnoreCase);
-        values.UnionWith(extraValueFlags);
-        return new VerbRules(allowsPositional, isAction, switches, values);
+        if (extraValueFlag is not null)
+        {
+            values.Add(extraValueFlag);
+        }
+
+        if (secondValueFlag is not null)
+        {
+            values.Add(secondValueFlag);
+        }
+
+        return new VerbRules(allowsPositional, isAction, needsId, switches, values);
     }
 
     /// <summary>
@@ -347,7 +365,7 @@ public sealed class WingetRunner
             }
         }
 
-        if (rules.IsAction && idCount > 1)
+        if ((rules.IsAction && idCount > 1) || (rules.NeedsId && idCount != 1))
         {
             throw new ArgumentException("Use exactly one --id.", nameof(args));
         }
@@ -394,6 +412,19 @@ public sealed class WingetRunner
     private static bool ContainsFlag(List<string> args, string flag)
     {
         return args.Any(a => string.Equals(a, flag, StringComparison.OrdinalIgnoreCase));
+    }
+
+    /// <summary>
+    /// W9: reads the fault of a task that may be left behind, so it never shows up as an unobserved task exception.
+    /// Returns the continuation, so tests can wait for it. The continuation never throws.
+    /// </summary>
+    internal static Task ObserveFaults(Task task)
+    {
+        return task.ContinueWith(
+            static t => _ = t.Exception,
+            CancellationToken.None,
+            TaskContinuationOptions.OnlyOnFaulted | TaskContinuationOptions.ExecuteSynchronously,
+            TaskScheduler.Default);
     }
 
     private static async Task ReadLinesAsync(StreamReader reader, Action<string> handle)

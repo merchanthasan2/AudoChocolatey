@@ -121,7 +121,7 @@ public sealed class UpdatesPage : Grid
         try
         {
             var result = await _services.Winget.UpgradeAsync(package.Id).ConfigureAwait(true);
-            SetStatus(result.Success ? "Healthy" : "Failed", result.Success ? Theme.Healthy : Theme.Critical, result.Message);
+            SetStatus(result.Success ? "Healthy" : "Failed", result.Success ? Theme.Healthy : Theme.Critical, result.Text);
             await _services.Account.ReportActivityAsync(_services.Session, "upgrade", package.Id, result.Success).ConfigureAwait(true);
         }
         catch (Exception ex)
