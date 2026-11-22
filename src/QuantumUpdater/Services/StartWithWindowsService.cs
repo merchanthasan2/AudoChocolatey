@@ -192,97 +192,124 @@ public class Win32PathSecurityChecker : IPathSecurityChecker
 }
 
 /// <summary>
-/// Default production implementation using Windows schtasks.exe with XML definitions.
+/// Production implementation using Task Scheduler 2.0 COM API (Schedule.Service).
+/// Registers tasks directly in memory from XML string with no temporary file,
+/// preventing TOCTOU file race vulnerabilities.
 /// </summary>
-public class SchtasksSchedulerClient : ITaskSchedulerClient
+public class ComTaskSchedulerClient : ITaskSchedulerClient
 {
-    private static readonly string SchtasksExe = Path.Combine(Environment.SystemDirectory, "schtasks.exe");
+    private const int TASK_CREATE_OR_UPDATE = 6;
+    private const int TASK_LOGON_INTERACTIVE_TOKEN = 3;
 
     public bool IsTaskEnabled(string taskName)
     {
-        var result = RunSchtasks($"/Query /TN \"{taskName}\" /XML");
-        if (result.ExitCode != 0)
+        try
+        {
+            dynamic service = CreateConnectedService();
+            dynamic root = service.GetFolder(@"\");
+            dynamic task = root.GetTask(taskName);
+            return (bool)task.Enabled;
+        }
+        catch (COMException ex) when (unchecked((uint)ex.HResult) == 0x80070002)
         {
             return false;
         }
-
-        var output = result.StandardOutput;
-        if (output.Contains("<Enabled>false</Enabled>", StringComparison.OrdinalIgnoreCase))
+        catch (FileNotFoundException)
         {
             return false;
         }
-
-        return true;
     }
 
     public void RegisterTask(string taskName, string xmlDefinition)
     {
-        var tempXmlPath = Path.Combine(Path.GetTempPath(), $"DeskVerveTask_{Guid.NewGuid():N}.xml");
-        try
+        dynamic service = CreateConnectedService();
+        dynamic root = service.GetFolder(@"\");
+
+        string folderPath;
+        string leafName;
+        int lastSlash = taskName.LastIndexOf('\\');
+        if (lastSlash > 0)
         {
-            File.WriteAllText(tempXmlPath, xmlDefinition, Encoding.Unicode);
-            var result = RunSchtasks($"/Create /TN \"{taskName}\" /XML \"{tempXmlPath}\" /F");
-            if (result.ExitCode != 0)
-            {
-                throw new InvalidOperationException(
-                    $"Failed to register scheduled task '{taskName}'. Exit code: {result.ExitCode}. Output: {result.StandardError.Trim()} {result.StandardOutput.Trim()}");
-            }
+            folderPath = taskName.Substring(0, lastSlash);
+            leafName = taskName.Substring(lastSlash + 1);
         }
-        finally
+        else
         {
-            try
-            {
-                if (File.Exists(tempXmlPath))
-                {
-                    File.Delete(tempXmlPath);
-                }
-            }
-            catch
-            {
-                // Best effort cleanup of temp file
-            }
+            folderPath = @"\";
+            leafName = taskName.TrimStart('\\');
         }
+
+        dynamic targetFolder = GetOrCreateFolder(root, folderPath);
+        targetFolder.RegisterTask(
+            leafName,
+            xmlDefinition,
+            TASK_CREATE_OR_UPDATE,
+            null,
+            null,
+            TASK_LOGON_INTERACTIVE_TOKEN);
     }
 
     public void DeleteTask(string taskName)
     {
-        var result = RunSchtasks($"/Delete /TN \"{taskName}\" /F");
-        if (result.ExitCode != 0)
+        try
         {
-            var combined = (result.StandardError + " " + result.StandardOutput).ToLowerInvariant();
-            if (combined.Contains("cannot find") || combined.Contains("does not exist"))
-            {
-                // Already absent, ignore "not found"
-                return;
-            }
-
-            throw new InvalidOperationException(
-                $"Failed to delete scheduled task '{taskName}'. Exit code: {result.ExitCode}. Output: {result.StandardError.Trim()}");
+            dynamic service = CreateConnectedService();
+            dynamic root = service.GetFolder(@"\");
+            root.DeleteTask(taskName, 0);
+        }
+        catch (COMException ex) when (unchecked((uint)ex.HResult) == 0x80070002)
+        {
+            // Task not found; delete is idempotent.
+        }
+        catch (FileNotFoundException)
+        {
+            // Task not found; delete is idempotent.
         }
     }
 
-    private static (int ExitCode, string StandardOutput, string StandardError) RunSchtasks(string arguments)
+    private static dynamic CreateConnectedService()
     {
-        using var process = new Process();
-        process.StartInfo = new ProcessStartInfo
+        Type? type = Type.GetTypeFromProgID("Schedule.Service");
+        if (type == null)
         {
-            FileName = SchtasksExe,
-            Arguments = arguments,
-            UseShellExecute = false,
-            CreateNoWindow = true,
-            RedirectStandardOutput = true,
-            RedirectStandardError = true,
-            StandardOutputEncoding = Encoding.UTF8,
-            StandardErrorEncoding = Encoding.UTF8
-        };
+            throw new PlatformNotSupportedException("Schedule.Service COM class is not available on this system.");
+        }
 
-        process.Start();
-        var stdout = process.StandardOutput.ReadToEnd();
-        var stderr = process.StandardError.ReadToEnd();
-        process.WaitForExit(10_000);
-
-        return (process.ExitCode, stdout, stderr);
+        dynamic service = Activator.CreateInstance(type)
+            ?? throw new InvalidOperationException("Failed to instantiate Schedule.Service COM object.");
+        service.Connect();
+        return service;
     }
+
+    private static dynamic GetOrCreateFolder(dynamic root, string folderPath)
+    {
+        if (string.IsNullOrEmpty(folderPath) || folderPath == @"\")
+        {
+            return root;
+        }
+
+        try
+        {
+            return root.GetFolder(folderPath);
+        }
+        catch (COMException ex) when (unchecked((uint)ex.HResult) == 0x80070002)
+        {
+            string subfolderName = folderPath.TrimStart('\\');
+            return root.CreateFolder(subfolderName, null);
+        }
+        catch (FileNotFoundException)
+        {
+            string subfolderName = folderPath.TrimStart('\\');
+            return root.CreateFolder(subfolderName, null);
+        }
+    }
+}
+
+/// <summary>
+/// Alias for <see cref="ComTaskSchedulerClient"/> for backwards compatibility.
+/// </summary>
+public class TaskSchedulerClient : ComTaskSchedulerClient
+{
 }
 
 /// <summary>
@@ -303,7 +330,7 @@ public sealed class StartWithWindowsService
         ITaskSchedulerClient? scheduler = null,
         IPathSecurityChecker? pathChecker = null)
     {
-        _scheduler = scheduler ?? new SchtasksSchedulerClient();
+        _scheduler = scheduler ?? new ComTaskSchedulerClient();
         _pathChecker = pathChecker ?? new Win32PathSecurityChecker();
     }
 
