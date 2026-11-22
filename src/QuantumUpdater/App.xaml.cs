@@ -50,6 +50,12 @@ public class App : Application, IXamlMetadataProvider
     {
         try
         {
+            if (Services.StartWithWindowsService.HasBackgroundSwitch())
+            {
+                Exit();
+                return;
+            }
+
             Resources.MergedDictionaries.Add(new Microsoft.UI.Xaml.Controls.XamlControlsResources());
             _window = new MainWindow();
             _window.Activate();

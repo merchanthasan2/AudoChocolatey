@@ -34,6 +34,7 @@
     <Compile Include="..\..\src\QuantumUpdater\Services\ActivityLog.cs" Link="Linked\ActivityLog.cs" />
     <Compile Include="..\..\src\QuantumUpdater\Services\SessionStore.cs" Link="Linked\SessionStore.cs" />
     <Compile Include="..\..\src\QuantumUpdater\Services\MachineSummary.cs" Link="Linked\MachineSummary.cs" />
+    <Compile Include="..\..\src\QuantumUpdater\Services\StartWithWindowsService.cs" Link="Linked\StartWithWindowsService.cs" />
     <Compile Include="..\..\src\QuantumUpdater.Portal\AccountStore.cs" Link="Linked\Portal\AccountStore.cs" />
     <Compile Include="..\..\src\QuantumUpdater.Portal\PortalHandler.cs" Link="Linked\Portal\PortalHandler.cs" />
     <Compile Include="..\..\src\QuantumUpdater.Portal\RateLimiter.cs" Link="Linked\Portal\RateLimiter.cs" />

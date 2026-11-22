@@ -55,6 +55,9 @@ Name: "{autodesktop}\DeskVerve"; Filename: "{app}\DeskVerve.exe"; IconFilename: 
 [Run]
 Filename: "{app}\DeskVerve.exe"; Description: "{cm:LaunchProgram,DeskVerve}"; Flags: nowait postinstall skipifsilent
 
+[UninstallRun]
+Filename: "{cmd}"; Parameters: "/c schtasks /Delete /TN ""\Quantum Step\DeskVerve Start"" /F >nul 2>&1"; Flags: runhidden
+
 [Code]
 function PrepareToInstall(var NeedsRestart: Boolean): String;
 var
@@ -64,4 +67,14 @@ begin
   Exec(ExpandConstant('{cmd}'), '/c taskkill /F /IM DeskVerve.exe /T >nul 2>&1', '', SW_HIDE, ewWaitUntilTerminated, ResultCode);
   Exec(ExpandConstant('{cmd}'), '/c taskkill /F /IM QuantumUpdater.exe /T >nul 2>&1', '', SW_HIDE, ewWaitUntilTerminated, ResultCode);
   Result := '';
+end;
+
+procedure CurUninstallStepChanged(CurUninstallStep: TUninstallStep);
+var
+  ResultCode: Integer;
+begin
+  if CurUninstallStep = usUninstall then
+  begin
+    Exec(ExpandConstant('{cmd}'), '/c schtasks /Delete /TN "\Quantum Step\DeskVerve Start" /F >nul 2>&1', '', SW_HIDE, ewWaitUntilTerminated, ResultCode);
+  end;
 end;
