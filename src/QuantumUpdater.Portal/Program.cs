@@ -58,6 +58,20 @@ static async Task Handle(HttpListenerContext context, AccountStore store)
             return;
         }
 
+        if (method == "GET" && path == "/api/me")
+        {
+            // F7: the app checks its stored session at start. Any 401 makes it sign out.
+            var me = store.UserForToken(ReadBearer(context));
+            if (me is null || me.Role == "owner")
+            {
+                await WriteJson(context, 401, new { ok = false, message = "Sign in required." }).ConfigureAwait(false);
+                return;
+            }
+
+            await WriteJson(context, 200, new { ok = true, message = "Signed in.", email = me.Email }).ConfigureAwait(false);
+            return;
+        }
+
         if (method == "POST" && path is "/api/heartbeat" or "/api/activity")
         {
             var user = store.UserForToken(ReadBearer(context));

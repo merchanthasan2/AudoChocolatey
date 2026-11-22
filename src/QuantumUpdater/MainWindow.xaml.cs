@@ -17,6 +17,7 @@ public sealed class MainWindow : Window
     private readonly Dictionary<string, Button> _navButtons = new();
     private string _current = "";
     private bool _readyAdvanced;
+    private bool _signInPending;
     private readonly StackPanel _accountFooter = new() { Spacing = 4, Margin = new Thickness(16, 8, 16, 16) };
 
     public MainWindow()
@@ -141,6 +142,41 @@ public sealed class MainWindow : Window
         }
 
         RefreshAccountFooter();
+
+        // F7: a stored session the service refuses (401 on any call) is cleared, and Sign in is shown.
+        _services.Account.SessionRejected += () => dispatcher.TryEnqueue(OnSessionRejected);
+        _ = CheckSessionAtStartAsync();
+    }
+
+    private async Task CheckSessionAtStartAsync()
+    {
+        try
+        {
+            // A Rejected answer raises SessionRejected. Offline keeps the session.
+            await _services.Account.CheckSessionAsync(_services.Session).ConfigureAwait(true);
+        }
+        catch (Exception ex)
+        {
+            CrashLog.Write("Session check", ex);
+        }
+    }
+
+    private void OnSessionRejected()
+    {
+        RefreshAccountFooter();
+        if (_current == "Sign in")
+        {
+            return;
+        }
+
+        // Do not leave Getting ready while it scans. Show Sign in once it has moved on.
+        if (_current == "Getting ready" && !_readyAdvanced)
+        {
+            _signInPending = true;
+            return;
+        }
+
+        ShowSignIn();
     }
 
     private void ShowSignIn()
@@ -252,6 +288,11 @@ public sealed class MainWindow : Window
 
             _readyAdvanced = true;
             Show("Updates & Health");
+            if (_signInPending)
+            {
+                _signInPending = false;
+                ShowSignIn();
+            }
         };
         return page;
     }
