@@ -68,6 +68,7 @@ public sealed class UpdateService
             }
 
             string? zipUrl = null;
+            string? fallbackZipUrl = null;
             if (root.TryGetProperty("assets", out var assets) && assets.ValueKind == JsonValueKind.Array)
             {
                 foreach (var asset in assets.EnumerateArray())
@@ -78,15 +79,23 @@ public sealed class UpdateService
                     }
 
                     var name = nameEl.GetString();
-                    if (name is not null &&
-                        name.Contains("QuantumUpdater-Windows.zip", StringComparison.OrdinalIgnoreCase) &&
-                        asset.TryGetProperty("browser_download_url", out var urlEl))
+                    if (name is not null && asset.TryGetProperty("browser_download_url", out var urlEl))
                     {
-                        zipUrl = urlEl.GetString();
-                        break;
+                        if (name.Contains("DeskVerve-Windows.zip", StringComparison.OrdinalIgnoreCase))
+                        {
+                            zipUrl = urlEl.GetString();
+                            break;
+                        }
+
+                        if (name.Contains("QuantumUpdater-Windows.zip", StringComparison.OrdinalIgnoreCase))
+                        {
+                            fallbackZipUrl ??= urlEl.GetString();
+                        }
                     }
                 }
             }
+
+            zipUrl ??= fallbackZipUrl;
 
             var latestVersion = ParseTagVersion(tagName);
             var current = AppVersion.Version;

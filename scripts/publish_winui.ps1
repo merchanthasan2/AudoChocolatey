@@ -10,9 +10,9 @@ $PublishDir = Join-Path $RepoRoot "dist\QuantumUpdater-WinUI"
 $ZipPath = Join-Path $RepoRoot "py-artifacts\QuantumUpdater-Windows-WinUI.zip"
 $Csproj = Join-Path $RepoRoot "src\QuantumUpdater\QuantumUpdater.csproj"
 
-$running = Get-Process -Name "QuantumUpdater" -ErrorAction SilentlyContinue
+$running = Get-Process -Name "DeskVerve", "QuantumUpdater" -ErrorAction SilentlyContinue
 if ($running) {
-  Write-Host "Stopping QuantumUpdater process(es)..."
+  Write-Host "Stopping running process(es)..."
   $running | Stop-Process -Force
   Start-Sleep -Seconds 2
 }
@@ -28,7 +28,10 @@ finally {
   Pop-Location
 }
 
-$exePath = Join-Path $PublishDir "QuantumUpdater.exe"
+$exePath = Join-Path $PublishDir "DeskVerve.exe"
+if (-not (Test-Path -LiteralPath $exePath)) {
+  $exePath = Join-Path $PublishDir "QuantumUpdater.exe"
+}
 if (-not (Test-Path -LiteralPath $exePath)) {
   throw "EXE not found after publish: $exePath"
 }

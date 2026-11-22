@@ -1,6 +1,9 @@
-# Invokes QuantumUpdater scheduled cleanup (no UI).
+# Invokes DeskVerve / QuantumUpdater scheduled cleanup (no UI).
 $ErrorActionPreference = 'Stop'
-$exe = Join-Path $PSScriptRoot '..\QuantumUpdater.exe'
+$exe = Join-Path $PSScriptRoot '..\DeskVerve.exe'
+if (-not (Test-Path -LiteralPath $exe)) {
+  $exe = Join-Path $PSScriptRoot '..\QuantumUpdater.exe'
+}
 if (Test-Path -LiteralPath $exe) {
   & $exe --scheduled-cleanup --no-elevate
   exit $LASTEXITCODE
