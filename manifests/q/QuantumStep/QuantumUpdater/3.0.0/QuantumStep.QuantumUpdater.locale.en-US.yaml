@@ -1,0 +1,29 @@
+﻿# yaml-language-server: $schema=https://aka.ms/winget-manifest.defaultLocale.1.10.0.schema.json
+PackageIdentifier: QuantumStep.QuantumUpdater
+PackageVersion: 3.0.0
+PackageLocale: en-US
+Publisher: Quantum Step
+PublisherUrl: https://github.com/merchanthasan2/AudoChocolatey
+PublisherSupportUrl: https://github.com/merchanthasan2/AudoChocolatey/issues
+Author: Quantum Step
+PackageName: DeskVerve
+PackageUrl: https://github.com/merchanthasan2/AudoChocolatey
+License: MIT
+LicenseUrl: https://raw.githubusercontent.com/merchanthasan2/AudoChocolatey/channel/windows/LICENSE
+Copyright: Copyright (c) 2026 Quantum Step
+ShortDescription: DeskVerve keeps your Windows apps up to date.
+Description: |-
+  DeskVerve is a Windows desktop app from Quantum Step that checks,
+  updates, and installs software using winget. Requires administrator on launch.
+Moniker: deskverve
+Tags:
+  - quantum-step
+  - deskverve
+  - updater
+  - package-manager
+  - winget
+  - software-manager
+  - windows-tools
+ReleaseNotesUrl: https://github.com/merchanthasan2/AudoChocolatey/releases/tag/v3.0.0
+ManifestType: defaultLocale
+ManifestVersion: 1.10.0
