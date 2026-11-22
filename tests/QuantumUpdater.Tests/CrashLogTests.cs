@@ -83,6 +83,29 @@ public class CrashLogTests : IDisposable
     }
 
     [Fact]
+    public void Other_users_folder_names_are_replaced()
+    {
+        const string stack = "   at Foo() in D:\\Users\\other.person\\src\\x.cs:line 5\n"
+            + "   at Bar() in C:/users/Someone Else/y.cs:line 9";
+
+        string text = CrashLog.Redact(stack, "C:\\Users\\merch");
+
+        Assert.DoesNotContain("other.person", text);
+        Assert.DoesNotContain("Someone Else", text);
+        Assert.Contains("D:\\Users\\%USERNAME%\\src\\x.cs", text);
+        Assert.Contains("C:/users/%USERNAME%/y.cs", text);
+        Assert.Equal(text, CrashLog.Redact(text, "C:\\Users\\merch"));
+    }
+
+    [Fact]
+    public void Label_keeps_plain_characters_only_and_is_capped()
+    {
+        Assert.Equal("Mark:Diag nofirstchance,x", CrashLog.SafeLabel("Mark:Diag nofirstchance,x"));
+        Assert.Equal("Mark:Diag ??a?b.c??", CrashLog.SafeLabel("Mark:Diag \r\na@b.c\u00e9\t"));
+        Assert.Equal(80, CrashLog.SafeLabel(new string('a', 500)).Length);
+    }
+
+    [Fact]
     public void Log_folder_that_is_a_junction_is_not_written()
     {
         string target = Path.Combine(_root, "target");

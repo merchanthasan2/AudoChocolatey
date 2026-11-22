@@ -1,5 +1,3 @@
-using System;
-
 namespace QuantumUpdater.Models;
 
 /// <summary>The group a row shows in on the Updates page.</summary>

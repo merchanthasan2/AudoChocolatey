@@ -2,10 +2,6 @@
 // Parts gallery: one scroll page that shows every shared part in each state.
 // It opens only with DESKVERVE_DIAG=gallery (see MainWindow). The demo actions
 // for the activity bar (46.7.49) are in AddDemoActions below.
-using System;
-using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.UI.Text;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;

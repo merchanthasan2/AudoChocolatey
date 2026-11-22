@@ -1,6 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using Windows.ApplicationModel;
 using Windows.Management.Deployment;
 using QuantumUpdater.Models;

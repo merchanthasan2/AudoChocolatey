@@ -30,6 +30,13 @@
     <Compile Include="..\..\src\QuantumUpdater\Models\UpgradeEntry.cs" Link="Linked\UpgradeEntry.cs" />
     <Compile Include="..\..\src\QuantumUpdater\Services\Updates\IUpdatesSource.cs" Link="Linked\IUpdatesSource.cs" />
     <Compile Include="..\..\src\QuantumUpdater\Services\Updates\UpdatesGrouping.cs" Link="Linked\UpdatesGrouping.cs" />
+    <Compile Include="..\..\src\QuantumUpdater\Services\AccountClient.cs" Link="Linked\AccountClient.cs" />
+    <Compile Include="..\..\src\QuantumUpdater\Services\ActivityLog.cs" Link="Linked\ActivityLog.cs" />
+    <Compile Include="..\..\src\QuantumUpdater\Services\SessionStore.cs" Link="Linked\SessionStore.cs" />
+    <Compile Include="..\..\src\QuantumUpdater\Services\MachineSummary.cs" Link="Linked\MachineSummary.cs" />
+    <Compile Include="..\..\src\QuantumUpdater.Portal\AccountStore.cs" Link="Linked\Portal\AccountStore.cs" />
+    <Compile Include="..\..\src\QuantumUpdater.Portal\PortalHandler.cs" Link="Linked\Portal\PortalHandler.cs" />
+    <Compile Include="..\..\src\QuantumUpdater.Portal\RateLimiter.cs" Link="Linked\Portal\RateLimiter.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Data\winget-sample.txt" CopyToOutputDirectory="PreserveNewest" />
@@ -39,9 +46,20 @@
     <None Include="Data\winget-download-hash-mismatch.txt" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
   <ItemGroup>
+    <!-- W14: FakeWinget builds first (ProjectReference), then a target copies it after build.
+         The glob runs inside the target, so it sees files that exist only once the reference has built. -->
     <ProjectReference Include="..\FakeWinget\FakeWinget.csproj" ReferenceOutputAssembly="false" />
-    <None Include="..\FakeWinget\bin\$(Configuration)\net10.0\FakeWinget.*" Link="FakeWinget\%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
+  <Target Name="CopyFakeWinget" AfterTargets="Build">
+    <MSBuild Projects="..\FakeWinget\FakeWinget.csproj" Targets="GetTargetPath" Properties="Configuration=$(Configuration)">
+      <Output TaskParameter="TargetOutputs" ItemName="_FakeWingetTarget" />
+    </MSBuild>
+    <ItemGroup>
+      <_FakeWingetFiles Include="%(_FakeWingetTarget.RootDir)%(_FakeWingetTarget.Directory)FakeWinget.*" />
+    </ItemGroup>
+    <Error Condition="'@(_FakeWingetFiles)' == ''" Text="FakeWinget output not found next to @(_FakeWingetTarget)." />
+    <Copy SourceFiles="@(_FakeWingetFiles)" DestinationFolder="$(OutDir)FakeWinget" SkipUnchangedFiles="true" />
+  </Target>
   <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.12.0" />
     <PackageReference Include="xunit" Version="2.9.3" />

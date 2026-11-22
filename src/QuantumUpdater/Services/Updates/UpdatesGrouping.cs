@@ -1,6 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using QuantumUpdater.Models;
 using QuantumUpdater.Services.Winget;
 

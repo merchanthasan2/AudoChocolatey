@@ -29,6 +29,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Content Include="..\..\brand\desk-verve-emblem.png" Link="Assets\Brand\desk-verve-emblem.png" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="..\..\brand\png\desk-verve-emblem-256.png" Link="Assets\Brand\desk-verve-emblem-256.png" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="..\..\brand\desk-verve-icon.ico" Link="Assets\Brand\desk-verve-icon.ico" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
   <ItemGroup>

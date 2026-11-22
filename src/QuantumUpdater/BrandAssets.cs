@@ -12,8 +12,10 @@ namespace QuantumUpdater;
 /// </summary>
 public static class BrandAssets
 {
+    // F25: the square 256 x 256 emblem. The 449 x 301 master is not square, so a square box
+    // letterboxed it, and decoding it at full size wasted memory for a 24 px title bar icon.
     private static readonly string EmblemPath = Path.Combine(
-        AppContext.BaseDirectory, "Assets", "Brand", "desk-verve-emblem.png");
+        AppContext.BaseDirectory, "Assets", "Brand", "desk-verve-emblem-256.png");
 
     /// <summary>
     /// Creates the DeskVerve emblem image at the given size. Never throws:
@@ -36,7 +38,12 @@ public static class BrandAssets
 
         try
         {
-            image.Source = new BitmapImage(new Uri(EmblemPath, UriKind.Absolute));
+            // Logical pixels: WinUI scales the decode size by the display scale, so the icon stays sharp.
+            image.Source = new BitmapImage(new Uri(EmblemPath, UriKind.Absolute))
+            {
+                DecodePixelType = DecodePixelType.Logical,
+                DecodePixelWidth = DecodeWidth(size),
+            };
         }
         catch
         {
@@ -44,5 +51,16 @@ public static class BrandAssets
         }
 
         return image;
+    }
+
+    // Whole logical pixels, at least 1 and no more than the file holds.
+    internal static int DecodeWidth(double size)
+    {
+        if (double.IsNaN(size) || size < 1)
+        {
+            return 1;
+        }
+
+        return (int)Math.Min(256, Math.Ceiling(size));
     }
 }

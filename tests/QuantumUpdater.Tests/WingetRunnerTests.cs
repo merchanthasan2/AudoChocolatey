@@ -21,20 +21,51 @@ public class WingetRunnerTests
         "line5",
     ];
 
+    private static readonly string FakePath = Path.Combine(AppContext.BaseDirectory, "FakeWinget", "FakeWinget.exe");
+
     private static WingetRunner NewRunner()
     {
-        return new WingetRunner(Path.Combine(AppContext.BaseDirectory, "FakeWinget", "FakeWinget.exe"));
+        return new WingetRunner(FakePath);
+    }
+
+    // Only fakes started from this test output count. Another worktree may run its own tests at the same time.
+    private static List<Process> OwnFakes()
+    {
+        var own = new List<Process>();
+        foreach (var process in Process.GetProcessesByName("FakeWinget"))
+        {
+            string? file = null;
+            try
+            {
+                file = process.MainModule?.FileName;
+            }
+            catch (Exception ex) when (ex is Win32Exception or InvalidOperationException)
+            {
+                // Ended, or not ours to read.
+            }
+
+            if (file is not null && string.Equals(Path.GetFullPath(file), Path.GetFullPath(FakePath), StringComparison.OrdinalIgnoreCase))
+            {
+                own.Add(process);
+            }
+            else
+            {
+                process.Dispose();
+            }
+        }
+
+        return own;
     }
 
     private static int RunningFakeCount()
     {
-        var found = Process.GetProcessesByName("FakeWinget");
+        var found = OwnFakes();
         foreach (var process in found)
         {
             process.Dispose();
         }
 
-        return found.Length;
+        return found.Count;
     }
 
     [Fact]
@@ -183,7 +214,7 @@ public class WingetRunnerTests
     [Fact]
     public async Task Failed_kill_on_timeout_returns_timed_out_with_stop_incomplete()
     {
-        var runner = new WingetRunner(Path.Combine(AppContext.BaseDirectory, "FakeWinget", "FakeWinget.exe"))
+        var runner = new WingetRunner(FakePath)
         {
             KillTree = _ => throw new Win32Exception(5, "Access is denied."),
         };
@@ -206,7 +237,7 @@ public class WingetRunnerTests
     [Fact]
     public async Task Incomplete_stop_returns_still_running_that_ends_when_the_process_ends()
     {
-        var runner = new WingetRunner(Path.Combine(AppContext.BaseDirectory, "FakeWinget", "FakeWinget.exe"))
+        var runner = new WingetRunner(FakePath)
         {
             // The kill does nothing, so the fake keeps running and the stop stays incomplete.
             KillTree = _ => { },
@@ -233,7 +264,7 @@ public class WingetRunnerTests
     // Stops every running fake winget. A test uses it so no FakeWinget is left running.
     private static void KillRunningFakes()
     {
-        foreach (var process in Process.GetProcessesByName("FakeWinget"))
+        foreach (var process in OwnFakes())
         {
             try
             {
