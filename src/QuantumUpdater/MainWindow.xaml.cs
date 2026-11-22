@@ -224,7 +224,8 @@ public sealed class MainWindow : Window
             };
             signOut.Click += (_, _) =>
             {
-                _services.Session.Clear();
+                // The local session is cleared at once; the service is told in the background.
+                _ = _services.Account.SignOutAsync(_services.Session);
                 RefreshAccountFooter();
             };
             _accountFooter.Children.Add(signOut);

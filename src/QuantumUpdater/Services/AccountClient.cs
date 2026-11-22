@@ -79,6 +79,19 @@ public sealed class AccountClient
         return session.IsSignedIn ? SessionCheck.Unreachable : SessionCheck.Rejected;
     }
 
+    /// <summary>F13: clears the session here, then ends it on the service. The local clear happens even when the service is offline.</summary>
+    public async Task SignOutAsync(SessionStore session, CancellationToken cancellationToken = default)
+    {
+        var token = session.Token;
+        session.Clear();
+        if (string.IsNullOrEmpty(token))
+        {
+            return;
+        }
+
+        await SendAsync(HttpMethod.Post, "/api/logout", new { }, token, cancellationToken).ConfigureAwait(false);
+    }
+
     public async Task ReportHeartbeatAsync(SessionStore session, MachineSummary summary, CancellationToken cancellationToken = default)
     {
         if (!session.IsSignedIn)
