@@ -25,7 +25,6 @@ DefaultDirName={autopf}\DeskVerve
 DefaultGroupName=DeskVerve
 DisableProgramGroupPage=yes
 PrivilegesRequired=admin
-PrivilegesRequiredOverridesAllowed=commandline
 ArchitecturesAllowed=x64compatible
 ArchitecturesInstallIn64BitMode=x64compatible
 SetupIconFile=..\brand\desk-verve-icon.ico
