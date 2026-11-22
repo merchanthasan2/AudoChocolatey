@@ -64,8 +64,12 @@ InstallModes:
   - silent
   - silentWithProgress
 UpgradeBehavior: install
-Commands:
-  - DeskVerve
+ProductCode: '{4E32B66C-5B4B-4E7B-9A39-4E6D2543F9A1}_is1'
+AppsAndFeaturesEntries:
+  - DisplayName: DeskVerve
+    Publisher: Quantum Step
+    ProductCode: '{4E32B66C-5B4B-4E7B-9A39-4E6D2543F9A1}_is1'
+    InstallerType: inno
 Installers:
   - Architecture: x64
     InstallerUrl: $url
