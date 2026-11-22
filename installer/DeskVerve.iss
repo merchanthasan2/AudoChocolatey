@@ -14,7 +14,7 @@
 #endif
 
 [Setup]
-AppId={{4E32B66C-5B4B-4E7B-9A39-4E6D2543F9A1}}
+AppId={{4E32B66C-5B4B-4E7B-9A39-4E6D2543F9A1}
 AppName=DeskVerve
 AppVersion={#MyAppVersion}
 AppPublisher=Quantum Step
@@ -28,6 +28,7 @@ PrivilegesRequired=admin
 ArchitecturesAllowed=x64compatible
 ArchitecturesInstallIn64BitMode=x64compatible
 SetupIconFile=..\brand\desk-verve-icon.ico
+UninstallDisplayName=DeskVerve
 UninstallDisplayIcon={app}\desk-verve-icon.ico
 Compression=lzma2/ultra64
 SolidCompression=yes
