@@ -7,33 +7,37 @@ on:
   workflow_dispatch:
     inputs:
       tag_name:
-        description: 'Release Tag (e.g. v2.0.0)'
+        description: 'Release Tag (e.g. v3.0.0)'
         required: false
-        default: 'v2.0.0'
+        default: 'v3.0.0'
 
 permissions:
   contents: write
 
 jobs:
-  build-windows:
-    name: Build Windows app
+  build-and-release:
+    name: Build & Release DeskVerve (WinUI 3)
     runs-on: windows-latest
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v4
         with:
-          python-version: '3.11'
+          dotnet-version: '10.0.x'
 
-      - name: Install Dependencies
+      - name: Run Unit Tests
+        shell: pwsh
         run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
-          pip install pyinstaller
+          dotnet test tests\QuantumUpdater.Tests -c Release -- -parallel none
 
-      - name: Resolve release tag
+      - name: Install Inno Setup
+        shell: pwsh
+        run: |
+          choco install innosetup -y
+
+      - name: Resolve Release Tag
         id: meta
         shell: pwsh
         run: |
@@ -42,54 +46,48 @@ jobs:
           } else {
             $tag = "${{ github.ref_name }}"
           }
-          if (-not $tag) { $tag = "v2.0.0" }
+          if (-not $tag) { $tag = "v3.0.0" }
           "tag=$tag" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
           Write-Host "Release tag: $tag"
 
-      - name: Build Standalone PyInstaller Binary
+      - name: Build Portable Zip & Setup Installer
         shell: pwsh
         run: |
-          python build_exe.py QuantumUpdater
-          New-Item -ItemType Directory -Force -Path py-artifacts | Out-Null
-          # onedir needs the whole folder — a lone .exe bootloader will not start (Python DLL / _internal missing).
-          $zip = "py-artifacts\QuantumUpdater-Windows.zip"
-          if (Test-Path $zip) { Remove-Item $zip -Force }
-          Compress-Archive -Path "dist\QuantumUpdater\*" -DestinationPath $zip -Force
-          # Keep a copy of the bootloader only for hashing notes; do not publish it alone as the install asset.
-          Copy-Item -Path "dist\QuantumUpdater\QuantumUpdater.exe" -Destination "py-artifacts\QuantumUpdater.bootloader.exe"
-          Get-Item $zip | Format-List FullName, Length
+          $ver = "${{ steps.meta.outputs.tag }}".TrimStart("v")
+          .\scripts\build_installer.ps1 -Configuration Release -Runtime win-x64 -Version $ver
 
-      - name: Prepare winget manifests
+      - name: Prepare Winget Manifests
         shell: pwsh
         run: |
-          $tag = "${{ steps.meta.outputs.tag }}"
-          $ver = $tag.TrimStart("v")
-          # Point winget at the zip until a true single-file portable exists.
-          .\tools\prepare_winget_release.ps1 -ExePath "py-artifacts\QuantumUpdater-Windows.zip" -Version $ver -AssetName "QuantumUpdater-Windows.zip"
-          New-Item -ItemType Directory -Force -Path winget-artifacts | Out-Null
-          Copy-Item -Path "manifests\w\QuantumStep\QuantumUpdater\$ver\*" -Destination "winget-artifacts\" -Force
-          Get-ChildItem winget-artifacts | Format-Table Name, Length
+          $ver = "${{ steps.meta.outputs.tag }}".TrimStart("v")
+          $setupExe = "dist\release\DeskVerve-Setup-$ver-x64.exe"
+          .\tools\prepare_winget_release.ps1 -ExePath $setupExe -Version $ver -AssetName "DeskVerve-Setup-$ver-x64.exe"
 
-      - name: Upload PyInstaller Binary to GitHub Release
+      - name: Upload Winget Manifests Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: winget-manifests
+          path: manifests/q/QuantumStep/QuantumUpdater/
+
+      - name: Upload Release Assets to GitHub Release
         uses: softprops/action-gh-release@v2
         if: startsWith(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch'
         with:
           tag_name: ${{ steps.meta.outputs.tag }}
-          name: Quantum Updater ${{ steps.meta.outputs.tag }}
+          name: DeskVerve ${{ steps.meta.outputs.tag }}
           generate_release_notes: true
           body: |
-            ## Install (another PC)
-            1. Download **QuantumUpdater-Windows.zip**
-            2. Unzip the whole folder (keep `_internal` next to the exe)
-            3. Run `QuantumUpdater.exe` and approve UAC
+            ## Install DeskVerve
+            - **Installer (recommended)**: Download `DeskVerve-Setup-${{ steps.meta.outputs.tag }}-x64.exe`, run and approve elevation.
+            - **Portable**: Download `DeskVerve-Windows.zip`, extract all files, and run `DeskVerve.exe`.
 
-            Do **not** download a lone bootloader `.exe` without `_internal` — that fails with Python errors.
-
-            After winget community acceptance:
-            ```
+            ### Windows Package Manager (winget)
+            ```cmd
             winget install QuantumStep.QuantumUpdater
             ```
           files: |
-            py-artifacts/QuantumUpdater-Windows.zip
-            winget-artifacts/*
+            dist/release/DeskVerve-Windows.zip
+            dist/release/DeskVerve-Windows.zip.sha256
+            dist/release/DeskVerve-Setup-*-x64.exe
+            dist/release/DeskVerve-Setup-*-x64.exe.sha256
           fail_on_unmatched_files: true
