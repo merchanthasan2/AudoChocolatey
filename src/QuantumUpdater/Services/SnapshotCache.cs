@@ -33,47 +33,23 @@ public sealed class SnapshotCache
     public string Folder { get; }
 
     /// <summary>
-    /// Saves the value to "name.json". Writes a temporary file first, then replaces the old file.
+    /// Saves the value to "name.json" through SafeLocalFile: a temp file with a random name, then one replace.
     /// Does nothing when the folder or a file is a junction or link, or when the JSON is over 20 MB.
     /// Throws ArgumentException when the name is not valid.
     /// </summary>
     public void Save<T>(string name, int schema, T value)
     {
         string target = FilePath(name);
-        string temp = target + ".tmp";
 
-        try
+        byte[] bytes = JsonSerializer.SerializeToUtf8Bytes(
+            new Envelope<T>(schema, DateTimeOffset.UtcNow, value),
+            Options);
+        if (bytes.Length > MaxBytes)
         {
-            if (IsReparsePoint(Folder))
-            {
-                return;
-            }
-
-            Directory.CreateDirectory(Folder);
-            if (IsReparsePoint(target) || IsReparsePoint(temp))
-            {
-                return;
-            }
-
-            byte[] bytes = JsonSerializer.SerializeToUtf8Bytes(
-                new Envelope<T>(schema, DateTimeOffset.UtcNow, value),
-                Options);
-            if (bytes.Length > MaxBytes)
-            {
-                return;
-            }
-
-            File.WriteAllBytes(temp, bytes);
-            File.Move(temp, target, overwrite: true);
+            return;
         }
-        catch (IOException)
-        {
-            DeleteQuietly(temp);
-        }
-        catch (UnauthorizedAccessException)
-        {
-            DeleteQuietly(temp);
-        }
+
+        SafeLocalFile.TryWrite(Folder, Path.GetFileName(target), bytes);
     }
 
     /// <summary>
@@ -87,17 +63,12 @@ public sealed class SnapshotCache
 
         try
         {
-            if (!File.Exists(path) || IsReparsePoint(path))
+            byte[]? bytes = SafeLocalFile.TryRead(Folder, Path.GetFileName(path), MaxBytes);
+            if (bytes is null)
             {
                 return null;
             }
 
-            if (new FileInfo(path).Length > MaxBytes)
-            {
-                return null;
-            }
-
-            byte[] bytes = File.ReadAllBytes(path);
             RawEnvelope? raw = ReadEnvelope(bytes);
             if (raw is null)
             {
@@ -190,31 +161,10 @@ public sealed class SnapshotCache
         return true;
     }
 
-    private static void DeleteQuietly(string path)
+    // Best effort. Never follows a junction folder.
+    private void DeleteQuietly(string path)
     {
-        try
-        {
-            File.Delete(path);
-        }
-        catch (IOException)
-        {
-            // Best effort. A file that cannot be deleted is left.
-        }
-        catch (UnauthorizedAccessException)
-        {
-            // Best effort. A file that cannot be deleted is left.
-        }
-    }
-
-    // Same rule as CrashLog: a junction or link could send the file to another folder.
-    private static bool IsReparsePoint(string path)
-    {
-        if (!Path.Exists(path))
-        {
-            return false;
-        }
-
-        return (File.GetAttributes(path) & FileAttributes.ReparsePoint) != 0;
+        SafeLocalFile.TryDelete(Folder, Path.GetFileName(path));
     }
 
     private sealed record Envelope<T>(int Schema, DateTimeOffset SavedAt, T Value);
