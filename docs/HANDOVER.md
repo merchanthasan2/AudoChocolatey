@@ -1,5 +1,10 @@
 # Handover — 15 Nov 2026
 
+## Latest continuation: 16 Nov 2026, Track B
+
+Current source is on `channel/windows`; ADR 048/049 and plan section 15 supersede the older Phase 46 choices-pending notes below. Latest completed slice: 46.7.58, `CliPhase`, the English CLI fallback phase reader. Saved output fixtures are copied to test output. This helper is not yet wired into update actions (46.7.69); percentages remain absent on the CLI route.
+
+Verification: .NET SDK 10.0.404 at `%LOCALAPPDATA%\Microsoft\dotnet\dotnet.exe`; 397 tests passed, 0 failed/skipped; Debug x64 app build passed with 0 warnings/errors. No live install/update or owner acceptance was performed. Independent security/design review remains pending. Continue plan section 15.6 with eligible Updates services; 46.7.89 live COM update spike still requires the owner's explicit yes. Do not start the COM installer route before that spike passes.
 ## 16 Nov 2026 update
 
 The owner resumed work on 16 Nov 2026.

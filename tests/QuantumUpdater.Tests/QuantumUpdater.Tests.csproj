@@ -12,6 +12,7 @@
     <Compile Include="..\..\src\QuantumUpdater\Services\Winget\WingetErrorText.cs" Link="Linked\WingetErrorText.cs" />
     <Compile Include="..\..\src\QuantumUpdater\Services\Winget\RunOutcome.cs" Link="Linked\RunOutcome.cs" />
     <Compile Include="..\..\src\QuantumUpdater\Services\Winget\ComResultMap.cs" Link="Linked\ComResultMap.cs" />
+    <Compile Include="..\..\src\QuantumUpdater\Services\Winget\CliPhase.cs" Link="Linked\CliPhase.cs" />
     <Compile Include="..\..\src\QuantumUpdater\Services\ActionQueue.cs" Link="Linked\ActionQueue.cs" />
     <Compile Include="..\..\src\QuantumUpdater\Services\ActivitySummary.cs" Link="Linked\ActivitySummary.cs" />
     <Compile Include="..\..\src\QuantumUpdater\Services\SnapshotCache.cs" Link="Linked\SnapshotCache.cs" />
@@ -34,6 +35,8 @@
     <None Include="Data\winget-sample.txt" CopyToOutputDirectory="PreserveNewest" />
     <None Include="Data\winget-list.txt" CopyToOutputDirectory="PreserveNewest" />
     <None Include="Data\winget-upgrade.txt" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="Data\winget-download-progress.txt" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="Data\winget-download-hash-mismatch.txt" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\FakeWinget\FakeWinget.csproj" ReferenceOutputAssembly="false" />
