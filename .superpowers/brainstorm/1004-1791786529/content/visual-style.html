@@ -1,0 +1,171 @@
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&family=Inter+Tight:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  .cards { grid-template-columns: 1fr !important; max-width: 760px; }
+  .card-image { height:auto !important; max-height:none !important; overflow:visible !important; padding:0 !important; display:block !important; aspect-ratio:auto !important; min-height:0 !important; background:none !important; }
+  .mk { width:100%; height:330px; display:flex; overflow:hidden; border-radius:8px; text-align:left; }
+  .mk * { box-sizing:border-box; }
+  .ico { width:28px; height:28px; border-radius:7px; flex:none; display:grid; place-items:center; }
+  .ico svg { width:60%; height:60%; }
+  .i-code { background:linear-gradient(160deg,#2aa3f0,#0065a9); }
+  .i-fox  { background:radial-gradient(circle at 35% 30%,#ffd23a 0,#ff8a1f 35%,#e2264d 70%,#7b2ec4 100%); border-radius:50%; }
+  .i-disc { background:#5865f2; }
+  .i-zip  { background:#1b1b1b; color:#fff; font:700 10px/1 system-ui; }
+  .row { display:flex; align-items:center; gap:10px; }
+  .name { font-weight:600; }
+  .grow { flex:1; min-width:0; }
+
+  /* ---------- A: Fluent native ---------- */
+  .A { background:#eef0f4; font-family:"Segoe UI Variable Text","Segoe UI",system-ui,sans-serif; color:#1b1b1b; font-size:11px; }
+  .A .side { width:150px; padding:14px 6px; display:flex; flex-direction:column; gap:2px; }
+  .A .brand { font-size:11px; font-weight:600; padding:0 10px 12px; color:#444; }
+  .A .nav { padding:7px 10px; border-radius:5px; position:relative; color:#333; display:flex; justify-content:space-between; }
+  .A .nav.on { background:rgba(0,0,0,.055); font-weight:600; }
+  .A .nav.on::before { content:""; position:absolute; left:0; top:8px; bottom:8px; width:3px; border-radius:2px; background:#0067c0; }
+  .A .badge { background:#0067c0; color:#fff; border-radius:8px; padding:0 6px; font-size:9.5px; line-height:15px; font-weight:600; }
+  .A .main { flex:1; background:#f9f9fb; border-top-left-radius:8px; margin-top:10px; border:1px solid #e3e5ea; border-right:0; border-bottom:0; padding:16px 18px; }
+  .A h4 { margin:0; font-size:19px; font-weight:600; font-family:"Segoe UI Variable Display","Segoe UI",sans-serif; }
+  .A .sub { color:#5f6368; margin:2px 0 14px; }
+  .A .btn { background:#0067c0; color:#fff; border-radius:4px; padding:5px 12px; font-weight:600; border:1px solid #005ba8; }
+  .A .btn2 { background:#fff; border:1px solid #d6d8dd; border-radius:4px; padding:4px 10px; color:#1b1b1b; }
+  .A .list { background:#fff; border:1px solid #e5e7eb; border-radius:7px; }
+  .A .item { padding:9px 12px; border-bottom:1px solid #f0f1f3; }
+  .A .item:last-child { border-bottom:0; }
+  .A .ver { color:#5f6368; font-size:10px; }
+  .A .src { font-size:9px; color:#5f6368; border:1px solid #e2e4e8; border-radius:4px; padding:1px 5px; }
+  .A .bar { height:3px; background:#e6e8ec; border-radius:2px; margin-top:5px; overflow:hidden; }
+  .A .bar i { display:block; height:100%; width:62%; background:#0067c0; border-radius:2px; }
+
+  /* ---------- B: Studio dark ---------- */
+  .B { background:#0c0d0f; font-family:Geist,system-ui,sans-serif; color:#e7e7ea; font-size:11px; }
+  .B .side { width:150px; border-right:1px solid #1d1f23; padding:12px 8px; display:flex; flex-direction:column; gap:1px; }
+  .B .search { border:1px solid #23262b; border-radius:6px; padding:5px 8px; color:#6d7079; margin-bottom:10px; display:flex; justify-content:space-between; }
+  .B kbd { font-family:"Geist Mono"; font-size:9px; color:#8a8d95; border:1px solid #2a2d33; border-radius:3px; padding:0 4px; }
+  .B .nav { padding:6px 8px; border-radius:5px; color:#9a9da5; display:flex; justify-content:space-between; }
+  .B .nav.on { background:#17191c; color:#f2f2f4; }
+  .B .count { font-family:"Geist Mono"; color:#ff7a45; }
+  .B .main { flex:1; padding:14px 0; display:flex; flex-direction:column; }
+  .B .head { padding:0 16px 12px; border-bottom:1px solid #1d1f23; }
+  .B h4 { margin:0; font-size:14px; font-weight:600; letter-spacing:-.01em; }
+  .B .sub { color:#6d7079; font-size:10.5px; }
+  .B .btn { background:#f2f2f4; color:#0c0d0f; border-radius:5px; padding:5px 11px; font-weight:600; }
+  .B .item { padding:8px 16px; border-bottom:1px solid #16181b; }
+  .B .ver { font-family:"Geist Mono"; font-size:10px; color:#6d7079; }
+  .B .ver b { color:#d9dadd; font-weight:500; }
+  .B .src { font-family:"Geist Mono"; font-size:9px; color:#6d7079; }
+  .B .ghost { color:#c9cad0; border:1px solid #2a2d33; border-radius:5px; padding:3px 9px; }
+  .B .pct { font-family:"Geist Mono"; color:#ff7a45; font-size:10px; }
+  .B .bar { height:2px; background:#1d1f23; margin-top:5px; }
+  .B .bar i { display:block; height:100%; width:62%; background:#ff7a45; }
+
+  /* ---------- C: Warm store ---------- */
+  .C { background:#f6f3ee; font-family:"Inter Tight",system-ui,sans-serif; color:#1d1b18; font-size:11px; }
+  .C .side { width:150px; padding:16px 10px; display:flex; flex-direction:column; gap:3px; }
+  .C .brand { font-weight:700; font-size:12px; letter-spacing:-.02em; padding:0 8px 14px; }
+  .C .nav { padding:7px 10px; border-radius:9px; color:#5b554c; display:flex; justify-content:space-between; font-weight:500; }
+  .C .nav.on { background:#1d1b18; color:#f6f3ee; }
+  .C .nav.on .badge { background:#f6f3ee; color:#1d1b18; }
+  .C .badge { background:#1d1b18; color:#f6f3ee; border-radius:9px; padding:0 6px; font-size:9.5px; line-height:15px; font-weight:600; }
+  .C .main { flex:1; padding:18px 18px 18px 8px; }
+  .C h4 { margin:0; font-size:24px; font-weight:700; letter-spacing:-.035em; }
+  .C .sub { color:#7a7368; margin:1px 0 14px; }
+  .C .btn { background:#1f5c45; color:#fff; border-radius:999px; padding:6px 14px; font-weight:600; }
+  .C .item { background:#fff; border-radius:12px; padding:9px 11px; margin-bottom:6px; box-shadow:0 1px 0 rgba(60,40,10,.05), 0 0 0 1px rgba(60,40,10,.06); }
+  .C .ico { width:32px; height:32px; border-radius:9px; }
+  .C .i-fox { border-radius:50%; }
+  .C .ver { color:#7a7368; font-size:10px; }
+  .C .pill { background:#efe9df; border-radius:999px; padding:4px 11px; font-weight:600; color:#1d1b18; }
+  .C .bar { height:4px; background:#efe9df; border-radius:4px; margin-top:6px; overflow:hidden; }
+  .C .bar i { display:block; height:100%; width:62%; background:#1f5c45; border-radius:4px; }
+</style>
+
+<h2>Which visual direction feels right for Quantum Updater?</h2>
+<p class="subtitle">All three show the same Updates screen with the same data. Ignore the exact icons: the real app will use each program's actual full-colour icon. Judge the overall feel: type, colour, spacing, mood.</p>
+
+<div class="cards">
+
+  <!-- A -->
+  <div class="card" data-choice="fluent" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div class="mk A">
+        <div class="side">
+          <div class="brand">Quantum Updater</div>
+          <div class="nav on">Updates <span class="badge">4</span></div>
+          <div class="nav">Marketplace</div>
+          <div class="nav">Installed</div>
+          <div class="nav">Settings</div>
+        </div>
+        <div class="main">
+          <div class="row" style="align-items:flex-start">
+            <div class="grow"><h4>Updates</h4><div class="sub">4 available · checked 2 minutes ago</div></div>
+            <span class="btn2">Check again</span>&nbsp;<span class="btn">Update all</span>
+          </div>
+          <div class="list">
+            <div class="item row"><div class="ico i-code"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5"><path d="M8 7l-5 5 5 5M16 7l5 5-5 5"/></svg></div><div class="grow"><div class="name">Visual Studio Code</div><div class="ver">1.94.0 → 1.95.2</div></div><span class="src">winget</span><span class="btn2">Update</span></div>
+            <div class="item row"><div class="ico i-fox"></div><div class="grow"><div class="name">Firefox</div><div class="ver">Downloading · 38 of 61 MB</div><div class="bar"><i></i></div></div><span class="src">winget</span><span class="btn2">Cancel</span></div>
+            <div class="item row"><div class="ico i-disc"><svg viewBox="0 0 24 24" fill="#fff"><rect x="3" y="6" width="18" height="12" rx="5"/><circle cx="9" cy="12" r="1.6" fill="#5865f2"/><circle cx="15" cy="12" r="1.6" fill="#5865f2"/></svg></div><div class="grow"><div class="name">Discord</div><div class="ver">0.0.309 → 0.0.311</div></div><span class="src">choco</span><span class="btn2">Update</span></div>
+            <div class="item row"><div class="ico i-zip">7z</div><div class="grow"><div class="name">7-Zip</div><div class="ver">23.01 → 24.08</div></div><span class="src">winget</span><span class="btn2">Update</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>A · Native Windows 11</h3>
+      <p>Looks like an app Microsoft could have shipped: Segoe UI font, the soft Mica background, Windows blue accent, calm and familiar. It feels trustworthy because it matches the OS. The risk is that it can feel plain.</p>
+    </div>
+  </div>
+
+  <!-- B -->
+  <div class="card" data-choice="studio" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div class="mk B">
+        <div class="side">
+          <div class="search">Search apps <kbd>Ctrl K</kbd></div>
+          <div class="nav on">Updates <span class="count">4</span></div>
+          <div class="nav">Marketplace</div>
+          <div class="nav">Installed</div>
+          <div class="nav">Settings</div>
+        </div>
+        <div class="main">
+          <div class="head row"><div class="grow"><h4>Updates</h4><div class="sub">4 available · 2m ago</div></div><span class="btn">Update all</span></div>
+          <div class="item row"><div class="ico i-code"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5"><path d="M8 7l-5 5 5 5M16 7l5 5-5 5"/></svg></div><div class="grow"><div class="name">Visual Studio Code</div><div class="ver">1.94.0 → <b>1.95.2</b></div></div><span class="src">winget</span>&nbsp;<span class="ghost">Update</span></div>
+          <div class="item row"><div class="ico i-fox"></div><div class="grow"><div class="row"><span class="name grow">Firefox</span><span class="pct">62%</span></div><div class="bar"><i></i></div></div><span class="src">winget</span></div>
+          <div class="item row"><div class="ico i-disc"><svg viewBox="0 0 24 24" fill="#fff"><rect x="3" y="6" width="18" height="12" rx="5"/><circle cx="9" cy="12" r="1.6" fill="#5865f2"/><circle cx="15" cy="12" r="1.6" fill="#5865f2"/></svg></div><div class="grow"><div class="name">Discord</div><div class="ver">0.0.309 → <b>0.0.311</b></div></div><span class="src">choco</span>&nbsp;<span class="ghost">Update</span></div>
+          <div class="item row"><div class="ico i-zip">7z</div><div class="grow"><div class="name">7-Zip</div><div class="ver">23.01 → <b>24.08</b></div></div><span class="src">winget</span>&nbsp;<span class="ghost">Update</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>B · Pro tool (dark)</h3>
+      <p>In the style of Linear, Raycast or Arc: crisp, dense, near-black, with one signal colour and monospace version numbers. Fast and keyboard-first (Ctrl+K to search). Feels premium and technical, but can feel cold to casual users.</p>
+    </div>
+  </div>
+
+  <!-- C -->
+  <div class="card" data-choice="store" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div class="mk C">
+        <div class="side">
+          <div class="brand">Quantum Updater</div>
+          <div class="nav on">Updates <span class="badge">4</span></div>
+          <div class="nav">Marketplace</div>
+          <div class="nav">Installed</div>
+          <div class="nav">Settings</div>
+        </div>
+        <div class="main">
+          <div class="row" style="align-items:flex-start"><div class="grow"><h4>4 updates ready</h4><div class="sub">Checked 2 minutes ago</div></div><span class="btn">Update all</span></div>
+          <div class="item row"><div class="ico i-code"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5"><path d="M8 7l-5 5 5 5M16 7l5 5-5 5"/></svg></div><div class="grow"><div class="name">Visual Studio Code</div><div class="ver">1.94.0 → 1.95.2 · winget</div></div><span class="pill">Update</span></div>
+          <div class="item row"><div class="ico i-fox"></div><div class="grow"><div class="name">Firefox</div><div class="ver">Downloading · 38 of 61 MB</div><div class="bar"><i></i></div></div></div>
+          <div class="item row"><div class="ico i-disc"><svg viewBox="0 0 24 24" fill="#fff"><rect x="3" y="6" width="18" height="12" rx="5"/><circle cx="9" cy="12" r="1.6" fill="#5865f2"/><circle cx="15" cy="12" r="1.6" fill="#5865f2"/></svg></div><div class="grow"><div class="name">Discord</div><div class="ver">0.0.309 → 0.0.311 · choco</div></div><span class="pill">Update</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>C · Warm store</h3>
+      <p>In the style of the Mac App Store or Setapp: warm off-white, bold friendly headings, rounded cards, larger icons. Plain words ("4 updates ready"). The most approachable for everyday users, and it makes the Marketplace feel like a real shop. Less dense.</p>
+    </div>
+  </div>
+
+</div>
+
+<p class="subtitle" style="margin-top:18px">Every direction gets both a light and a dark theme. This choice sets the personality, not the theme. Mixing is fine too, e.g. "A's layout with C's warmth".</p>

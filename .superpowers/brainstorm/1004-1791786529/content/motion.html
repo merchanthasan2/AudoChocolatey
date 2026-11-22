@@ -1,0 +1,182 @@
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  .cmp { display:grid; grid-template-columns:1fr 1fr; gap:18px; margin-top:10px; }
+  .col.option { display:block !important; text-align:left; }
+  .big { line-height:24px; }
+  .num span { line-height:24px; }
+  .col { border-radius:12px; padding:14px; background:#ece7df; }
+  .col > h3 { margin:0 0 2px; }
+  .col > p { margin:0 0 12px; font-size:13px; opacity:.75; }
+  .col.picked { outline:3px solid #1f5c45; }
+  .demo { background:#f6f3ee; border-radius:12px; padding:14px; margin-bottom:12px; font-family:"Inter Tight",system-ui,sans-serif; color:#1d1b18; font-size:12px; text-align:left; }
+  .demo .lbl { font-size:10px; font-weight:600; letter-spacing:.06em; text-transform:uppercase; color:#7a7368; margin-bottom:8px; }
+  .demo * { box-sizing:border-box; }
+  .r { display:flex; align-items:center; gap:10px; }
+  .g { flex:1; min-width:0; }
+  .ico { width:32px; height:32px; border-radius:9px; flex:none; }
+  .c1 { background:linear-gradient(160deg,#2aa3f0,#0065a9); }
+  .c2 { background:radial-gradient(circle at 35% 30%,#ffd23a 0,#ff8a1f 35%,#e2264d 70%,#7b2ec4 100%); border-radius:50%; }
+  .c3 { background:#5865f2; }
+  .c4 { background:#1ed760; border-radius:50%; }
+  .c5 { background:linear-gradient(160deg,#ff5f6d,#c2185b); }
+  .nm { font-weight:600; }
+  .mt { color:#7a7368; font-size:11px; }
+  .card { background:#fff; border-radius:12px; padding:9px 11px; box-shadow:0 0 0 1px rgba(60,40,10,.07); }
+
+  /* search */
+  .sbox { background:#fff; border-radius:10px; padding:8px 11px; box-shadow:0 0 0 1px rgba(60,40,10,.1); display:flex; gap:8px; align-items:center; margin-bottom:8px; transition:box-shadow var(--d) var(--e); }
+  .sbox.focus { box-shadow:0 0 0 2px #1f5c45; }
+  .caret { display:inline-block; width:1px; height:13px; background:#1d1b18; vertical-align:middle; animation:blink 1s steps(1) infinite; }
+  @keyframes blink { 50% { opacity:0; } }
+  .res { display:flex; flex-direction:column; gap:6px; min-height:156px; }
+  .res .card { opacity:0; transform:translateY(var(--rise)) scale(var(--sc)); transition:opacity var(--d) ease-out, transform var(--d) var(--e); }
+  .res .card.in { opacity:1; transform:none; }
+  .sk { height:46px; border-radius:12px; background:linear-gradient(90deg,#ece7df 0%,#f6f2ec 50%,#ece7df 100%); background-size:200% 100%; animation:shim 1s linear infinite; }
+  @keyframes shim { from { background-position:200% 0 } to { background-position:-200% 0 } }
+
+  /* get button lifecycle */
+  .btn { position:relative; height:28px; min-width:28px; width:64px; border-radius:999px; background:#efe9df; font-weight:600; display:grid; place-items:center; flex:none; transition:width var(--d) var(--e), background var(--d) ease; overflow:hidden; }
+  .btn.ring { width:28px; background:transparent; }
+  .btn.done { width:28px; background:#1f5c45; }
+  .btn.open { width:64px; background:#efe9df; }
+  .btn .t { transition:opacity calc(var(--d)*.6) ease; white-space:nowrap; }
+  .btn.ring .t, .btn.done .t { opacity:0; }
+  .btn svg { position:absolute; inset:0; width:28px; height:28px; margin:auto; }
+  .btn .trk { stroke:#e3dccf; }
+  .btn .arc { stroke:#1f5c45; stroke-linecap:round; transform:rotate(-90deg); transform-origin:50% 50%; transition:stroke-dashoffset .12s linear; }
+  .btn.spin .arc { animation:spin .9s linear infinite; }
+  @keyframes spin { from { transform:rotate(-90deg) } to { transform:rotate(270deg) } }
+  .btn .stop { fill:#1f5c45; }
+  .btn .chk { stroke:#fff; stroke-dasharray:14; stroke-dashoffset:14; transition:stroke-dashoffset calc(var(--d)*1.4) ease-out calc(var(--d)*.4); }
+  .btn.done .chk { stroke-dashoffset:0; }
+  .btn.done { transform:scale(var(--pop)); }
+  .btn.open.settle { transform:scale(1); }
+
+  /* update all */
+  .uh { display:flex; align-items:baseline; gap:8px; margin-bottom:8px; }
+  .big { font-size:20px; font-weight:700; letter-spacing:-.03em; }
+  .num { display:inline-block; overflow:hidden; height:24px; vertical-align:bottom; }
+  .num span { display:block; transition:transform var(--d) var(--e); }
+  .ulist .card { margin-bottom:6px; transition:opacity var(--d) ease, transform var(--d) var(--e), max-height var(--d) var(--e) calc(var(--d)*.5), margin var(--d) var(--e) calc(var(--d)*.5), padding var(--d) var(--e) calc(var(--d)*.5); max-height:60px; }
+  .ulist .card.gone { opacity:0; transform:translateX(var(--slide)); max-height:0; margin:0; padding-top:0; padding-bottom:0; }
+  .bar { height:4px; background:#efe9df; border-radius:4px; margin-top:5px; overflow:hidden; opacity:0; transition:opacity var(--d); }
+  .bar.on { opacity:1; }
+  .bar i { display:block; height:100%; width:0; background:#1f5c45; border-radius:4px; transition:width .15s linear; }
+  .allgood { display:none; align-items:center; gap:8px; font-weight:600; padding:12px 4px; }
+  .allgood.on { display:flex; animation:pop var(--d2) var(--e) both; }
+  @keyframes pop { from { opacity:0; transform:scale(.9) } to { opacity:1; transform:none } }
+  .tick { width:22px; height:22px; border-radius:50%; background:#1f5c45; display:grid; place-items:center; }
+
+  .crisp  { --d:200ms; --d2:220ms; --e:cubic-bezier(.2,.8,.2,1); --rise:6px; --sc:1; --pop:1; --slide:0px; }
+  .spring { --d:420ms; --d2:520ms; --e:cubic-bezier(.34,1.56,.64,1); --rise:14px; --sc:.97; --pop:1.12; --slide:24px; }
+</style>
+
+<h2>Which motion style feels right?</h2>
+<p class="subtitle">These are live loops showing the same three moments with two personalities. Watch each for about 10 seconds. Search: results arrive. Install: the button turns into a download ring, then installs, then shows a tick. Update all: rows finish one by one and the counter ticks down.</p>
+
+<div class="cmp">
+  <div class="col option" data-choice="crisp" onclick="toggleSelect(this)">
+    <h3>1 · Crisp &amp; quick</h3>
+    <p>200 ms, no bounce. Like Windows 11 and Linear. It feels fast and gets out of the way.</p>
+    <div class="crisp" id="crisp"></div>
+  </div>
+  <div class="col option" data-choice="spring" onclick="toggleSelect(this)">
+    <h3>2 · Springy &amp; lively</h3>
+    <p>About 400 ms with a soft overshoot. Like iOS and the App Store. It feels playful and spontaneous.</p>
+    <div class="spring" id="spring"></div>
+  </div>
+</div>
+<p class="subtitle" style="margin-top:14px">Either way, users who turn on "Reduce motion" in Windows get simple fades, and nothing waits on an animation, so real progress always drives the visuals.</p>
+
+<script>
+(function(){
+  const sleep = ms => new Promise(r => setTimeout(r, ms));
+  const tpl = `
+    <div class="demo"><div class="lbl">Search · Marketplace</div>
+      <div class="sbox"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#7a7368" stroke-width="2.4"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg><span class="q"></span><span class="caret"></span></div>
+      <div class="res"></div></div>
+    <div class="demo"><div class="lbl">Download → install → done</div>
+      <div class="card r"><div class="ico c4"></div><div class="g"><div class="nm">Spotify</div><div class="mt st">Music · winget</div></div>
+        <div class="btn"><span class="t">Get</span>
+          <svg viewBox="0 0 28 28" fill="none"><circle class="trk" cx="14" cy="14" r="12" stroke-width="2.5" opacity="0"/><circle class="arc" cx="14" cy="14" r="12" stroke-width="2.5" stroke-dasharray="75.4" stroke-dashoffset="75.4" opacity="0"/><rect class="stop" x="10.5" y="10.5" width="7" height="7" rx="1.5" opacity="0"/><path class="chk" d="M9 14.5l3.2 3.2L19 11" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div></div></div>
+    <div class="demo"><div class="lbl">Update all</div>
+      <div class="uh"><span class="big"><span class="num"><span class="n">3</span></span> updates ready</span></div>
+      <div class="ulist"></div>
+      <div class="allgood"><span class="tick"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.2"><path d="M5 12.5l4.5 4.5L19 7"/></svg></span>Everything is up to date</div></div>`;
+
+  const apps = [["c4","Spotify","Music · winget"],["c5","Spotify Downloader","Utilities · choco"],["c1","Spicetify","Customization · winget"]];
+  const ups  = [["c1","Visual Studio Code","1.94.0 → 1.95.2"],["c2","Firefox","131.0 → 132.0.1"],["c3","Discord","0.0.309 → 0.0.311"]];
+
+  function setup(root){
+    root.innerHTML = tpl;
+    const D = parseInt(getComputedStyle(root).getPropertyValue('--d'));
+    loopSearch(root, D); loopGet(root, D); loopUpdates(root, D);
+  }
+
+  async function loopSearch(root, D){
+    const q = root.querySelector('.q'), res = root.querySelector('.res'), box = root.querySelector('.sbox');
+    for(;;){
+      q.textContent=''; res.innerHTML=''; box.classList.add('focus');
+      for (const ch of "spotify"){ q.textContent += ch; await sleep(85); }
+      await sleep(180);
+      res.innerHTML = '<div class="sk"></div><div class="sk"></div><div class="sk"></div>';
+      await sleep(650);
+      res.innerHTML = apps.map(a=>`<div class="card r"><div class="ico ${a[0]}"></div><div class="g"><div class="nm">${a[1]}</div><div class="mt">${a[2]}</div></div><div class="btn" style="pointer-events:none"><span class="t">Get</span></div></div>`).join('');
+      const cards = [...res.children];
+      await sleep(20);
+      for (const c of cards){ c.classList.add('in'); await sleep(D > 300 ? 70 : 40); }
+      await sleep(2600); box.classList.remove('focus'); await sleep(500);
+    }
+  }
+
+  async function loopGet(root, D){
+    const b = root.querySelector('.btn:not([style])'), arc = b.querySelector('.arc'), trk = b.querySelector('.trk'), stop = b.querySelector('.stop'), t = b.querySelector('.t'), st = root.querySelector('.st');
+    for(;;){
+      b.className='btn'; t.textContent='Get'; st.textContent='Music · winget';
+      arc.style.strokeDashoffset=75.4; arc.setAttribute('opacity',0); trk.setAttribute('opacity',0); stop.setAttribute('opacity',0);
+      await sleep(1200);
+      b.classList.add('ring'); await sleep(D*0.6);
+      arc.setAttribute('opacity',1); trk.setAttribute('opacity',1); stop.setAttribute('opacity',1);
+      for (let p=0;p<=100;p+=2){ arc.style.strokeDashoffset = 75.4*(1-p/100); st.textContent = `Downloading · ${Math.round(p*0.86)} of 86 MB`; await sleep(p<70?30:45); }
+      stop.setAttribute('opacity',0); arc.style.strokeDasharray='18 57.4'; arc.style.strokeDashoffset=0; b.classList.add('spin'); st.textContent='Installing…';
+      await sleep(1700);
+      b.classList.remove('spin'); arc.setAttribute('opacity',0); trk.setAttribute('opacity',0); arc.style.strokeDasharray='75.4';
+      b.classList.remove('ring'); b.classList.add('done'); st.textContent='Installed';
+      await sleep(D*2.6);
+      b.classList.remove('done'); b.classList.add('open','settle'); t.textContent='Open';
+      await sleep(2400);
+    }
+  }
+
+  async function loopUpdates(root, D){
+    const list = root.querySelector('.ulist'), n = root.querySelector('.n'), good = root.querySelector('.allgood'), uh = root.querySelector('.uh');
+    for(;;){
+      good.classList.remove('on'); uh.style.display='';
+      n.textContent = 3;
+      list.innerHTML = ups.map(a=>`<div class="card"><div class="r"><div class="ico ${a[0]}"></div><div class="g"><div class="nm">${a[1]}</div><div class="mt">${a[2]}</div><div class="bar"><i></i></div></div></div></div>`).join('');
+      await sleep(1300);
+      const cards = [...list.children];
+      for (let i=0;i<cards.length;i++){
+        const bar = cards[i].querySelector('.bar'), fill = bar.querySelector('i'), mt = cards[i].querySelector('.mt');
+        bar.classList.add('on'); mt.textContent='Updating…';
+        for (let p=0;p<=100;p+=4){ fill.style.width = p+'%'; await sleep(28); }
+        mt.textContent='Updated';
+        await sleep(250);
+        cards[i].classList.add('gone');
+        const num = root.querySelector('.num span');
+        num.style.transform='translateY(-100%)';
+        await sleep(D);
+        num.style.transition='none'; num.style.transform='translateY(100%)'; num.textContent = 3-i-1;
+        await sleep(20); num.style.transition=''; num.style.transform='translateY(0)';
+        await sleep(D*1.2);
+      }
+      uh.style.display='none'; good.classList.add('on');
+      await sleep(2600);
+    }
+  }
+
+  setup(document.getElementById('crisp'));
+  setup(document.getElementById('spring'));
+})();
+</script>
