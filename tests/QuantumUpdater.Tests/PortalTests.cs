@@ -317,6 +317,58 @@ public class PortalTests : IDisposable
     }
 
     [Fact]
+    public void Filling_the_table_does_not_reset_an_existing_key_and_new_keys_fail_closed()
+    {
+        var window = TimeSpan.FromMinutes(15);
+        var limiter = new RateLimiter(_clock, maxKeys: 100);
+        for (int i = 0; i < 9; i++)
+        {
+            Assert.True(limiter.TryAcquire("login-email:victim@example.test", 10, window));
+        }
+
+        // A flood of throwaway emails fills the table. The ones past the cap are refused, not let in by a reset.
+        int refused = 0;
+        for (int i = 0; i < 10_000; i++)
+        {
+            if (!limiter.TryAcquire($"login-email:junk{i}@example.test", 10, window))
+            {
+                refused++;
+            }
+        }
+
+        Assert.Equal(100, limiter.KeyCount);
+        Assert.Equal(10_000 - 99, refused);
+
+        // The victim key kept its 9 tries: one more is allowed, then it is blocked.
+        Assert.True(limiter.TryAcquire("login-email:victim@example.test", 10, window));
+        Assert.False(limiter.TryAcquire("login-email:victim@example.test", 10, window));
+    }
+
+    [Fact]
+    public void Full_table_frees_room_only_from_keys_past_their_own_window()
+    {
+        var limiter = new RateLimiter(_clock, maxKeys: 2);
+        Assert.True(limiter.TryAcquire("long", 1, TimeSpan.FromMinutes(15)));
+        Assert.True(limiter.TryAcquire("short", 1, TimeSpan.FromMinutes(5)));
+
+        // After 6 minutes only the short key has expired. Pruning with a short window must not drop the long key.
+        _clock.Now += TimeSpan.FromMinutes(6);
+        Assert.True(limiter.TryAcquire("new", 1, TimeSpan.FromMinutes(5)));
+        Assert.False(limiter.TryAcquire("other", 1, TimeSpan.FromMinutes(5)));
+        Assert.False(limiter.TryAcquire("long", 1, TimeSpan.FromMinutes(15)));
+    }
+
+    [Fact]
+    public void A_shorter_window_never_drops_tries_from_a_longer_one()
+    {
+        var limiter = new RateLimiter(_clock);
+        Assert.True(limiter.TryAcquire("k", 1, TimeSpan.FromMinutes(15)));
+        _clock.Now += TimeSpan.FromMinutes(6);
+
+        Assert.False(limiter.TryAcquire("k", 1, TimeSpan.FromMinutes(5)));
+    }
+
+    [Fact]
     public async Task Slow_sign_ins_do_not_block_session_checks()
     {
         // Real rounds make each sign-in slow. A token check must not wait behind them for the store lock.

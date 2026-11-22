@@ -3,44 +3,67 @@ namespace QuantumUpdater.Portal;
 /// <summary>
 /// F6: counts tries per key in a sliding window. A key is a kind plus an address or an email.
 /// Thread safe. Memory stays bounded: empty keys are dropped and the table has a size cap.
+/// When the table is still full after dropping old tries, a new key is refused (fail closed);
+/// existing counts are never cleared, so a flood of throwaway keys cannot reset the key under attack.
 /// </summary>
 public sealed class RateLimiter
 {
-    private const int MaxKeys = 10_000;
+    public const int DefaultMaxKeys = 10_000;
 
     private readonly TimeProvider _clock;
+    private readonly int _maxKeys;
     private readonly object _gate = new();
-    private readonly Dictionary<string, Queue<DateTimeOffset>> _tries = new(StringComparer.Ordinal);
+    private readonly Dictionary<string, Entry> _tries = new(StringComparer.Ordinal);
 
     public RateLimiter(TimeProvider? clock = null)
+        : this(clock, DefaultMaxKeys)
     {
-        _clock = clock ?? TimeProvider.System;
     }
 
-    /// <summary>Records one try. Returns false, and records nothing, when the key already has <paramref name="limit"/> tries in the window.</summary>
+    /// <summary>Tests pass a small table size.</summary>
+    internal RateLimiter(TimeProvider? clock, int maxKeys)
+    {
+        _clock = clock ?? TimeProvider.System;
+        _maxKeys = maxKeys;
+    }
+
+    /// <summary>
+    /// Records one try. Returns false, and records nothing, when the key already has <paramref name="limit"/> tries in the
+    /// window, or when the key is new and the table is full.
+    /// </summary>
     public bool TryAcquire(string key, int limit, TimeSpan window)
     {
         var now = _clock.GetUtcNow();
         lock (_gate)
         {
-            if (!_tries.TryGetValue(key, out var queue))
+            if (!_tries.TryGetValue(key, out var entry))
             {
-                if (_tries.Count >= MaxKeys)
+                if (_tries.Count >= _maxKeys)
                 {
-                    PruneAll(now, window);
+                    PruneAll(now);
+                    if (_tries.Count >= _maxKeys)
+                    {
+                        return false;
+                    }
                 }
 
-                queue = new Queue<DateTimeOffset>();
-                _tries[key] = queue;
+                entry = new Entry(window);
+                _tries[key] = entry;
             }
 
-            Drop(queue, now, window);
-            if (queue.Count >= limit)
+            // A key keeps the longest window it was used with, so a shorter one never drops its tries early.
+            if (window > entry.Window)
+            {
+                entry.Window = window;
+            }
+
+            Drop(entry, now);
+            if (entry.Times.Count >= limit)
             {
                 return false;
             }
 
-            queue.Enqueue(now);
+            entry.Times.Enqueue(now);
             return true;
         }
     }
@@ -54,30 +77,43 @@ public sealed class RateLimiter
         }
     }
 
-    private static void Drop(Queue<DateTimeOffset> queue, DateTimeOffset now, TimeSpan window)
+    internal int KeyCount
     {
-        while (queue.Count > 0 && queue.Peek() <= now - window)
+        get
         {
-            queue.Dequeue();
+            lock (_gate)
+            {
+                return _tries.Count;
+            }
         }
     }
 
-    private void PruneAll(DateTimeOffset now, TimeSpan window)
+    private static void Drop(Entry entry, DateTimeOffset now)
+    {
+        while (entry.Times.Count > 0 && entry.Times.Peek() <= now - entry.Window)
+        {
+            entry.Times.Dequeue();
+        }
+    }
+
+    // Drops only tries that are past each key's own window. Never clears a key that still has tries.
+    private void PruneAll(DateTimeOffset now)
     {
         foreach (var key in _tries.Keys.ToList())
         {
-            var queue = _tries[key];
-            Drop(queue, now, window);
-            if (queue.Count == 0)
+            var entry = _tries[key];
+            Drop(entry, now);
+            if (entry.Times.Count == 0)
             {
                 _tries.Remove(key);
             }
         }
+    }
 
-        // Still full: many keys are busy at once. Start over rather than grow without end.
-        if (_tries.Count >= MaxKeys)
-        {
-            _tries.Clear();
-        }
+    private sealed class Entry(TimeSpan window)
+    {
+        public TimeSpan Window { get; set; } = window;
+
+        public Queue<DateTimeOffset> Times { get; } = new();
     }
 }
