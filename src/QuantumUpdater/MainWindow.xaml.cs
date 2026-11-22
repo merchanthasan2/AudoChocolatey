@@ -3,7 +3,6 @@ using Microsoft.UI.Xaml.Automation;
 using Microsoft.UI.Xaml.Automation.Peers;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
-using Microsoft.UI.Xaml.Media.Imaging;
 using QuantumUpdater.Services;
 using QuantumUpdater.Views;
 using QuantumUpdater.Views.Dev; // TEMP DIAGNOSTIC 46.7.49

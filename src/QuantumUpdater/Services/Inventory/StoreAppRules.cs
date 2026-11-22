@@ -1,4 +1,3 @@
-using System;
 using QuantumUpdater.Models;
 
 namespace QuantumUpdater.Services.Inventory;

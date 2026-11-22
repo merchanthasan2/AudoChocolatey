@@ -1,8 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
-
 namespace QuantumUpdater.Services.Updates;
 
 /// <summary>An app that has a new version, or may have one.</summary>

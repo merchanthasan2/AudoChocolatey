@@ -1,6 +1,3 @@
-using System;
-using System.Collections.Generic;
-
 namespace QuantumUpdater;
 
 // TEMP DIAGNOSTIC 46.7.37. Reads the DESKVERVE_DIAG switches one time (comma list, ignore case).

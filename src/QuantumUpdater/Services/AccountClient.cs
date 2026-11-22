@@ -12,7 +12,20 @@ public sealed class AccountClient
 {
     public const string BaseUrl = "http://127.0.0.1:8787";
 
-    private static readonly HttpClient Http = new() { Timeout = TimeSpan.FromSeconds(20) };
+    private static readonly HttpClient SharedHttp = new() { Timeout = TimeSpan.FromSeconds(20) };
+
+    private readonly HttpClient _http;
+
+    public AccountClient()
+    {
+        _http = SharedHttp;
+    }
+
+    /// <summary>Sends through the given handler. Tests pass a fake handler.</summary>
+    internal AccountClient(HttpMessageHandler handler)
+    {
+        _http = new HttpClient(handler) { Timeout = TimeSpan.FromSeconds(20) };
+    }
 
     public async Task<AccountResult> RegisterAsync(string email, string password, CancellationToken cancellationToken = default)
     {
@@ -33,7 +46,8 @@ public sealed class AccountClient
 
         await PostAsync(
             "/api/heartbeat",
-            new { installId = session.InstallId, email = session.Email, summary = summary.Telemetry() },
+            // F21: no email. The service knows the user from the bearer token.
+            new { installId = session.InstallId, summary = summary.Telemetry() },
             session.Token,
             cancellationToken).ConfigureAwait(false);
     }
@@ -45,16 +59,12 @@ public sealed class AccountClient
         bool success,
         CancellationToken cancellationToken = default)
     {
-        if (!session.IsSignedIn)
-        {
-            return;
-        }
-
         if (action is not ("install" or "upgrade" or "remove"))
         {
             return;
         }
 
+        // F20: the local activity log is kept whether or not the user is signed in.
         ActivityLog.Add(action, packageId, success);
         if (!session.IsSignedIn)
         {
@@ -68,7 +78,7 @@ public sealed class AccountClient
             cancellationToken).ConfigureAwait(false);
     }
 
-    private static async Task<AccountResult> PostAsync(
+    private async Task<AccountResult> PostAsync(
         string path,
         object body,
         string? token,
@@ -85,7 +95,7 @@ public sealed class AccountClient
                 request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
             }
 
-            using var response = await Http.SendAsync(request, cancellationToken).ConfigureAwait(false);
+            using var response = await _http.SendAsync(request, cancellationToken).ConfigureAwait(false);
             var payload = await response.Content.ReadFromJsonAsync<ApiReply>(cancellationToken).ConfigureAwait(false);
             var message = payload?.Message ?? (response.IsSuccessStatusCode ? "OK" : "The account service refused the request.");
             return new AccountResult(response.IsSuccessStatusCode && payload?.Ok != false, message, payload?.Token);

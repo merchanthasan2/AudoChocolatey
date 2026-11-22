@@ -1,8 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
-
 namespace QuantumUpdater.Services.Scan;
 
 /// <summary>Where a scan job is in its life.</summary>

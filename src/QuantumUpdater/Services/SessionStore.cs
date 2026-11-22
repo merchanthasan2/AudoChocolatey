@@ -5,9 +5,11 @@ namespace QuantumUpdater.Services;
 /// <summary>Local sign-in session and install id. The token never goes in the repo.</summary>
 public sealed class SessionStore
 {
-    private static readonly string Folder = Path.Combine(
+    private static readonly string DefaultFolder = Path.Combine(
         Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
         "QuantumUpdater");
+
+    private readonly string _folder;
 
     public string InstallId { get; }
 
@@ -18,41 +20,48 @@ public sealed class SessionStore
     public bool IsSignedIn => !string.IsNullOrEmpty(Token);
 
     public SessionStore()
+        : this(DefaultFolder)
     {
-        Directory.CreateDirectory(Folder);
+    }
+
+    /// <summary>Uses the given folder. Tests pass a temp folder.</summary>
+    internal SessionStore(string folder)
+    {
+        _folder = folder;
+        Directory.CreateDirectory(_folder);
         InstallId = ReadInstallId();
         Load();
     }
+
+    private string SessionPath => Path.Combine(_folder, "session.json");
 
     public void Save(string token, string email)
     {
         Token = token;
         Email = email;
-        File.WriteAllText(Path.Combine(Folder, "session.json"), JsonSerializer.Serialize(new SessionFile(token, email)));
+        File.WriteAllText(SessionPath, JsonSerializer.Serialize(new SessionFile(token, email)));
     }
 
     public void Clear()
     {
         Token = null;
         Email = null;
-        var path = Path.Combine(Folder, "session.json");
-        if (File.Exists(path))
+        if (File.Exists(SessionPath))
         {
-            File.Delete(path);
+            File.Delete(SessionPath);
         }
     }
 
     private void Load()
     {
-        var path = Path.Combine(Folder, "session.json");
-        if (!File.Exists(path))
+        if (!File.Exists(SessionPath))
         {
             return;
         }
 
         try
         {
-            var file = JsonSerializer.Deserialize<SessionFile>(File.ReadAllText(path));
+            var file = JsonSerializer.Deserialize<SessionFile>(File.ReadAllText(SessionPath));
             if (file is { Token: not null, Email: not null })
             {
                 Token = file.Token;
@@ -65,9 +74,9 @@ public sealed class SessionStore
         }
     }
 
-    private static string ReadInstallId()
+    private string ReadInstallId()
     {
-        var path = Path.Combine(Folder, "install-id.txt");
+        var path = Path.Combine(_folder, "install-id.txt");
         if (File.Exists(path))
         {
             var existing = File.ReadAllText(path).Trim();

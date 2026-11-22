@@ -30,6 +30,10 @@
     <Compile Include="..\..\src\QuantumUpdater\Models\UpgradeEntry.cs" Link="Linked\UpgradeEntry.cs" />
     <Compile Include="..\..\src\QuantumUpdater\Services\Updates\IUpdatesSource.cs" Link="Linked\IUpdatesSource.cs" />
     <Compile Include="..\..\src\QuantumUpdater\Services\Updates\UpdatesGrouping.cs" Link="Linked\UpdatesGrouping.cs" />
+    <Compile Include="..\..\src\QuantumUpdater\Services\AccountClient.cs" Link="Linked\AccountClient.cs" />
+    <Compile Include="..\..\src\QuantumUpdater\Services\ActivityLog.cs" Link="Linked\ActivityLog.cs" />
+    <Compile Include="..\..\src\QuantumUpdater\Services\SessionStore.cs" Link="Linked\SessionStore.cs" />
+    <Compile Include="..\..\src\QuantumUpdater\Services\MachineSummary.cs" Link="Linked\MachineSummary.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Data\winget-sample.txt" CopyToOutputDirectory="PreserveNewest" />

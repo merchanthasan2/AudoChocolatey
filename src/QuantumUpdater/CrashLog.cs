@@ -1,7 +1,6 @@
-using System;
 using System.Globalization;
-using System.IO;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace QuantumUpdater;
 
@@ -64,7 +63,7 @@ internal static class CrashLog
     {
         string now = DateTimeOffset.Now.ToString("O", CultureInfo.InvariantCulture);
         var text = new StringBuilder();
-        text.AppendLine($"{now} [{where}]");
+        text.AppendLine($"{now} [{SafeLabel(where)}]");
         AppendDetails(text, string.Empty, ex, userProfile);
         if (ex?.InnerException is not null)
         {
@@ -75,16 +74,43 @@ internal static class CrashLog
         return text.ToString();
     }
 
-    /// <summary>Replaces the user profile path, in any letter case, with %USERPROFILE%.</summary>
+    /// <summary>
+    /// Replaces the user profile path, in any letter case, with %USERPROFILE%.
+    /// F22: any other X:\Users\name folder (another account, a moved profile, a Debug build path) loses its name too.
+    /// </summary>
     internal static string Redact(string text, string userProfile)
     {
-        if (string.IsNullOrEmpty(userProfile))
+        if (!string.IsNullOrEmpty(userProfile))
         {
-            return text;
+            text = text.Replace(userProfile, "%USERPROFILE%", StringComparison.OrdinalIgnoreCase);
         }
 
-        return text.Replace(userProfile, "%USERPROFILE%", StringComparison.OrdinalIgnoreCase);
+        return UsersFolder.Replace(text, "${root}%USERNAME%");
     }
+
+    /// <summary>F22: labels are fixed text from the code, but a diagnostic label can carry an environment value. Keep it short and plain.</summary>
+    internal static string SafeLabel(string where)
+    {
+        var label = new StringBuilder(Math.Min(where.Length, MaxLabelLength));
+        foreach (char c in where)
+        {
+            if (label.Length == MaxLabelLength)
+            {
+                break;
+            }
+
+            label.Append(char.IsAsciiLetterOrDigit(c) || c is ' ' or ':' or '_' or '.' or ',' or '-' ? c : '?');
+        }
+
+        return label.ToString();
+    }
+
+    private const int MaxLabelLength = 80;
+
+    // A drive, then Users, then one folder name. %USERNAME% is skipped so a second pass changes nothing.
+    private static readonly Regex UsersFolder = new(
+        @"(?<root>\b[A-Za-z]:[\\/]Users[\\/])(?!%USERNAME%)[^\\/\r\n:*?""<>|]+",
+        RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
 
     private static void AppendDetails(StringBuilder text, string prefix, Exception? ex, string userProfile)
     {

@@ -1,5 +1,3 @@
-using System.Collections.Generic;
-
 namespace QuantumUpdater.Views.Controls;
 
 /// <summary>Pure rules for app letter tiles. No WinUI types, so the test project can link this file.</summary>

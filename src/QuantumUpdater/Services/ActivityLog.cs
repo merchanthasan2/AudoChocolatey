@@ -7,22 +7,33 @@ public sealed record ActivityEntry(DateTimeOffset At, string Action, string Pack
 /// <summary>Local record of install, upgrade, and remove. No file contents.</summary>
 public static class ActivityLog
 {
-    private static readonly string PathName = Path.Combine(
+    private const int MaxEntries = 200;
+
+    /// <summary>The log file. Tests point it at a temp folder.</summary>
+    internal static string PathName { get; set; } = Path.Combine(
         Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
         "QuantumUpdater",
         "activity.json");
 
+    /// <summary>Adds one entry and keeps the last 200. Never throws: a failed write must not fail the action.</summary>
     public static void Add(string action, string packageId, bool success)
     {
-        var items = Read().ToList();
-        items.Add(new ActivityEntry(DateTimeOffset.Now, action, packageId, success));
-        if (items.Count > 200)
+        try
         {
-            items = items.Skip(items.Count - 200).ToList();
-        }
+            var items = Read().ToList();
+            items.Add(new ActivityEntry(DateTimeOffset.Now, action, packageId, success));
+            if (items.Count > MaxEntries)
+            {
+                items = items.Skip(items.Count - MaxEntries).ToList();
+            }
 
-        Directory.CreateDirectory(Path.GetDirectoryName(PathName)!);
-        File.WriteAllText(PathName, JsonSerializer.Serialize(items));
+            Directory.CreateDirectory(Path.GetDirectoryName(PathName)!);
+            File.WriteAllText(PathName, JsonSerializer.Serialize(items));
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            // The local log is a convenience. The action result is still shown and reported.
+        }
     }
 
     public static IReadOnlyList<ActivityEntry> Read()
