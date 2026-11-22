@@ -10,55 +10,30 @@ permissions:
   contents: read
 
 jobs:
-  web-and-lint:
-    name: Web Frontend & Zero-Emoji Validation
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-
-      - name: Validate JavaScript Syntax
-        run: |
-          node -c web/app.js
-
-      - name: Set up Python for Lint Checks
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
-
-      - name: Zero-Emoji Policy Enforcement Check
-        run: |
-          python -c "
-          import re, sys
-          emoji_pattern = re.compile(
-              r'[\U00010000-\U0010ffff]|[\u2600-\u27bf]|[\u2300-\u2317\u2319-\u23ff]|[\u2b50-\u2b55]|[\u203c-\u2049]'
-          )
-          target_files = ['web/index.html', 'web/style.css', 'web/app.js']
-          violations = 0
-          for file_path in target_files:
-              with open(file_path, 'r', encoding='utf-8') as f:
-                  for i, line in enumerate(f, 1):
-                      matches = emoji_pattern.findall(line)
-                      if matches:
-                          print(f'Emoji violation in {file_path}:{i}: {matches}')
-                          violations += 1
-          if violations > 0:
-              print(f'Total emoji violations found: {violations}. Zero-Emoji policy failed.')
-              sys.exit(1)
-          print('Zero-Emoji policy passed: 0 emoji violations detected.')
-          "
-
   winui-build-and-test:
     name: DeskVerve WinUI Build & Test
     runs-on: windows-latest
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
+
+      - name: Zero-Emoji Policy Enforcement Check
+        shell: pwsh
+        run: |
+          $emojiRegex = '[\uD800-\uDBFF][\uDC00-\uDFFF]|[\u2600-\u27BF]|[\u2300-\u23FF]|[\u2B50-\u2B55]'
+          $files = Get-ChildItem -Path src -File -Recurse -Include *.cs, *.xaml | Where-Object { $_.FullName -notmatch '[\\/](bin|obj)[\\/]' }
+          $violations = 0
+          foreach ($file in $files) {
+            $content = Get-Content -LiteralPath $file.FullName -Raw
+            if ($content -match $emojiRegex) {
+              Write-Error "Emoji violation found in $($file.FullName)"
+              $violations++
+            }
+          }
+          if ($violations -gt 0) {
+            throw "Total emoji violations found: $violations. Zero-Emoji policy failed."
+          }
+          Write-Host "Zero-Emoji policy passed: 0 emoji violations detected in $($files.Count) source files."
 
       - name: Set up .NET
         uses: actions/setup-dotnet@v4

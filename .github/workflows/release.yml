@@ -40,28 +40,43 @@ jobs:
       - name: Resolve Release Tag
         id: meta
         shell: pwsh
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          INPUT_TAG: ${{ inputs.tag_name }}
+          REF_NAME: ${{ github.ref_name }}
         run: |
-          if ("${{ github.event_name }}" -eq "workflow_dispatch") {
-            $tag = "${{ inputs.tag_name }}"
+          if ($env:EVENT_NAME -eq "workflow_dispatch") {
+            $tag = $env:INPUT_TAG
           } else {
-            $tag = "${{ github.ref_name }}"
+            $tag = $env:REF_NAME
           }
           if (-not $tag) { $tag = "v3.0.0" }
+
+          # Prevent script injection and enforce semver release tag pattern
+          if ($tag -notmatch '^v\d+\.\d+\.\d+$') {
+            throw "Invalid tag '$tag'. Tag must match pattern ^v\d+\.\d+\.\d+$"
+          }
+
+          $ver = $tag.TrimStart("v")
           "tag=$tag" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+          "ver=$ver" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
           Write-Host "Release tag: $tag"
+          Write-Host "Version: $ver"
 
       - name: Build Portable Zip & Setup Installer
         shell: pwsh
+        env:
+          VERSION: ${{ steps.meta.outputs.ver }}
         run: |
-          $ver = "${{ steps.meta.outputs.tag }}".TrimStart("v")
-          .\scripts\build_installer.ps1 -Configuration Release -Runtime win-x64 -Version $ver
+          .\scripts\build_installer.ps1 -Configuration Release -Runtime win-x64 -Version $env:VERSION
 
       - name: Prepare Winget Manifests
         shell: pwsh
+        env:
+          VERSION: ${{ steps.meta.outputs.ver }}
         run: |
-          $ver = "${{ steps.meta.outputs.tag }}".TrimStart("v")
-          $setupExe = "dist\release\DeskVerve-Setup-$ver-x64.exe"
-          .\tools\prepare_winget_release.ps1 -ExePath $setupExe -Version $ver -AssetName "DeskVerve-Setup-$ver-x64.exe"
+          $setupExe = "dist\release\DeskVerve-Setup-$($env:VERSION)-x64.exe"
+          .\tools\prepare_winget_release.ps1 -ExePath $setupExe -Version $env:VERSION -AssetName "DeskVerve-Setup-$($env:VERSION)-x64.exe"
 
       - name: Upload Winget Manifests Artifact
         uses: actions/upload-artifact@v4
@@ -78,7 +93,7 @@ jobs:
           generate_release_notes: true
           body: |
             ## Install DeskVerve
-            - **Installer (recommended)**: Download `DeskVerve-Setup-${{ steps.meta.outputs.tag }}-x64.exe`, run and approve elevation.
+            - **Installer (recommended)**: Download `DeskVerve-Setup-${{ steps.meta.outputs.ver }}-x64.exe`, run and approve elevation.
             - **Portable**: Download `DeskVerve-Windows.zip`, extract all files, and run `DeskVerve.exe`.
 
             ### Windows Package Manager (winget)
