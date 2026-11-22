@@ -1,0 +1,23 @@
+﻿# yaml-language-server: $schema=https://aka.ms/winget-manifest.installer.1.10.0.schema.json
+PackageIdentifier: QuantumStep.QuantumUpdater
+PackageVersion: 3.0.0
+MinimumOSVersion: 10.0.17763.0
+InstallerType: inno
+Scope: machine
+InstallModes:
+  - interactive
+  - silent
+  - silentWithProgress
+UpgradeBehavior: install
+ProductCode: '{4E32B66C-5B4B-4E7B-9A39-4E6D2543F9A1}_is1'
+AppsAndFeaturesEntries:
+  - DisplayName: DeskVerve
+    Publisher: Quantum Step
+    ProductCode: '{4E32B66C-5B4B-4E7B-9A39-4E6D2543F9A1}_is1'
+    InstallerType: inno
+Installers:
+  - Architecture: x64
+    InstallerUrl: https://github.com/merchanthasan2/AudoChocolatey/releases/download/v3.0.0/DeskVerve-Setup-3.0.0-x64.exe
+    InstallerSha256: 60104EB894EE0196F90098A24F388672D0FDD19E7214495F1AFE1758412E132E
+ManifestType: installer
+ManifestVersion: 1.10.0
