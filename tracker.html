@@ -239,7 +239,7 @@ tr.grp td { background: #18243a; font-weight: 700; }
 </div>
 <script>
 const TRACKER = {
-  updated: "22 Nov 2026, PAUSED. First real install crashes at start (0xC000027B, needs title-bar emblem + start scan); see docs/STATUS_2026-11-22.md",
+  updated: "23 Nov 2026, start crash 0xC000027B root cause fixed (Process.Start on UI thread pumped COM, XAML re-entry); test setup built; waiting for owner on-screen check",
   ownerDecisions: [
     "Product name is DeskVerve for Windows and DeskVerve for Mac; publisher remains Quantum Step. Compatibility identifiers stay until packaging migration (ADR 046).",
     "Live colours are the Stitch dark shell: #131313 canvas, #272727 sidebar, accent #0078D4 (ADR 043 Q4). Cream and Park are retired.",
