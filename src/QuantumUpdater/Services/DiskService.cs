@@ -62,7 +62,8 @@ public sealed class DiskService
         psi.ArgumentList.Add("Get-PhysicalDisk | Select-Object FriendlyName, MediaType, HealthStatus, Size | ConvertTo-Json -Compress");
 
         using var process = new Process { StartInfo = psi };
-        process.Start();
+        // Off the UI thread, see WingetRunner (start crash 0xC000027B).
+        await Task.Run(process.Start).ConfigureAwait(false);
         var outputTask = process.StandardOutput.ReadToEndAsync(cancellationToken);
         using var timeout = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
         timeout.CancelAfter(TimeSpan.FromSeconds(20));

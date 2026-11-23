@@ -99,7 +99,10 @@ public sealed class WingetRunner
         var handedOff = false;
         try
         {
-            process.Start();
+            // Never on the UI thread: winget.exe is an app execution alias, so CreateProcess makes a COM call
+            // that pumps window messages while it waits. WinUI then re-enters (for example an image decode
+            // finishing) and fails fast with 0xC000027B (start crash 46.7.36-46.7.40, found 23 Nov from the dump).
+            await Task.Run(process.Start).ConfigureAwait(false);
 
             var collected = new List<string>();
             var errorLines = new List<string>();

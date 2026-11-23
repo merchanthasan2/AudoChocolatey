@@ -36,7 +36,8 @@ internal static class WingetCli
             return RunOutcome.NotStarted(IdInvalidMessage);
         }
 
-        var executable = WingetLocator.Find();
+        // Off the UI thread: the lookup makes a cross-process COM call that pumps messages (start crash 0xC000027B).
+        var executable = await Task.Run(WingetLocator.Find).ConfigureAwait(false);
         if (executable is null)
         {
             return RunOutcome.NotStarted(RunOutcome.NotFoundMessage);
@@ -76,7 +77,8 @@ internal static class WingetCli
         Func<RunResult, IReadOnlyList<T>> parse,
         CancellationToken cancellationToken)
     {
-        var executable = WingetLocator.Find();
+        // Off the UI thread: the lookup makes a cross-process COM call that pumps messages (start crash 0xC000027B).
+        var executable = await Task.Run(WingetLocator.Find).ConfigureAwait(false);
         if (executable is null)
         {
             return (Array.Empty<T>(), RunOutcome.NotFoundMessage);
