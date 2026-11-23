@@ -6,27 +6,21 @@ namespace QuantumUpdater.Services;
 /// <summary>One row from winget search output.</summary>
 public sealed record MarketplacePackage(string Id, string Name, string Version);
 
-/// <summary>Outcome of winget install from Marketplace.</summary>
-public sealed record MarketplaceInstallResult(bool Success, string Message, int ExitCode);
-
-/// <summary>winget search and install for Marketplace (Phase 44.3, moved to WingetRunner in Phase 46 F24).</summary>
+/// <summary>winget search and install for Marketplace (Phase 44.3, moved to WingetCli in Phase 46 F24, W16).</summary>
 public sealed class MarketplaceService
 {
     private static readonly Regex SearchQueryPattern = new(
         @"^[A-Za-z0-9][A-Za-z0-9 ._+-]{0,79}$",
         RegexOptions.CultureInvariant | RegexOptions.Compiled);
 
-    private const int SearchTimeoutMs = 60_000;
+    private static readonly TimeSpan SearchTimeout = TimeSpan.FromSeconds(60);
     private static readonly TimeSpan InstallTimeout = TimeSpan.FromMinutes(15);
 
+    /// <summary>Last error from search; cleared at the start of each search.</summary>
     public string? LastError { get; private set; }
 
-    public string? ExecutablePath { get; private set; }
-
-    public MarketplaceService()
-    {
-        ExecutablePath = WingetLocator.Find();
-    }
+    /// <summary>Path to winget.exe, or null when not found. Looked up again when App Installer moved it (W5).</summary>
+    public string? ExecutablePath => WingetLocator.Find();
 
     public async Task<IReadOnlyList<MarketplacePackage>> SearchAsync(
         string query,
@@ -46,129 +40,45 @@ public sealed class MarketplaceService
             return Array.Empty<MarketplacePackage>();
         }
 
-        if (ExecutablePath is null)
-        {
-            LastError = "winget.exe was not found.";
-            return Array.Empty<MarketplacePackage>();
-        }
+        var (packages, error) = await WingetCli.RunQueryAsync(
+            ["search", query],
+            SearchTimeout,
+            ParseSearch,
+            cancellationToken).ConfigureAwait(false);
 
-        try
-        {
-            var run = await new WingetRunner(ExecutablePath).RunAsync(
-                ["search", query],
-                TimeSpan.FromMilliseconds(SearchTimeoutMs),
-                null,
-                cancellationToken).ConfigureAwait(false);
-
-            if (run.Cancelled)
-            {
-                LastError = "Cancelled.";
-                return Array.Empty<MarketplacePackage>();
-            }
-
-            if (run.TimedOut)
-            {
-                LastError = "winget timed out.";
-                return Array.Empty<MarketplacePackage>();
-            }
-
-            // Only catalog ids can be installed, so other rows are left out.
-            var packages = new List<MarketplacePackage>();
-            var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-            foreach (var row in WingetTextTable.Parse(string.Join("\n", run.Lines)))
-            {
-                if (!PackageId.IsCatalogId(row.Id) || !seen.Add(row.Id))
-                {
-                    continue;
-                }
-
-                var name = string.IsNullOrEmpty(row.Name) ? row.Id : row.Name;
-                packages.Add(new MarketplacePackage(row.Id, name, row.Version));
-            }
-
-            return packages;
-        }
-        catch (OperationCanceledException)
-        {
-            LastError = "Cancelled.";
-            return Array.Empty<MarketplacePackage>();
-        }
-        catch (Exception ex)
-        {
-            LastError = ex.Message;
-            return Array.Empty<MarketplacePackage>();
-        }
+        LastError = error;
+        return packages;
     }
 
-    public async Task<MarketplaceInstallResult> InstallAsync(
+    public Task<ActionResult> InstallAsync(
         string packageId,
         CancellationToken cancellationToken = default)
     {
-        LastError = null;
-        if (string.IsNullOrWhiteSpace(packageId))
-        {
-            LastError = "Package id is required.";
-            return new MarketplaceInstallResult(false, LastError, -1);
-        }
+        return WingetCli.RunActionAsync(
+            ActionKind.Install,
+            "install",
+            packageId,
+            ["--accept-package-agreements"],
+            InstallTimeout,
+            cancellationToken);
+    }
 
-        packageId = packageId.Trim();
-        if (!PackageId.IsCatalogId(packageId))
+    // Only catalog ids can be installed, so other rows are left out.
+    private static IReadOnlyList<MarketplacePackage> ParseSearch(RunResult run)
+    {
+        var packages = new List<MarketplacePackage>();
+        var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        foreach (var row in WingetTextTable.Parse(string.Join("\n", run.Lines)))
         {
-            LastError = "Package id contains invalid characters.";
-            return new MarketplaceInstallResult(false, LastError, -1);
-        }
-
-        if (ExecutablePath is null)
-        {
-            LastError = "winget.exe was not found.";
-            return new MarketplaceInstallResult(false, LastError, -1);
-        }
-
-        try
-        {
-            var run = await new WingetRunner(ExecutablePath).RunAsync(
-                ["install", "--id", packageId, "--accept-package-agreements"],
-                InstallTimeout,
-                null,
-                cancellationToken).ConfigureAwait(false);
-
-            if (run.Cancelled)
+            if (!PackageId.IsCatalogId(row.Id) || !seen.Add(row.Id))
             {
-                LastError = "Cancelled.";
-                return new MarketplaceInstallResult(false, LastError, -1);
+                continue;
             }
 
-            if (run.TimedOut)
-            {
-                LastError = "winget timed out.";
-                return new MarketplaceInstallResult(false, LastError, -1);
-            }
-
-            var output = string.Join("\n", run.Lines);
-            var exitCode = run.ExitCode;
-            var success = exitCode == 0;
-            var message = success
-                ? $"Install completed for {packageId}."
-                : string.IsNullOrWhiteSpace(output)
-                    ? $"Install failed for {packageId} (exit {exitCode})."
-                    : output.Trim();
-
-            if (!success)
-            {
-                LastError = message;
-            }
-
-            return new MarketplaceInstallResult(success, message, exitCode);
+            var name = string.IsNullOrEmpty(row.Name) ? row.Id : row.Name;
+            packages.Add(new MarketplacePackage(row.Id, name, row.Version));
         }
-        catch (OperationCanceledException)
-        {
-            LastError = "Cancelled.";
-            return new MarketplaceInstallResult(false, LastError, -1);
-        }
-        catch (Exception ex)
-        {
-            LastError = ex.Message;
-            return new MarketplaceInstallResult(false, ex.Message, -1);
-        }
+
+        return packages;
     }
 }

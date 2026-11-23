@@ -33,6 +33,7 @@
     <Compile Include="..\..\src\QuantumUpdater\Services\AccountClient.cs" Link="Linked\AccountClient.cs" />
     <Compile Include="..\..\src\QuantumUpdater\Services\ActivityLog.cs" Link="Linked\ActivityLog.cs" />
     <Compile Include="..\..\src\QuantumUpdater\Services\SessionStore.cs" Link="Linked\SessionStore.cs" />
+    <Compile Include="..\..\src\QuantumUpdater\Services\SafeLocalFile.cs" Link="Linked\SafeLocalFile.cs" />
     <Compile Include="..\..\src\QuantumUpdater\Services\MachineSummary.cs" Link="Linked\MachineSummary.cs" />
     <Compile Include="..\..\src\QuantumUpdater.Portal\AccountStore.cs" Link="Linked\Portal\AccountStore.cs" />
     <Compile Include="..\..\src\QuantumUpdater.Portal\PortalHandler.cs" Link="Linked\Portal\PortalHandler.cs" />

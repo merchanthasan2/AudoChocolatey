@@ -112,7 +112,7 @@ public sealed class MarketplacePage : Grid
         try
         {
             var result = await _services.Marketplace.InstallAsync(package.Id).ConfigureAwait(true);
-            _status.Text = result.Message;
+            _status.Text = result.Text;
             _status.Foreground = result.Success ? Theme.Healthy : Theme.Critical;
             await _services.Account.ReportActivityAsync(_services.Session, "install", package.Id, result.Success).ConfigureAwait(true);
         }

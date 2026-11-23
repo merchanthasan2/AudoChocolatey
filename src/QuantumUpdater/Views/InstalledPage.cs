@@ -43,11 +43,6 @@ public sealed class InstalledPage : Grid
         _list.Children.Clear();
         try
         {
-            if (force || _services.Catalog?.Installed is null || (_services.Catalog.Installed.Count == 0 && _services.Catalog.InstalledError is null && force))
-            {
-                // A missing catalog, or an explicit check again, runs winget list.
-            }
-
             var haveList = _services.Catalog is { InstalledError: not null } || (_services.Catalog?.Installed.Count > 0);
             if (force || !haveList)
             {
@@ -124,7 +119,7 @@ public sealed class InstalledPage : Grid
         try
         {
             var result = await _services.Installed.UninstallAsync(package.Id).ConfigureAwait(true);
-            _status.Text = result.Message;
+            _status.Text = result.Text;
             _status.Foreground = result.Success ? Theme.Healthy : Theme.Critical;
             await _services.Account.ReportActivityAsync(_services.Session, "remove", package.Id, result.Success).ConfigureAwait(true);
         }

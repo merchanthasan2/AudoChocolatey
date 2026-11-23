@@ -2,6 +2,8 @@ using System.Globalization;
 using System.Text;
 using System.Text.RegularExpressions;
 
+using QuantumUpdater.Services;
+
 namespace QuantumUpdater;
 
 /// <summary>
@@ -29,34 +31,49 @@ internal static class CrashLog
         }
     }
 
-    /// <summary>Writes one entry to the given folder. Does nothing when the folder or the log is a junction or link. Never throws.</summary>
+    /// <summary>
+    /// Writes one entry to the given folder. Does nothing when the folder or the log is a junction or link. Never throws.
+    /// The entry is added to the old text and the whole log is written again through SafeLocalFile
+    /// (temp file plus replace), so an admin write never follows a link that appears after the check.
+    /// </summary>
     internal static void Write(string folder, string where, Exception? ex)
     {
-        try
+        lock (Gate)
         {
-            // A junction or link could send the log to another folder. Do not write then.
-            if (IsReparsePoint(folder))
+            try
             {
-                return;
+                // A junction or link could send the log to another folder. Do not write then.
+                string logPath = Path.Combine(folder, LogFileName);
+                if (SafeLocalFile.IsReparsePoint(folder) || SafeLocalFile.IsReparsePoint(logPath))
+                {
+                    return;
+                }
+
+                RotateIfLarge(folder, logPath);
+                string existing = string.Empty;
+                if (File.Exists(logPath))
+                {
+                    // A log that cannot be read is kept as it is, and this entry is dropped.
+                    string? read = SafeLocalFile.TryReadText(folder, LogFileName, MaxLogBytes * 2);
+                    if (read is null)
+                    {
+                        return;
+                    }
+
+                    existing = read;
+                }
+
+                string userProfile = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+                SafeLocalFile.TryWriteText(folder, LogFileName, existing + Format(where, ex, userProfile));
             }
-
-            Directory.CreateDirectory(folder);
-
-            string logPath = Path.Combine(folder, LogFileName);
-            if (IsReparsePoint(logPath))
+            catch
             {
-                return;
+                // Logging must never crash the app.
             }
-
-            RotateIfLarge(folder, logPath);
-            string userProfile = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
-            File.AppendAllText(logPath, Format(where, ex, userProfile));
-        }
-        catch
-        {
-            // Logging must never crash the app.
         }
     }
+
+    private static readonly object Gate = new();
 
     /// <summary>Builds the text of one entry. The user profile path is replaced with %USERPROFILE%.</summary>
     internal static string Format(string where, Exception? ex, string userProfile)
@@ -120,7 +137,7 @@ internal static class CrashLog
         text.AppendLine(Redact(ex?.StackTrace ?? "(none)", userProfile));
     }
 
-    // Moves the log aside when it is over 1 MB. The old copy is replaced.
+    // Moves the log aside when it is over 1 MB. The old copy is replaced (the move replaces a link, never follows it).
     private static void RotateIfLarge(string folder, string logPath)
     {
         if (!File.Exists(logPath) || new FileInfo(logPath).Length <= MaxLogBytes)
@@ -128,16 +145,11 @@ internal static class CrashLog
             return;
         }
 
-        File.Move(logPath, Path.Combine(folder, OldLogFileName), overwrite: true);
-    }
-
-    private static bool IsReparsePoint(string path)
-    {
-        if (!Path.Exists(path))
+        if (SafeLocalFile.IsReparsePoint(Path.Combine(folder, OldLogFileName)))
         {
-            return false;
+            File.Delete(Path.Combine(folder, OldLogFileName));
         }
 
-        return (File.GetAttributes(path) & FileAttributes.ReparsePoint) != 0;
+        File.Move(logPath, Path.Combine(folder, OldLogFileName), overwrite: true);
     }
 }
