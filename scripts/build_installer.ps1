@@ -48,7 +48,10 @@ Write-Host "Building DeskVerve version: $ver ($Configuration, $Runtime)"
 $running = Get-Process -Name "DeskVerve", "QuantumUpdater" -ErrorAction SilentlyContinue
 if ($running) {
   Write-Host "Stopping running process(es)..."
-  $running | Stop-Process -Force
+  foreach ($proc in $running) {
+    try { $proc | Stop-Process -Force -ErrorAction Stop }
+    catch { Write-Warning "Could not stop $($proc.ProcessName) (pid $($proc.Id)); it may be elevated. Continuing; publish fails if it locks $PublishDir." }
+  }
   Start-Sleep -Seconds 2
 }
 
