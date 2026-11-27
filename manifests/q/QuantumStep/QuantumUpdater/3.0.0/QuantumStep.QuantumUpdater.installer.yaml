@@ -18,6 +18,6 @@ AppsAndFeaturesEntries:
 Installers:
   - Architecture: x64
     InstallerUrl: https://github.com/merchanthasan2/AudoChocolatey/releases/download/v3.0.0/DeskVerve-Setup-3.0.0-x64.exe
-    InstallerSha256: 60104EB894EE0196F90098A24F388672D0FDD19E7214495F1AFE1758412E132E
+    InstallerSha256: 306F99E9D2063DE0BADDB48BF26A345A1A1396E11A12844E676EDFD83C1F833B
 ManifestType: installer
 ManifestVersion: 1.10.0

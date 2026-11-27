@@ -134,12 +134,12 @@ tr.grp td { background: #18243a; font-weight: 700; }
   <section class="resume" aria-label="Resume point">
     <div>
       <span class="next-pill">RESUME POINT · FEATURES COMPLETED</span>
-      <h2>25 Nov 2026 · Phase 46 Features: Disk &amp; Storage (46.1) &amp; Cleanup Set (46.2) Built</h2>
+      <h2>27 Nov 2026 · Installer rebuilt with Quantum Step branding; waiting for owner install</h2>
       <p>Completed Disk &amp; Storage (drive space and health, external drives labeled, cloud volumes excluded, large file scanner with Recycle Bin and confirmed permanent delete) and System Cleanup (Windows temp files, startup apps with undo, leftover folders reclaimer, and read-only activity history). 571/571 unit tests pass; Release EXE, portable zip, and Inno Setup installer packaged cleanly.</p>
       <ol>
-        <li>Built: <code>dist\QuantumUpdater-WinUI\DeskVerve.exe</code>, <code>dist\release\DeskVerve-Windows.zip</code> (SHA256 <code>13688117CA464E155470ECA928C88D0980B2FE037DCFA794512619C146EC2E72</code>), and <code>dist\release\DeskVerve-Setup-3.0.0-x64.exe</code> (SHA256 <code>91EC101E6676CEB200B56CA67D641551531FC8FB0C839CAAF39B4FD4DF75A921</code>).</li>
-        <li>Next (owner on-PC): install/launch <code>DeskVerve-Setup-3.0.0-x64.exe</code> or <code>DeskVerve.exe</code> to verify the live Disk &amp; Storage and System Cleanup views alongside Updates, Installed, and Marketplace.</li>
-        <li>Releases, push, public winget PR, Store submission, and quantumstep.in stay owner-later.</li>
+        <li>Built: <code>dist\QuantumUpdater-WinUI\DeskVerve.exe</code>, <code>dist\release\DeskVerve-Windows.zip</code> (SHA256 <code>4DCDFFF681045F9A100652B6372FCD996A50713CFEC861C1D973636656302F0F</code>), and <code>dist\release\DeskVerve-Setup-3.0.0-x64.exe</code> (SHA256 <code>306F99E9D2063DE0BADDB48BF26A345A1A1396E11A12844E676EDFD83C1F833B</code>), rebuilt 27 Nov. File description is now "DeskVerve by Quantum Step" so Task Manager and UAC show the company.</li>
+        <li>Next (owner on-PC, approve UAC): the installed copy is still the 22 Nov build that crashes at start (0xC000027B); install/launch <code>DeskVerve-Setup-3.0.0-x64.exe</code> or <code>DeskVerve.exe</code> to verify the live Disk &amp; Storage and System Cleanup views alongside Updates, Installed, and Marketplace.</li>
+        <li>channel/windows pushed 27 Nov. Releases, public winget PR, Store submission, and quantumstep.in stay owner-later.</li>
       </ol>
     </div>
     <div>
@@ -239,7 +239,7 @@ tr.grp td { background: #18243a; font-weight: 700; }
 </div>
 <script>
 const TRACKER = {
-  updated: "25 Nov 2026, Built & verified 46.20 + 46.21 (563/563 tests passing, Release build & DeskVerve-Setup-3.0.0-x64.exe packaged)",
+  updated: "27 Nov 2026, Quantum Step in exe description, installer rebuilt, winget hash updated, channel/windows pushed",
   ownerDecisions: [
     "25 Nov 2026 (Highest Priority): Continue building the DeskVerve Windows package, improve the live UI design across all screens, and surface the full winget catalog (including packages revealed by winget search across winget + msstore) in the Application (ADR 050).",
     "25 Nov 2026: Add Scoop and Chocolatey package management support alongside Winget and Microsoft Store, and include NetSpeedBoss (bucket https://github.com/merchanthasan2/scoop-bucket) as a default featured app (ADR 051).",
@@ -648,7 +648,7 @@ const TRACKER = {
       id: "49",
       title: "Runs in the background: start with Windows, tray, daily check and auto-update",
       items: [
-        { id: "49.1", text: "Start with Windows. A Settings switch turns it on or off. Owner request 16 Nov. Because the app needs admin at every start (ADR 049), use a scheduled task with highest privileges, not a normal start-up entry.", status: "planning", owner: "design", stage: "Needs a plan", with: "Design Architect", parts: { plan: "todo", build: "todo", verify: "todo", sec: "todo", valid: "todo", pc: "todo", acc: "todo" } },
+        { id: "49.1", text: "Start with Windows. A Settings switch turns it on or off. Owner request 16 Nov. Because the app needs admin at every start (ADR 049), use a scheduled task with highest privileges, not a normal start-up entry.", status: "in-progress", owner: "owner", stage: "Built and security reviewed (win-start-with-windows merged; task registered via COM); owner on-PC check", with: "You", parts: { plan: "done", build: "done", verify: "done", sec: "done", valid: "todo", pc: "todo", acc: "todo" } },
         { id: "49.2", text: "Tray icon near the clock. Daily update check at start-up or at a time the owner picks. A bubble shows the number of apps with updates. Owner request 16 Nov.", status: "planning", owner: "design", stage: "Needs a plan", with: "Design Architect", parts: { plan: "todo", build: "todo", verify: "todo", sec: "todo", valid: "todo", pc: "todo", acc: "todo" } },
         { id: "49.3", text: "Daily auto-update. The bubble shows progress such as 1/5 updated, and a progress bar shows on the taskbar. One update at a time (W2). Owner request 16 Nov.", status: "planning", owner: "design", stage: "Needs a plan", with: "Design Architect", parts: { plan: "todo", build: "todo", verify: "todo", sec: "todo", valid: "todo", pc: "todo", acc: "todo" } },
         { id: "49.4", text: "Owner 16 Nov: no login wall at start. Start with Windows, tray and auto-update must work signed out. The test exe still shows the wall until 46.7.31 (Wave 3) removes the sign-in gate. Which features need sign-in: owner decides later. Owner chose A (16 Nov): remove the wall now. 46.7.31-46.7.34 brought forward (no gate, sidebar 'Sign in' link, 'Not now', 'Sign out'); with 2 worker bees. Account service started on this PC (127.0.0.1:8787) so the owner can sign in.", status: "needs-owner", owner: "owner", stage: "Decide later: sign-in features", with: "You", parts: { plan: "todo", build: "na", verify: "na", sec: "na", valid: "na", pc: "na", acc: "todo" } }
