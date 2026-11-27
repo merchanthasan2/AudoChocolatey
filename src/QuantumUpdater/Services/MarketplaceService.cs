@@ -4,7 +4,7 @@ using QuantumUpdater.Services.Winget;
 namespace QuantumUpdater.Services;
 
 /// <summary>One row from winget search output.</summary>
-public sealed record MarketplacePackage(string Id, string Name, string Version);
+public sealed record MarketplacePackage(string Id, string Name, string Version, string? Source = null);
 
 /// <summary>winget search and install for Marketplace (Phase 44.3, moved to WingetCli in Phase 46 F24, W16).</summary>
 public sealed class MarketplaceService
@@ -76,7 +76,10 @@ public sealed class MarketplaceService
             }
 
             var name = string.IsNullOrEmpty(row.Name) ? row.Id : row.Name;
-            packages.Add(new MarketplacePackage(row.Id, name, row.Version));
+            var sourceLabel = string.Equals(row.Source, "msstore", StringComparison.OrdinalIgnoreCase)
+                ? "Microsoft Store"
+                : "Microsoft catalog";
+            packages.Add(new MarketplacePackage(row.Id, name, row.Version, sourceLabel));
         }
 
         return packages;

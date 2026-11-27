@@ -4,53 +4,6 @@ using Microsoft.Management.Deployment;
 namespace QuantumUpdater.Services.Winget;
 
 /// <summary>
-/// One package as the winget COM API reports it.
-/// LocalId is the Id the composite catalog gives. For apps known to winget it is the catalog id.
-/// For apps unknown to winget it is a local id (ARP\ or MSIX\).
-/// </summary>
-public sealed record CatalogApp(
-    string LocalId,
-    string? CatalogId,
-    string Name,
-    string? Publisher,
-    string? InstalledVersion,
-    string? AvailableVersion,
-    bool IsUpdateAvailable,
-    IReadOnlyList<string> ProductCodes,
-    IReadOnlyList<string> FamilyNames);
-
-/// <summary>One manifest icon. Sha256 is upper-case hex, or null when winget gives none.</summary>
-public sealed record CatalogIcon(string Url, string? Sha256, string? FileType);
-
-/// <summary>Details of one catalog package, from the winget catalog.</summary>
-public sealed record CatalogDetails(
-    string CatalogId,
-    string Name,
-    string? Publisher,
-    string? Description,
-    string? Homepage,
-    string? License,
-    string? LatestVersion,
-    IReadOnlyList<CatalogIcon> Icons);
-
-/// <summary>
-/// Thrown when a winget COM read fails, times out or returns a bad status.
-/// The caller falls back to the text reader.
-/// </summary>
-public sealed class WingetReaderException : Exception
-{
-    public WingetReaderException(string message)
-        : base(message)
-    {
-    }
-
-    public WingetReaderException(string message, Exception inner)
-        : base(message, inner)
-    {
-    }
-}
-
-/// <summary>
 /// Reads winget data through the COM API (in-proc factory).
 /// Installed and update data use the composite catalog (remote winget catalog plus local installed apps).
 /// Search, tag and details use the remote winget catalog only.
@@ -58,7 +11,9 @@ public sealed class WingetReaderException : Exception
 /// </summary>
 public sealed class WingetReader : IDisposable
 {
-    public const int MaxResultLimit = 200;
+    public const int MaxResultLimit = 500;
+
+    internal sealed record ActionLookup(PackageManager Manager, CatalogPackage Package);
 
     private static readonly TimeSpan CallLimit = TimeSpan.FromSeconds(15);
     private static readonly TimeSpan CancelGrace = TimeSpan.FromSeconds(5);
@@ -92,11 +47,11 @@ public sealed class WingetReader : IDisposable
         {
             var catalog = await GetCompositeAsync(token).ConfigureAwait(false);
             var result = await FindAsync(composite: true, catalog, new FindPackagesOptions(), "list", token).ConfigureAwait(false);
-            return await Task.Run(() => MapMatches(result.Matches), token).ConfigureAwait(false);
+            return await Task.Run(() => MapMatches(result.Matches, includeAvailableVersion: true), token).ConfigureAwait(false);
         }, linked.Token).ConfigureAwait(false);
     }
 
-    /// <summary>Searches the remote winget catalog. Name, Id, Moniker or Tag contains the text.</summary>
+    /// <summary>Searches all remote catalogs (winget + msstore). Name, Id, Moniker or Tag contains the text.</summary>
     public async Task<IReadOnlyList<CatalogApp>> SearchAsync(string text, int limit, CancellationToken cancellationToken)
     {
         ThrowIfDisposed();
@@ -130,11 +85,11 @@ public sealed class WingetReader : IDisposable
             }
 
             var result = await FindAsync(composite: false, remote, options, "search", token).ConfigureAwait(false);
-            return await Task.Run(() => MapMatches(result.Matches), token).ConfigureAwait(false);
+            return await Task.Run(() => MapMatches(result.Matches, includeAvailableVersion: false), token).ConfigureAwait(false);
         }, searchToken).ConfigureAwait(false);
     }
 
-    /// <summary>Lists remote winget packages with a tag. The tag must match exactly, ignoring case.</summary>
+    /// <summary>Lists remote packages with a tag. The tag must match exactly, ignoring case.</summary>
     public async Task<IReadOnlyList<CatalogApp>> ByTagAsync(string tag, int limit, CancellationToken cancellationToken)
     {
         ThrowIfDisposed();
@@ -158,7 +113,59 @@ public sealed class WingetReader : IDisposable
             });
 
             var result = await FindAsync(composite: false, remote, options, "tag search", token).ConfigureAwait(false);
-            return await Task.Run(() => MapMatches(result.Matches), token).ConfigureAwait(false);
+            return await Task.Run(() => MapMatches(result.Matches, includeAvailableVersion: false), token).ConfigureAwait(false);
+        }, linked.Token).ConfigureAwait(false);
+    }
+
+    /// <summary>Finds one exact package for an install or upgrade COM action (46.7.93). Returns null unless 1 exact match.</summary>
+    internal async Task<ActionLookup?> FindForActionAsync(string catalogId, bool isUpgrade, CancellationToken cancellationToken)
+    {
+        ThrowIfDisposed();
+        if (!PackageId.IsCatalogId(catalogId))
+        {
+            return null;
+        }
+
+        using var linked = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _life.Token);
+        return await RunAsync(async token =>
+        {
+            var catalog = isUpgrade
+                ? await GetCompositeAsync(token).ConfigureAwait(false)
+                : await GetRemoteAsync(token).ConfigureAwait(false);
+
+            var options = new FindPackagesOptions();
+            options.Selectors.Add(new PackageMatchFilter
+            {
+                Field = PackageMatchField.Id,
+                Option = PackageFieldMatchOption.EqualsCaseInsensitive,
+                Value = catalogId,
+            });
+
+            var result = await FindAsync(composite: isUpgrade, catalog, options, "exact lookup", token).ConfigureAwait(false);
+            var matches = result.Matches;
+            if (matches is null || matches.Count == 0)
+            {
+                return null;
+            }
+
+            CatalogPackage? chosen = null;
+            int exactCount = 0;
+            for (var i = 0; i < matches.Count; i++)
+            {
+                var candidate = matches[i]?.CatalogPackage;
+                if (candidate is not null && string.Equals(candidate.Id, catalogId, StringComparison.OrdinalIgnoreCase))
+                {
+                    chosen = candidate;
+                    exactCount++;
+                }
+            }
+
+            if (exactCount != 1 || chosen is null)
+            {
+                return null;
+            }
+
+            return new ActionLookup(EnsureManager(), chosen);
         }, linked.Token).ConfigureAwait(false);
     }
 
@@ -239,9 +246,44 @@ public sealed class WingetReader : IDisposable
         }
 
         _remote = null;
-        var reference = await Task.Run(
-            () => EnsureManager().GetPredefinedPackageCatalog(PredefinedPackageCatalog.OpenWindowsCatalog),
-            token).ConfigureAwait(false);
+        var reference = await Task.Run(() =>
+        {
+            var manager = EnsureManager();
+            try
+            {
+                // Include all configured non-explicit catalogs (winget + msstore) so Marketplace
+                // exposes everything winget search can find. Index access avoids CsWinRT enumerator bugs.
+                var catalogs = manager.GetPackageCatalogs();
+                if (catalogs is not null && catalogs.Count > 0)
+                {
+                    var options = new CreateCompositePackageCatalogOptions
+                    {
+                        CompositeSearchBehavior = CompositeSearchBehavior.RemotePackagesFromRemoteCatalogs,
+                    };
+                    var added = 0;
+                    for (var i = 0; i < catalogs.Count; i++)
+                    {
+                        var cat = catalogs[i];
+                        if (cat is not null && !cat.Info.Explicit)
+                        {
+                            options.Catalogs.Add(cat);
+                            added++;
+                        }
+                    }
+
+                    if (added > 0)
+                    {
+                        return manager.CreateCompositePackageCatalog(options);
+                    }
+                }
+            }
+            catch
+            {
+                // Fall back to OpenWindowsCatalog if composite remote catalog setup fails.
+            }
+
+            return manager.GetPredefinedPackageCatalog(PredefinedPackageCatalog.OpenWindowsCatalog);
+        }, token).ConfigureAwait(false);
 
         var catalog = await ConnectAsync(reference, "remote catalog", token).ConfigureAwait(false);
         _remote = catalog;
@@ -321,7 +363,7 @@ public sealed class WingetReader : IDisposable
 
     // One bad package is skipped. The rest of the list still returns.
     // Index access, not foreach. The COM collection enumerator fails in this process (CsWinRT 'No such interface').
-    private static IReadOnlyList<CatalogApp> MapMatches(IReadOnlyList<MatchResult>? matches)
+    private static IReadOnlyList<CatalogApp> MapMatches(IReadOnlyList<MatchResult>? matches, bool includeAvailableVersion)
     {
         var rows = new List<CatalogApp>();
         if (matches is null)
@@ -339,7 +381,7 @@ public sealed class WingetReader : IDisposable
                     continue;
                 }
 
-                rows.Add(MapPackage(package));
+                rows.Add(MapPackage(package, includeAvailableVersion));
             }
             catch (Exception)
             {
@@ -373,28 +415,47 @@ public sealed class WingetReader : IDisposable
         return new CatalogDetails(
             CatalogId: package.Id,
             Name: package.Name ?? string.Empty,
-            Publisher: metadata?.Publisher,
+            Publisher: metadata?.Publisher ?? version?.Publisher,
             Description: metadata?.Description,
-            Homepage: metadata?.PackageUrl,
+            Homepage: metadata?.PackageUrl ?? metadata?.PublisherUrl,
             License: metadata?.License,
             LatestVersion: version?.Version,
             Icons: MapIcons(metadata?.Icons));
     }
 
-    private static CatalogApp MapPackage(CatalogPackage package)
+    private static CatalogApp MapPackage(CatalogPackage package, bool includeAvailableVersion)
     {
         var installed = package.InstalledVersion;
-        var available = package.DefaultInstallVersion;
+        // On remote search (46.15), reading DefaultInstallVersion per row loads every manifest (~0.5-1.6 s each).
+        // Only read DefaultInstallVersion for local composite list/upgrades; search/tag rows read details lazily on select.
+        PackageVersionInfo? available = includeAvailableVersion ? package.DefaultInstallVersion : null;
+        string? sourceName = null;
+        try
+        {
+            var catalogId = available?.PackageCatalog?.Info?.Id ?? installed?.PackageCatalog?.Info?.Id;
+            if (!string.IsNullOrEmpty(catalogId))
+            {
+                sourceName = catalogId.Contains("Store", StringComparison.OrdinalIgnoreCase)
+                    ? "Microsoft Store"
+                    : "Microsoft catalog";
+            }
+        }
+        catch
+        {
+            // Ignore catalog metadata errors on individual rows.
+        }
+
         return new CatalogApp(
             LocalId: package.Id ?? string.Empty,
-            CatalogId: available is null ? null : package.Id,
+            CatalogId: includeAvailableVersion ? (available is null ? null : package.Id) : package.Id,
             Name: package.Name ?? string.Empty,
             Publisher: installed?.Publisher ?? available?.Publisher,
             InstalledVersion: installed?.Version,
             AvailableVersion: available?.Version,
             IsUpdateAvailable: package.IsUpdateAvailable,
             ProductCodes: Strings(installed?.ProductCodes),
-            FamilyNames: Strings(installed?.PackageFamilyNames));
+            FamilyNames: Strings(installed?.PackageFamilyNames),
+            SourceName: sourceName);
     }
 
     private static IReadOnlyList<CatalogIcon> MapIcons(IReadOnlyList<Icon>? icons)

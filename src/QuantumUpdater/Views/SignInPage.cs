@@ -49,8 +49,8 @@ public sealed class SignInPage : StackPanel
         Children.Add(_password);
         var row = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8 };
         _signIn = Chrome.Action("Sign in");
-        _create = Chrome.Action("Create account");
-        _notNow = Chrome.Action("Not now");
+        _create = Chrome.SecondaryButton("Create account");
+        _notNow = Chrome.GhostButton("Not now");
         _signIn.Click += async (_, _) => await SubmitAsync(create: false).ConfigureAwait(true);
         _create.Click += async (_, _) => await SubmitAsync(create: true).ConfigureAwait(true);
         _notNow.Click += (_, _) => Dismissed?.Invoke();

@@ -23,7 +23,8 @@ internal static class WingetCli
         string? packageId,
         IReadOnlyList<string> extraArgs,
         TimeSpan timeout,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken,
+        Action<string>? onLine = null)
     {
         if (string.IsNullOrWhiteSpace(packageId))
         {
@@ -48,7 +49,7 @@ internal static class WingetCli
         try
         {
             var run = await new WingetRunner(executable)
-                .RunAsync(args, timeout, null, cancellationToken)
+                .RunAsync(args, timeout, onLine, cancellationToken)
                 .ConfigureAwait(false);
             return RunOutcome.FromRun(run, UserProfile, kind);
         }

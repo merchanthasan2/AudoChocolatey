@@ -8,6 +8,8 @@ public enum AppSource
     MicrosoftCatalog,
     MicrosoftStore,
     InstalledDirectly,
+    Scoop,
+    Chocolatey,
 }
 
 /// <summary>How sure the match between a local app and a catalog entry is.</summary>
@@ -25,6 +27,8 @@ public enum UninstallRoute
     Msi,
     OwnUninstaller,
     Store,
+    Scoop,
+    Chocolatey,
     None,
 }
 

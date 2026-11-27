@@ -56,6 +56,9 @@ public sealed class AppIcon : Grid
         AutomationProperties.SetAccessibilityView(this, AccessibilityView.Raw);
     }
 
+    /// <summary>The ticket returned by the latest <see cref="Show"/> call.</summary>
+    public int CurrentTicket { get; private set; }
+
     /// <summary>
     /// Starts a new icon load for the app and shows its letter tile. Hides any image.
     /// Returns the ticket to pass to SetImage. Call on the UI thread.
@@ -63,6 +66,7 @@ public sealed class AppIcon : Grid
     public int Show(string key, string name)
     {
         var ticket = _slot.Begin(key);
+        CurrentTicket = ticket;
         _tileHost.Child = Chrome.LetterTile(name, _size);
         _tileHost.Visibility = Visibility.Visible;
         _image.Source = null;

@@ -1,17 +1,65 @@
 using System.Diagnostics;
+using System.Runtime.InteropServices;
 using System.Text.Json;
 
 namespace QuantumUpdater.Services;
 
-public sealed record VolumeInfo(string Name, long Total, long Free);
+public sealed record VolumeInfo(
+    string Name,
+    long Total,
+    long Free,
+    string Label = "",
+    bool IsExternal = false,
+    string Health = "Healthy");
 
 public sealed record PhysicalDisk(string Name, string Media, string Health, long Size);
 
-public sealed record LargeFile(string Path, long Size);
+public sealed record LargeFile(string Path, long Size, DateTime? LastModified = null)
+{
+    public string FileName => System.IO.Path.GetFileName(Path);
+    public string DirectoryPath => System.IO.Path.GetDirectoryName(Path) ?? "";
+    public string FormattedSize => FormatBytes(Size);
 
-/// <summary>Read-only disk facts. This service does not delete or repair anything.</summary>
+    public static string FormatBytes(long bytes)
+    {
+        if (bytes < 1024) return $"{bytes} B";
+        if (bytes < 1024 * 1024) return $"{bytes / 1024.0:F1} KB";
+        if (bytes < 1024 * 1024 * 1024) return $"{bytes / (1024.0 * 1024.0):F1} MB";
+        return $"{bytes / (1024.0 * 1024.0 * 1024.0):F2} GB";
+    }
+}
+
+/// <summary>
+/// Disk &amp; Storage service (ADR 048, Phase 46.1).
+/// Reads physical &amp; volume disk facts, scans large files, and executes safe Recycle Bin or permanent deletion.
+/// </summary>
 public sealed class DiskService
 {
+    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
+    private struct SHFILEOPSTRUCT
+    {
+        public IntPtr hwnd;
+        public uint wFunc;
+        [MarshalAs(UnmanagedType.LPWStr)]
+        public string pFrom;
+        [MarshalAs(UnmanagedType.LPWStr)]
+        public string? pTo;
+        public ushort fFlags;
+        [MarshalAs(UnmanagedType.Bool)]
+        public bool fAnyOperationsAborted;
+        public IntPtr hNameMappings;
+        [MarshalAs(UnmanagedType.LPWStr)]
+        public string? lpszProgressTitle;
+    }
+
+    [DllImport("shell32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
+    private static extern int SHFileOperation([In] ref SHFILEOPSTRUCT lpFileOp);
+
+    private const uint FO_DELETE = 0x0003;
+    private const ushort FOF_ALLOWUNDO = 0x0040;
+    private const ushort FOF_NOCONFIRMATION = 0x0010;
+    private const ushort FOF_SILENT = 0x0004;
+
     private static readonly string PowerShell = Path.Combine(
         Environment.SystemDirectory,
         "WindowsPowerShell",
@@ -25,12 +73,29 @@ public sealed class DiskService
         {
             try
             {
-                if (drive.DriveType != DriveType.Fixed || !drive.IsReady || drive.TotalSize <= 0)
+                // Cloud volumes and network shares are never shown (ADR 048)
+                if (drive.DriveType != DriveType.Fixed && drive.DriveType != DriveType.Removable)
                 {
                     continue;
                 }
 
-                list.Add(new VolumeInfo(drive.Name, drive.TotalSize, drive.AvailableFreeSpace));
+                if (!drive.IsReady || drive.TotalSize <= 0)
+                {
+                    continue;
+                }
+
+                bool isExternal = drive.DriveType == DriveType.Removable;
+                string label = string.IsNullOrWhiteSpace(drive.VolumeLabel)
+                    ? (isExternal ? "External Storage" : "Local Disk")
+                    : drive.VolumeLabel;
+
+                list.Add(new VolumeInfo(
+                    drive.Name,
+                    drive.TotalSize,
+                    drive.AvailableFreeSpace,
+                    label,
+                    isExternal,
+                    "Healthy"));
             }
             catch
             {
@@ -62,7 +127,6 @@ public sealed class DiskService
         psi.ArgumentList.Add("Get-PhysicalDisk | Select-Object FriendlyName, MediaType, HealthStatus, Size | ConvertTo-Json -Compress");
 
         using var process = new Process { StartInfo = psi };
-        // Off the UI thread, see WingetRunner (start crash 0xC000027B).
         await Task.Run(process.Start).ConfigureAwait(false);
         var outputTask = process.StandardOutput.ReadToEndAsync(cancellationToken);
         using var timeout = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
@@ -95,7 +159,12 @@ public sealed class DiskService
     public IReadOnlyList<LargeFile> LargestDownloads(int take = 15)
     {
         var root = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Downloads");
-        if (!Directory.Exists(root))
+        return ScanLargeFiles(root, 100L * 1024 * 1024, take);
+    }
+
+    public IReadOnlyList<LargeFile> ScanLargeFiles(string directoryPath, long minSizeBytes = 50L * 1024 * 1024, int take = 50)
+    {
+        if (string.IsNullOrWhiteSpace(directoryPath) || !Directory.Exists(directoryPath))
         {
             return Array.Empty<LargeFile>();
         }
@@ -105,25 +174,25 @@ public sealed class DiskService
         var seen = 0;
         try
         {
-            foreach (var file in Directory.EnumerateFiles(root, "*", options))
+            foreach (var file in Directory.EnumerateFiles(directoryPath, "*", options))
             {
                 seen++;
-                if (seen > 4000)
+                if (seen > 6000)
                 {
                     break;
                 }
 
                 try
                 {
-                    var length = new FileInfo(file).Length;
-                    if (length >= 100L * 1024 * 1024)
+                    var fi = new FileInfo(file);
+                    if (fi.Length >= minSizeBytes)
                     {
-                        found.Add(new LargeFile(file, length));
+                        found.Add(new LargeFile(file, fi.Length, fi.LastWriteTimeUtc));
                     }
                 }
                 catch
                 {
-                    // Skip a file we cannot size.
+                    // Skip inaccessible files.
                 }
             }
         }
@@ -132,7 +201,67 @@ public sealed class DiskService
             return Array.Empty<LargeFile>();
         }
 
-        return found.OrderByDescending(file => file.Size).Take(take).ToList();
+        return found.OrderByDescending(f => f.Size).Take(take).ToList();
+    }
+
+    /// <summary>
+    /// Safely sends a file or directory to the Windows Recycle Bin (undoable).
+    /// </summary>
+    public bool SendToRecycleBin(string path)
+    {
+        if (string.IsNullOrWhiteSpace(path) || (!File.Exists(path) && !Directory.Exists(path)))
+        {
+            return false;
+        }
+
+        try
+        {
+            var op = new SHFILEOPSTRUCT
+            {
+                wFunc = FO_DELETE,
+                pFrom = path + "\0\0",
+                fFlags = FOF_ALLOWUNDO | FOF_NOCONFIRMATION | FOF_SILENT,
+            };
+
+            int result = SHFileOperation(ref op);
+            return result == 0 && !op.fAnyOperationsAborted;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    /// <summary>
+    /// Permanently deletes a file or directory. Requires explicit user confirmation in UI (ADR 048).
+    /// </summary>
+    public bool DeletePermanently(string path)
+    {
+        if (string.IsNullOrWhiteSpace(path))
+        {
+            return false;
+        }
+
+        try
+        {
+            if (File.Exists(path))
+            {
+                File.Delete(path);
+                return true;
+            }
+
+            if (Directory.Exists(path))
+            {
+                Directory.Delete(path, recursive: true);
+                return true;
+            }
+
+            return false;
+        }
+        catch
+        {
+            return false;
+        }
     }
 
     private static IReadOnlyList<PhysicalDisk> ParseDisks(string json)

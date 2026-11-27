@@ -54,6 +54,9 @@ public sealed record AppRowModel
 
     public bool CanSelect { get; init; }
 
+    /// <summary>Custom primary action button label (defaults to "Update").</summary>
+    public string? ActionLabel { get; init; }
+
     /// <summary>The status line text for the current state.</summary>
     public string StatusText()
     {

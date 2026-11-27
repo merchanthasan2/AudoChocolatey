@@ -1,30 +1,171 @@
+using Microsoft.UI.Text;
+using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Automation;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Media;
 using QuantumUpdater.Services;
+using QuantumUpdater.Services.Scan;
+using QuantumUpdater.Services.Scan.Jobs;
+using QuantumUpdater.Views.Controls;
 
 namespace QuantumUpdater.Views;
 
-public sealed class GettingReadyPage : StackPanel
+/// <summary>
+/// Full parallel system scan shown at startup (ADR 049 Q7, mockup 00-getting-ready.html).
+/// Unlocks the sidebar once every job reaches Done or Failed.
+/// </summary>
+public sealed class GettingReadyPage : UserControl
 {
+    private static readonly SolidColorBrush TrackBrush = new(Windows.UI.Color.FromArgb(255, 0x3A, 0x3A, 0x3A));
+
     private readonly AppServices _services;
-    private readonly TextBlock _updates;
-    private readonly TextBlock _installed;
-    private readonly TextBlock _self;
+    private readonly ScanOrchestrator _orchestrator;
+    private readonly Dictionary<string, ScanJobRow> _rows = new(StringComparer.Ordinal);
+    private readonly TextBlock _heading;
+    private readonly TextBlock _lead;
+    private readonly TextBlock _percentText;
+    private readonly TextBlock _countText;
+    private readonly TextBlock _elapsedText;
+    private readonly ProgressBar _overallBar;
+    private readonly Button _continue;
+    private readonly DispatcherTimer _timer;
+    private readonly DateTimeOffset _startedAt = DateTimeOffset.UtcNow;
     private bool _started;
 
-    public event Action? Settled;
+    /// <summary>Raised once every scan job has reached Done or Failed. Bool = true if all succeeded.</summary>
+    public event Action<bool>? Settled;
 
     public GettingReadyPage(AppServices services)
     {
-        _services = services;
-        Spacing = 8;
-        Children.Add(Chrome.Title("Getting ready"));
-        Children.Add(Chrome.Line("Each job is shown. A failed job does not hold the app."));
-        _updates = Chrome.Line("Updates scan · waiting");
-        _installed = Chrome.Line("Installed scan · waiting");
-        _self = Chrome.Line("DeskVerve check · waiting");
-        Children.Add(Chrome.Card(_updates));
-        Children.Add(Chrome.Card(_installed));
-        Children.Add(Chrome.Card(_self));
+        _services = services ?? throw new ArgumentNullException(nameof(services));
+        Background = Theme.Canvas;
+
+        var jobs = new IScanJob[]
+        {
+            new UpdatesScanJob(_services.Updates),
+            new InstalledScanJob(_services.InstalledApps),
+            new MarketplaceScanJob(_services.Catalog),
+            new IconScanJob(_services.InstalledApps, _services.Catalog, _services.Icons),
+            new DriveScanJob(_services.Disk),
+            new SelfUpdateScanJob(_services.Update),
+        };
+
+        _orchestrator = new ScanOrchestrator(jobs, _services.Post);
+        _orchestrator.Changed += OnJobChanged;
+        _orchestrator.Completed += OnAllCompleted;
+
+        var panel = new StackPanel
+        {
+            MaxWidth = 760,
+            HorizontalAlignment = HorizontalAlignment.Stretch,
+            Margin = new Thickness(0, 16, 0, 32),
+            Spacing = 12,
+        };
+
+        _heading = Chrome.Title("Getting your PC ready");
+        _lead = Chrome.Line("DeskVerve checks your apps, updates, icons, and drives before you start.");
+        panel.Children.Add(_heading);
+        panel.Children.Add(_lead);
+
+        // Overall progress card
+        _percentText = new TextBlock
+        {
+            Text = "0%",
+            FontFamily = Chrome.Font,
+            FontSize = Theme.TitleSize,
+            FontWeight = FontWeights.SemiBold,
+            Foreground = Theme.Text,
+        };
+        _countText = new TextBlock
+        {
+            Text = $"0 of {jobs.Length} checks done",
+            FontFamily = Chrome.Font,
+            FontSize = Theme.BodySize,
+            FontWeight = FontWeights.SemiBold,
+            Foreground = Theme.Text,
+            VerticalAlignment = VerticalAlignment.Bottom,
+            Margin = new Thickness(0, 0, 0, 3),
+        };
+        _elapsedText = Chrome.Caption("0.0 s");
+        _elapsedText.VerticalAlignment = VerticalAlignment.Bottom;
+        _elapsedText.Margin = new Thickness(0, 0, 0, 4);
+
+        var topRow = new Grid { ColumnSpacing = 12 };
+        topRow.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+        topRow.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+        topRow.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+        Grid.SetColumn(_percentText, 0);
+        Grid.SetColumn(_countText, 1);
+        Grid.SetColumn(_elapsedText, 2);
+        topRow.Children.Add(_percentText);
+        topRow.Children.Add(_countText);
+        topRow.Children.Add(_elapsedText);
+
+        _overallBar = new ProgressBar
+        {
+            Minimum = 0,
+            Maximum = 100,
+            Value = 0,
+            Height = 6,
+            Background = TrackBrush,
+            Foreground = Theme.Accent,
+        };
+
+        var overallStack = new StackPanel { Spacing = 10 };
+        overallStack.Children.Add(topRow);
+        overallStack.Children.Add(_overallBar);
+        panel.Children.Add(Chrome.Card(overallStack));
+
+        // Job list card
+        var jobList = new StackPanel { Spacing = 0 };
+        var glyphMap = new Dictionary<string, string>(StringComparer.Ordinal)
+        {
+            ["updates"] = "\uE895",
+            ["installed"] = "\uE71D",
+            ["marketplace"] = "\uE719",
+            ["icons"] = "\uE8B9",
+            ["drives"] = "\uEDA2",
+            ["self"] = "\uE946",
+        };
+
+        for (int i = 0; i < jobs.Length; i++)
+        {
+            if (i > 0)
+            {
+                jobList.Children.Add(new Border { Height = 1, Background = Theme.Stroke });
+            }
+
+            var job = jobs[i];
+            var row = new ScanJobRow(job.Id, job.Title, glyphMap.GetValueOrDefault(job.Id, "\uE946"));
+            row.RetryRequested += async id => await _orchestrator.RetryAsync(id, CancellationToken.None).ConfigureAwait(true);
+            _rows[job.Id] = row;
+            jobList.Children.Add(row);
+        }
+
+        panel.Children.Add(new Border
+        {
+            Background = Theme.Card,
+            BorderBrush = Theme.Stroke,
+            BorderThickness = new Thickness(1),
+            CornerRadius = Theme.RadiusLarge,
+            Child = jobList,
+        });
+
+        _continue = Chrome.Action("Continue");
+        _continue.HorizontalAlignment = HorizontalAlignment.Right;
+        _continue.Visibility = Visibility.Collapsed;
+        _continue.Click += (_, _) => Settled?.Invoke(true);
+        panel.Children.Add(_continue);
+
+        Content = new ScrollViewer { Background = Theme.Canvas, Content = panel };
+
+        _timer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(200) };
+        _timer.Tick += (_, _) =>
+        {
+            var secs = (DateTimeOffset.UtcNow - _startedAt).TotalSeconds;
+            _elapsedText.Text = $"{secs:0.1} s";
+        };
+
         Loaded += (_, _) =>
         {
             if (_started)
@@ -33,75 +174,67 @@ public sealed class GettingReadyPage : StackPanel
             }
 
             _started = true;
-            if (DiagSwitches.Has("noscan")) // TEMP DIAGNOSTIC 46.7.38
+            if (DiagSwitches.Has("noscan"))
             {
-                Set(_updates, "Updates scan · Scan skipped (diagnostic)", Theme.Muted); // TEMP DIAGNOSTIC 46.7.38
-                Set(_installed, "Installed scan · Scan skipped (diagnostic)", Theme.Muted); // TEMP DIAGNOSTIC 46.7.38
-                Set(_self, "DeskVerve check · Scan skipped (diagnostic)", Theme.Muted); // TEMP DIAGNOSTIC 46.7.38
-                return; // TEMP DIAGNOSTIC 46.7.38
+                _heading.Text = "Scan skipped (diagnostic)";
+                _continue.Visibility = Visibility.Visible;
+                return;
             }
 
-            _ = RunAsync();
+            _timer.Start();
+            _ = _orchestrator.RunAsync(CancellationToken.None);
         };
     }
 
-    private async Task RunAsync()
+    private void OnJobChanged(ScanJobStatus status)
     {
-        Set(_updates, "Updates scan · running", Theme.Warning);
-        Set(_installed, "Installed scan · running", Theme.Warning);
-        Set(_self, "DeskVerve check · running", Theme.Warning);
-
-        var upgradesTask = _services.Winget.ListUpgradesAsync();
-        var installedTask = _services.Installed.ListInstalledAsync();
-        var selfTask = _services.Update.CheckAsync();
-        _ = upgradesTask.ContinueWith(_ => CrashLog.Write("Mark:UpgradesDone", null)); // TEMP DIAGNOSTIC
-        _ = installedTask.ContinueWith(_ => CrashLog.Write("Mark:InstalledDone", null)); // TEMP DIAGNOSTIC
-        _ = selfTask.ContinueWith(_ => CrashLog.Write("Mark:SelfDone", null)); // TEMP DIAGNOSTIC
-        await Task.WhenAll(upgradesTask, installedTask, selfTask).ConfigureAwait(true);
-
-        CrashLog.Write("Mark:ScansDone", null); // TEMP DIAGNOSTIC
-        var upgrades = await upgradesTask.ConfigureAwait(true);
-        var installed = await installedTask.ConfigureAwait(true);
-        var self = await selfTask.ConfigureAwait(true);
-
-        _services.Catalog = new CatalogSnapshot
+        if (_rows.TryGetValue(status.Id, out var row))
         {
-            Upgrades = upgrades,
-            UpgradesError = _services.Winget.LastError,
-            Installed = installed,
-            InstalledError = _services.Installed.LastError,
-        };
-
-        Set(
-            _updates,
-            string.IsNullOrEmpty(_services.Winget.LastError)
-                ? $"Updates scan · ready · {upgrades.Count}"
-                : "Updates scan · failed · " + _services.Winget.LastError,
-            string.IsNullOrEmpty(_services.Winget.LastError) ? Theme.Healthy : Theme.Critical);
-        Set(
-            _installed,
-            string.IsNullOrEmpty(_services.Installed.LastError)
-                ? $"Installed scan · ready · {installed.Count}"
-                : "Installed scan · failed · " + _services.Installed.LastError,
-            string.IsNullOrEmpty(_services.Installed.LastError) ? Theme.Healthy : Theme.Critical);
-        Set(_self, "DeskVerve check · " + self.Message, self.HasUpdate ? Theme.Warning : Theme.Healthy);
-
-        try
-        {
-            await _services.Account.ReportHeartbeatAsync(_services.Session, MachineSummary.Read()).ConfigureAwait(true);
-        }
-        catch
-        {
-            // A missed report does not hold the app.
+            row.Apply(status.State, status.Fraction, status.Summary, status.Reason, null, null);
         }
 
-        CrashLog.Write("Mark:Settled", null); // TEMP DIAGNOSTIC
-        Settled?.Invoke();
+        var pct = (int)Math.Round(_orchestrator.OverallPercent);
+        _percentText.Text = $"{pct}%";
+        _overallBar.Value = pct;
+
+        var all = _orchestrator.Jobs;
+        int finished = all.Count(j => j.State is ScanJobState.Done or ScanJobState.Failed);
+        _countText.Text = finished == all.Count
+            ? $"{finished} of {all.Count} checks finished"
+            : $"{finished} of {all.Count} checks done";
     }
 
-    private static void Set(TextBlock block, string text, Microsoft.UI.Xaml.Media.SolidColorBrush color)
+    private void OnAllCompleted()
     {
-        block.Text = text;
-        block.Foreground = color;
+        _timer.Stop();
+        var elapsed = (DateTimeOffset.UtcNow - _startedAt).TotalSeconds;
+        _elapsedText.Text = $"{elapsed:0.1} s";
+
+        var all = _orchestrator.Jobs;
+        bool allOk = all.All(j => j.State == ScanJobState.Done);
+        _percentText.Text = "100%";
+        _overallBar.Value = 100;
+        _overallBar.Foreground = allOk ? Theme.Healthy : Theme.Warning;
+        _heading.Text = "Your PC is ready";
+        _lead.Text = allOk
+            ? $"The scan finished in {elapsed:0.1} seconds."
+            : $"The scan finished in {elapsed:0.1} seconds. One or more checks did not finish; you can still use DeskVerve.";
+
+        _continue.Visibility = Visibility.Visible;
+        AutomationProperties.SetName(_heading, _heading.Text);
+
+        _ = Task.Run(async () =>
+        {
+            try
+            {
+                await _services.Account.ReportHeartbeatAsync(_services.Session, MachineSummary.Read()).ConfigureAwait(false);
+            }
+            catch
+            {
+                // Ignore offline heartbeat failure.
+            }
+        });
+
+        Settled?.Invoke(allOk);
     }
 }

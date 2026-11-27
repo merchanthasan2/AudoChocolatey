@@ -21,8 +21,8 @@ public enum ActionKind
 /// <summary>A progress report from the work. Null means the work did not report that part.</summary>
 public readonly record struct ActionProgress(string? Phase, int? Percent);
 
-/// <summary>The result of the work of one action.</summary>
-public sealed record ActionOutcome(bool Success, string? Message);
+/// <summary>The result of the work of one action. StillRunning is set when a stopped process has not ended yet (W18).</summary>
+public sealed record ActionOutcome(bool Success, string? Message, Task? StillRunning = null);
 
 /// <summary>One action in the queue. Read it on the screen thread only through events or snapshots.</summary>
 public sealed class QueuedAction
@@ -95,6 +95,8 @@ public sealed class ActionQueue
     private readonly Queue<QueuedAction> _outbox = new();
     private readonly object _flushGate = new();
     private bool _running;
+    private bool _isHeld;
+    private QueuedAction? _heldBy;
 
     /// <param name="post">Runs an event on the screen thread. Tests pass <c>a =&gt; a()</c>.</param>
     public ActionQueue(Action<Action> post)
@@ -107,6 +109,30 @@ public sealed class ActionQueue
     /// The item is a snapshot taken at the change. Use its Id with Cancel, and Items or CurrentBatch for the live list.
     /// </summary>
     public event Action<QueuedAction>? Changed;
+
+    /// <summary>True when a stopped installer could not be halted yet; next actions wait until it finishes (W18).</summary>
+    public bool IsHeld
+    {
+        get
+        {
+            lock (_gate)
+            {
+                return _isHeld;
+            }
+        }
+    }
+
+    /// <summary>The item holding the queue, or null when not held.</summary>
+    public QueuedAction? HeldBy
+    {
+        get
+        {
+            lock (_gate)
+            {
+                return _heldBy?.Snapshot();
+            }
+        }
+    }
 
     /// <summary>Snapshot of every action in this queue, in the order they were added.</summary>
     public IReadOnlyList<QueuedAction> Items
@@ -298,6 +324,7 @@ public sealed class ActionQueue
         var progress = new SyncProgress<ActionProgress>(p => Report(item, p));
         ActionState finalState;
         string? message = null;
+        Task? stillRunning = null;
 
         try
         {
@@ -306,6 +333,7 @@ public sealed class ActionQueue
             if (!outcome.Success)
             {
                 message = outcome.Message;
+                stillRunning = outcome.StillRunning;
             }
         }
         catch (OperationCanceledException)
@@ -323,10 +351,36 @@ public sealed class ActionQueue
             item.State = finalState;
             item.Message = message;
             item.Cts.Dispose();
+            if (stillRunning is not null && !stillRunning.IsCompleted)
+            {
+                _isHeld = true;
+                _heldBy = item;
+            }
             Raise(item);
         }
 
         Flush();
+
+        if (stillRunning is not null && !stillRunning.IsCompleted)
+        {
+            try
+            {
+                await stillRunning.ConfigureAwait(false);
+            }
+            catch
+            {
+                // Observed by owner/runner; holding ends regardless.
+            }
+
+            lock (_gate)
+            {
+                _isHeld = false;
+                _heldBy = null;
+                Raise(item);
+            }
+
+            Flush();
+        }
     }
 
     private void Report(QueuedAction item, ActionProgress report)

@@ -1,0 +1,158 @@
+{
+  "schema": 1,
+  "categories": [
+    {
+      "id": "browsers",
+      "title": "Browsers",
+      "tag": "browser",
+      "query": "browser"
+    },
+    {
+      "id": "ai",
+      "title": "AI tools",
+      "tag": "ai",
+      "query": "ai"
+    },
+    {
+      "id": "dev",
+      "title": "Developer tools",
+      "tag": "developer",
+      "query": "code"
+    },
+    {
+      "id": "productivity",
+      "title": "Productivity",
+      "tag": "productivity",
+      "query": "notes"
+    },
+    {
+      "id": "utilities",
+      "title": "Utilities",
+      "tag": "utility",
+      "query": "utility"
+    },
+    {
+      "id": "media",
+      "title": "Photo and video",
+      "tag": "video",
+      "query": "video"
+    },
+    {
+      "id": "music",
+      "title": "Music",
+      "tag": "music",
+      "query": "music"
+    },
+    {
+      "id": "communication",
+      "title": "Communication",
+      "tag": "chat",
+      "query": "chat"
+    },
+    {
+      "id": "security",
+      "title": "Security",
+      "tag": "security",
+      "query": "security"
+    },
+    {
+      "id": "gaming",
+      "title": "Gaming",
+      "tag": "gaming",
+      "query": "game"
+    }
+  ],
+  "picks": [
+    { "id": "netspeedboss", "name": "NetSpeedBoss", "publisher": "Hasan Merchant", "category": "utilities", "popular": true, "source": "scoop", "bucket": "netspeedboss", "bucketUrl": "https://github.com/merchanthasan2/scoop-bucket", "homepage": "https://merchanthasan2.github.io/NetSpeedBoss/", "license": "MIT", "version": "1.1.1", "summary": "Live network upload and download speed on your Windows taskbar, with a live graph, per-app traffic, and data usage history." },
+    { "id": "Google.Chrome", "name": "Google Chrome", "publisher": "Google", "category": "browsers", "popular": true, "summary": "Fast web browser from Google with account sync and extensions." },
+    { "id": "Mozilla.Firefox", "name": "Mozilla Firefox", "publisher": "Mozilla", "category": "browsers", "popular": true, "summary": "Private, open web browser built by a non-profit foundation." },
+    { "id": "Brave.Brave", "name": "Brave", "publisher": "Brave Software", "category": "browsers", "popular": false, "summary": "Privacy-focused browser that blocks ads and trackers by default." },
+    { "id": "Vivaldi.Vivaldi", "name": "Vivaldi", "publisher": "Vivaldi Technologies", "category": "browsers", "popular": false, "summary": "Customizable browser with vertical tabs, panels, and built-in tools." },
+    { "id": "Opera.Opera", "name": "Opera", "publisher": "Opera Norway", "category": "browsers", "popular": false, "summary": "Browser with built-in free VPN, workspaces, and sidebar messengers." },
+    { "id": "TheBrowserCompany.Arc", "name": "Arc", "publisher": "The Browser Company", "category": "browsers", "popular": false, "summary": "Modern space-oriented browser with clean split views and command bar." },
+    { "id": "Zen-Team.Zen-Browser", "name": "Zen Browser", "publisher": "Zen Team", "category": "browsers", "popular": false, "summary": "Firefox-based distraction-free browser focused on calm productivity." },
+    { "id": "LibreWolf.LibreWolf", "name": "LibreWolf", "publisher": "LibreWolf Community", "category": "browsers", "popular": false, "summary": "Hardened Firefox fork focused on privacy, security, and freedom." },
+
+    { "id": "Ollama.Ollama", "name": "Ollama", "publisher": "Ollama", "category": "ai", "popular": true, "summary": "Run Llama, Qwen, DeepSeek, and other open AI models locally on Windows." },
+    { "id": "ElementLabs.LMStudio", "name": "LM Studio", "publisher": "Element Labs", "category": "ai", "popular": true, "summary": "Discover, download, and run local LLMs offline with a desktop server." },
+    { "id": "Anysphere.Cursor", "name": "Cursor", "publisher": "Anysphere", "category": "ai", "popular": true, "summary": "AI-first code editor built for multi-file editing and fast iteration." },
+    { "id": "Anthropic.Claude", "name": "Claude", "publisher": "Anthropic", "category": "ai", "popular": true, "summary": "Official Claude desktop app for writing, analysis, and reasoning." },
+    { "id": "Anthropic.ClaudeCode", "name": "Claude Code", "publisher": "Anthropic", "category": "ai", "popular": false, "summary": "Agentic coding CLI from Anthropic inside your terminal." },
+    { "id": "OpenAI.ChatGPT", "name": "ChatGPT", "publisher": "OpenAI", "category": "ai", "popular": false, "summary": "Official OpenAI desktop companion for ChatGPT conversations and voice." },
+    { "id": "Jan.Jan", "name": "Jan", "publisher": "Jan", "category": "ai", "popular": false, "summary": "Open-source local AI assistant that runs 100% offline on your PC." },
+    { "id": "Upscayl.Upscayl", "name": "Upscayl", "publisher": "Upscayl", "category": "ai", "popular": false, "summary": "Free open-source AI image upscaler powered by local GPU acceleration." },
+    { "id": "ByteDance.Trae", "name": "Trae", "publisher": "ByteDance", "category": "ai", "popular": false, "summary": "Adaptive AI IDE for code generation, debugging, and project workflows." },
+    { "id": "Windsurf.Windsurf", "name": "Windsurf", "publisher": "Codeium", "category": "ai", "popular": false, "summary": "Agentic AI IDE with deep codebase understanding and inline flows." },
+
+    { "id": "Microsoft.VisualStudioCode", "name": "Visual Studio Code", "publisher": "Microsoft Corporation", "category": "dev", "popular": true, "summary": "Lightweight, extensible code editor for every language and runtime." },
+    { "id": "Git.Git", "name": "Git", "publisher": "The Git Development Community", "category": "dev", "popular": true, "summary": "Distributed version control system with Git Bash and credential helper." },
+    { "id": "Python.Python.3.13", "name": "Python 3.13", "publisher": "Python Software Foundation", "category": "dev", "popular": true, "summary": "Python programming language runtime, standard library, and pip." },
+    { "id": "OpenJS.NodeJS.LTS", "name": "Node.js LTS", "publisher": "OpenJS Foundation", "category": "dev", "popular": true, "summary": "Long-term support JavaScript runtime built on V8 with npm." },
+    { "id": "Docker.DockerDesktop", "name": "Docker Desktop", "publisher": "Docker Inc.", "category": "dev", "popular": false, "summary": "Build, run, and manage containers and Compose stacks locally." },
+    { "id": "Microsoft.WindowsTerminal", "name": "Windows Terminal", "publisher": "Microsoft Corporation", "category": "dev", "popular": false, "summary": "Fast GPU-accelerated tabbed terminal for PowerShell, CMD, and WSL." },
+    { "id": "Microsoft.PowerShell", "name": "PowerShell 7", "publisher": "Microsoft Corporation", "category": "dev", "popular": false, "summary": "Cross-platform modern PowerShell shell and scripting engine." },
+    { "id": "GitHub.GitHubDesktop", "name": "GitHub Desktop", "publisher": "GitHub", "category": "dev", "popular": false, "summary": "Visual Git client for cloning, branching, diffing, and pull requests." },
+    { "id": "Postman.Postman", "name": "Postman", "publisher": "Postman", "category": "dev", "popular": false, "summary": "API client for testing HTTP, GraphQL, WebSockets, and collections." },
+    { "id": "JetBrains.Toolbox", "name": "JetBrains Toolbox", "publisher": "JetBrains", "category": "dev", "popular": false, "summary": "Manage IntelliJ, PyCharm, Rider, WebStorm, and other JetBrains IDEs." },
+    { "id": "Rustlang.Rustup", "name": "Rustup", "publisher": "Rust Project", "category": "dev", "popular": false, "summary": "The Rust toolchain installer for rustc, cargo, and clippy." },
+    { "id": "GoLang.Go", "name": "Go", "publisher": "Go Authors", "category": "dev", "popular": false, "summary": "Fast statically typed compiled language and toolchain." },
+    { "id": "ZedIndustries.Zed", "name": "Zed", "publisher": "Zed Industries", "category": "dev", "popular": false, "summary": "High-performance multiplayer code editor written in Rust." },
+    { "id": "WinSCP.WinSCP", "name": "WinSCP", "publisher": "Martin Prikryl", "category": "dev", "popular": false, "summary": "Popular SFTP, FTP, and SCP file transfer client for Windows." },
+
+    { "id": "Notepad++.Notepad++", "name": "Notepad++", "publisher": "Notepad++ Team", "category": "productivity", "popular": true, "summary": "Fast, lightweight text and source code editor with tabs and plugins." },
+    { "id": "Obsidian.Obsidian", "name": "Obsidian", "publisher": "Obsidian", "category": "productivity", "popular": true, "summary": "Private local-first Markdown knowledge base and graph workspace." },
+    { "id": "Notion.Notion", "name": "Notion", "publisher": "Notion Labs", "category": "productivity", "popular": false, "summary": "Connected workspace for docs, wikis, tasks, and databases." },
+    { "id": "TheDocumentFoundation.LibreOffice", "name": "LibreOffice", "publisher": "The Document Foundation", "category": "productivity", "popular": false, "summary": "Full free office suite with Writer, Calc, and Impress." },
+    { "id": "SumatraPDF.SumatraPDF", "name": "SumatraPDF", "publisher": "Krzysztof Kowalczyk", "category": "productivity", "popular": false, "summary": "Instant, lightweight reader for PDF, ePub, MOBI, and CBR files." },
+    { "id": "Flow-Launcher.Flow-Launcher", "name": "Flow Launcher", "publisher": "Flow Launcher", "category": "productivity", "popular": false, "summary": "Quick keyboard launcher for apps, files, bookmarks, and plugins." },
+    { "id": "Logseq.Logseq", "name": "Logseq", "publisher": "Logseq", "category": "productivity", "popular": false, "summary": "Privacy-first outliner and local knowledge graph for notes." },
+    { "id": "Anytype.Anytype", "name": "Anytype", "publisher": "Anytype", "category": "productivity", "popular": false, "summary": "Local-first encrypted workspace for notes, docs, and projects." },
+
+    { "id": "7zip.7zip", "name": "7-Zip", "publisher": "Igor Pavlov", "category": "utilities", "popular": true, "summary": "High-compression archiver for 7z, ZIP, RAR, TAR, and ISO files." },
+    { "id": "Microsoft.PowerToys", "name": "Microsoft PowerToys", "publisher": "Microsoft Corporation", "category": "utilities", "popular": true, "summary": "Essential Windows utilities: FancyZones, PowerRename, Run, and Color Picker." },
+    { "id": "voidtools.Everything", "name": "Everything", "publisher": "voidtools", "category": "utilities", "popular": true, "summary": "Instant filename search engine across all NTFS drives." },
+    { "id": "AntibodySoftware.WizTree", "name": "WizTree", "publisher": "Antibody Software", "category": "utilities", "popular": false, "summary": "Ultra-fast disk space analyzer reading the NTFS MFT directly." },
+    { "id": "CrystalDewWorld.CrystalDiskInfo", "name": "CrystalDiskInfo", "publisher": "Crystal Dew World", "category": "utilities", "popular": false, "summary": "SMART drive health, temperature, and wear telemetry monitor." },
+    { "id": "CPU-Z.CPU-Z", "name": "CPU-Z", "publisher": "CPUID", "category": "utilities", "popular": false, "summary": "Detailed processor, motherboard, memory timing, and cache telemetry." },
+    { "id": "TechPowerUp.GPU-Z", "name": "GPU-Z", "publisher": "TechPowerUp", "category": "utilities", "popular": false, "summary": "Lightweight graphics card diagnostics, clocks, and sensor monitor." },
+    { "id": "Rufus.Rufus", "name": "Rufus", "publisher": "Pete Batard", "category": "utilities", "popular": false, "summary": "Fast, reliable utility to create bootable USB drives from ISOs." },
+    { "id": "ShareX.ShareX", "name": "ShareX", "publisher": "ShareX Team", "category": "utilities", "popular": false, "summary": "Open-source screen capture, GIF recorder, and annotation toolkit." },
+    { "id": "localsend.localsend", "name": "LocalSend", "publisher": "LocalSend", "category": "utilities", "popular": false, "summary": "Share files across Windows, Mac, iOS, and Android over local Wi-Fi." },
+
+    { "id": "VideoLAN.VLC", "name": "VLC media player", "publisher": "VideoLAN", "category": "media", "popular": true, "summary": "Plays nearly every video and audio format with zero extra codec packs." },
+    { "id": "OBSProject.OBSStudio", "name": "OBS Studio", "publisher": "OBS Project", "category": "media", "popular": true, "summary": "Industry-standard screen recording and live streaming studio." },
+    { "id": "GIMP.GIMP.3", "name": "GIMP", "publisher": "The GIMP Team", "category": "media", "popular": false, "summary": "Free open-source raster image editor and retouching suite." },
+    { "id": "HandBrake.HandBrake", "name": "HandBrake", "publisher": "The HandBrake Team", "category": "media", "popular": false, "summary": "Open-source video transcoder with hardware encoder presets." },
+    { "id": "KDE.Kdenlive", "name": "Kdenlive", "publisher": "KDE", "category": "media", "popular": false, "summary": "Powerful multi-track open-source non-linear video editor." },
+    { "id": "BlenderFoundation.Blender", "name": "Blender", "publisher": "Blender Foundation", "category": "media", "popular": false, "summary": "Complete 3D creation suite for modeling, animation, and rendering." },
+    { "id": "ImageMagick.ImageMagick", "name": "ImageMagick", "publisher": "ImageMagick Studio", "category": "media", "popular": false, "summary": "Command-line and library toolkit for batch image conversion." },
+    { "id": "Gyan.FFmpeg", "name": "FFmpeg", "publisher": "FFmpeg", "category": "media", "popular": false, "summary": "Complete cross-platform solution to record, convert, and stream media." },
+
+    { "id": "Spotify.Spotify", "name": "Spotify", "publisher": "Spotify AB", "category": "music", "popular": true, "summary": "Stream millions of songs, albums, and podcasts on desktop." },
+    { "id": "Audacity.Audacity", "name": "Audacity", "publisher": "Audacity Team", "category": "music", "popular": false, "summary": "Free open-source multi-track audio recorder and editor." },
+    { "id": "PeterPawlowski.foobar2000", "name": "foobar2000", "publisher": "Peter Pawlowski", "category": "music", "popular": false, "summary": "Lightweight, audiophile modular music player with gapless playback." },
+    { "id": "Apple.AppleMusic", "name": "Apple Music", "publisher": "Apple Inc.", "category": "music", "popular": false, "summary": "Official Apple Music player with lossless audio and library sync." },
+    { "id": "MusicBrainz.Picard", "name": "MusicBrainz Picard", "publisher": "MetaBrainz Foundation", "category": "music", "popular": false, "summary": "Cross-platform audio tagger powered by acoustic fingerprinting." },
+
+    { "id": "Discord.Discord", "name": "Discord", "publisher": "Discord Inc.", "category": "communication", "popular": true, "summary": "Voice, video, screen share, and text communities." },
+    { "id": "Zoom.Zoom", "name": "Zoom Workplace", "publisher": "Zoom Communications", "category": "communication", "popular": true, "summary": "HD video meetings, team chat, and cloud phone." },
+    { "id": "WhatsApp.WhatsApp", "name": "WhatsApp", "publisher": "WhatsApp Inc.", "category": "communication", "popular": true, "summary": "End-to-end encrypted messaging and calls on your Windows PC." },
+    { "id": "SlackTechnologies.Slack", "name": "Slack", "publisher": "Slack Technologies", "category": "communication", "popular": false, "summary": "Team messaging, channels, huddles, and app integrations." },
+    { "id": "Telegram.TelegramDesktop", "name": "Telegram Desktop", "publisher": "Telegram FZ-LLC", "category": "communication", "popular": false, "summary": "Fast cloud-synced desktop messenger with channels and file sharing." },
+    { "id": "OpenWhisperSystems.Signal", "name": "Signal", "publisher": "Signal Foundation", "category": "communication", "popular": false, "summary": "Private, encrypted messaging and voice/video calls." },
+    { "id": "Mozilla.Thunderbird", "name": "Thunderbird", "publisher": "Mozilla", "category": "communication", "popular": false, "summary": "Free email, calendar, and contacts client with local privacy." },
+
+    { "id": "Bitwarden.Bitwarden", "name": "Bitwarden", "publisher": "Bitwarden Inc.", "category": "security", "popular": true, "summary": "Open-source encrypted password manager and passkey vault." },
+    { "id": "Proton.ProtonVPN", "name": "Proton VPN", "publisher": "Proton AG", "category": "security", "popular": false, "summary": "Swiss-based audited VPN focused on privacy and high-speed servers." },
+    { "id": "KeePassXCTeam.KeePassXC", "name": "KeePassXC", "publisher": "KeePassXC Team", "category": "security", "popular": false, "summary": "Offline open-source password database compatible with KeePass." },
+    { "id": "Tailscale.Tailscale", "name": "Tailscale", "publisher": "Tailscale Inc.", "category": "security", "popular": false, "summary": "Zero-config private WireGuard mesh VPN for your devices." },
+    { "id": "Malwarebytes.Malwarebytes", "name": "Malwarebytes", "publisher": "Malwarebytes", "category": "security", "popular": false, "summary": "On-demand malware scanner and threat removal utility." },
+    { "id": "WireGuard.WireGuard", "name": "WireGuard", "publisher": "WireGuard Development Team", "category": "security", "popular": false, "summary": "Fast, modern, minimal kernel-level VPN tunnel." },
+
+    { "id": "Valve.Steam", "name": "Steam", "publisher": "Valve Corporation", "category": "gaming", "popular": true, "summary": "PC gaming store, library, controller support, and community." },
+    { "id": "EpicGames.EpicGamesLauncher", "name": "Epic Games Launcher", "publisher": "Epic Games", "category": "gaming", "popular": false, "summary": "PC game store, weekly free games, and Unreal Engine hub." },
+    { "id": "Playnite.Playnite", "name": "Playnite", "publisher": "Josef Nemec", "category": "gaming", "popular": false, "summary": "Open-source unified launcher uniting Steam, Epic, GOG, and emulators." },
+    { "id": "MoonlightGameStreamingProject.Moonlight", "name": "Moonlight", "publisher": "Moonlight Project", "category": "gaming", "popular": false, "summary": "Low-latency open-source PC game streaming client." },
+    { "id": "PrismLauncher.PrismLauncher", "name": "Prism Launcher", "publisher": "Prism Launcher", "category": "gaming", "popular": false, "summary": "Open-source custom launcher for managing Minecraft instances and mods." }
+  ]
+}

@@ -379,3 +379,39 @@
 - **OQ1 First-start icons (owner):** The first scan waits up to 8 s for Marketplace icons, then continues; late icons appear while the app is in use. Icons are cached 30 days.
 - **OQ2 Cleanup row (owner):** Hide the "Space you can free" scan row until the cleanup tools (46.2) are built.
 - **Start menu shortcut icon source (Manager):** Approved as installed-app icon source 5 (46.5.33). It reads only local files and raises coverage of original icons.
+
+### ADR 050: Design Overhaul & Full Multi-Source Winget Marketplace Coverage (owner, 2026-11-25)
+- **Status:** Accepted (2026-11-25). Tracker task `46.20`.
+- **Context:** The owner directed highest priority on continuing the Windows package, improving the application design, and resolving the gap where `winget search` reveals many packages not shown or reachable inside the Application.
+- **Root causes:**
+  1. `MainWindow.xaml.cs` and the live `Views/` (`GettingReadyPage`, `UpdatesPage`, `InstalledPage`, `MarketplacePage`, `AboutPage`) still render the old Phase A placeholder UI instead of the Phase 46 design system (`Theme.cs`, `Chrome.cs`, `AppRow`, `AppIcon`, `VirtualList`, `ActivityBar`, `ConfirmDialog`, `ScanJobRow`).
+  2. `MarketplacePage` opens completely blank with no curated popular picks or categories (`Assets/catalog-picks.json` missing), and `MarketplaceService` only queries CLI `winget search` text output (dropping rows if truncated or missing version, no `WingetReader` COM search, no `msstore` + `winget` combined remote search, no category tag browsing, no details panel, no installed/update state detection).
+- **Decision:**
+  - **No new protective middle layer:** Keep `AppServices` as the sole facade under `Services/`.
+  - **Catalog & Search:** Combine `WingetReader` COM remote catalogs (both `OpenWindowsCatalog` / `winget` and `Store` / `msstore` via `PackageManager.GetPackageCatalogs()` or composite remote catalog) with `WingetCli` fallback, raise search/browse limits, preserve full untruncated IDs, provide curated `Assets/catalog-picks.json` across 10 categories (Browsers, Productivity, Developer tools, AI tools, Photo and video, Music, Communication, Utilities, Security, Gaming), and expose live "See all" category tag browsing and `DetailsPanel`.
+  - **Design & Screens:** Complete and wire the Phase 46 visual overhaul across all screens (`MainWindow` shell + `ActivityBar` + badge + close guard, `GettingReadyPage` with `ScanOrchestrator`, `UpdatesPage` with `UpdatesCatalog` + `UpdateActions` + `VirtualList` + `SummaryTiles`, `InstalledPage` with `RegistryInventory` + `StoreAppInventory` + `WingetReader` merger + safe uninstall, `MarketplacePage` with Home/Results/Details, `AboutPage` with hardware cards & Start-with-Windows toggle) and original app icon loading (`IconService`).
+  - **Security & Testing:** Keep all `WingetRunner` allowlist/argument-list rules, `PackageId.IsCatalogId` validation, HTTPS-only `SafeIconFetcher` rules, and unit tests in `tests/QuantumUpdater.Tests`.
+
+### ADR 051: Scoop & Chocolatey Support + NetSpeedBoss Default App (owner, 2026-11-25)
+- **Status:** Accepted (2026-11-25). Tracker task `46.21`.
+- **Context:** The owner requested Scoop installation support alongside Chocolatey, Winget, and Microsoft Store, and specified adding their own app **NetSpeedBoss** (`scoop bucket add netspeedboss https://github.com/merchanthasan2/scoop-bucket` / `scoop install netspeedboss`) as a default featured app.
+- **Decision:**
+  - Add `Services/Scoop/ScoopService.cs` (strict app/bucket/HTTPS-URL allowlists, `ArgumentList` via PowerShell `-File scoop.ps1`, `CreateNoWindow = true`, auto-adding the required bucket before `scoop install`).
+  - Add `Services/Chocolatey/ChocolateyService.cs` (strict package ID allowlists, `ArgumentList`, `CreateNoWindow = true`).
+  - Integrate both engines into `MarketplaceCatalog` (parallel search + queued 1-click install/update), `InstalledCatalog`, `UninstallPlanner`, `UninstallRunner`, and `InstalledPage` source pills.
+  - Feature **NetSpeedBoss** (`netspeedboss`, `https://github.com/merchanthasan2/scoop-bucket`) as a default Popular & Utilities pick in `Assets/catalog-picks.json`.
+
+
+
+### ADR 052: Disk & Storage (46.1) and System Cleanup Set (46.2) (owner, 2026-11-25)
+- **Status:** Accepted (2026-11-25). Tracker tasks `46.1` and `46.2`.
+- **Context:** Following ADR 048, the owner directed completion of the next slices in Phase 46: Disk & Storage (full view, physical drive space and health, external drive labels, cloud volumes excluded, large file scanner with Recycle Bin and confirmed permanent delete) and the Cleanup set (Startup apps with undo, Activity history read-only audit log, Windows-supported temporary files cleaner, and leftover folders reclaimer).
+- **Decision:**
+  - **Disk & Storage (`46.1`):** Extended `DiskService.cs` and built `DiskPage.cs`. Excluded cloud and network volumes from drive cards, added physical drive health status (`Get-PhysicalDisk`), external storage detection (`DriveType.Removable`), recursive large file scanner (> 50 MB / 100 MB / 500 MB / 1 GB), native Windows Recycle Bin deletion via `SHFileOperationW`, and permanent delete gated behind `ContentDialog` confirmation.
+  - **Cleanup Set (`46.2`):** Added `CleanupService.cs` and `CleanupPage.cs`.
+    1. *Temporary files:* Windows-supported route only (`%TEMP%`, `C:\Windows\Temp`, crash dumps, WER archives), preserving in-use/active files.
+    2. *Startup apps:* Reads HKCU/HKLM Run keys and Startup folder; supports safe disable/turn off with undo store in `HKCU\Software\DeskVerve\StartupBackup`.
+    3. *Leftover folders:* Scans orphan AppData directories for uninstalled software with 1-click Recycle Bin per folder.
+    4. *Activity history:* Read-only persistent audit trail at `%LOCALAPPDATA%\QuantumUpdater\activity-history.json`.
+  - **Navigation:** Integrated `Disk & Storage` (glyph `\uEDA2`) and `System Cleanup` (glyph `\uE74D`) into `MainWindow.xaml.cs` sidebar.
+  - **Verification:** 571 unit tests passing in `tests/QuantumUpdater.Tests`, Release x64 compilation 0 errors/0 warnings, portable zip and Inno Setup installer generated.

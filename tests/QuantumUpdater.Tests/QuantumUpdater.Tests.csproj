@@ -36,6 +36,18 @@
     <Compile Include="..\..\src\QuantumUpdater\Services\SafeLocalFile.cs" Link="Linked\SafeLocalFile.cs" />
     <Compile Include="..\..\src\QuantumUpdater\Services\MachineSummary.cs" Link="Linked\MachineSummary.cs" />
     <Compile Include="..\..\src\QuantumUpdater\Services\StartWithWindowsService.cs" Link="Linked\StartWithWindowsService.cs" />
+    <Compile Include="..\..\src\QuantumUpdater\Models\CatalogApp.cs" Link="Linked\CatalogApp.cs" />
+    <Compile Include="..\..\src\QuantumUpdater\Services\Winget\ComProgressMap.cs" Link="Linked\ComProgressMap.cs" />
+    <Compile Include="..\..\src\QuantumUpdater\Services\UpdatesCatalog.cs" Link="Linked\UpdatesCatalog.cs" />
+    <Compile Include="..\..\src\QuantumUpdater\Services\Updates\UpdateActions.cs" Link="Linked\UpdateActions.cs" />
+    <Compile Include="..\..\src\QuantumUpdater\Services\Inventory\InstalledMerger.cs" Link="Linked\InstalledMerger.cs" />
+    <Compile Include="..\..\src\QuantumUpdater\Services\Inventory\UninstallPlanner.cs" Link="Linked\UninstallPlanner.cs" />
+    <Compile Include="..\..\src\QuantumUpdater\Services\Net\SafeIconFetcher.cs" Link="Linked\SafeIconFetcher.cs" />
+    <Compile Include="..\..\src\QuantumUpdater\Services\Catalog\CatalogPicks.cs" Link="Linked\CatalogPicks.cs" />
+    <Compile Include="..\..\src\QuantumUpdater\Services\Scoop\ScoopService.cs" Link="Linked\ScoopService.cs" />
+    <Compile Include="..\..\src\QuantumUpdater\Services\Chocolatey\ChocolateyService.cs" Link="Linked\ChocolateyService.cs" />
+    <Compile Include="..\..\src\QuantumUpdater\Services\DiskService.cs" Link="Linked\DiskService.cs" />
+    <Compile Include="..\..\src\QuantumUpdater\Services\Cleanup\CleanupService.cs" Link="Linked\CleanupService.cs" />
     <Compile Include="..\..\src\QuantumUpdater.Portal\AccountStore.cs" Link="Linked\Portal\AccountStore.cs" />
     <Compile Include="..\..\src\QuantumUpdater.Portal\PortalHandler.cs" Link="Linked\Portal\PortalHandler.cs" />
     <Compile Include="..\..\src\QuantumUpdater.Portal\RateLimiter.cs" Link="Linked\Portal\RateLimiter.cs" />

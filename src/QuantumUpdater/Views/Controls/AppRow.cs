@@ -64,6 +64,9 @@ public sealed class AppRow : Grid
     /// <summary>True when the check box is ticked. Read it after a Select event.</summary>
     public bool IsChecked => _select.IsChecked == true;
 
+    /// <summary>The row's app icon control, for binding original icons after <see cref="Apply"/>.</summary>
+    public AppIcon Icon => _icon;
+
     /// <summary>
     /// Shows or hides the 1 px top line. The list hides it on the first row.
     /// mockup: 01-updates.html .row:first-child (border-top 0).
@@ -336,6 +339,7 @@ public sealed class AppRow : Grid
         switch (model.State)
         {
             case AppRowState.Ready:
+                _update.Content = string.IsNullOrWhiteSpace(model.ActionLabel) ? "Update" : model.ActionLabel;
                 _update.Visibility = Visibility.Visible;
                 break;
 

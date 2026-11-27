@@ -44,14 +44,32 @@ public sealed class WingetService
 
     /// <summary>Upgrades one package by id (<c>winget upgrade --id … --exact --source winget</c>; the runner adds both).</summary>
     public Task<ActionResult> UpgradeAsync(string packageId, CancellationToken cancellationToken = default)
+        => UpgradeAsync(packageId, progress: null, cancellationToken);
+
+    /// <summary>Upgrades one package by id via CLI, reporting phase words (no percent on CLI backup).</summary>
+    public Task<ActionResult> UpgradeAsync(
+        string packageId,
+        IProgress<ActionProgress>? progress,
+        CancellationToken cancellationToken = default)
     {
+        Action<string>? onLine = progress is null
+            ? null
+            : line =>
+            {
+                if (CliPhase.TryParse(line, out string phase))
+                {
+                    progress.Report(new ActionProgress(phase, null));
+                }
+            };
+
         return WingetCli.RunActionAsync(
             ActionKind.Update,
             "upgrade",
             packageId,
             ["--include-unknown", "--disable-interactivity", "--silent", "--accept-package-agreements", "--accept-source-agreements"],
             UpgradeTimeout,
-            cancellationToken);
+            cancellationToken,
+            onLine);
     }
 
     private static IReadOnlyList<WingetPackage> ParseUpgrades(RunResult run, out int skipped)

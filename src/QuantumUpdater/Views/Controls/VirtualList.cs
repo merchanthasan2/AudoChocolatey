@@ -41,6 +41,9 @@ public sealed class VirtualList : Grid
     /// <summary>Raised with the group Id when a group header is clicked.</summary>
     public event Action<string>? GroupToggled;
 
+    /// <summary>Raised whenever an <see cref="AppRow"/> is bound or updated, allowing async icon binding.</summary>
+    public event Action<AppRow, AppRowModel>? RowPrepared;
+
     /// <summary>How many AppRow instances were created. Used by the gallery check.</summary>
     internal int CreatedRowCount => _createdRows;
 
@@ -94,6 +97,7 @@ public sealed class VirtualList : Grid
         if (_repeater.TryGetElement(index) is AppRow appRow)
         {
             appRow.Apply(model);
+            RowPrepared?.Invoke(appRow, model);
         }
     }
 
@@ -115,6 +119,7 @@ public sealed class VirtualList : Grid
 
                 // The top line is hidden on the first item and on the first row after a header.
                 appRow.ShowTopLine = index > 0 && _data[index - 1] is RowItem;
+                RowPrepared?.Invoke(appRow, row.Model);
                 break;
         }
     }
