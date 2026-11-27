@@ -22,7 +22,7 @@
     <Version>3.0.0</Version>
     <Product>DeskVerve</Product>
     <Company>Quantum Step</Company>
-    <AssemblyTitle>DeskVerve</AssemblyTitle>
+    <AssemblyTitle>DeskVerve by Quantum Step</AssemblyTitle>
     <Description>DeskVerve keeps your Windows apps up to date.</Description>
     <Copyright>© 2026 Quantum Step. All rights reserved.</Copyright>
     <!-- W29: release builds map source paths to /_/, so crash stacks never show the build machine folder. -->
